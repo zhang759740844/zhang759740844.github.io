@@ -1,111 +1,43 @@
-# Landscape
+# NexT
 
-A brand new default theme for [Hexo].
+> 精于心，简于形
 
-- [Preview](http://hexo.io/hexo-theme-landscape/)
+<a href="http://notes.iissnan.com" target="_blank">在线预览 Preview</a> | <a href="http://theme-next.iissnan.com" target="_blank">NexT 使用文档</a> |  [English Documentation](README.en.md)
 
-## Installation
+[![Join the chat at https://gitter.im/iissnan/hexo-theme-next](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/iissnan/hexo-theme-next?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-### Install
+![NexT Schemes](http://iissnan.com/nexus/next/next-schemes.jpg)
 
-``` bash
-$ git clone https://github.com/hexojs/hexo-theme-landscape.git themes/landscape
-```
 
-**Landscape requires Hexo 2.4 and above.**
+## 浏览器支持 Browser support
 
-### Enable
+![Browser support](http://iissnan.com/nexus/next/browser-support.png)
 
-Modify `theme` setting in `_config.yml` to `landscape`.
 
-### Update
+## 贡献 Contributing
 
-``` bash
-cd themes/landscape
-git pull
-```
+接受各种形式的贡献，包括不限于提交问题与需求，修复代码。等待您的`Pull Request`。
 
-## Configuration
+Any types of contribution are welcome. Thanks.
 
-``` yml
-# Header
-menu:
-  Home: /
-  Archives: /archives
-rss: /atom.xml
+## 开发 Development
 
-# Content
-excerpt_link: Read More
-fancybox: true
+NexT 主旨在于简洁优雅且易于使用，所以首先要尽量确保 NexT 的简洁易用性。
 
-# Sidebar
-sidebar: right
-widgets:
-- category
-- tag
-- tagcloud
-- archives
-- recent_posts
+NexT is built for easily use with elegant appearance. First things first, always keep things simple.
 
-# Miscellaneous
-google_analytics:
-favicon: /favicon.png
-twitter:
-google_plus:
-```
+## [开发历史 Changelog](https://github.com/iissnan/hexo-theme-next/wiki/Changelog)
 
-- **menu** - Navigation menu
-- **rss** - RSS link
-- **excerpt_link** - "Read More" link at the bottom of excerpted articles. `false` to hide the link.
-- **fancybox** - Enable [Fancybox]
-- **sidebar** - Sidebar style. You can choose `left`, `right`, `bottom` or `false`.
-- **widgets** - Widgets displaying in sidebar
-- **google_analytics** - Google Analytics ID
-- **favicon** - Favicon path
-- **twitter** - Twiiter ID
-- **google_plus** - Google+ ID
+[![hexo-image]][hexo-url]
+[![bower-image]][bower-url]
+[![jquery-image]][jquery-url]
+[![velocity-image]][velocity-url]
 
-## Features
-
-### Fancybox
-
-Landscape uses [Fancybox] to showcase your photos. You can use Markdown syntax or fancybox tag plugin to add your photos.
-
-```
-![img caption](img url)
-
-{% fancybox img_url [img_thumbnail] [img_caption] %}
-```
-
-### Sidebar
-
-You can put your sidebar in left side, right side or bottom of your site by editing `sidebar` setting.
-
-Landscape provides 5 built-in widgets:
-
-- category
-- tag
-- tagcloud
-- archives
-- recent_posts
-
-All of them are enabled by default. You can edit them in `widget` setting.
-
-## Development
-
-### Requirements
-
-- [Grunt] 0.4+
-- Hexo 2.4+
-
-### Grunt tasks
-
-- **default** - Download [Fancybox] and [Font Awesome].
-- **fontawesome** - Only download [Font Awesome].
-- **fancybox** - Only download [Fancybox].
-- **clean** - Clean temporarily files and downloaded files.
-
-[Hexo]: http://zespia.tw/hexo/
-[Fancybox]: http://fancyapps.com/fancybox/
-[Font Awesome]: http://fontawesome.io/
-[Grunt]: http://gruntjs.com/
+[hexo-image]: http://img.shields.io/badge/Hexo-2.4+-2BAF2B.svg?style=flat-square
+[hexo-url]: http://hexo.io
+[bower-image]: http://img.shields.io/badge/Bower-*-2BAF2B.svg?style=flat-square
+[bower-url]: http://bower.io
+[jquery-image]: https://img.shields.io/badge/jquery-2.1-2BAF2B.svg?style=flat-square
+[jquery-url]: http://jquery.com/
+[velocity-image]: https://img.shields.io/badge/Velocity-1.2-2BAF2B.svg?style=flat-square
+[velocity-url]: http://julian.com/research/velocity/
