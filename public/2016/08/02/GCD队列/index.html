@@ -86,13 +86,13 @@
 
 <meta name="description" content="Grand Central Dispatch或者GCD，是一套低层API，提供了一种新的方法来进行并发程序编写。从基本功能上讲，GCD有点像NSOperationQueue，他们都允许程序将任务切分为多个单一任务然后提交至工作队列来并发地或者串行地执行。GCD比之NSOpertionQueue更底层更高效，并且它不是Cocoa框架的一部分。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="GCD队列 学习与整理(一)">
+<meta property="og:title" content="GCD队列 学习与整理">
 <meta property="og:url" content="http://yoursite.com/2016/08/02/GCD队列/index.html">
 <meta property="og:site_name" content="Zachary's blog">
 <meta property="og:description" content="Grand Central Dispatch或者GCD，是一套低层API，提供了一种新的方法来进行并发程序编写。从基本功能上讲，GCD有点像NSOperationQueue，他们都允许程序将任务切分为多个单一任务然后提交至工作队列来并发地或者串行地执行。GCD比之NSOpertionQueue更底层更高效，并且它不是Cocoa框架的一部分。">
-<meta property="og:updated_time" content="2016-08-03T02:04:24.000Z">
+<meta property="og:updated_time" content="2016-08-03T06:03:47.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="GCD队列 学习与整理(一)">
+<meta name="twitter:title" content="GCD队列 学习与整理">
 <meta name="twitter:description" content="Grand Central Dispatch或者GCD，是一套低层API，提供了一种新的方法来进行并发程序编写。从基本功能上讲，GCD有点像NSOperationQueue，他们都允许程序将任务切分为多个单一任务然后提交至工作队列来并发地或者串行地执行。GCD比之NSOpertionQueue更底层更高效，并且它不是Cocoa框架的一部分。">
 
 
@@ -116,7 +116,7 @@
 
   <link rel="canonical" href="http://yoursite.com/2016/08/02/GCD队列/"/>
 
-  <title> GCD队列 学习与整理(一) | Zachary's blog </title>
+  <title> GCD队列 学习与整理 | Zachary's blog </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -256,7 +256,7 @@
             
             
               
-                GCD队列 学习与整理(一)
+                GCD队列 学习与整理
               
             
           </h1>
@@ -349,7 +349,18 @@
 <p><strong>总结：队列是串行或并发的，操作队列的函数是同步或者异步执行的。</strong></p>
 <h3 id="常用方法"><a href="#常用方法" class="headerlink" title="常用方法"></a>常用方法</h3><ol>
 <li><p><strong>dispatch_apply</strong><br>重复执行block，需要注意的是这个方法是同步返回，也就是说等到所有block执行完毕才返回。多个block的运行是否并发或串行执行也依赖queue的是否并发或串行。</p>
-<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">dispatch_queue_t</span> queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, <span class="number">0</span>);</div><div class="line">dispatch_apply([array count], queue, ^(size_t index)&#123;</div><div class="line">    [<span class="keyword">self</span> doSomethingIntensiveWith:[array objectAtIndex:index]];</div><div class="line">&#125;);</div><div class="line">[<span class="keyword">self</span> doSomethingWith:array];</div><div class="line">```如果需要异步执行这些代码，只需要用<span class="built_in">dispatch_async</span>方法，将所有代码推至后台。</div><div class="line">```objc</div><div class="line"><span class="built_in">dispatch_queue_t</span> queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, <span class="number">0</span>);</div><div class="line"><span class="built_in">dispatch_async</span>(queue, ^&#123;</div><div class="line">    dispatch_apply([array count], queue, ^(size_t index)&#123;</div><div class="line">        [<span class="keyword">self</span> doSomethingIntensiveWith:[array objectAtIndex:index]];</div><div class="line">    &#125;);</div><div class="line">    [<span class="keyword">self</span> doSomethingWith:array];</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">dispatch_queue_t</span> queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, <span class="number">0</span>);</div><div class="line">dispatch_apply([array count], queue, ^(size_t index)&#123;</div><div class="line">    [<span class="keyword">self</span> doSomethingIntensiveWith:[array objectAtIndex:index]];</div><div class="line">&#125;);</div><div class="line">[<span class="keyword">self</span> doSomethingWith:array];</div></pre></td></tr></table></figure>
+<p> 如果需要异步执行这些代码，只需要用dispatch_async方法，将所有代码推至后台。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">dispatch_queue_t</span> queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, <span class="number">0</span>);</div><div class="line"><span class="built_in">dispatch_async</span>(queue, ^&#123;</div><div class="line">    dispatch_apply([array count], queue, ^(size_t index)&#123;</div><div class="line">        [<span class="keyword">self</span> doSomethingIntensiveWith:[array objectAtIndex:index]];</div><div class="line">    &#125;);</div><div class="line">    [<span class="keyword">self</span> doSomethingWith:array];</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p> 那何时才适合用 dispatch_apply 呢？</p>
+<ul>
+<li><p>自定义串行队列：串行队列会完全抵消 dispatch_apply 的功能；你还不如直接使用普通的 for 循环。</p>
+</li>
+<li><p>主队列（串行）：与上面一样，在串行队列上不适合使用 dispatch_apply 。还是用普通的 for 循环吧。</p>
+</li>
+<li><p>并发队列：对于并发循环来说是很好选择，特别是当你需要追踪任务的进度时。</p>
+</li>
+</ul>
 </li>
 <li><p><strong>dispatch_after</strong><br>延迟执行block</p>
 <figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">double</span> delayInSeconds = <span class="number">1.0</span>; </div><div class="line">dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * <span class="built_in">NSEC_PER_SEC</span>));</div><div class="line">dispatch_after(popTime, dispatch_get_main_queue(), ^(<span class="keyword">void</span>)&#123;</div><div class="line">     <span class="comment">// code to be executed on the main queue after delay</span></div><div class="line">&#125;);</div></pre></td></tr></table></figure>
@@ -405,6 +416,10 @@
           </div>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/08/02/GCD/" rel="prev" title="GCD队列 学习与整理">
+                GCD队列 学习与整理 <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -472,7 +487,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">3</span>
+              <span class="site-state-item-count">4</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>

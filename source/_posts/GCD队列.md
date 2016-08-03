@@ -75,7 +75,8 @@ dispatch_apply([array count], queue, ^(size_t index){
     [self doSomethingIntensiveWith:[array objectAtIndex:index]];
 });
 [self doSomethingWith:array];
-```如果需要异步执行这些代码，只需要用dispatch_async方法，将所有代码推至后台。
+```
+	如果需要异步执行这些代码，只需要用dispatch_async方法，将所有代码推至后台。
 ```objc
 dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
 dispatch_async(queue, ^{
@@ -85,7 +86,14 @@ dispatch_async(queue, ^{
     [self doSomethingWith:array];
 });
 ```
+	那何时才适合用 dispatch_apply 呢？
 
+	- 自定义串行队列：串行队列会完全抵消 dispatch_apply 的功能；你还不如直接使用普通的 for 循环。
+
+	- 主队列（串行）：与上面一样，在串行队列上不适合使用 dispatch_apply 。还是用普通的 for 循环吧。
+
+	- 并发队列：对于并发循环来说是很好选择，特别是当你需要追踪任务的进度时。
+	
 2. **dispatch_after**
 延迟执行block
 ```objc
