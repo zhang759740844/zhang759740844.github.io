@@ -1,0 +1,271 @@
+title: objective-c 学习笔记
+date: 2016/7/31 10:07:12  
+categories: IOS
+tags:
+	- objective-c
+	- 读书笔记
+
+---
+
+开始IOS开发必然要先学会objective-c，本篇是阅读了《object-c编程》一书后摘录的笔记，比较浅显。
+
+<!--more-->
+
+### 函数
+函数可以有很多局部变量，这些变量都会保存在函数的帧中。这些帧存于栈内。执行函数时，函数的帧会在栈的顶部被创建。函数返回时，帧退出栈，等待下一个调用它的函数继续执行。
+
+### 全局变量
+在函数外声明的变量，只要类被import就能使用。  
+Java中不存在这种全局变量，只能定义一个类，通过类名，资源名访问。  
+为了防止混淆问题，引用静态变量。与全局变量一样，也需要在函数外声明。不过只有某个声明静态变量的文件才能访问。好处是：既保留了非局部的、存在于任何函数之外的优点，又避免了其他文件修改的问题。  
+**那么这和@property有什么区别？**静态变量是持久的，存储于静态存储区，在程序刚运行时就被唯一一次初始化，不会像property随着实例化而变化。
+
+### 指针
+&表示取地址，*表示取值。  
+空指针用nil而不是null。
+
+### 结构
+使用结构保存多个相关数据。
+```objc
+struct Person{
+	float height；
+	int age；
+}；
+```
+使用：`struct Person mikey；`  
+使用typedef简化。typedef可以为某类型声明一个等价的别名，该别名用法和常规数据类型无异。
+```objc
+typedef struct {
+	float height；
+	int age；
+} Person；
+```
+使用：`Person mikey；`
+
+### 获取结构中的属性：
+当结构的使用者是一个指针时，使用->表示先获取指针p指向的数据结构，然后返回该结构的成员变量。  
+当结构的使用者是一个实例时，使用.表示访问属性。
+
+### id %@
+id表示可以指向任意类型的指针。变量声明不使用星号。id已经隐含了星号的作用。
+InstanceType表示方法的返回类型。  
+%@表示占位符，代表指针，会向相应指针变量对象发送description消息。
+
+### ARC
+@“…”表示创建一个NSString对象。需要知道字符串完整内容。  
+也可使用stringWithFormat方法动态创建：
+```objc
+NSString *dateString = [NSString stringWithFormat:@“The date is %@”, now]
+```
+
+### NSArray
+创建：
+```objc
+NSArray *dateList = @[now, tomorrow ,yesterday];
+```
+NSArray是无法改变的，被创建后无法添加删除以及改变顺序。  
+快速遍历数组： 
+```objc
+for(NSDate *d in daeList){}
+```
+
+### NSMutableArray
+可变数组，可添加删除和修改顺序。  
+insertObject：atIndex在指定位置插入  
+removeObject：atIndex删除数组中对象  
+快速遍历时不能添加删除数组内数据。
+
+### 自定义一个类
+头文件以@interface开始，@end结束。花括号内声明实例变量，实例变量以下划线”_”开始
+取方法名字和相应实例变量一样，弹药去掉实例变量开头的下划线。存方法以set开头，后面更上去掉下划线的实例变量名。
+
+### self
+self是指针，指向运行当前方法的对象。
+
+### 属性
+属性的声明以@property开头，然后是类型和名称。属性自动声明存取方法。  
+使用”.”获取属性其实是在发送消息，调用getset方法。语法糖。
+
+### 继承
+NSObject是所有类的基类，拥有一个实例变量：isa指针。任何一个对象的isa指针都指向创建爱你该对象的类。发送消息时，对象查询是否有该消息名的方法。没有则继续查询父类。父类也没有，查找参数超类。
+
+### @class
+一般来说，@class是放在interface中的，只是为了在interface中引用这个类，把这个类作为一个类型来用的。 在实现这个接口的实现类中，如果需要引用这个类的实体变量或者方法之类的，还是需要import在@class中声明的类进来.  
+如果ClassA.h中仅需要声明一个ClassB的指针，那么就可以在ClassA.h中声明@ClassB
+
+### 类拓展
+类拓展是一组私有的声明。只有类和其实例才能使用在类拓展中声明的属性方法。
+```objc
+	#import “BNREmployee.h”
+	@interface BNREmployee()	
+	@property (nonatomic) unsigned int officeAlarmCode;
+	@end
+```
+注意要有括号，写在implement前面。  
+头文件中的属性相当于公有，可以通过同样公有的getset方法获取。类拓展无法则无法在其它类中直接获得，必须手动设置getset方法。
+
+### 弱引用
+通过弱引用可以解决强引用循环。强引用会保留对象的拥有方，使其不会释放。弱引用则不会保留。
+
+### Collection类
+NSSet对象包含的内容是无序的，并且在NSSet对象中，特定对象只能出现一次。其最大用处是检查某个对象是否存在。NSMutableSet可以添加删除set内数据。  
+NSDictionary对象是键值对集合。字典的字面量语法由@和{}组成。字典里的键是独一无二的。  
+NSMutable是NS的子类。  
+collection不能保存nil。如果要保存nil则要保存NSNull类的实例。
+```objc
+[hotel addObject:[NSNull null]];
+```
+
+### 常量
+可以通过两种途径定义常量，#define和全局变量。  
+1. #define A B 告诉编译器看到A用B替换
+2. extern NSString const *NSLocaleCurrencyCode；  
+const表示指针的不会变化,extern表示指针是存在的，但是会在另一个文件里定义。提示编译器遇到此变量和函数时在其他模块中寻找其定义
+
+### #include和#import
+import会确保预处理器只导入特定的文件一次，include允许多次导入同一个文件。最好使用import。
+
+### enum
+定义一组常量。
+```objc
+typedef enum{
+	BlenderSpeedStir=1，
+	BlenderSpeedChop=2，
+} BlenderSpeed；
+```
+还可以写成这样：
+```objc
+typedef NS_ENUM(NSInteger, BlenderSpeed) {
+//以下是枚举成员
+    Test1A = 0,
+    Test1B = 1,
+    Test1C = 2,
+    Test1D = 3
+};
+```
+使用： BlenderSpeed speed；
+
+### 通过NSString和NSData写入文件
+没看
+
+### 回调
+没看
+
+### Block
+```objc
+^(double dividend){
+	double quotient = dividend / divisor;
+	return quotient;
+}
+```
+Block对象可以被当做一个实参来传递给可以接收block的方法。
+
+### 声明block变量:
+```objc 
+void (^devowelizer)(id, NSUInteger, BOOL*);
+```
+void 表示返回类型  
+^ 表示是一个block对象  
+devowelizer 表示block变量的名称  
+后面的是实参类型  
+方法的调用参数类型为^(id  string, NSUInteger i, BOOL *stop)block
+
+### 编写Block对象
+```objc
+devowelizer = ^(id string,NSUInteger i, BOOL *stop){
+	……
+};
+```
+
+### 调用block变量
+```objc
+devowelizer(string,i,stop);
+```
+### typedef
+不能再方法的实现代码中使用typedef，需要在实现文件的顶部，或者头文件内使用typedef。
+```objc
+typedef void(^ArrayEnumerationBlock)(id,NSUInteger,BOOL *);
+```
+需要注意的是，这里定义的是一个新的类型，不是变量。跟在^后面的是类型名称。创建这个新类型后，可以简化相应Block的声明。
+```objc
+ArrayEnumerationBlock devowelizer；
+```
+
+### 外部变量
+在执行Block对象时，为了确保其下的外部变量能够始终存在，相应的Block对象会捕获这些变量。意味着程序会拷贝变量的值，用Block的局部变量保存。造成强引用。
+
+### 在Block中使用self
+如果要写一个使用self的Block对象，需要避免强引用循环。  
+在Block外声明一个_weak指正，然后将这个指针指向Block对象使用的self，最后在Block对象中使用这个新的指针。
+```objc
+_weak BNREmployee *weakSelf = self;	//弱引用指针
+	myBlock = ^{
+		NSLog(@“Employee:%@”,weakSelf);
+	};
+```
+### 修改外部变量
+如果需要在Block对象内修改某个外部变量，则可以声明相应的外部变量时，在前面加上__block关键字。
+
+### 协议
+协议可以为一个对象指定角色。类似于接口。如果某个对象要扮演特定的角色，就一定要实现相应的必须方法，并选择实现部分可选方法。  
+UITableView数据源协议是UITableViewDataSource，方法声明如下：
+```objc
+@protocal UITableViewDataSource<NSObject>
+@required
+- (NSInteger)tableView:(UITableView *)tv
+	numberOfRowsInSection:(NSInteger) section;
+@optional
+……. 
+```
+
+### UITableView对象提供数据
+UITableView不包含任何数据，需要提供一个数据源  
+我们将BNRAppDelegate实例设置为UITableView对象的数据源。BNRAPPDelegate必须遵循UITableViewDataSource协议。  
+在BNRAPPDelegate.h文件中，声明BNRAPPDelegate遵循UITableViewDataSource协议  
+```objc
+@interface BNRAppDelegate: UIResponder <UIApplicationDelegate,UITableViewDataSource>
+	@property (nonatomic) UITableView *taskTable;
+	@property (nonatomic) NSMutableArray *tasks;
+@end
+```
+在.m中向UITableView发送setDataSource消息，将BNRAPPDelegate实例设置为数据源
+```objc
+self.taskTable.dataSource = self;
+```
+UITableViewDataSource设置了两个必须方法：
+1. 根据指定的表格索引给出相应表格段包含的行数（tableView：numberOfRowsInSection：）
+2. 根据指定表格段索引和行索引给出相应的UITableViewCell对象（tableView：cellForRowAtIndexPath：）
+```objc
+@implementation BNRAppDelegate
+	- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+		return [self.tasks count];
+	}
+	- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+		UITableViewCell *c = [self.taskTable dequeueReusableCellWithIdentifier:@“cell”]		//重用cell
+		NSString *item = [self.tasks objectAtIndex:indexPath.row];
+		c.textLabel.text = item;
+		return c;
+	}
+```
+刷新表格：[self.taskTable reloadData];
+
+### 范畴
+通过范畴（category）可以为任何已有的类添加方法。  
+创建一个新文件，类型为Objective-c category，将新范畴命名为BNRVowelCounting，对应类为NSString。  
+打开NSString+BNRVowelCounting.h为范畴声明一个方法。该方法会被加入NSString类。
+声明示例：NSString+MD5.h
+```objc
+@interface NSString (MD5)
++ (NSString *)md5:(NSString *)originalStr;
+@end
+```
+
+### KVC，KVO
+动态编程 ，暂时没看
+
+### 内省
+能够让他对象在程序运行时候回答关于自身的问题。
+
+
+
+
