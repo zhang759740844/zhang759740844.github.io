@@ -324,12 +324,36 @@ name: Jack age: 24 other: {'city': 'Beijing', 'job': 'Engineer'}
 ```
 
 ### 迭代
-我们可以通过for循环来遍历这个list或tuple，这种遍历我们称为迭代（Iteration）。
-只要是可迭代对象，无论有无下标，都可以迭代
+我们可以通过for循环来遍历这个list或tuple，这种遍历我们称为迭代（Iteration）。只要是可迭代对象，无论有无下标，都可以迭代。
+
+判断一个对象是否是可迭代对象：
+```python
+from collections import Iterable
+isinstance('abc', Iterable)
+```
 
 ### 列表生成式
+感觉没啥用。
+
 ### 生成器
-### 迭代器
+列表元素可以按照某种算法在不断循环的过程中推算出后续元素，不必创建完整的list，节省大量空间。这种一边循环一边计算的机制，叫做generator。
+例如实现斐波那契函数：
+```python
+def fib(max):
+    n, a, b = 0, 0, 1
+    while n < max:
+        yield b
+        a, b = b, a + b
+        n = n + 1
+    return 'done'
+    
+for n in fib(6):
+	print(n)
+```
+如果一个函数定义中包含yield关键字，那么这个函数就不再是一个普通函数，而是一个generator.
+函数是顺序执行，遇到return语句或者最后一行函数语句就返回。而变成generator的函数，在每次调用next()的时候执行，遇到yield语句返回，再次执行时从上次返回的yield语句处继续执行。
+
+其实就相当于在yield处有个断点，可以获得当时的yield处的值，供for循环内使用。
 
 ## 函数式编程
 函数式编程的一个特点就是，允许把函数本身作为参数传入另一个函数，还允许返回一个函数！
@@ -378,8 +402,20 @@ list(filter(is_odd, [1, 2, 4, 5, 6, 9, 10, 15]))
 # 结果: [1, 5, 9, 15]
 ```
 
+#### sorted
+使用sorted()函数就可以对list进行排序。
+sorted()函数也是一个高阶函数，它还可以接收一个key函数来实现自定义的排序：
+```python
+>>> sorted([36, 5, -12, 9, -21], key=abs)
+[5, 9, -12, -21, 36]
+```
+**key指定的函数将作用于list的每一个元素上，并根据key函数返回的结果进行排序。对比原始的list和经过key=abs处理过的list：**
+```python
+list = [36, 5, -12, 9, -21]
+keys = [36, 5,  12, 9,  21]
+```
 
-
+### 返回函数
 
 
 
