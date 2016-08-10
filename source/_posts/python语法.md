@@ -451,6 +451,71 @@ def f(x):
 匿名函数也是一个函数对象，也可以把匿名函数赋值给一个变量，再利用变量来调用该函数
 
 ### 装饰器
+#### 不带参数
+在代码运行期间动态增加功能的方式，称之为“装饰器”（Decorator）。
+```python
+def log(func):
+    def wrapper(*args, **kw):
+    	# 函数对象有一个__name__属性，可以拿到函数的名字
+        print('call %s():' % func.__name__)
+        return func(*args, **kw)
+    return wrapper
+@log
+def now():
+    print('2015-3-25')
+    
+>>> now()
+call now():
+2015-3-25
+```
+
+此处把**@log**放到**now()**定义处，相当于执行了
+**now = log(now)**: **now() => wrapper()**
+将原方法作为参数传入。类似于装饰者模式，只不过由于python的动态性，不需要调用新定义的方法，只要调用原方法就可以动态解析。
+
+#### 带参数
+如果log带参数
+```python
+def log(text):
+    def decorator(func):
+        def wrapper(*args, **kw):
+            print('%s %s():' % (text, func.__name__))
+            return func(*args, **kw)
+        return wrapper
+    return decorator
+
+@log('execute')
+def now():
+    print('2015-3-25')
+```
+
+首先执行log('execute')，返回的是decorator函数，再调用返回的函数，参数是now函数，返回值最终是wrapper函数。即**now()=>wrapper()**
+
+#### 带来的问题
+上面的过程解析已经说明，最后now()的调用，都转化成了wrapper()的调用。那么，在调用**now.__name__**时，结果就会使wrapper，而不是now。
+因此，需要将**wrapper.__name__ = func.__name__**。可以使用python内置的方法**functools.wraps**
+
+```
+import functools
+def log(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kw):
+        print('call %s():' % func.__name__)
+        return func(*args, **kw)
+    return wrapper
+# 或者
+import functools
+def log(text):
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kw):
+            print('%s %s():' % (text, func.__name__))
+            return func(*args, **kw)
+        return wrapper
+    return decorator  
+```
+
+### 偏函数
 
 
 
