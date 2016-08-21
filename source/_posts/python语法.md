@@ -938,7 +938,580 @@ class Weekday(Enum):
 ### 元类
 没看
 
+## IO吧编程
+### 文件读写
+#### 读文件
+使用Python内置的open()函数，传入文件名和标示符
+```python
+>>> f = open('/Users/test.txt', 'r')
+```
+标示符'r'表示读.
 
+如果文件打开成功，接下来，调用read()方法可以一次读取文件的全部内容，Python把内容读到内存，用一个str对象表示：
+```python
+>>> f.read()
+'Hello, world!'
+```
+
+最后一步是调用close()方法关闭文件。文件使用完毕后必须关闭，因为文件对象会占用操作系统的资源，并且操作系统同一时间能打开的文件数量也是有限的
+```python
+>>> f.close()
+```
+
+由于文件读写时都有可能产生IOError，一旦出错，后面的f.close()就不会调用。所以，为了保证无论是否出错都能正确地关闭文件，我们可以使用try ... finally来实现：
+```python
+try:
+    f = open('/path/to/file', 'r')
+    print(f.read())
+finally:
+    if f:
+        f.close()
+```
+
+但是每次都这么写实在太繁琐，所以，Python引入了with语句来自动帮我们调用close()方法：
+```python
+with open('/path/to/file', 'r') as f:
+    print(f.read())
+```
+这和前面的try ... finally是一样的，但是代码更佳简洁，并且不必调用f.close()方法。
+
+调用read()会一次性读取文件的全部内容，如果文件有10G，内存就爆了，所以，要保险起见，可以反复调用read(size)方法，每次最多读取size个字节的内容。另外，调用readline()可以每次读取一行内容，调用readlines()一次读取所有内容并按行返回list。因此，要根据需要决定怎么调用。
+
+如果文件很小，read()一次性读取最方便；如果不能确定文件大小，反复调用read(size)比较保险；如果是配置文件，调用readlines()最方便：
+```python
+for line in f.readlines():
+    print(line.strip()) # 把末尾的'\n'删掉
+```
+
+#### 二进制文件
+前面讲的默认都是读取文本文件，并且是UTF-8编码的文本文件。要读取二进制文件，比如图片、视频等等，用'rb'模式打开文件即可：
+```python
+>>> f = open('/Users/michael/test.jpg', 'rb')
+>>> f.read()
+b'\xff\xd8\xff\xe1\x00\x18Exif\x00\x00...' # 十六进制表示的字节
+```
+
+#### 文件读写
+
+阅读: 100273
+读写文件是最常见的IO操作。Python内置了读写文件的函数，用法和C是兼容的。
+
+读写文件前，我们先必须了解一下，在磁盘上读写文件的功能都是由操作系统提供的，现代操作系统不允许普通的程序直接操作磁盘，所以，读写文件就是请求操作系统打开一个文件对象（通常称为文件描述符），然后，通过操作系统提供的接口从这个文件对象中读取数据（读文件），或者把数据写入这个文件对象（写文件）。
+
+读文件
+
+要以读文件的模式打开一个文件对象，使用Python内置的open()函数，传入文件名和标示符：
+
+>>> f = open('/Users/michael/test.txt', 'r')
+标示符'r'表示读，这样，我们就成功地打开了一个文件。
+
+如果文件不存在，open()函数就会抛出一个IOError的错误，并且给出错误码和详细的信息告诉你文件不存在：
+
+>>> f=open('/Users/michael/notfound.txt', 'r')
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+FileNotFoundError: [Errno 2] No such file or directory: '/Users/michael/notfound.txt'
+如果文件打开成功，接下来，调用read()方法可以一次读取文件的全部内容，Python把内容读到内存，用一个str对象表示：
+
+>>> f.read()
+'Hello, world!'
+最后一步是调用close()方法关闭文件。文件使用完毕后必须关闭，因为文件对象会占用操作系统的资源，并且操作系统同一时间能打开的文件数量也是有限的：
+
+>>> f.close()
+由于文件读写时都有可能产生IOError，一旦出错，后面的f.close()就不会调用。所以，为了保证无论是否出错都能正确地关闭文件，我们可以使用try ... finally来实现：
+
+try:
+    f = open('/path/to/file', 'r')
+    print(f.read())
+finally:
+    if f:
+        f.close()
+但是每次都这么写实在太繁琐，所以，Python引入了with语句来自动帮我们调用close()方法：
+
+with open('/path/to/file', 'r') as f:
+    print(f.read())
+这和前面的try ... finally是一样的，但是代码更佳简洁，并且不必调用f.close()方法。
+
+调用read()会一次性读取文件的全部内容，如果文件有10G，内存就爆了，所以，要保险起见，可以反复调用read(size)方法，每次最多读取size个字节的内容。另外，调用readline()可以每次读取一行内容，调用readlines()一次读取所有内容并按行返回list。因此，要根据需要决定怎么调用。
+
+如果文件很小，read()一次性读取最方便；如果不能确定文件大小，反复调用read(size)比较保险；如果是配置文件，调用readlines()最方便：
+
+for line in f.readlines():
+    print(line.strip()) # 把末尾的'\n'删掉
+file-like Object
+
+像open()函数返回的这种有个read()方法的对象，在Python中统称为file-like Object。除了file外，还可以是内存的字节流，网络流，自定义流等等。file-like Object不要求从特定类继承，只要写个read()方法就行。
+
+StringIO就是在内存中创建的file-like Object，常用作临时缓冲。
+
+#### 二进制文件
+
+前面讲的默认都是读取文本文件，并且是UTF-8编码的文本文件。要读取二进制文件，比如图片、视频等等，用'rb'模式打开文件即可：
+
+>>> f = open('/Users/michael/test.jpg', 'rb')
+>>> f.read()
+b'\xff\xd8\xff\xe1\x00\x18Exif\x00\x00...' # 十六进制表示的字节
+字符编码
+
+#### 字符编码
+要读取非UTF-8编码的文本文件，需要给open()函数传入encoding参数，例如，读取GBK编码的文件：
+```python
+>>> f = open('/Users/michael/gbk.txt', 'r', encoding='gbk')
+>>> f.read()
+'测试'
+```
+
+遇到有些编码不规范的文件，你可能会遇到UnicodeDecodeError，因为在文本文件中可能夹杂了一些非法编码的字符。遇到这种情况，open()函数还接收一个errors参数，表示如果遇到编码错误后如何处理。最简单的方式是直接忽略：
+```python
+>>> f = open('/Users/michael/gbk.txt', 'r', encoding='gbk', errors='ignore')
+```
+
+#### 写文件
+写文件和读文件是一样的，唯一区别是调用open()函数时，传入标识符'w'或者'wb'表示写文本文件或写二进制文件：
+```python
+>>> f = open('/Users/michael/test.txt', 'w')
+>>> f.write('Hello, world!')
+>>> f.close()
+```
+
+你可以反复调用write()来写入文件，但是务必要调用f.close()来关闭文件。当我们写文件时，操作系统往往不会立刻把数据写入磁盘，而是放到内存缓存起来，空闲的时候再慢慢写入。只有调用close()方法时，操作系统才保证把没有写入的数据全部写入磁盘。忘记调用close()的后果是数据可能只写了一部分到磁盘，剩下的丢失了。所以，还是用with语句来得保险：
+```python
+with open('/Users/michael/test.txt', 'w') as f:
+    f.write('Hello, world!')
+```
+
+### StringIO和BytesIO
+读取写内容到内存中，不写了。用到再看。
+
+### 操作文件和目录
+```python
+>>> import os
+# 查看当前目录的绝对路径:
+>>> os.path.abspath('.')
+'/Users/michael'
+# 在某个目录下创建一个新目录，首先把新目录的完整路径表示出来:
+>>> os.path.join('/Users/michael', 'testdir')
+'/Users/michael/testdir'
+# 然后创建一个目录:
+>>> os.mkdir('/Users/michael/testdir')
+# 删掉一个目录:
+>>> os.rmdir('/Users/michael/testdir')
+```
+把两个路径合成一个时，不要直接拼字符串，而要通过os.path.join()函数，这样可以正确处理不同操作系统的路径分隔符。
+同样的道理，要拆分路径时，也不要直接去拆字符串，而要通过os.path.split()函数，这样可以把一个路径拆分为两部分，后一部分总是最后级别的目录或文件名：
+```python
+>>> os.path.split('/Users/michael/testdir/file.txt')
+('/Users/michael/testdir', 'file.txt')
+```
+
+文件操作
+```python
+# 对文件重命名:
+>>> os.rename('test.txt', 'test.py')
+# 删掉文件:
+>>> os.remove('test.py')
+```
+
+### 序列化
+我们把变量从内存中变成可存储或传输的过程称之为序列化，在Python中叫pickling。
+序列化之后，就可以把序列化后的内容写入磁盘，或者通过网络传输到别的机器上。
+反过来，把变量内容从序列化的对象重新读到内存里称之为反序列化，即unpickling。
+
+Python提供了pickle模块来实现序列化。
+```python
+>>> import pickle
+>>> d = dict(name='Bob', age=20, score=88)
+>>> f = open('dump.txt', 'wb')
+>>> pickle.dump(d, f)
+>>> f.close()
+```
+pickle.dumps()方法把任意对象序列化成一个bytes，然后，就可以把这个bytes写入文件。或者用另一个方法pickle.dump()直接把对象序列化后写入一个file-like Object.
+当我们要把对象从磁盘读到内存时，可以先把内容读到一个bytes，然后用pickle.loads()方法反序列化出对象，也可以直接用pickle.load()方法从一个file-like Object中直接反序列化出对象:
+```python
+>>> f = open('dump.txt', 'rb')
+>>> d = pickle.load(f)
+>>> f.close()
+>>> d
+{'age': 20, 'score': 88, 'name': 'Bob'}
+```
+
+### JSON
+Python内置的json模块提供了非常完善的Python对象到JSON格式的转换。
+```python
+>>> import json
+>>> d = dict(name='Bob', age=20, score=88)
+>>> json.dumps(d)
+'{"age": 20, "score": 88, "name": "Bob"}'
+```
+dumps()方法返回一个str，内容就是标准的JSON。类似的，dump()方法可以直接把JSON写入一个file-like Object。
+
+要把JSON反序列化为Python对象，用loads()或者对应的load()方法，前者把JSON的字符串反序列化，后者从file-like Object中读取字符串并反序列化：
+```python
+>>> json_str = '{"age": 20, "score": 88, "name": "Bob"}'
+>>> json.loads(json_str)
+{'age': 20, 'score': 88, 'name': 'Bob'}
+```
+
+## 进程和线程
+### 多进程
+#### multiprocessing
+multiprocessing模块就是跨平台版本的多进程模块。
+multiprocessing模块提供了一个Process类来代表一个进程对象
+```python
+from multiprocessing import Process
+import os
+
+# 子进程要执行的代码
+def run_proc(name):
+    print('Run child process %s (%s)...' % (name, os.getpid()))
+
+if __name__=='__main__':
+    print('Parent process %s.' % os.getpid())
+    p = Process(target=run_proc, args=('test',))
+    print('Child process will start.')
+    p.start()
+    p.join()
+    print('Child process end.')
+```
+创建子进程时，只需要传入一个执行函数和函数的参数，创建一个Process实例，用start()方法启动，这样创建进程比fork()还要简单。
+join()方法可以等待子进程结束后再继续往下运行，通常用于进程间的同步。
+
+#### pool
+如果要启动大量的子进程，可以用进程池的方式批量创建子进程：
+```python
+from multiprocessing import Pool
+import os, time, random
+
+def long_time_task(name):
+    print('Run task %s (%s)...' % (name, os.getpid()))
+    start = time.time()
+    time.sleep(random.random() * 3)
+    end = time.time()
+    print('Task %s runs %0.2f seconds.' % (name, (end - start)))
+
+if __name__=='__main__':
+    print('Parent process %s.' % os.getpid())
+    p = Pool(4)
+    for i in range(5):
+        p.apply_async(long_time_task, args=(i,))
+    print('Waiting for all subprocesses done...')
+    p.close()
+    p.join()
+    print('All subprocesses done.')
+```
+结果如下：
+```python
+Parent process 669.
+Waiting for all subprocesses done...
+Run task 0 (671)...
+Run task 1 (672)...
+Run task 2 (673)...
+Run task 3 (674)...
+Task 2 runs 0.14 seconds.
+Run task 4 (673)...
+Task 1 runs 0.27 seconds.
+Task 3 runs 0.86 seconds.
+Task 0 runs 1.41 seconds.
+Task 4 runs 1.91 seconds.
+All subprocesses done.
+```
+
+对Pool对象调用join()方法会等待所有子进程执行完毕，调用join()之前必须先调用close()，调用close()之后就不能继续添加新的Process了。
+注意输出的结果，task 0，1，2，3是立刻执行的，而task 4要等待前面某个task完成后才执行，这是因为Pool的默认大小在我的电脑上是4，因此，最多同时执行4个进程。这是Pool有意设计的限制，并不是操作系统的限制。如果改成：`p = ool(5)`就可以同时跑5个进程。
+
+### 子进程&进程间通信
+到时候再看
+
+## 多线程
+启动一个线程就是把一个函数传入并创建Thread实例，然后调用start()开始执行：
+```python
+import time, threading
+
+# 新线程执行的代码:
+def loop():
+    print('thread %s is running...' % threading.current_thread().name)
+    n = 0
+    while n < 5:
+        n = n + 1
+        print('thread %s >>> %s' % (threading.current_thread().name, n))
+        time.sleep(1)
+    print('thread %s ended.' % threading.current_thread().name)
+
+print('thread %s is running...' % threading.current_thread().name)
+t = threading.Thread(target=loop, name='LoopThread')
+t.start()
+t.join()
+print('thread %s ended.' % threading.current_thread().name)
+```
+多线程
+
+阅读: 56007
+多任务可以由多进程完成，也可以由一个进程内的多线程完成。
+
+我们前面提到了进程是由若干线程组成的，一个进程至少有一个线程。
+
+由于线程是操作系统直接支持的执行单元，因此，高级语言通常都内置多线程的支持，Python也不例外，并且，Python的线程是真正的Posix Thread，而不是模拟出来的线程。
+
+Python的标准库提供了两个模块：_thread和threading，_thread是低级模块，threading是高级模块，对_thread进行了封装。绝大多数情况下，我们只需要使用threading这个高级模块。
+
+启动一个线程就是把一个函数传入并创建Thread实例，然后调用start()开始执行：
+
+import time, threading
+
+# 新线程执行的代码:
+def loop():
+    print('thread %s is running...' % threading.current_thread().name)
+    n = 0
+    while n < 5:
+        n = n + 1
+        print('thread %s >>> %s' % (threading.current_thread().name, n))
+        time.sleep(1)
+    print('thread %s ended.' % threading.current_thread().name)
+
+print('thread %s is running...' % threading.current_thread().name)
+t = threading.Thread(target=loop, name='LoopThread')
+t.start()
+t.join()
+print('thread %s ended.' % threading.current_thread().name)
+执行结果如下:
+```python
+thread MainThread is running...
+thread LoopThread is running...
+thread LoopThread >>> 1
+thread LoopThread >>> 2
+thread LoopThread >>> 3
+thread LoopThread >>> 4
+thread LoopThread >>> 5
+thread LoopThread ended.
+thread MainThread ended.
+```
+任何进程默认就会启动一个线程，我们把该线程称为主线程，主线程又可以启动新的线程，Python的threading模块有个current_thread()函数，它永远返回当前线程的实例。主线程实例的名字叫MainThread，子线程的名字在创建时指定，我们用LoopThread命名子线程。名字仅仅在打印时用来显示，完全没有其他意义，如果不起名字Python就自动给线程命名为Thread-1，Thread-2
+
+### Lock
+多线程和多进程最大的不同在于，多进程中，同一个变量，各自有一份拷贝存在于每个进程中，互不影响，而多线程中，所有变量都由所有线程共享，所以，任何一个变量都可以被任何一个线程修改，因此，线程之间共享数据最大的危险在于多个线程同时改一个变量，把内容给改乱了。
+```python
+balance = 0
+lock = threading.Lock()
+
+def run_thread(n):
+    for i in range(100000):
+        # 先要获取锁:
+        lock.acquire()
+        try:
+            # 放心地改吧:
+            change_it(n)
+        finally:
+            # 改完了一定要释放锁:
+            lock.release()
+```
+创建一个锁就是通过threading.Lock()来实现.当多个线程同时执行lock.acquire()时，只有一个线程能成功地获取锁，然后继续执行代码，其他线程就继续等待直到获得锁为止。获得锁的线程用完后一定要释放锁，否则那些苦苦等待锁的线程将永远等待下去，成为死线程。所以我们用try...finally来确保锁一定会被释放。
+
+
+### ThreadLocal
+一个ThreadLocal变量虽然是全局变量，但每个线程都只能读写自己线程的独立副本，互不干扰。ThreadLocal解决了参数在一个线程中各个函数之间互相传递的问题。
+```python
+import threading
+
+# 创建全局ThreadLocal对象:
+local_school = threading.local()
+
+def process_student():
+    # 获取当前线程关联的student:
+    std = local_school.student
+    print('Hello, %s (in %s)' % (std, threading.current_thread().name))
+
+def process_thread(name):
+    # 绑定ThreadLocal的student:
+    local_school.student = name
+    process_student()
+
+t1 = threading.Thread(target= process_thread, args=('Alice',), name='Thread-A')
+t2 = threading.Thread(target= process_thread, args=('Bob',), name='Thread-B')
+t1.start()
+t2.start()
+t1.join()
+t2.join()
+```
+执行结果：
+
+```python
+Hello, Alice (in Thread-A)
+Hello, Bob (in Thread-B)
+```
+
+全局变量local_school就是一个ThreadLocal对象，每个Thread对它都可以读写student属性，但互不影响。你可以把local_school看成全局变量，但每个属性如local_school.student都是线程的局部变量，可以任意读写而互不干扰，也不用管理锁的问题，ThreadLocal内部会处理。
+
+可以理解为全局变量local_school是一个dict，不但可以用local_school.student，还可以绑定其他变量，如local_school.teacher等等。
+
+ThreadLocal最常用的地方就是为每个线程绑定一个数据库连接，HTTP请求，用户身份信息等，这样一个线程的所有调用到的处理函数都可以非常方便地访问这些资源。
+
+### 分布式进程
+用到再看
+
+## 正则表达式
+### 基本用法
+- \d可以匹配一个数字
+- \w可以匹配一个字母或数字
+- .可以匹配任意字符
+- *表示任意个字符（包括0个）
+- 用+表示至少一个字符
+- 用?表示0个或1个字符
+- 用{n}表示n个字符
+- 用{n,m}表示n-m个字符
+- \s可以匹配一个空格（也包括Tab等空白符）
+- 要做更精确地匹配，可以用[]表示范围	
+ + [0-9a-zA-Z\_]可以匹配一个数字、字母或者下划线
+- [0-9a-zA-Z\_]可以匹配一个数字、字母或者下划线
+ + (P|p)ython可以匹配'Python'或者'python'
+- ^表示行的开头
+- $表示行的结束
+- ^py$就变成了整行匹配,就只能匹配'py'
+
+### re模块
+Python提供re模块，包含所有正则表达式的功能。
+Python的字符串本身也用\转义，因此我们强烈建议使用Python的r前缀，就不用考虑转义的问题了：
+```python
+s = r'ABC\-001' # Python的字符串
+# 对应的正则表达式字符串不变：
+# 'ABC\-001'
+```
+
+match()方法判断是否匹配，如果匹配成功，返回一个Match对象，否则返回None。常见的判断方法就是：
+```python
+test = '用户输入的字符串'
+if re.match(r'正则表达式', test):
+    print('ok')
+else:
+    print('failed')
+```
+
+### 切分字符串
+```python
+>>> re.split(r'[\s\,\;]+', 'a,b;; c  d')
+['a', 'b', 'c', 'd']
+```
+
+除了简单地判断是否匹配之外，正则表达式还有提取子串的强大功能。用()表示的就是要提取的分组（Group）。比如：**^(\d{3})-(\d{3,8})$**分别定义了两个组，可以直接从匹配的字符串中提取出区号和本地号码：
+```python
+>>> m = re.match(r'^(\d{3})-(\d{3,8})$', '010-12345')
+>>> m
+<_sre.SRE_Match object; span=(0, 9), match='010-12345'>
+>>> m.group(0)
+'010-12345'
+>>> m.group(1)
+'010'
+>>> m.group(2)
+'12345'
+```
+注意到group(0)永远是原始字符串，group(1)、group(2)……表示第1、2、……个子串。
+
+### 贪婪匹配
+正则匹配默认是贪婪匹配，也就是匹配尽可能多的字符。举例如下，匹配出数字后面的0：
+```python
+>>> re.match(r'^(\d+)(0*)$', '102300').groups()
+('102300', '')
+```
+由于\d+采用贪婪匹配，直接把后面的0全部匹配了，结果0*只能匹配空字符串了。
+必须让\d+采用非贪婪匹配（也就是尽可能少匹配），才能把后面的0匹配出来，加个?就可以让\d+采用非贪婪匹配：
+```python
+>>> re.match(r'^(\d+?)(0*)$', '102300').groups()
+('1023', '00')
+```
+### 编译
+如果一个正则表达式要重复使用几千次，出于效率的考虑，我们可以预编译该正则表达式，接下来重复使用时就不需要编译这个步骤了，直接匹配：
+```python
+>>> import re
+# 编译:
+>>> re_telephone = re.compile(r'^(\d{3})-(\d{3,8})$')
+# 使用：
+>>> re_telephone.match('010-12345').groups()
+('010', '12345')
+>>> re_telephone.match('010-8086').groups()
+('010', '8086')
+```
+
+## 常用內建模块
+### datetime
+#### 获取当前日期和时间
+datetime是模块，datetime模块还包含一个datetime类，通过from datetime import datetime导入的才是datetime这个类。
+如果仅导入import datetime，则必须引用全名datetime.datetime。
+```python
+>>> from datetime import datetime
+>>> now = datetime.now() # 获取当前datetime
+>>> print(now)
+2015-05-18 16:28:07.198690
+>>> print(type(now))
+<class 'datetime.datetime'>
+```
+datetime.now()返回当前日期和时间，其类型是datetime。
+
+#### 获取指定日期和时间
+要指定某个日期和时间，我们直接用参数构造一个datetime：
+```python
+>>> from datetime import datetime
+>>> dt = datetime(2015, 4, 19, 12, 20) # 用指定日期时间创建datetime
+>>> print(dt)
+2015-04-19 12:20:00
+```
+
+#### datetime转换为timestamp
+把一个datetime类型转换为timestamp只需要简单调用**timestamp()**方法：
+```python
+>>> from datetime import datetime
+>>> dt = datetime(2015, 4, 19, 12, 20) # 用指定日期时间创建datetime
+>>> dt.timestamp() # 把datetime转换为timestamp
+1429417200.0
+```
+注意Python的timestamp是一个浮点数。如果有小数位，小数位表示毫秒数。
+某些编程语言（如Java和JavaScript）的timestamp使用整数表示毫秒数，这种情况下只需要把timestamp除以1000就得到Python的浮点表示方法.
+
+#### timestamp转换为datetime
+要把timestamp转换为datetime，使用datetime提供的**fromtimestamp()**方法：
+```python
+>>> from datetime import datetime
+>>> t = 1429417200.0
+>>> print(datetime.fromtimestamp(t))
+2015-04-19 12:20:00
+```
+
+#### str转换为datetime
+转换方法是通过**datetime.strptime()**实现，需要一个日期和时间的格式化字符串：
+```python
+>>> from datetime import datetime
+>>> cday = datetime.strptime('2015-6-1 18:19:59', '%Y-%m-%d %H:%M:%S')
+>>> print(cday)
+2015-06-01 18:19:59
+```
+
+#### datetime转换为str
+如果已经有了datetime对象，要把它格式化为字符串显示给用户，就需要转换为str，转换方法是通过strftime()实现的
+```python
+>>> from datetime import datetime
+>>> now = datetime.now()
+>>> print(now.strftime('%a, %b %d %H:%M'))
+Mon, May 05 16:28
+```
+
+#### datetime加减
+对日期和时间进行加减实际上就是把datetime往后或往前计算，得到新的datetime。加减可以直接用+和-运算符，不过需要导入timedelta这个类
+```python
+>>> from datetime import datetime, timedelta
+>>> now = datetime.now()
+>>> now
+datetime.datetime(2015, 5, 18, 16, 57, 3, 540997)
+>>> now + timedelta(hours=10)
+datetime.datetime(2015, 5, 19, 2, 57, 3, 540997)
+>>> now - timedelta(days=1)
+datetime.datetime(2015, 5, 17, 16, 57, 3, 540997)
+>>> now + timedelta(days=2, hours=12)
+datetime.datetime(2015, 5, 21, 4, 57, 3, 540997)
+```
+使用timedelta你可以很容易地算出前几天和后几天的时刻
+
+### collections
+collections是Python内建的一个集合模块，提供了许多有用的集合类。
+
+ 
 
 
 
