@@ -8,7 +8,7 @@ tags: [xib]
 xcode版本升级后，storyboard成了ios新建项目后默认的布局。但是尝试了一会后发觉很不习惯，于是研究了下删除storyboard的方法。
 <!--more-->
 
-storyboard的入口在**targets->Deployment Info->Main Interface**，默认的值为Main，即初始默认storyboard的名字。因此，想要不加载storyboard，需要将这个默认值删掉，就不会再从storyboard进入了。
+storyboard的入口在**targets->General->Deployment Info->Main Interface**，默认的值为Main，即初始默认storyboard的名字。因此，想要不加载storyboard，需要将这个默认值删掉，就不会再从storyboard进入了。
 
 删除后，viewController需要一个布局，需要手动创建一个xib文件。需要对xib文件和viewcontroller进行关联。
 - 点击placeholders下的File's Owner将Custom Class的Class设置为viewcController的名字。
