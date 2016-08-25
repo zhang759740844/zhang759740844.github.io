@@ -329,7 +329,7 @@ outCount使用了**指向指针的指针**的方式，使没有返回outCount的
 4. 如果分发表找不到就到超类的分发表去找，一直找，直到找到NSObject类为止.
 5. 如果还找不到就要开始进入消息转发了，消息转发的大致过程如图：
 
-![消息转发流程](https://github.com/zhang759740844/zhang759740844.github.io/blob/master/picture/runtime_dynamicMethod.jpg?raw=true)
+![消息转发流程](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/runtime_dynamicMethod.jpg?raw=true)
 
 1. 进入 resolveInstanceMethod: 方法，指定是否动态添加方法。若返回NO，则进入下一步，若返回YES，则通过 class_addMethod 函数动态地添加方法，消息得到处理，此流程完毕.
 2. resolveInstanceMethod: 方法返回 NO 时，就会进入 forwardingTargetForSelector: 方法，这是 Runtime 给我们的第二次机会，用于指定哪个对象响应这个 selector。返回nil，进入下一步，返回某个对象，则会调用该对象的方法.
