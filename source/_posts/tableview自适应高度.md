@@ -79,4 +79,51 @@ textViewz在tableview中用的不多，但是其自适应高度方式和label有
 ## UITableView+FDTemplateLayoutCell使用简介
 这是一个由国人团队开发的优化计算 UITableViewCell 高度的轻量级框架。主要也是通过`systemLayoutSizeFittingSize`方法计算高度，但是该框架通过**缓存**及**预加载**将效率大幅的地提高。
 
-这里就不具体分析该框架的实现原理了。可以参考[框架学习](http://blog.qiji.tech/archives/9538?utm_source=tuicool&utm_medium=referral)跟进。这里主要列举下使用方法。
+这里就不具体分析该框架的实现原理了。可以参考[框架学习](http://blog.qiji.tech/archives/9538?utm_source=tuicool&utm_medium=referral)跟进。
+
+这里主要列举下使用方法,其实在[forkingdog的github](https://github.com/forkingdog/UITableView-FDTemplateLayoutCell)上都有，我这里只是摘录下。
+
+### 基本使用(不带cache)
+```objc
+#import "UITableView+FDTemplateLayoutCell.h"
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return [tableView fd_heightForCellWithIdentifier:@"reuse identifer" configuration:^(id cell) {
+        // Configure this cell with data, same as what you've done in "-tableView:cellForRowAtIndexPath:"
+        // Like:
+        //    cell.entity = self.feedEntities[indexPath.row];
+    }];
+}
+```
+
+使用的时候需要将一个实例化后的cell作为block传入。如之前讲到的，`systemLayoutSizeFittingSize:`所必须的。
+
+### 带cache的方法
+#### 以indexPath区分
+```objc
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    return [tableView fd_heightForCellWithIdentifier:@"identifer" cacheByIndexPath:indexPath configuration:^(id cell) {
+        // configurations
+    }];
+}
+```
+缓存下每个indexPath对应的高度。
+
+#### 以key区分
+```objc
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    Entity *entity = self.entities[indexPath.row];
+    return [tableView fd_heightForCellWithIdentifier:@"identifer" cacheByKey:entity.uid configuration:^(id cell) {
+        // configurations
+    }];
+}
+```
+用户将要展示的cell分类，然后将分类的key传入。
+
+### Frame layout mode
+对于`Auto layout mode `和`Frame layout mode`。框架提供了两种方式，默认是自动布局。 
+
+### 再次注意
+需要再次提醒的是，如上文所说，一个好的自适应cell，一定要将cell内subview的上下左右约束设置好。
+
