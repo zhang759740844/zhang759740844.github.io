@@ -75,3 +75,8 @@ textViewz在tableview中用的不多，但是其自适应高度方式和label有
     return height;
 }
 ```
+
+## UITableView+FDTemplateLayoutCell使用简介
+这是一个由国人团队开发的优化计算 UITableViewCell 高度的轻量级框架。主要也是通过`systemLayoutSizeFittingSize`方法计算高度，但是该框架通过**缓存**及**预加载**将效率大幅的地提高。
+
+这里就不具体分析该框架的实现原理了。可以参考[框架学习](http://blog.qiji.tech/archives/9538?utm_source=tuicool&utm_medium=referral)跟进。这里主要列举下使用方法。

@@ -1,0 +1,653 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="tableview," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="由于tableview的cell的高度会随着内部label以及textview字符长度的变化而变化，因此不能一味的设置heightForRowAtIndexPath为定值。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="tableview自适应高度">
+<meta property="og:url" content="http://yoursite.com/2016/08/26/tableview自适应高度/index.html">
+<meta property="og:site_name" content="Zachary's blog">
+<meta property="og:description" content="由于tableview的cell的高度会随着内部label以及textview字符长度的变化而变化，因此不能一味的设置heightForRowAtIndexPath为定值。">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/tableviewautolayout1.png?raw=true">
+<meta property="og:updated_time" content="2016-08-27T06:38:39.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="tableview自适应高度">
+<meta name="twitter:description" content="由于tableview的cell的高度会随着内部label以及textview字符长度的变化而变化，因此不能一味的设置heightForRowAtIndexPath为定值。">
+<meta name="twitter:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/tableviewautolayout1.png?raw=true">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2016/08/26/tableview自适应高度/"/>
+
+  <title> tableview自适应高度 | Zachary's blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Zachary's blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">记录成长</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                tableview自适应高度
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-08-26T14:07:12+08:00" content="2016-08-26">
+              2016-08-26
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/IOS/" itemprop="url" rel="index">
+                    <span itemprop="name">IOS</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>由于tableview的cell的高度会随着内部label以及textview字符长度的变化而变化，因此不能一味的设置heightForRowAtIndexPath为定值。</p>
+<a id="more"></a>
+<h2 id="设置布局约束"><a href="#设置布局约束" class="headerlink" title="设置布局约束"></a>设置布局约束</h2><p>在UITableViewCell子类中，添加约束，使子视图的边缘与contentView的边缘固定。确保每个子视图在垂直方向上的内容压缩阻力(compression resistance)和内容吸附性约束(content hugging constraints)没有被你添加的更高优先级的约束覆盖，以使得这些子视图的固有内容尺寸(intrinsic content size)来推动contentView的高度。</p>
+<p>记住，重点是cell的子视图与contentView要有垂直方向上的连结，让它们能够对contentView“施加压力”，使contentView扩张以适合它们的尺寸。</p>
+<p>下面用一个带有一些子视图的cell作为示例，展示了一些必要的约束（没有展示全部的约束）：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/tableviewautolayout1.png?raw=true" alt="布局示例"></p>
+<p>可以想象，当更多的文本被添加到“Multi-line body”那个label上面后，它就需要垂直地增高以适应文本，这实际上将强迫cell增加高度。</p>
+<p><strong>需要注意的是：</strong></p>
+<ol>
+<li>如果没有设置好约束，比如:缺失了“Multi-line body”那个label到底部的约束，那么高度极有可能变成0；</li>
+<li>label要显示多行，需要将其<code>Lines</code>设置为0。</li>
+<li>题外话，如果不是在cell里的label要设置高度包含文字的话，可以少设置一个约束，这样布局的时候会自动撑满整个label。</li>
+</ol>
+<h2 id="cell的自适应"><a href="#cell的自适应" class="headerlink" title="cell的自适应"></a>cell的自适应</h2><h3 id="label的ios8实现"><a href="#label的ios8实现" class="headerlink" title="label的ios8实现"></a>label的ios8实现</h3><p>在iOS8上，苹果将许多在之前你比较难实现的东西都内置实现了。为了让cell实现自适应（self-sizing），必须先将tableView的<code>rowHeight</code>属性设置为常量<code>UITableViewAutomaticDimension</code>。然后，只需将tableView的<code>estimatedRowHeight</code>属性设置为一个非零值即可开启行高估算功能,如：<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">self</span>.tableView.rowHeight = <span class="built_in">UITableViewAutomaticDimension</span>;</div><div class="line"><span class="keyword">self</span>.tableView.estimatedRowHeight = <span class="number">44.0</span>; <span class="comment">// 设置为一个接近于行高“平均值”的数值</span></div></pre></td></tr></table></figure></p>
+<p>这样就为tableView提供了一个还没有被显示在屏幕上的cell的临时估算的行高。当cell即将滚入屏幕范围内的时候，会计算出真实的高度。为了确定每一行的实际高度，tableView会自动让每个cell基于其contentView的已知固定宽度（tableView的宽度减去其他额外的，像section index或accessoryView这些宽度）和被添加到contentView及其子视图上的布局约束来计算<code>contentView</code>的高度。真实的行高被计算出来之后，旧的估算的行高会被更新为这个真实的行高（并且其他任何需要对tableView的contentSize或contentOffset的更改都自动替你完成）。</p>
+<p>一般来说，行高的估算值不需要太精确——它只是用来修正tableView中滚动条的尺寸的，当你在屏幕上滑动cell的时候，即使估算值不准确，tableView还是能很好地调节滚动条。将tableView的<code>estimatedRowHeight</code>属性设置成（在<code>viewDidLoad</code>或类似的方法中）一个接近于行高“平均值”的常量值即可。仅在行高极端变化的时候（比如相差一个数量级），滚动过程中才会产生滚动条的“跳跃”现象。这个时候，你才需要考虑实现<code>tableView:estimatedHeightForRowAtIndexPath:</code>方法，为每一行返回一个更精确的估算值。</p>
+<h3 id="label的ios7实现"><a href="#label的ios7实现" class="headerlink" title="label的ios7实现"></a>label的ios7实现</h3><p>首先，实例化一个离屏(offscreen)的cell实例，为每个重用标示符实例化一个与之对应的cell实例，这些cell实例严格的仅用于高度计算。（离屏表示cell的引用被存储在view controller的一个属性或实例变量之中，并且这个cell绝对不会被用作<code>tableView:cellForRowAtIndexPath:</code>方法的返回值显示在屏幕上。）接下来，这个cell的内容（例如，文本、图片等等）还必须被配置为与显示在table view中的内容完全一样。<br><strong>因为要在<code>heightForRowAtIndexPath</code>中计算高度，需要一个cell实例，这个离屏cell就是为了这个用的。</strong></p>
+<p>然后，强制cell立即更新子视图的布局，再在cell的<code>contentView</code>上调用<code>systemLayoutSizeFittingSize:</code>方法以计算出cell所需的高度。使用<code>UILayoutFittingCompressedSize</code>参数得到适合cell中所有内容所需的最小尺寸。然后将其高度作为<code>tableView:heightForRowAtIndexPath:</code>方法的返回值返回给table view。</p>
+<p>通过<code>systemLayoutSizeFittingSize:</code>方法计算出的高度还需要加1才是真正的高度，这个1pt高度是cell分割线的高度。</p>
+<p>iOS7中，你可以（也绝对应当）使用table view的<code>estimatedRowHeight</code>属性。这样会为还不在屏幕范围内的cell提供一个临时估算的行高值。然后，当这些cell即将要滚入屏幕范围内的时候，真实的行高值会被计算出来（通过<code>tableView:heightForRowAtIndexPath:</code>方法），估算的行高会被替换掉。</p>
+<p>一般来说，行高的估算值不需要太精确——它只是用来修正tableView中滚动条的尺寸的，当你在屏幕上滑动cell的时候，即使估算值不准确，tableView还是能很好地调节滚动条。将tableView的<code>estimatedRowHeight</code>属性设置成（在viewDidLoad或类似的方法中）一个接近于行高“平均值”的常量值即可。仅在行高极端变化的时候（比如相差一个数量级），滚动过程中才会产生滚动条的“跳跃”现象。这个时候，你才需要考虑实现<code>tableView:estimatedHeightForRowAtIndexPath:</code>方法，为每一行返回一个更精确的估算值。</p>
+<p>这样就是将第一次加载时时间消耗降低，但是在加载每个view的时候都要动态计算每一个cell的高度，即滑动时比较耗时，需要使用一个缓存将高度存取，同时这个缓存要能应对cell高度的变化进行修改。</p>
+<p>示例：<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">- (<span class="built_in">CGFloat</span>)tableView:(<span class="built_in">UITableView</span> *)tableView heightForRowAtIndexPath:(<span class="built_in">NSIndexPath</span> *)indexPath&#123;</div><div class="line">    _cell.label.text = [_data objectAtIndex:indexPath.row];</div><div class="line">    <span class="built_in">CGSize</span> textHeight = [_cell.contentView systemLayoutSizeFittingSize:<span class="built_in">UILayoutFittingCompressedSize</span>];</div><div class="line">    <span class="built_in">CGFloat</span> height = textHeight.height+<span class="number">1</span>&gt;<span class="number">90</span>?textHeight.height+<span class="number">1</span>:<span class="number">90</span>;</div><div class="line">    <span class="keyword">return</span> height;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h3 id="textView的自适应"><a href="#textView的自适应" class="headerlink" title="textView的自适应"></a>textView的自适应</h3><p>textViewz在tableview中用的不多，但是其自适应高度方式和label有所不同。因为调用<code>systemLayoutSizeFittingSize</code>方法返回的高度并不包含textview的高度，需要调用<code>sizeThatFits</code>方法获得textview的完整高度，然后将两个高度相加才能得到cell真正的高度。</p>
+<p>示例：<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">- (<span class="built_in">CGFloat</span>)tableView:(<span class="built_in">UITableView</span> *)tableView heightForRowAtIndexPath:(<span class="built_in">NSIndexPath</span> *)indexPath&#123;</div><div class="line">    _cell.textView.text = [_data objectAtIndex:indexPath.row];</div><div class="line">    <span class="built_in">CGSize</span> textHeight = [_cell.contentView systemLayoutSizeFittingSize:<span class="built_in">UILayoutFittingCompressedSize</span>];</div><div class="line">    <span class="built_in">CGSize</span> textViewSize = [_cell.textView sizeThatFits:<span class="built_in">CGSizeMake</span>(_cell.textView.frame.size.width, FLT_MAX)];</div><div class="line">    <span class="built_in">CGFloat</span> h  = textHeight.height + textViewSize.height;</div><div class="line">    <span class="built_in">CGFloat</span> height = h+<span class="number">1</span>&gt;<span class="number">90</span>?h+<span class="number">1</span>:<span class="number">90</span>;</div><div class="line">    <span class="keyword">return</span> height;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h2 id="UITableView-FDTemplateLayoutCell使用简介"><a href="#UITableView-FDTemplateLayoutCell使用简介" class="headerlink" title="UITableView+FDTemplateLayoutCell使用简介"></a>UITableView+FDTemplateLayoutCell使用简介</h2><p>这是一个由国人团队开发的优化计算 UITableViewCell 高度的轻量级框架。主要也是通过<code>systemLayoutSizeFittingSize</code>方法计算高度，但是该框架通过<strong>缓存</strong>及<strong>预加载</strong>将效率大幅的地提高。</p>
+<p>这里就不具体分析该框架的实现原理了。可以参考<a href="http://blog.qiji.tech/archives/9538?utm_source=tuicool&amp;utm_medium=referral" target="_blank" rel="external">框架学习</a>跟进。这里主要列举下使用方法。</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/tableview/" rel="tag">#tableview</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/08/23/runtime应用/" rel="next" title="runtime应用笔记">
+                <i class="fa fa-chevron-left"></i> runtime应用笔记
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/08/26/初识Provisioning_Profile/" rel="prev" title="初识Provisioning Profile">
+                初识Provisioning Profile <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/author.png?raw=true"
+               alt="Zachary Zhang" />
+          <p class="site-author-name" itemprop="name">Zachary Zhang</p>
+          <p class="site-description motion-element" itemprop="description">不怕慢，就怕站。只动手，不bb。</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">28</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">14</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://zhang759740844.github.io/" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://www.jianshu.com/users/d6b98b1c1e64/latest_articles" target="_blank" title="JianShu">
+                  
+                    <i class="fa fa-fw fa-globe"></i>
+                  
+                  JianShu
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#设置布局约束"><span class="nav-number">1.</span> <span class="nav-text">设置布局约束</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#cell的自适应"><span class="nav-number">2.</span> <span class="nav-text">cell的自适应</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#label的ios8实现"><span class="nav-number">2.1.</span> <span class="nav-text">label的ios8实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#label的ios7实现"><span class="nav-number">2.2.</span> <span class="nav-text">label的ios7实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#textView的自适应"><span class="nav-number">2.3.</span> <span class="nav-text">textView的自适应</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#UITableView-FDTemplateLayoutCell使用简介"><span class="nav-number">3.</span> <span class="nav-text">UITableView+FDTemplateLayoutCell使用简介</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2016</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zachary Zhang</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
