@@ -18,12 +18,26 @@ storyboard的入口在**targets->General->Deployment Info->Main Interface**，�
 ```objc
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 	self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-	UIViewController *uv = [[UIViewController alloc] initWithNibName:@"ViewController" bundle:nil];
+	ViewController *uv = [[ViewController alloc] initWithNibName:@"ViewController" bundle:nil];
 	[self.window setRootViewController:uv];
 	[self.window makeKeyAndVisible];
 	return YES;
 }
 ```
-这里要使用initWithNibName方法。
+注意：这里的`ViewController`是你自定义的ViewController。
+
+如果要使用NavigationController需要写成这样:
+```objc
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    // Override point for customization after application launch.
+   	self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+    ViewController *vc = [[ViewController alloc]initWithNibName:@"ViewController" bundle:nil];
+    vc.title = @"AutoHeightTableView";
+    UINavigationController *uv = [[UINavigationController alloc] initWithRootViewController:vc];
+    [self.window setRootViewController:uv];
+    [self.window makeKeyAndVisible];
+    return YES;
+}
+```
 
 至此，app就可以显示新建的xib文件的布局了
