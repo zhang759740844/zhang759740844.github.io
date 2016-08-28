@@ -1,5 +1,5 @@
 title: UIButton 简介
-date: 2016/8/11 14:07:12  
+date: 2016/8/29 14:07:12  
 categories: IOS
 tags: [UIButton]
 
@@ -108,7 +108,7 @@ image和title默认image在左，title紧贴在其右边。不过这个位置其
 这里的`UIEdgeInsetsMake`里的四个参数分别是`top`,`left`,`bottom`,`right`四个方向的`inset`,默认是`0`，也就是说，所有变化都是针对当前位置的。`-btn1.imageView.bounds.size.width`表示让`title`的左边距**减少**`image`的宽度，同理`btn1.imageView.bounds.size.width`表示让右边距**增加**`image`的宽度。
 
 #### 控制image的大小
-交换了image的位置后，我就想怎么控制image的大小。尝试改变了`UIEdgeInsetsMake`的参数，发现改变`top`和`bottom`可以将图片压缩，但是改变`left``right`图片始终不动。
+交换了image的位置后，我就想怎么控制image的大小。尝试改变了`UIEdgeInsetsMake`的参数，发现改变`top`和`bottom`可以将图片压缩，但是改变`left` `right`图片始终不动。
 
 经过我不断尝试后终于得出了结论：
 以横轴为例，只有当**左边距+右边距+图片宽度=button宽度**时，继续增加边距，才会导致图片的压缩。当**左边距+右边距+图片宽度<button宽度**时，增加一边会让图像像另一边移动；同时增加两边，两边抵消，在原处不动。
