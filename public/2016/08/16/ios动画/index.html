@@ -84,16 +84,19 @@
 
 
 
-<meta name="description" content="依旧是文顶顶的ios开发UI篇关于核心动画的内容。作为入门">
+<meta name="description" content="依旧是文顶顶的ios开发UI篇关于核心动画的内容。作为入门
+核心动画主要就是按照设定的规则(重复，延迟，持续时间等)，操作layer或者view的一些属性(position,bound,transform等)。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="ios核心动画">
 <meta property="og:url" content="http://yoursite.com/2016/08/16/ios动画/index.html">
 <meta property="og:site_name" content="Zachary's blog">
-<meta property="og:description" content="依旧是文顶顶的ios开发UI篇关于核心动画的内容。作为入门">
-<meta property="og:updated_time" content="2016-08-26T01:51:54.000Z">
+<meta property="og:description" content="依旧是文顶顶的ios开发UI篇关于核心动画的内容。作为入门
+核心动画主要就是按照设定的规则(重复，延迟，持续时间等)，操作layer或者view的一些属性(position,bound,transform等)。">
+<meta property="og:updated_time" content="2016-09-01T08:37:06.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="ios核心动画">
-<meta name="twitter:description" content="依旧是文顶顶的ios开发UI篇关于核心动画的内容。作为入门">
+<meta name="twitter:description" content="依旧是文顶顶的ios开发UI篇关于核心动画的内容。作为入门
+核心动画主要就是按照设定的规则(重复，延迟，持续时间等)，操作layer或者view的一些属性(position,bound,transform等)。">
 
 
 
@@ -316,6 +319,7 @@
 
       
         <p>依旧是<a href="http://www.cnblogs.com/wendingding/tag/UI高级/" target="_blank" rel="external">文顶顶的ios开发UI篇</a>关于核心动画的内容。作为入门</p>
+<p><strong>核心动画主要就是按照设定的规则(重复，延迟，持续时间等)，操作layer或者view的一些属性(position,bound,transform等)。</strong></p>
 <a id="more"></a>
 <h2 id="核心动画简介"><a href="#核心动画简介" class="headerlink" title="核心动画简介"></a>核心动画简介</h2><p>CAAnimation是所有动画类的父类，但是它不能直接使用，能用的动画类只有4个子类：CABasicAnimation、CAKeyframeAnimation、CATransition、CAAnimationGroup。</p>
 <p>CAPropertyAnimation是CAAnimation的子类，但是不能直接使用，要想创建动画对象，应该使用它的两个子类：CABasicAnimation和CAKeyframeAnimation<br>它有个NSString类型的keyPath属性，你可以指定CALayer的某个属性名为keyPath，并且对CALayer的这个属性的值进行修改，达到相应的动画效果。比如，指定@”position”为keyPath，就会修改CALayer的position属性的值，以达到平移的动画效果</p>
@@ -357,6 +361,8 @@
 <h4 id="使用path"><a href="#使用path" class="headerlink" title="使用path"></a>使用path</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div></pre></td><td class="code"><pre><div class="line">-(<span class="keyword">void</span>)touchesBegan:(<span class="built_in">NSSet</span> *)touches withEvent:(<span class="built_in">UIEvent</span> *)event</div><div class="line">&#123;</div><div class="line">    <span class="comment">//1.创建核心动画</span></div><div class="line">    <span class="built_in">CAKeyframeAnimation</span> *keyAnima=[<span class="built_in">CAKeyframeAnimation</span> animation];</div><div class="line">    <span class="comment">//平移</span></div><div class="line">    keyAnima.keyPath=<span class="string">@"position"</span>;</div><div class="line">    <span class="comment">//1.1告诉系统要执行什么动画</span></div><div class="line">    <span class="comment">//创建一条路径</span></div><div class="line">    <span class="built_in">CGMutablePathRef</span> path=<span class="built_in">CGPathCreateMutable</span>();</div><div class="line">    <span class="comment">//设置一个圆的路径</span></div><div class="line">    <span class="built_in">CGPathAddEllipseInRect</span>(path, <span class="literal">NULL</span>, <span class="built_in">CGRectMake</span>(<span class="number">150</span>, <span class="number">100</span>, <span class="number">100</span>, <span class="number">100</span>));</div><div class="line">    keyAnima.path=path;</div><div class="line">    </div><div class="line">    <span class="comment">//有create就一定要有release</span></div><div class="line">    <span class="built_in">CGPathRelease</span>(path);</div><div class="line">    <span class="comment">//1.2设置动画执行完毕后，不删除动画</span></div><div class="line">    keyAnima.removedOnCompletion=<span class="literal">NO</span>;</div><div class="line">    <span class="comment">//1.3设置保存动画的最新状态</span></div><div class="line">    keyAnima.fillMode=kCAFillModeForwards;</div><div class="line">    <span class="comment">//1.4设置动画执行的时间</span></div><div class="line">    keyAnima.duration=<span class="number">5.0</span>;</div><div class="line">    <span class="comment">//1.5设置动画的节奏</span></div><div class="line">    keyAnima.timingFunction=[<span class="built_in">CAMediaTimingFunction</span> functionWithName:kCAMediaTimingFunctionEaseInEaseOut];</div><div class="line">    </div><div class="line">    <span class="comment">//设置代理，开始—结束</span></div><div class="line">    keyAnima.delegate=<span class="keyword">self</span>;</div><div class="line">    <span class="comment">//2.添加核心动画</span></div><div class="line">    [<span class="keyword">self</span>.customView.layer addAnimation:keyAnima forKey:<span class="string">@"wendingding"</span>];</div><div class="line">&#125;</div><div class="line"></div><div class="line">- (<span class="keyword">IBAction</span>)stopOnClick:(<span class="built_in">UIButton</span> *)sender &#123;</div><div class="line">    <span class="comment">//停止self.customView.layer上名称标示为wendingding的动画</span></div><div class="line">    [<span class="keyword">self</span>.customView.layer removeAnimationForKey:<span class="string">@"wendingding"</span>];</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p>点击停止动画，程序内部会调用  [self.customView.layer removeAnimationForKey:@”wendingding”];停止self.customView.layer上名称标示为wendingding的动画。</p>
 <h4 id="图标抖动"><a href="#图标抖动" class="headerlink" title="图标抖动"></a>图标抖动</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">-(<span class="keyword">void</span>)touchesBegan:(<span class="built_in">NSSet</span> *)touches withEvent:(<span class="built_in">UIEvent</span> *)event</div><div class="line">&#123;</div><div class="line">    <span class="comment">//1.创建核心动画</span></div><div class="line">    <span class="built_in">CAKeyframeAnimation</span> *keyAnima=[<span class="built_in">CAKeyframeAnimation</span> animation];</div><div class="line">    keyAnima.keyPath=<span class="string">@"transform.rotation"</span>;</div><div class="line">    <span class="comment">//设置动画时间</span></div><div class="line">    keyAnima.duration=<span class="number">0.1</span>;</div><div class="line">    <span class="comment">//设置图标抖动弧度</span></div><div class="line">    <span class="comment">//把度数转换为弧度  度数/180*M_PI</span></div><div class="line">    keyAnima.values=@[@(-angle2Radian(<span class="number">4</span>)),@(angle2Radian(<span class="number">4</span>)),@(-angle2Radian(<span class="number">4</span>))];</div><div class="line">    <span class="comment">//设置动画的重复次数(设置为最大值)</span></div><div class="line">    keyAnima.repeatCount=MAXFLOAT;</div><div class="line">    </div><div class="line">    keyAnima.fillMode=kCAFillModeForwards;</div><div class="line">    keyAnima.removedOnCompletion=<span class="literal">NO</span>;</div><div class="line">    <span class="comment">//2.添加动画</span></div><div class="line">    [<span class="keyword">self</span>.iconView.layer addAnimation:keyAnima forKey:<span class="literal">nil</span>];</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>其中，<code>keyAnima.values=@[@(-angle2Radian(4)),@(angle2Radian(4)),@(-angle2Radian(4))];</code>表示从-angle2Radian(4)转到angle2Radian(4)再转回-angle2Radian(4))。</p>
+<p><strong>@()表示初始化oc对象，即将double转换为oc对象。因为oc的数组中不允许出现非oc得对象</strong></p>
 <h2 id="转场动画和组动画"><a href="#转场动画和组动画" class="headerlink" title="转场动画和组动画"></a>转场动画和组动画</h2><h3 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h3><p>CATransition用于做转场动画<br>属性：</p>
 <ul>
 <li>type：动画过渡类型</li>
@@ -391,7 +397,7 @@
 <ol>
 <li>duration：动画的持续时间</li>
 <li>delay：动画延迟delay秒后开始</li>
-<li>options：动画的节奏控制/转场动画的类型</li>
+<li>options：动画的节奏控制/转场动画的类型(重复，转场等)</li>
 <li>animations：将改变视图属性的代码放在这个block中</li>
 <li>completion：动画结束后，会自动调用这个block</li>
 </ol>
