@@ -51,7 +51,7 @@ id表示可以指向任意类型的指针。变量声明不使用星号。id已�
 InstanceType表示方法的返回类型。  
 %@表示占位符，代表指针，会向相应指针变量对象发送description消息。
 
-### ARC
+### NSString
 @“…”表示创建一个NSString对象。需要知道字符串完整内容。  
 也可使用stringWithFormat方法动态创建：
 ```objc
@@ -130,26 +130,45 @@ import会确保预处理器只导入特定的文件一次，include允许多次�
 ```objc
 typedef enum{
 	BlenderSpeedStir=1，
-	BlenderSpeedChop=2，
+	BlenderSpeedChop=1<<1，
 } BlenderSpeed；
 ```
 还可以写成这样：
 ```objc
 typedef NS_ENUM(NSInteger, BlenderSpeed) {
 //以下是枚举成员
-    Test1A = 0,
-    Test1B = 1,
-    Test1C = 2,
-    Test1D = 3
+    Test1A = 1,
+    Test1B = 1<<1,
+    Test1C = 1<<2,
+    Test1D = 1<<3
 };
 ```
 使用： BlenderSpeed speed；
 
-### 通过NSString和NSData写入文件
-没看
+### enum使用技巧
+enum一般的枚举数值都用移位表示，一般和数字没有太大差别。不过，比起使用数字的一个显著的好处就是可以使用`按位或`将几个枚举值表示成一个数，如果用数字就要使用一个数组。比如：
+```objc
+[UIView animateWithDuration:1 delay:0 options:UIViewAnimationOptionTransitionFlipFromRight |UIViewAnimationOptionRepeat animations:^{
+			nil
+        } completion:^(BOOL finished) {
+            nil;
+        }];
+```
 
-### 回调
-没看
+其中`options`只能传入一个数值，使用数字就不能传入多个枚举值，但是当enum使用了移位，那么久可以传入`UIViewAnimationOptionTransitionFlipFromRight |UIViewAnimationOptionRepeat`表示既FlipFromRight又repeat。
+
+方法中同样通过移位将枚举值取出，例如：
+```objc
+NSInteger i = 1<<1|1<<2|1<<4;
+for (nil; i>0; i = i>>1) {
+    if ((i&1)) {
+        NSLog(@"success");
+    }else{
+        NSLog(@"fail");
+    }
+}
+```
+`i&1`通过按位与，能取出i的最低位，将i右移(相当于除2)直到i=0(i=1右移后为0，0右移还是0)结束。这样就把每一个枚举值都取出了。
 
 
 
@@ -165,37 +184,6 @@ UITableView数据源协议是UITableViewDataSource，方法声明如下：
 ……. 
 ```
 
-### UITableView对象提供数据
-UITableView不包含任何数据，需要提供一个数据源  
-我们将BNRAppDelegate实例设置为UITableView对象的数据源。BNRAPPDelegate必须遵循UITableViewDataSource协议。  
-在BNRAPPDelegate.h文件中，声明BNRAPPDelegate遵循UITableViewDataSource协议  
-```objc
-@interface BNRAppDelegate: UIResponder <UIApplicationDelegate,UITableViewDataSource>
-	@property (nonatomic) UITableView *taskTable;
-	@property (nonatomic) NSMutableArray *tasks;
-@end
-```
-在.m中向UITableView发送setDataSource消息，将BNRAPPDelegate实例设置为数据源
-```objc
-self.taskTable.dataSource = self;
-```
-UITableViewDataSource设置了两个必须方法：
-1. 根据指定的表格索引给出相应表格段包含的行数（tableView：numberOfRowsInSection：）
-2. 根据指定表格段索引和行索引给出相应的UITableViewCell对象（tableView：cellForRowAtIndexPath：）
-```objc
-@implementation BNRAppDelegate
-	- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
-		return [self.tasks count];
-	}
-	- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
-		UITableViewCell *c = [self.taskTable dequeueReusableCellWithIdentifier:@“cell”]		//重用cell
-		NSString *item = [self.tasks objectAtIndex:indexPath.row];
-		c.textLabel.text = item;
-		return c;
-	}
-```
-刷新表格：[self.taskTable reloadData];
-
 ### 范畴
 通过范畴（category）可以为任何已有的类添加方法。  
 创建一个新文件，类型为Objective-c category，将新范畴命名为BNRVowelCounting，对应类为NSString。  
@@ -206,13 +194,5 @@ UITableViewDataSource设置了两个必须方法：
 + (NSString *)md5:(NSString *)originalStr;
 @end
 ```
-
-### KVC，KVO
-动态编程 ，暂时没看
-
-### 内省
-能够让他对象在程序运行时候回答关于自身的问题。
-
-
 
 

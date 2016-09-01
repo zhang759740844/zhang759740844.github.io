@@ -6,6 +6,8 @@ tags: [Animation]
 ---
 依旧是[文顶顶的ios开发UI篇](http://www.cnblogs.com/wendingding/tag/UI高级/)关于核心动画的内容。作为入门
 
+**核心动画主要就是按照设定的规则(重复，延迟，持续时间等)，操作layer或者view的一些属性(position,bound,transform等)。**
+
 <!--more-->
 
 ## 核心动画简介
@@ -210,6 +212,10 @@ CAKeyframeAnimation，是CApropertyAnimation的子类。CABasicAnimation只能�
 }
 ```
 
+其中，`keyAnima.values=@[@(-angle2Radian(4)),@(angle2Radian(4)),@(-angle2Radian(4))];`表示从-angle2Radian(4)转到angle2Radian(4)再转回-angle2Radian(4))。
+
+**@()表示初始化oc对象，即将double转换为oc对象。因为oc的数组中不允许出现非oc得对象**
+
 ## 转场动画和组动画
 ### 介绍
 CATransition用于做转场动画
@@ -360,7 +366,7 @@ UIView封装的动画执行完毕之后不会反弹。即如果是通过CALayer�
 属性简介：
 1. duration：动画的持续时间
 2. delay：动画延迟delay秒后开始
-3. options：动画的节奏控制/转场动画的类型
+3. options：动画的节奏控制/转场动画的类型(重复，转场等)
 4. animations：将改变视图属性的代码放在这个block中
 5. completion：动画结束后，会自动调用这个block
 
