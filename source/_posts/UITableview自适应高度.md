@@ -1,7 +1,10 @@
 title: tableview自适应高度
 date: 2016/8/26 14:07:12  
-categories: IOS
-tags: [tableview]
+categories: IOS 
+tags: 
+	- UI
+	- 基本控件
+	
 
 ---
 

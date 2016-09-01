@@ -1,8 +1,10 @@
 title: UIButton 简介
 date: 2016/8/29 14:07:12  
 categories: IOS
-tags: [UIButton]
-
+tags: 
+	- UI
+	- 基本控件
+	
 ---
 
 从最基础的控件开始一点点学习。先来总结下UIButton。

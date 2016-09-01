@@ -1,8 +1,10 @@
 title: UIScrollView部分属性
 date: 2016/8/4 14:07:12  
 categories: IOS
-tags: [UIScrollView]
-
+tags: 
+	- UI
+	- 基本控件
+	
 ---
 
 碰到contentSize、contentOffset不知道用法是什么，就到网上搜索。网上的介绍也比较多，基本大同小异。再此略作摘录、整理。

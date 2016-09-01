@@ -1,7 +1,10 @@
 title: 删除Storyboard
 date: 2016/8/11 14:07:12  
-categories: IOS
-tags: [xib]
+categories: IOS 
+tags: 
+	- UI
+	- xib
+	
 
 ---
 
