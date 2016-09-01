@@ -151,60 +151,7 @@ typedef NS_ENUM(NSInteger, BlenderSpeed) {
 ### 回调
 没看
 
-### Block
-```objc
-^(double dividend){
-	double quotient = dividend / divisor;
-	return quotient;
-}
-```
-Block对象可以被当做一个实参来传递给可以接收block的方法。
 
-### 声明block变量:
-```objc 
-void (^devowelizer)(id, NSUInteger, BOOL*);
-```
-void 表示返回类型  
-^ 表示是一个block对象  
-devowelizer 表示block变量的名称  
-后面的是实参类型  
-方法的调用参数类型为^(id  string, NSUInteger i, BOOL *stop)block
-
-### 编写Block对象
-```objc
-devowelizer = ^(id string,NSUInteger i, BOOL *stop){
-	……
-};
-```
-
-### 调用block变量
-```objc
-devowelizer(string,i,stop);
-```
-### typedef
-不能再方法的实现代码中使用typedef，需要在实现文件的顶部，或者头文件内使用typedef。
-```objc
-typedef void(^ArrayEnumerationBlock)(id,NSUInteger,BOOL *);
-```
-需要注意的是，这里定义的是一个新的类型，不是变量。跟在^后面的是类型名称。创建这个新类型后，可以简化相应Block的声明。
-```objc
-ArrayEnumerationBlock devowelizer；
-```
-
-### 外部变量
-在执行Block对象时，为了确保其下的外部变量能够始终存在，相应的Block对象会捕获这些变量。意味着程序会拷贝变量的值，用Block的局部变量保存。造成强引用。
-
-### 在Block中使用self
-如果要写一个使用self的Block对象，需要避免强引用循环。  
-在Block外声明一个_weak指正，然后将这个指针指向Block对象使用的self，最后在Block对象中使用这个新的指针。
-```objc
-_weak BNREmployee *weakSelf = self;	//弱引用指针
-	myBlock = ^{
-		NSLog(@“Employee:%@”,weakSelf);
-	};
-```
-### 修改外部变量
-如果需要在Block对象内修改某个外部变量，则可以声明相应的外部变量时，在前面加上__block关键字。
 
 ### 协议
 协议可以为一个对象指定角色。类似于接口。如果某个对象要扮演特定的角色，就一定要实现相应的必须方法，并选择实现部分可选方法。  
