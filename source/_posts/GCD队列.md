@@ -62,7 +62,8 @@ dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
 ```
 2. **dispatch_sync**
 dispatch_sync //同步执行block，函数不返回，一直等到block执行完毕。编译器会根据实际情况优化代码，所以有时候你会发现block其实还在当前线程上执行，并没用产生新线程。
-实际编程经验告诉我们，尽可能避免使用dispatch_sync，嵌套使用时还容易引起程序死锁。
+实际编程经验告诉我们，尽可能避免使用dispatch_sync，嵌套使用时还容易引起程序死锁，比如嵌套调用主线程。
+![gcd_死锁](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/gcd_死锁.png?raw=true)
 
 **总结：队列是串行或并发的，操作队列的函数是同步或者异步执行的。**
 

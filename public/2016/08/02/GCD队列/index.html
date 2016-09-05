@@ -90,7 +90,7 @@
 <meta property="og:url" content="http://yoursite.com/2016/08/02/GCD队列/index.html">
 <meta property="og:site_name" content="Zachary's blog">
 <meta property="og:description" content="Grand Central Dispatch或者GCD，是一套低层API，提供了一种新的方法来进行并发程序编写。从基本功能上讲，GCD有点像NSOperationQueue，他们都允许程序将任务切分为多个单一任务然后提交至工作队列来并发地或者串行地执行。GCD比之NSOpertionQueue更底层更高效，并且它不是Cocoa框架的一部分。">
-<meta property="og:updated_time" content="2016-08-26T01:51:54.000Z">
+<meta property="og:updated_time" content="2016-09-05T02:24:25.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="GCD队列 学习与整理">
 <meta name="twitter:description" content="Grand Central Dispatch或者GCD，是一套低层API，提供了一种新的方法来进行并发程序编写。从基本功能上讲，GCD有点像NSOperationQueue，他们都允许程序将任务切分为多个单一任务然后提交至工作队列来并发地或者串行地执行。GCD比之NSOpertionQueue更底层更高效，并且它不是Cocoa框架的一部分。">
@@ -343,7 +343,7 @@
 <p> 在典型的Cocoa程序中，你很有可能希望在任务完成时更新界面，这就意味着需要在主线程中执行一些代码。你可以简单地完成这个任务——使用嵌套的dispatch，在外层中执行后台任务，在内层中将任务dispatch到main queue：</p>
 <figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">dispatch_async</span>(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, <span class="number">0</span>), ^&#123;</div><div class="line">        [<span class="keyword">self</span> goDoSomethingLongAndInvolved];</div><div class="line">        <span class="built_in">dispatch_async</span>(dispatch_get_main_queue(), ^&#123;</div><div class="line">            [textField setStringValue:<span class="string">@"Done doing something long and involved"</span>];</div><div class="line">        &#125;);</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
 </li>
-<li><p><strong>dispatch_sync</strong><br>dispatch_sync //同步执行block，函数不返回，一直等到block执行完毕。编译器会根据实际情况优化代码，所以有时候你会发现block其实还在当前线程上执行，并没用产生新线程。<br>实际编程经验告诉我们，尽可能避免使用dispatch_sync，嵌套使用时还容易引起程序死锁。</p>
+<li><p><strong>dispatch_sync</strong><br>dispatch_sync //同步执行block，函数不返回，一直等到block执行完毕。编译器会根据实际情况优化代码，所以有时候你会发现block其实还在当前线程上执行，并没用产生新线程。<br>实际编程经验告诉我们，尽可能避免使用dispatch<em>sync，嵌套使用时还容易引起程序死锁，比如嵌套调用主线程。<br>![gcd</em>死锁](<a href="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/gcd_死锁.png?raw=true" target="_blank" rel="external">https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/gcd_死锁.png?raw=true</a>)</p>
 </li>
 </ol>
 <p><strong>总结：队列是串行或并发的，操作队列的函数是同步或者异步执行的。</strong></p>
@@ -487,7 +487,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">33</span>
+              <span class="site-state-item-count">34</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -504,7 +504,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">14</span>
+                <span class="site-state-item-count">15</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
