@@ -86,8 +86,8 @@ typedef NS_ENUM(NSInteger, UIGestureRecognizerState) {
 可以通过设置`numberOfTapsRequired`来区分单击双击：
 ```objc
 UITapGestureRecognizer *doubleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(DoubleTap:)];
-    doubleTap.numberOfTapsRequired = 2; //点击的次数 ＝2 双击
-    [_imageView addGestureRecognizer:doubleTap];//给对象添加一个手势监测；
+doubleTap.numberOfTapsRequired = 2; //点击的次数 ＝2 双击
+[_imageView addGestureRecognizer:doubleTap];//给对象添加一个手势监测；
 ```
 
 另外还有三个属性用来控制触摸事件：
@@ -100,6 +100,7 @@ UITapGestureRecognizer *doubleTap = [[UITapGestureRecognizer alloc] initWithTarg
 **cancelsTouchesInView**
 默认为YES,这种情况下当手势识别器识别到touch之后，会发送`touchesCancelled:withEvent:`消息,终止触摸事件的传递,以取消 `UIResponder`对touch的响应，这个时候只有手势识别器响应touch。
 当设置成NO时，手势识别器识别到touch之后不会发送`touchesCancelled:withEvent:`消息，这个时候手势识别器和`UIResponder`均响应touch。
+**注意：**发送`touchesCancelled:withEvent:`消息也是需要时间的。在每次手势操作的时候都会先触发1-2次touch操作，然后`touchesCancelled:withEvent:`消息才会生效，屏蔽touch操作。
 
 **delaysTouchesBegan**
 在前面`cancelsTouchesInView`属性为NO的基础上.
@@ -186,8 +187,7 @@ UITapGestureRecognizer *doubleTap = [[UITapGestureRecognizer alloc] initWithTarg
 ```
 在设置完缩放后，一定要把`recognizer.scale`设置为1
 ```objc
-- (void)handlePinch:(UIPinchGestureRecognizer*)recognizer
-{
+- (void)handlePinch:(UIPinchGestureRecognizer*)recognizer{
     NSLog(@"缩放操作");//处理缩放操作
     //对imageview缩放
     _imageView.transform = CGAffineTransformScale(_imageView.transform, recognizer.scale, recognizer.scale);
@@ -211,8 +211,7 @@ UITapGestureRecognizer *doubleTap = [[UITapGestureRecognizer alloc] initWithTarg
 ```
 代码示例：
 ```objc
--(void)handlePan:(UIPanGestureRecognizer*)recognizer
-{
+-(void)handlePan:(UIPanGestureRecognizer*)recognizer{
     NSLog(@"拖动操作");
     //处理拖动操作,拖动是基于imageview，如果经过旋转，拖动方向也是相对imageview上下左右移动，而不是屏幕对上下左右
     CGPoint translation = [recognizer translationInView:_imageView];
@@ -249,8 +248,7 @@ typedef NS_OPTIONS(NSUInteger, UISwipeGestureRecognizerDirection) {
 ```
 在设置完旋转后，`recognizer.rotation`一定要清零.
 ```objc
-- (void)handleRotate:(UIRotationGestureRecognizer*) recognizer
-{
+- (void)handleRotate:(UIRotationGestureRecognizer*) recognizer{
     NSLog(@"旋转操作");//处理旋转操作
     //对imageview旋转
     _imageView.transform = CGAffineTransformRotate(_imageView.transform, recognizer.rotation);
@@ -275,3 +273,5 @@ typedef NS_OPTIONS(NSUInteger, UISwipeGestureRecognizerDirection) {
 这么多手势可以组合使用。但是使用的时候会产生如图所示的问题：
 ![手势组合](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/UIGestureRecognizer.gif?raw=true)
 当图片正常大小时，拖动正常。当图片变小或者变大时，拖动距离变大以及变小。比如缩小图片后，相当于背景也缩小了，在手指滑动相同的距离下，相对来说移动的距离就变大了。
+
+> Demo 详见UIGestureRecognizer

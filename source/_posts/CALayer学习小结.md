@@ -31,7 +31,7 @@ self.customView.layer.cornerRadius=20;
 self.iconView.layer.masksToBounds=YES;
 
 //在view的图层上添加一个image，contents表示接受内容
-self.customView.layer.contents=(id)[UIImage imageNamed:@"me"].CGImage;
+self.customView.layer.contents=(id)[UIImage imageNamed:@"cat"].CGImage;
 
 //设置阴影的颜色
 self.customView.layer.shadowColor=[UIColor blackColor].CGColor;
@@ -41,7 +41,7 @@ self.customView.layer.shadowOffset=CGSizeMake(15, 5);
 self.customView.layer.shadowOpacity=0.6;
 
 //通过uiview设置（2D效果）
-self.iconView.transform=CGAffineTransformMakeTranslation(0, -100);
+self.customView.transform=CGAffineTransformMakeTranslation(0, -100);
 //通过layer来设置（3D效果,x，y，z三个方向）
 self.iconView.layer.transform=CATransform3DMakeTranslation(100, 20, 0);
 //旋转
@@ -93,7 +93,7 @@ self.iconView.layer.transform=CATransform3DMakeRotation(M_PI_4, 1, 1, 0.5);
 - position：用于设置CALayer的位置。修改这个属性会产生平移动画
 
 ## 自定义layer
-### 新建layer类
+### 第一种方式：新建layer类
 想要在view中画东西，需要自定义view,创建一个类与之关联，让这个类继承自UIView，然后重写它的DrawRect：方法，然后在该方法中画图。
 
 如果在layer上画东西，与上面的过程类似。
@@ -116,7 +116,7 @@ self.iconView.layer.transform=CATransform3DMakeRotation(M_PI_4, 1, 1, 0.5);
 ```
 注意：
 1. 默认为无色，不会显示。要想让绘制的图形显示出来，还需要设置图形的颜色。注意不能直接使用UI框架中的类
-2. 在自定义layer中的-(void)drawInContext:方法不会自己调用，只能自己通过setNeedDisplay方法调用，在view中画东西DrawRect:方法在view第一次显示的时候会自动调用。
+2. 在自定义layer中`drawInContext:`方法不会自己调用，只能自己通过`setNeedDisplay`方法调用，在view中画东西`DrawRect:`方法在view第一次显示的时候会自动调用。
 
 在view中绘图：
 ```objc
@@ -138,7 +138,7 @@ self.iconView.layer.transform=CATransform3DMakeRotation(M_PI_4, 1, 1, 0.5);
 }
 ```
 
-### 实现delegate方法
+### 第二种方式：实现delegate方法
 设置viewcontroller为CALayer的delegate，然后让delegate实现drawLayer:inContext:方法，当CALayer需要绘图时，会调用delegate的drawLayer:inContext:方法进行绘图。
 ```objc
 @implementation YYViewController
@@ -174,4 +174,4 @@ self.iconView.layer.transform=CATransform3DMakeRotation(M_PI_4, 1, 1, 0.5);
 1. 无论采取哪种方法来自定义层，都必须调用CALayer的setNeedsDisplay方法才能正常绘图。
 2. **当UIView需要显示时**，它内部的层会准备好一个CGContextRef(图形上下文)，然后**调用delegate(这里就是UIView)**的drawLayer:inContext:方法，并且传入已经准备好的CGContextRef对象。而UIView在drawLayer:inContext:方法中又会调用自己的drawRect:方法。平时在drawRect:中通过UIGraphicsGetCurrentContext()获取的就是由层传入的CGContextRef对象，在drawRect:中完成的所有绘图都会填入层的CGContextRef中，然后被拷贝至屏幕。
 
-
+>Demo 详见 CALayer-transform

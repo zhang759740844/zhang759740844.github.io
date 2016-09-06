@@ -114,27 +114,24 @@ UIResponder内部提供了以下方法来处理事件触摸事件
     // make:相对于最原始的位置形变 
     // CGAffineTransform t:相对这个t的形变的基础上再去形变 
     // 如果相对哪个形变再次形变,就传入它的形变 
-    self.transform = CGAffineTransformTranslate(self.transform, offsetX, offsetY);}
+    self.transform = CGAffineTransformTranslate(self.transform, offsetX, offsetY);
+}
 ```
 通过UITouch对象获得当前点和上一个点的位置，求得偏移量
 
 ## iOS中的事件的产生和传递
-### 事件的产生
+### 事件的产生过程
 1. 发生触摸事件后，系统会将该事件加入到一个由UIApplication管理的事件队列中。
 2. UIApplication会从事件队列中取出最前面的事件，并将事件分发下去以便处理，通常，先发送事件给应用程序的主窗口（keyWindow）。
 3. 主窗口会在视图层次结构中找到一个最合适的视图来处理触摸事件，这也是整个事件处理过程的第一步。
-4. 找到合适的视图控件后，就会调用视图控件的touches方法来作具体的事件处理。
+	1. 首先判断主窗口（keyWindow）自己是否能接受触摸事件。
+	2. 判断触摸点是否在自己身上。
+	3. 子控件数组中从后往前遍历子控件(后添加的view在上面，降低循环次数)，重复前面的两个步骤。
+	4. 如果触摸点在子控件上，那么重复3
+	5. 如果没有符合条件的子控件，那么就认为自己最合适处理这个事件，也就是自己是最合适的view。
+4. 找到最合适的view后，**将这个view层层返回给viewController,viewcontroller就会自动调用该view的touches方法处理具体的事件**。
 
-触摸事件的传递是从父控件传递到子控件,也就是UIApplication->window->寻找处理事件最合适的view。注意: 如果父控件不能接受触摸事件，那么子控件就不可能接收到触摸事件
-
-### 找到最适合的控件
-回到上面的第三部，从主窗口传来的触摸事件，需要找到最合适的视图，那么如何找到最佳视图？
-1. 首先判断主窗口（keyWindow）自己是否能接受触摸事件。
-2. 判断触摸点是否在自己身上。
-3. 子控件数组中从后往前遍历子控件(后添加的view在上面，降低循环次数)，重复前面的两个步骤。
-4. 如果触摸点在子控件上，那么重复3.
-5. 如果没有符合条件的子控件，那么就认为自己最合适处理这个事件，也就是自己是最合适的view。
-6. 找到最合适的view后，就会调用该view的touches方法处理具体的事件。
+触摸事件的传递是从父控件传递到子控件,也就是UIApplication->window->寻找处理事件最合适的view。注意: 如果父控件不能接受触摸事件，那么子控件就不可能接收到触摸事件。
 
 ### UIView不能接受触摸事件的三种情况
 - 不允许交互：`userInteractionEnabled = NO`
@@ -145,29 +142,22 @@ UIResponder内部提供了以下方法来处理事件触摸事件
 - 默认UIImageView不能接受触摸事件，因为不允许交互，即`userInteractionEnabled = NO`，所以如果希望UIImageView可以交互，需要`userInteractionEnabled = YES`。
 - 不管视图能不能处理事件，只要点击了视图就都会产生事件，关键看该事件是由谁来处理！也就是说，如果视图不能处理事件，点击视图，还是会产生一个触摸事件，只是该事件不会由被点击的视图处理而已！
 
-### hitTest:withEvent：方法
-#### 何时调用？
-只要事件一传递给一个控件,这个控件就会调用他自己的`hitTest：withEvent：`方法.
+### 找到最合适控件的方法
+#### hitTest：withEvent：
+只要事件一传递给一个控件,这个控件就会调用他自己的`hitTest：withEvent：`方法.用来寻找并返回最合适的view(能够响应事件的那个最合适的view)
 
-#### 作用
-寻找并返回最合适的view(能够响应事件的那个最合适的view)
+#### 拦截事件
+不管点击哪里，最合适的view都是`hitTest：withEvent：`方法中返回的那个view。因此，可以通过重写`hitTest：withEvent：`方法，返回指定的view作为最合适的view，这样就完成了事件的拦截。如果不想拦截，就调用`[super touchesMoved:touches withEvent:event];`
 
-**注 意：**
-- 不管这个控件能不能处理事件，也不管触摸点在不在这个控件上，事件都会先传递给这个控件，随后再调用`hitTest:withEvent:`方法
-- `hitTest`的这个`CGPoint point`表示当前手指触摸的点，其值是以方法调用者的坐标系为基准的。也就是说，不同的控件调用这个方法，这个point都是经过计算而产生的不同的值。
-
-
-#### 拦截事件的处理
-- 正因为`hitTest：withEvent：`方法可以返回最合适的view，所以可以通过重写`hitTest：withEvent：`方法，返回指定的view作为最合适的view。
-- 不管点击哪里，最合适的view都是`hitTest：withEvent：`方法中返回的那个view。
-- 通过重写`hitTest：withEvent：`，就可以拦截事件的传递过程，想让谁处理事件谁就处理事件。
-
-**注 意：**如`hitTest:withEvent:`方法中返回`nil`，那么调用该方法的控件本身和其子控件都不是最合适的view，也就是在自己身上没有找到更合适的view。那么最合适的view就是该控件的父控件。
+#### 注意
+- **`hitTest：withEvent：`是UIView的方法，不是UIResponse的方法！所以Controller里不能用。这点很重要！这说明只能控制UIView里的子View**
+- 不管这个控件能不能处理事件，也不管触摸点在不在这个控件上，事件都会先传递给这个控件，随后再调用`hitTest:withEvent:`方法。`hitTest`的这个`CGPoint point`表示当前手指触摸的点，其值是以方法调用者的左上角(0,0)为基准的(就是touch的`locationInView:`方法的返回值)。也就是说，不同的控件调用这个方法，这个point都是经过计算而产生的不同的值。
+- `hitTest：withEvent：`找到最佳View后，会一层层返回，将这个View返回给ViewController。如`hitTest:withEvent:`方法中返回`nil`，那么调用该方法的控件本身和其子控件都不是最合适的view，也就是在自己身上没有找到更合适的view。那么最合适的view就是该控件的父控件。
 
 #### 技巧
-想让谁成为最合适的view就重写谁自己的父控件的hitTest:withEvent:方法返回指定的子控件。这里又要注意，最好不要在子控件内`return self`。因为，在遍历子控件的时候，很有可能没有遍历到你真正想要返回的那个控件，就在其他控件已经return了。
+想让谁成为最合适的view就重写谁自己的父控件的`hitTest:withEvent:`方法返回指定的子控件。这里又要注意，最好不要在子控件内`return self`。因为，在遍历子控件的时候，很有可能没有遍历到你真正想要返回的那个控件，就在其他控件已经return了。
 
-例如：whiteView有redView和greenView两个子控件。redView先添加，greenView后添加。如果要求无论点击那里都要让redView作为最合适的view（把事件交给redView来处理）那么只能在whiteView的hitTest:withEvent:方法中return self.subViews[0];这种情况下在redView的hitTest:withEvent:方法中return self;是不好使的！
+例如：whiteView有redView和greenView两个子控件。redView先添加，greenView后添加。如果要求无论点击那里都要让redView作为最合适的view（把事件交给redView来处理）那么只能在whiteView的`hitTest:withEvent:`方法中`return self.subViews[0]`;这种情况下在redView的`hitTest:withEvent:`方法中`return self;`是不好使的！
 
 #### hitTest:withEvent：的底层实现
 ```objc
@@ -186,31 +176,30 @@ UIResponder内部提供了以下方法来处理事件触摸事件
     if ([self pointInside:point withEvent:event] == NO) return nil; 
     // 3.从后往前遍历子控件数组 
     int count = (int)self.subviews.count; 
-    for (int i = count - 1; i >= 0; i--)     { 
-    // 获取子控件
-    UIView *childView = self.subviews[i]; 
-    // 坐标系的转换,把窗口上的点转换为子控件上的点 
-    // 把自己控件上的点转换成子控件上的点 
-    CGPoint childP = [self convertPoint:point toView:childView]; 
-    UIView *fitView = [childView hitTest:childP withEvent:event]; 
-    if (fitView) {
-    // 如果能找到最合适的view 
-    return fitView; 
-    }
+    for (int i = count - 1; i >= 0; i--) { 
+    	// 获取子控件
+    	UIView *childView = self.subviews[i]; 
+    	// 坐标系的转换,把窗口上的点转换为子控件上的点 
+    	// 把自己控件上的点转换成子控件上的点 
+    	CGPoint childP = [self convertPoint:point toView:childView]; 
+    	UIView *fitView = [childView hitTest:childP withEvent:event]; 
+    	if (fitView) {
+    		// 如果能找到最合适的view 
+    		return fitView; 
+    	}
     } 
     // 4.没有找到更合适的view，也就是没有比自己更合适的view 
     return self;
-    }
-    // 作用:判断下传入过来的点在不在方法调用者的坐标系上
-    // point:是方法调用者坐标系上的点
-    //- (BOOL)pointInside:(CGPoint)point withEvent:(UIEvent *)event
-    //{
-    // return NO;
-    //}
-    - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event{ 
+}
+// 作用:判断下传入过来的点在不在方法调用者的坐标系上
+// point:是方法调用者坐标系上的点
+//- (BOOL)pointInside:(CGPoint)point withEvent:(UIEvent *)event{
+//		return NO;
+//}
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event{ 
     NSLog(@"%s",__func__);
-    }
-    @end
+}
+@end
 ```
 
 `hit:withEvent:`方法底层会调用`pointInside:withEvent:`方法判断点在不在方法调用者的坐标系上。
@@ -220,7 +209,7 @@ UIResponder内部提供了以下方法来处理事件触摸事件
 
 
 ## 事件的响应
-### 事件的传递与响应
+### 事件的传递与响应区别
 前面说到了，当一个事件发生后，事件会从父控件传给子控件，也就是说由UIApplication -> UIWindow -> UIView -> initial view,以上就是事件的传递，也就是寻找最合适的view的过程。
 
 在找到了最合适的view后，接下来就是事件的响应过程。响应过程是传递过程的逆过程。在事件的响应中，如果某个控件实现了`touches...`方法，则这个事件将由该控件来接受，如果调用了`[super touches….]`;就会将事件顺着响应者链条往上传递，传递给上一个响应者；接着就会调用上一个响应者的`touches….`方法。
@@ -232,29 +221,35 @@ touches默认做法是把事件顺着响应者链条向上抛：
 //只要点击控件,就会调用touchBegin,如果没有重写这个方法,自己处理不了触摸事件
 // 上一个响应者可能是父控件
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event{ 
-// 默认会把事件传递给上一个响应者,上一个响应者是父控件,交给父控件处理
-[super touchesBegan:touches withEvent:event]; 
-// 注意不是调用父控件的touches方法，而是调用父类的touches方法
-// super是父类 superview是父控件 
-// 不过super内还是要调用superview的touch的方法来交给上一个响应者的。
+	// 默认会把事件传递给上一个响应者,上一个响应者是父控件,交给父控件处理
+	[super touchesBegan:touches withEvent:event]; 
+	// 注意不是调用父控件的touches方法，而是调用父类的touches方法
+	// super是父类 superview是父控件 
+	// 不过super内还是要调用superview的touch的方法来交给上一个响应者的。
 }
 @end
 ```
 
+事件的传递是从上到下（父控件到子控件），事件的响应是从下到上（顺着响应者链条向上传递：子控件到父控件。
+
+**注意：**ViewController中如果自定义了`touchesBegan:withEvent:`方法，任何情况都会执行。只有在UIView中定义的`touchesBegan:withEvent:`方法，才会根据`hitTest：withEvent：`的不同返回，执行返回View的`touchesBegan:withEvent:`方法。估计是因为UIViewController中没有`hitTest：withEvent：`方法的缘故。
+
 ### 一个事件多个对象处理
-因为系统默认做法是把事件上抛给父控件，所以可以通过重写自己的touches方法和父控件的touches方法来达到一个事件多个对象处理的目的。
+因为系统默认做法(super方法)是把事件上抛给父控件，所以可以通过重写自己的touches方法和父控件的touches方法来达到一个事件多个对象处理的目的。
 
 ```objc
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event{ 
-// 1.自己先处理事件...
-NSLog(@"do somthing...");
-// 2.再调用系统的默认做法，再把事件交给上一个响应者处理
-[super touchesBegan:touches withEvent:event]; 
+	// 1.自己先处理事件...
+	NSLog(@"do somthing...");
+	// 2.再调用系统的默认做法，再把事件交给上一个响应者处理
+	[super touchesBegan:touches withEvent:event]; 
 }
 ```
 
-### 事件的传递和响应的区别
-事件的传递是从上到下（父控件到子控件），事件的响应是从下到上（顺着响应者链条向上传递：子控件到父控件。
+
+
+>Demo 请看UIGestureRecognizer
+
 
 
 
