@@ -125,51 +125,6 @@ const表示指针的不会变化,extern表示指针是存在的，但是会在�
 ### #include和#import
 import会确保预处理器只导入特定的文件一次，include允许多次导入同一个文件。最好使用import。
 
-### enum
-定义一组常量。
-```objc
-typedef enum{
-	BlenderSpeedStir=1，
-	BlenderSpeedChop=1<<1，
-} BlenderSpeed；
-```
-还可以写成这样：
-```objc
-typedef NS_ENUM(NSInteger, BlenderSpeed) {
-//以下是枚举成员
-    Test1A = 1,
-    Test1B = 1<<1,
-    Test1C = 1<<2,
-    Test1D = 1<<3
-};
-```
-使用： BlenderSpeed speed；
-
-### enum使用技巧
-enum一般的枚举数值都用移位表示，一般和数字没有太大差别。不过，比起使用数字的一个显著的好处就是可以使用`按位或`将几个枚举值表示成一个数，如果用数字就要使用一个数组。比如：
-```objc
-[UIView animateWithDuration:1 delay:0 options:UIViewAnimationOptionTransitionFlipFromRight |UIViewAnimationOptionRepeat animations:^{
-			nil
-        } completion:^(BOOL finished) {
-            nil;
-        }];
-```
-
-其中`options`只能传入一个数值，使用数字就不能传入多个枚举值，但是当enum使用了移位，那么久可以传入`UIViewAnimationOptionTransitionFlipFromRight |UIViewAnimationOptionRepeat`表示既FlipFromRight又repeat。
-
-方法中同样通过移位将枚举值取出，例如：
-```objc
-NSInteger i = 1<<1|1<<2|1<<4;
-for (nil; i>0; i = i>>1) {
-    if ((i&1)) {
-        NSLog(@"success");
-    }else{
-        NSLog(@"fail");
-    }
-}
-```
-`i&1`通过按位与，能取出i的最低位，将i右移(相当于除2)直到i=0(i=1右移后为0，0右移还是0)结束。这样就把每一个枚举值都取出了。
-
 
 
 ### 协议

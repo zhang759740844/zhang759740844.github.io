@@ -121,6 +121,15 @@ CAKeyframeAnimation，是CApropertyAnimation的子类。CABasicAnimation只能�
 ### 示例
 #### 使用value
 ```objc
+#import "YYViewController.h"
+
+@interface YYViewController ()
+@property (weak, nonatomic) IBOutlet UIView *customView;
+
+@end
+
+@implementation YYViewController
+
 -(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
     //1.创建核心动画
@@ -148,10 +157,32 @@ CAKeyframeAnimation，是CApropertyAnimation的子类。CABasicAnimation只能�
     //2.添加核心动画
     [self.customView.layer addAnimation:keyAnima forKey:nil];
 }
+
+-(void)animationDidStart:(CAAnimation *)anim
+{
+    NSLog(@"开始动画");
+}
+
+-(void)animationDidStop:(CAAnimation *)anim finished:(BOOL)flag
+{
+    NSLog(@"结束动画");
+}
+@end
 ```
 
 #### 使用path
 ```objc
+
+#import "YYViewController.h"
+
+@interface YYViewController ()
+@property (weak, nonatomic) IBOutlet UIView *customView;
+
+@end
+
+@implementation YYViewController
+
+
 -(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
     //1.创建核心动画
@@ -186,12 +217,35 @@ CAKeyframeAnimation，是CApropertyAnimation的子类。CABasicAnimation只能�
     //停止self.customView.layer上名称标示为wendingding的动画
     [self.customView.layer removeAnimationForKey:@"wendingding"];
 }
+
+-(void)animationDidStart:(CAAnimation *)anim
+{
+    NSLog(@"开始动画");
+}
+
+-(void)animationDidStop:(CAAnimation *)anim finished:(BOOL)flag
+{
+    NSLog(@"结束动画");
+}
+@end
 ```
 
-点击停止动画，程序内部会调用  [self.customView.layer removeAnimationForKey:@"wendingding"];停止self.customView.layer上名称标示为wendingding的动画。
+点击停止动画，程序内部会调用  `[self.customView.layer removeAnimationForKey:@"wendingding"];`停止`self.customView.layer`上名称标示为wendingding的动画。
 
 #### 图标抖动
 ```objc
+
+#import "YYViewController.h"
+#define angle2Radian(angle)  ((angle)/180.0*M_PI)
+
+@interface YYViewController ()
+@property (weak, nonatomic) IBOutlet UIImageView *iconView;
+
+@end
+
+
+@implementation YYViewController
+
 -(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
     //1.创建核心动画
@@ -210,6 +264,8 @@ CAKeyframeAnimation，是CApropertyAnimation的子类。CABasicAnimation只能�
     //2.添加动画
     [self.iconView.layer addAnimation:keyAnima forKey:nil];
 }
+
+@end
 ```
 
 其中，`keyAnima.values=@[@(-angle2Radian(4)),@(angle2Radian(4)),@(-angle2Radian(4))];`表示从-angle2Radian(4)转到angle2Radian(4)再转回-angle2Radian(4))。
@@ -227,6 +283,27 @@ CATransition用于做转场动画
 
 ### 示例
 ```objc
+
+#import "YYViewController.h"
+
+@interface YYViewController ()
+@property(nonatomic,assign) int index;
+@property (weak, nonatomic) IBOutlet UIImageView *iconView;
+
+- (IBAction)preOnClick:(UIButton *)sender;
+- (IBAction)nextOnClick:(UIButton *)sender;
+
+@end
+
+@implementation YYViewController
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    self.index=1;
+
+}
+
 - (IBAction)preOnClick:(UIButton *)sender {
     self.index--;
     if (self.index<1) {
@@ -273,6 +350,8 @@ CATransition用于做转场动画
     //2.添加动画
     [self.iconView.layer addAnimation:ca forKey:nil];
 }
+
+@end
 ```
 
 ### 组动画
@@ -280,6 +359,16 @@ CATransition用于做转场动画
 
 ### 示例
 ```objc
+
+#import "YYViewController.h"
+
+@interface YYViewController ()
+@property (weak, nonatomic) IBOutlet UIView *iconView;
+
+@end
+
+@implementation NJViewController
+
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event{
     // 平移动画
     CABasicAnimation *a1 = [CABasicAnimation animation];
@@ -305,6 +394,8 @@ CATransition用于做转场动画
     
     [self.iconView.layer addAnimation:groupAnima forKey:nil];
 }
+
+@end
 ```
 
 ## UIView封装动画
@@ -325,6 +416,23 @@ CATransition用于做转场动画
 
 #### 示例
 ```objc
+
+#import "YYViewController.h"
+
+@interface YYViewController ()
+@property (weak, nonatomic) IBOutlet UIView *customView;
+
+
+@end
+
+@implementation YYViewController
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    
+}
+
 -(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
     //打印动画块的位置
@@ -350,6 +458,8 @@ CATransition用于做转场动画
     //打印动画块的位置
     NSLog(@"动画执行之后的位置：%@",NSStringFromCGPoint(self.customView.center));
 }
+
+@end
 ```
 
 #### UIView封装的动画与CALayer动画的对比
@@ -389,6 +499,6 @@ UIView封装的动画，改变`view`或者`layer`执行完毕之后不会反弹�
 }
 ```
 
-> Demo详见文顶顶的博客
+> Demo详见CALayer_Transform
 
 
