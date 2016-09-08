@@ -1,0 +1,654 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="AutoLayout," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="AutoLayout是一种基于约束的，描述性的布局系统。参考了网上的许多文章，进行总结。基本还是以ios6为主，ios8的一些特性并没有仔细研究。以后需要用到再说。参考与AutoLayout详解">
+<meta property="og:type" content="article">
+<meta property="og:title" content="NSLayoutConstraint 学习笔记">
+<meta property="og:url" content="http://yoursite.com/2016/09/08/NSLayoutConstraint/index.html">
+<meta property="og:site_name" content="Zachary's blog">
+<meta property="og:description" content="AutoLayout是一种基于约束的，描述性的布局系统。参考了网上的许多文章，进行总结。基本还是以ios6为主，ios8的一些特性并没有仔细研究。以后需要用到再说。参考与AutoLayout详解">
+<meta property="og:updated_time" content="2016-09-08T11:03:39.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="NSLayoutConstraint 学习笔记">
+<meta name="twitter:description" content="AutoLayout是一种基于约束的，描述性的布局系统。参考了网上的许多文章，进行总结。基本还是以ios6为主，ios8的一些特性并没有仔细研究。以后需要用到再说。参考与AutoLayout详解">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2016/09/08/NSLayoutConstraint/"/>
+
+  <title> NSLayoutConstraint 学习笔记 | Zachary's blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Zachary's blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">记录成长</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                NSLayoutConstraint 学习笔记
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-09-08T10:07:12+08:00" content="2016-09-08">
+              2016-09-08
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/IOS/" itemprop="url" rel="index">
+                    <span itemprop="name">IOS</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><code>AutoLayout</code>是一种基于约束的，描述性的布局系统。参考了网上的许多文章，进行总结。基本还是以ios6为主，ios8的一些特性并没有仔细研究。以后需要用到再说。<br>参考与<a href="http://www.jianshu.com/p/79f92139ffdf" target="_blank" rel="external">AutoLayout详解</a></p>
+<a id="more"></a>
+<h2 id="代码添加AutoLayout"><a href="#代码添加AutoLayout" class="headerlink" title="代码添加AutoLayout"></a>代码添加AutoLayout</h2><h3 id="关闭Autoresizing"><a href="#关闭Autoresizing" class="headerlink" title="关闭Autoresizing"></a>关闭Autoresizing</h3><p><code>AutoLayout</code>旨在替代<code>Autoresizing</code>，所以在同一个项目中，<code>AutoLayout</code>和<code>Autoresizing</code>是不能共存的。要实现自动布局，必须关掉view的<code>AutoresizeingMask</code></p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">view.translatesAutoresizingMaskIntoConstraints = <span class="literal">NO</span>;</div></pre></td></tr></table></figure>
+<p>这里的view指的是需要添加约束的view。</p>
+<h3 id="NSLayoutConstraint相关"><a href="#NSLayoutConstraint相关" class="headerlink" title="NSLayoutConstraint相关"></a>NSLayoutConstraint相关</h3><h4 id="约束方法"><a href="#约束方法" class="headerlink" title="约束方法"></a>约束方法</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">+(<span class="keyword">instancetype</span>)constraintWithItem:(<span class="keyword">id</span>)view1                  <span class="comment">//被约束的视图一</span></div><div class="line">                        attribute:(<span class="built_in">NSLayoutAttribute</span>)attr1   <span class="comment">//view1的属性</span></div><div class="line">                        relatedBy:(<span class="built_in">NSLayoutRelation</span>)relation <span class="comment">//左右视图的关系</span></div><div class="line">                           toItem:(<span class="keyword">id</span>)view2                  <span class="comment">//被约束的视图二</span></div><div class="line">                        attribute:(<span class="built_in">NSLayoutAttribute</span>)attr2   <span class="comment">//view2的属性</span></div><div class="line">                       multiplier:(<span class="built_in">CGFloat</span>)multiplier        <span class="comment">//乘数</span></div><div class="line">                         constant:(<span class="built_in">CGFloat</span>)c;                <span class="comment">//常量</span></div></pre></td></tr></table></figure>
+<p>公式是这样的：<code>view1.attr1 = view2.attr2 * multiplier + constant</code></p>
+<h4 id="NSLayoutAttribute属性"><a href="#NSLayoutAttribute属性" class="headerlink" title="NSLayoutAttribute属性"></a>NSLayoutAttribute属性</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">typedef</span> <span class="built_in">NS_ENUM</span>(<span class="built_in">NSInteger</span>, <span class="built_in">NSLayoutAttribute</span>) &#123;</div><div class="line">    <span class="built_in">NSLayoutAttributeLeft</span> = <span class="number">1</span>, <span class="comment">//左边</span></div><div class="line">    <span class="built_in">NSLayoutAttributeRight</span>,    <span class="comment">//右边</span></div><div class="line">    <span class="built_in">NSLayoutAttributeTop</span>,      <span class="comment">//顶部</span></div><div class="line">    <span class="built_in">NSLayoutAttributeBottom</span>,   <span class="comment">//底部</span></div><div class="line">    <span class="built_in">NSLayoutAttributeLeading</span>,  <span class="comment">//首部</span></div><div class="line">    <span class="built_in">NSLayoutAttributeTrailing</span>, <span class="comment">//尾部</span></div><div class="line">    <span class="built_in">NSLayoutAttributeWidth</span>,    <span class="comment">//宽度</span></div><div class="line">    <span class="built_in">NSLayoutAttributeHeight</span>,   <span class="comment">//高度</span></div><div class="line">    <span class="built_in">NSLayoutAttributeCenterX</span>,  <span class="comment">//X轴中心</span></div><div class="line">    <span class="built_in">NSLayoutAttributeCenterY</span>,  <span class="comment">//Y轴中心</span></div><div class="line">    <span class="built_in">NSLayoutAttributeBaseline</span>, <span class="comment">//基线</span></div><div class="line">    <span class="built_in">NSLayoutAttributeLastBaseline</span> = <span class="built_in">NSLayoutAttributeBaseline</span>,</div><div class="line">    <span class="built_in">NSLayoutAttributeFirstBaseline</span> <span class="built_in">NS_ENUM_AVAILABLE_IOS</span>(<span class="number">8</span>_0),</div><div class="line"></div><div class="line">    <span class="comment">//iOS8的暂时没有研究</span></div><div class="line">    <span class="built_in">NSLayoutAttributeLeftMargin</span> <span class="built_in">NS_ENUM_AVAILABLE_IOS</span>(<span class="number">8</span>_0),</div><div class="line">    <span class="built_in">NSLayoutAttributeRightMargin</span> <span class="built_in">NS_ENUM_AVAILABLE_IOS</span>(<span class="number">8</span>_0),</div><div class="line">    <span class="built_in">NSLayoutAttributeTopMargin</span> <span class="built_in">NS_ENUM_AVAILABLE_IOS</span>(<span class="number">8</span>_0),</div><div class="line">    <span class="built_in">NSLayoutAttributeBottomMargin</span> <span class="built_in">NS_ENUM_AVAILABLE_IOS</span>(<span class="number">8</span>_0),</div><div class="line">    <span class="built_in">NSLayoutAttributeLeadingMargin</span> <span class="built_in">NS_ENUM_AVAILABLE_IOS</span>(<span class="number">8</span>_0),</div><div class="line">    <span class="built_in">NSLayoutAttributeTrailingMargin</span> <span class="built_in">NS_ENUM_AVAILABLE_IOS</span>(<span class="number">8</span>_0),</div><div class="line">    <span class="built_in">NSLayoutAttributeCenterXWithinMargins</span> <span class="built_in">NS_ENUM_AVAILABLE_IOS</span>(<span class="number">8</span>_0),</div><div class="line">    <span class="built_in">NSLayoutAttributeCenterYWithinMargins</span> <span class="built_in">NS_ENUM_AVAILABLE_IOS</span>(<span class="number">8</span>_0),</div><div class="line"></div><div class="line">    <span class="built_in">NSLayoutAttributeNotAnAttribute</span> = <span class="number">0</span> <span class="comment">//无属性</span></div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<h4 id="NSLayoutRelation关系"><a href="#NSLayoutRelation关系" class="headerlink" title="NSLayoutRelation关系"></a>NSLayoutRelation关系</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">typedef</span> <span class="built_in">NS_ENUM</span>(<span class="built_in">NSInteger</span>, <span class="built_in">NSLayoutRelation</span>) &#123;</div><div class="line">    <span class="built_in">NSLayoutRelationLessThanOrEqual</span> = <span class="number">-1</span>,   <span class="comment">//小于等于</span></div><div class="line">    <span class="built_in">NSLayoutRelationEqual</span> = <span class="number">0</span>,              <span class="comment">//等于</span></div><div class="line">    <span class="built_in">NSLayoutRelationGreaterThanOrEqual</span> = <span class="number">1</span>, <span class="comment">//大于等于</span></div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<h3 id="创建view"><a href="#创建view" class="headerlink" title="创建view"></a>创建view</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//创建view</span></div><div class="line"><span class="built_in">UIView</span> *view = [[<span class="built_in">UIView</span> alloc] init]; <span class="comment">//这里不需要设置frame</span></div><div class="line">view.backgroundColor = [<span class="built_in">UIColor</span> brownColor];</div><div class="line">view.translatesAutoresizingMaskIntoConstraints = <span class="literal">NO</span>; <span class="comment">//要实现自动布局，必须把该属性设置为NO</span></div><div class="line">[<span class="keyword">self</span>.view addSubview:view];</div><div class="line"></div><div class="line"><span class="comment">//添加约束</span></div><div class="line">[<span class="keyword">self</span>.view addConstraint:</div><div class="line"> [<span class="built_in">NSLayoutConstraint</span> constraintWithItem:view</div><div class="line">                              attribute:<span class="built_in">NSLayoutAttributeLeft</span></div><div class="line">                              relatedBy:<span class="built_in">NSLayoutRelationEqual</span></div><div class="line">                                 toItem:<span class="keyword">self</span>.view</div><div class="line">                              attribute:<span class="built_in">NSLayoutAttributeLeft</span></div><div class="line">                             multiplier:<span class="number">1</span></div><div class="line">                               constant:<span class="number">20</span>]];</div><div class="line">[<span class="keyword">self</span>.view addConstraint:</div><div class="line"> [<span class="built_in">NSLayoutConstraint</span> constraintWithItem:view</div><div class="line">                              attribute:<span class="built_in">NSLayoutAttributeRight</span></div><div class="line">                              relatedBy:<span class="built_in">NSLayoutRelationEqual</span></div><div class="line">                                 toItem:<span class="keyword">self</span>.view</div><div class="line">                              attribute:<span class="built_in">NSLayoutAttributeRight</span></div><div class="line">                             multiplier:<span class="number">1</span></div><div class="line">                               constant:<span class="number">-10</span>]];</div><div class="line">[<span class="keyword">self</span>.view addConstraint:</div><div class="line"> [<span class="built_in">NSLayoutConstraint</span> constraintWithItem:view</div><div class="line">                              attribute:<span class="built_in">NSLayoutAttributeTop</span></div><div class="line">                              relatedBy:<span class="built_in">NSLayoutRelationEqual</span></div><div class="line">                                 toItem:<span class="keyword">self</span>.view</div><div class="line">                              attribute:<span class="built_in">NSLayoutAttributeTop</span></div><div class="line">                             multiplier:<span class="number">1</span></div><div class="line">                               constant:<span class="number">30</span>]];</div><div class="line">[<span class="keyword">self</span>.view addConstraint:</div><div class="line"> [<span class="built_in">NSLayoutConstraint</span> constraintWithItem:view</div><div class="line">                              attribute:<span class="built_in">NSLayoutAttributeBottom</span></div><div class="line">                              relatedBy:<span class="built_in">NSLayoutRelationEqual</span></div><div class="line">                                 toItem:<span class="keyword">self</span>.view</div><div class="line">                              attribute:<span class="built_in">NSLayoutAttributeBottom</span></div><div class="line">                             multiplier:<span class="number">1</span></div><div class="line">                               constant:<span class="number">-20</span>]];</div></pre></td></tr></table></figure>
+<h3 id="添加约束的规则"><a href="#添加约束的规则" class="headerlink" title="添加约束的规则"></a>添加约束的规则</h3><ul>
+<li>对于两个同层级view之间的约束关系，添加到它们的父view上</li>
+<li>对于两个不同层级view之间的约束关系，添加到他们最近的共同父view上</li>
+<li>对于有层次关系的两个view之间的约束关系，添加到层次较高的父view上</li>
+</ul>
+<h3 id="Autolayout来实现动画功能"><a href="#Autolayout来实现动画功能" class="headerlink" title="Autolayout来实现动画功能"></a>Autolayout来实现动画功能</h3><p>在执行动画时记得调用一下方法：<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//在修改了约束之后，只要执行下面代码，就能做动画效果</span></div><div class="line">[<span class="built_in">UIView</span> animateWithDuration:<span class="number">0.5</span> animations:^&#123;</div><div class="line">      [<span class="keyword">self</span>.view layoutIfNeeded];</div><div class="line">&#125;];</div></pre></td></tr></table></figure></p>
+<h2 id="第三方框架实现AutoLayout"><a href="#第三方框架实现AutoLayout" class="headerlink" title="第三方框架实现AutoLayout"></a>第三方框架实现AutoLayout</h2><p>Masonry框架是目前最流行的Autolayout第三方框架，用优雅的代码方式编写Autolayout，省去了苹果官方恶心的Autolayout代码，大大提高了开发效率。</p>
+<h3 id="框架导入"><a href="#框架导入" class="headerlink" title="框架导入"></a>框架导入</h3><p>这里先介绍下ios的包管理工具cocoaPods，如何下载安装就不说了，介绍下如何使用。</p>
+<h4 id="创建Podfile"><a href="#创建Podfile" class="headerlink" title="创建Podfile"></a>创建Podfile</h4><p>在工程的目录下新建Podfile文件，写入我们需要的第三方库：<br><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">target 'NSLayoutConstraintDemo' do</div><div class="line">pod 'Masonry'</div><div class="line">end</div></pre></td></tr></table></figure></p>
+<h4 id="导入第三方库"><a href="#导入第三方库" class="headerlink" title="导入第三方库"></a>导入第三方库</h4><p>进入终端，运行命令<code>pod install</code>,导入第三方库。</p>
+<h3 id="Masonry基本使用"><a href="#Masonry基本使用" class="headerlink" title="Masonry基本使用"></a>Masonry基本使用</h3><p>最基本的使用方式：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">[view1 mas_makeConstraints:^(MASConstraintMaker *make) &#123;</div><div class="line">    make.属性.equalTo(另一个view).with.insets(差值);</div><div class="line">&#125;];</div></pre></td></tr></table></figure></p>
+<h3 id="Masonry属性"><a href="#Masonry属性" class="headerlink" title="Masonry属性"></a>Masonry属性</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>, <span class="keyword">readonly</span>) MASConstraint *left;</div><div class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>, <span class="keyword">readonly</span>) MASConstraint *top;</div><div class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>, <span class="keyword">readonly</span>) MASConstraint *right;</div><div class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>, <span class="keyword">readonly</span>) MASConstraint *bottom;</div><div class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>, <span class="keyword">readonly</span>) MASConstraint *leading;</div><div class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>, <span class="keyword">readonly</span>) MASConstraint *trailing;</div><div class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>, <span class="keyword">readonly</span>) MASConstraint *width;</div><div class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>, <span class="keyword">readonly</span>) MASConstraint *height;</div><div class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>, <span class="keyword">readonly</span>) MASConstraint *centerX;</div><div class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>, <span class="keyword">readonly</span>) MASConstraint *centerY;</div><div class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>, <span class="keyword">readonly</span>) MASConstraint *baseline;</div></pre></td></tr></table></figure>
+<p>其中leading与left trailing与right 在正常情况下是等价的 但是当一些布局是从右至左时(比如阿拉伯文?没有类似的经验) 则会对调 换句话说就是基本可以不理不用 用left和right就好了.</p>
+<h3 id="使用实例"><a href="#使用实例" class="headerlink" title="使用实例"></a>使用实例</h3><p>居中显示一个view：<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//从此以后基本可以抛弃CGRectMake了</span></div><div class="line"><span class="built_in">UIView</span> *sv = [<span class="built_in">UIView</span> new];</div><div class="line"></div><div class="line"><span class="comment">//在做autoLayout之前 一定要先将view添加到superview上 否则会报错</span></div><div class="line">[<span class="keyword">self</span>.view addSubview:sv];</div><div class="line"></div><div class="line"><span class="comment">//mas_makeConstraints就是Masonry的autolayout添加函数 将所需的约束添加到block中行了</span></div><div class="line">[sv mas_makeConstraints:^(MASConstraintMaker *make) &#123;</div><div class="line"></div><div class="line">    <span class="comment">//将sv居中(很容易理解吧?)</span></div><div class="line">    make.center.equalTo(<span class="keyword">self</span>.view);</div><div class="line">    </div><div class="line">    <span class="comment">//将size设置成(300,300)</span></div><div class="line">    make.size.mas_equalTo(<span class="built_in">CGSizeMake</span>(<span class="number">300</span>, <span class="number">300</span>));</div><div class="line">&#125;];</div></pre></td></tr></table></figure></p>
+<h3 id="方法简析"><a href="#方法简析" class="headerlink" title="方法简析"></a>方法简析</h3><h4 id="添加autolayout约束"><a href="#添加autolayout约束" class="headerlink" title="添加autolayout约束"></a>添加autolayout约束</h4><p>有三个可以添加约束的方法：<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">- (<span class="built_in">NSArray</span> *)mas_makeConstraints:(<span class="keyword">void</span>(^)(MASConstraintMaker *make))block;</div><div class="line">- (<span class="built_in">NSArray</span> *)mas_updateConstraints:(<span class="keyword">void</span>(^)(MASConstraintMaker *make))block;</div><div class="line">- (<span class="built_in">NSArray</span> *)mas_remakeConstraints:(<span class="keyword">void</span>(^)(MASConstraintMaker *make))block;</div><div class="line"></div><div class="line"><span class="comment">/*</span></div><div class="line">    mas_makeConstraints 只负责新增约束 Autolayout不能同时存在两条针对于同一对象的约束 否则会报错 </div><div class="line">    mas_updateConstraints 针对上面的情况 会更新在block中出现的约束 不会导致出现两个相同约束的情况</div><div class="line">    mas_remakeConstraints 则会清除之前的所有约束 仅保留最新的约束</div><div class="line">    </div><div class="line">    三种函数善加利用 就可以应对各种情况了</div><div class="line">*/</div></pre></td></tr></table></figure></p>
+<h4 id="equalTo-和-mas-equalTo的区别"><a href="#equalTo-和-mas-equalTo的区别" class="headerlink" title="equalTo 和 mas_equalTo的区别"></a>equalTo 和 mas_equalTo的区别</h4><p><code>mas_equalTo</code>只是对其参数进行了一个BOX操作(装箱)。所支持的类型 除了<code>NSNumber</code>支持的那些数值类型之外 就只支持<code>CGPoint</code> <code>CGSize</code> <code>UIEdgeInsets</code></p>
+<h3 id="另一个示例"><a href="#另一个示例" class="headerlink" title="另一个示例"></a>另一个示例</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">UIView</span> *sv1 = [<span class="built_in">UIView</span> new];</div><div class="line">[sv1 showPlaceHolder];</div><div class="line">sv1.backgroundColor = [<span class="built_in">UIColor</span> redColor];</div><div class="line">[sv addSubview:sv1];</div><div class="line">[sv1 mas_makeConstraints:^(MASConstraintMaker *make) &#123;</div><div class="line">    make.edges.equalTo(sv).with.insets(<span class="built_in">UIEdgeInsetsMake</span>(<span class="number">10</span>, <span class="number">10</span>, <span class="number">10</span>, <span class="number">10</span>));</div><div class="line">    </div><div class="line">    <span class="comment">/* 等价于</span></div><div class="line">    make.top.equalTo(sv).with.offset(10);</div><div class="line">    make.left.equalTo(sv).with.offset(10);</div><div class="line">    make.bottom.equalTo(sv).with.offset(-10);</div><div class="line">    make.right.equalTo(sv).with.offset(-10);</div><div class="line">    */</div><div class="line">    </div><div class="line">    <span class="comment">/* 也等价于</span></div><div class="line">    make.top.left.bottom.and.right.equalTo(sv).with.insets(UIEdgeInsetsMake(10, 10, 10, 10));</div><div class="line">    */</div><div class="line">&#125;];</div></pre></td></tr></table></figure>
+<p>可以看到 edges 其实就是top,left,bottom,right的一个简化 分开写也可以 一句话更省事.</p>
+<p>那么为什么bottom和right里的offset是负数呢? 因为这里计算的是绝对的数值 计算的bottom需要小于sv的底部高度 所以要-10 同理用于right.</p>
+<p>这里有意思的地方是and和with 其实这两个函数什么事情都没做.但是用在这种链式语法中 就非常的巧妙和易懂</p>
+<p>还有一些其他的示例，可以参见<a href="http://adad184.com/2014/09/28/use-masonry-to-quick-solve-autolayout/" target="_blank" rel="external">Masonry介绍与使用实践</a></p>
+<blockquote>
+<p>Demo 详见NSLayoutConstraintDemo</p>
+</blockquote>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/AutoLayout/" rel="tag">#AutoLayout</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/09/07/oc中的枚举/" rel="next" title="移位与枚举">
+                <i class="fa fa-chevron-left"></i> 移位与枚举
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/author.png?raw=true"
+               alt="Zachary Zhang" />
+          <p class="site-author-name" itemprop="name">Zachary Zhang</p>
+          <p class="site-description motion-element" itemprop="description">不止是一个程序猿</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">37</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">17</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://zhang759740844.github.io/" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://www.jianshu.com/users/d6b98b1c1e64/latest_articles" target="_blank" title="JianShu">
+                  
+                    <i class="fa fa-fw fa-globe"></i>
+                  
+                  JianShu
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#代码添加AutoLayout"><span class="nav-number">1.</span> <span class="nav-text">代码添加AutoLayout</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#关闭Autoresizing"><span class="nav-number">1.1.</span> <span class="nav-text">关闭Autoresizing</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#NSLayoutConstraint相关"><span class="nav-number">1.2.</span> <span class="nav-text">NSLayoutConstraint相关</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#约束方法"><span class="nav-number">1.2.1.</span> <span class="nav-text">约束方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#NSLayoutAttribute属性"><span class="nav-number">1.2.2.</span> <span class="nav-text">NSLayoutAttribute属性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#NSLayoutRelation关系"><span class="nav-number">1.2.3.</span> <span class="nav-text">NSLayoutRelation关系</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创建view"><span class="nav-number">1.3.</span> <span class="nav-text">创建view</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#添加约束的规则"><span class="nav-number">1.4.</span> <span class="nav-text">添加约束的规则</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Autolayout来实现动画功能"><span class="nav-number">1.5.</span> <span class="nav-text">Autolayout来实现动画功能</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#第三方框架实现AutoLayout"><span class="nav-number">2.</span> <span class="nav-text">第三方框架实现AutoLayout</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#框架导入"><span class="nav-number">2.1.</span> <span class="nav-text">框架导入</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#创建Podfile"><span class="nav-number">2.1.1.</span> <span class="nav-text">创建Podfile</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#导入第三方库"><span class="nav-number">2.1.2.</span> <span class="nav-text">导入第三方库</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Masonry基本使用"><span class="nav-number">2.2.</span> <span class="nav-text">Masonry基本使用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Masonry属性"><span class="nav-number">2.3.</span> <span class="nav-text">Masonry属性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用实例"><span class="nav-number">2.4.</span> <span class="nav-text">使用实例</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#方法简析"><span class="nav-number">2.5.</span> <span class="nav-text">方法简析</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#添加autolayout约束"><span class="nav-number">2.5.1.</span> <span class="nav-text">添加autolayout约束</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#equalTo-和-mas-equalTo的区别"><span class="nav-number">2.5.2.</span> <span class="nav-text">equalTo 和 mas_equalTo的区别</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#另一个示例"><span class="nav-number">2.6.</span> <span class="nav-text">另一个示例</span></a></li></ol></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2016</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zachary Zhang</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
