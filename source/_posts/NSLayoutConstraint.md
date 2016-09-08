@@ -148,7 +148,7 @@ end
 
 ### Masonry基本使用
 最基本的使用方式：
-```
+```objc
 [view1 mas_makeConstraints:^(MASConstraintMaker *make) {
     make.属性.equalTo(另一个view).with.insets(差值);
 }];
@@ -168,8 +168,7 @@ end
 @property (nonatomic, strong, readonly) MASConstraint *centerY;
 @property (nonatomic, strong, readonly) MASConstraint *baseline;
 ```
-其中leading与left trailing与right 在正常情况下是等价的 但是当一些布局是从右至左时(比如阿拉伯文?没有类似的经验) 则会对调 换句话说就是基本可以不理不用 用left和right就好了.
-
+其中leading与left trailing与right 在正常情况下是等价的。
 ### 使用实例
 居中显示一个view：
 ```objc
@@ -233,9 +232,7 @@ sv1.backgroundColor = [UIColor redColor];
 ```
 可以看到 edges 其实就是top,left,bottom,right的一个简化 分开写也可以 一句话更省事.
 
-那么为什么bottom和right里的offset是负数呢? 因为这里计算的是绝对的数值 计算的bottom需要小于sv的底部高度 所以要-10 同理用于right.
-
-这里有意思的地方是and和with 其实这两个函数什么事情都没做.但是用在这种链式语法中 就非常的巧妙和易懂
+这里and和with 两个函数什么事情都没做.
 
 
 还有一些其他的示例，可以参见[Masonry介绍与使用实践](http://adad184.com/2014/09/28/use-masonry-to-quick-solve-autolayout/)
