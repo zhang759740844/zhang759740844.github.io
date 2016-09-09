@@ -234,6 +234,40 @@ sv1.backgroundColor = [UIColor redColor];
 
 这里and和with 两个函数什么事情都没做.
 
+### 还有一个示例
+```objc
+UIView *lastView = nil;
+    
+for ( int i = 1 ; i <= count ; ++i ){
+    UIView *subv = [UIView new];
+    [container addSubview:subv];
+    subv.backgroundColor = [UIColor colorWithHue:( arc4random() % 256 / 256.0 )
+                                      saturation:( arc4random() % 128 / 256.0 ) + 0.5
+                                      brightness:( arc4random() % 128 / 256.0 ) + 0.5
+                                           alpha:1];
+        
+    [subv mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.and.right.equalTo(container);
+        make.height.mas_equalTo(@(20*i));
+           
+        if ( lastView ){
+            make.top.mas_equalTo(lastView.mas_bottom);
+        }
+        else{
+            make.top.mas_equalTo(container.mas_top);
+        }
+    }];
+       
+    lastView = subv;
+}
+   
+    
+[container mas_makeConstraints:^(MASConstraintMaker *make) {
+    make.bottom.equalTo(lastView.mas_bottom);
+}];
+```
+
+框架通过范畴为UIView添加了`mas_bottom`、`mas_top`等属性，用来表示view的上下左右的位置。这样，有利于**在view之间的约束条件的建立**，之前的示例都是view与父view的约束关系。
 
 还有一些其他的示例，可以参见[Masonry介绍与使用实践](http://adad184.com/2014/09/28/use-masonry-to-quick-solve-autolayout/)
 
