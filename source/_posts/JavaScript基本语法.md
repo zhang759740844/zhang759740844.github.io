@@ -712,7 +712,7 @@ xiaoming.age(); // 25
 
 用`var that = this`;将`age`中的`this`捕获，就可以放心地在方法内部定义其他函数，而不是把所有语句都堆到一个方法中。
 
-### apply
+#### apply
 我们还是可以控制`this`的指向的！
 
 要指定函数的`this`指向哪个对象，可以用函数本身的`apply`方法，它接收两个参数，第一个参数就是需要绑定的`this`变量，第二个参数是`Array`，表示函数本身的参数。
@@ -745,7 +745,29 @@ Math.max.call(null, 3, 5, 4); // 5
 ```
 对普通函数调用，我们通常把this绑定为null。
 
-### 装饰器
+#### 装饰器
+利用`apply()`，我们还可以动态改变函数的行为。
+
+JavaScript的所有对象都是动态的，即使内置的函数，我们也可以**重新指向新的函数**。
+
+现在假定我们想统计一下代码一共调用了多少次`parseInt()`，可以把所有的调用都找出来，然后手动加上`count += 1`，不过这样做太傻了。最佳方案是用我们自己的函数替换掉默认的`parseInt()`：
+```javascript
+var count = 0;
+var oldParseInt = parseInt; // 保存原函数
+
+window.parseInt = function () {
+    count += 1;
+    return oldParseInt.apply(null, arguments); // 调用原函数
+};
+
+// 测试:
+parseInt('10');
+parseInt('20');
+parseInt('30');
+count; // 3
+```
+
+## 高阶函数
 
 
 
