@@ -768,10 +768,175 @@ count; // 3
 ```
 
 ## 高阶函数
+一个可以接收另一个函数作为参的函数，称为高阶函数。
+#### map
+`map()`方法定义在JavaScript的`Array`中，我们调用`Array`的`map()`方法，传入我们自己的函数，就得到了一个新的`Array`作为结果：
+```javascript
+function pow(x) {
+    return x * x;
+}
 
+var arr = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+arr.map(pow); // [1, 4, 9, 16, 25, 36, 49, 64, 81]
+```
 
+`map()`将传入的函数一一作用在数组的每一个元素上。
 
+#### reduce
+`Array`的`reduce()`把一个函数作用在这个`Array`的`[x1, x2, x3...]`上，这个函数必须接收两个参数，`reduce()`把结果继续和序列的下一个元素做累积计算，其效果就是：
+```javascipt
+[x1, x2, x3, x4].reduce(f) = f(f(f(x1, x2), x3), x4)
+```
 
+比如对`Array`求和：
+```javascript
+var arr = [1, 3, 5, 7, 9];
+arr.reduce(function (x, y) {
+    return x + y;
+}); // 25
+```
+
+#### filter
+用于把`Array`的某些元素过滤掉，然后返回剩下的元素
+`Array`的`filter()`接收一个函数,把传入的函数依次作用于每个元素，然后根据返回值是`true`还是`false`决定保留还是丢弃该元素。
+
+例如，在一个`Array`中，删掉偶数，只保留奇数，可以这么写：
+```javascript
+var arr = [1, 2, 4, 5, 6, 9, 10, 15];
+var r = arr.filter(function (x) {
+    return x % 2 !== 0;
+});
+r; // [1, 5, 9, 15]
+```
+
+#### sort
+可以接收一个比较函数来实现自定义的排序
+要按数字大小排序，我们可以这么写：
+```javascript
+var arr = [10, 20, 1, 2];
+arr.sort(function (x, y) {
+    if (x < y) {
+        return -1;
+    }
+    if (x > y) {
+        return 1;
+    }
+    return 0;
+}); // [1, 2, 10, 20]
+```
+
+**注意**：`sort()`方法会直接对`Array`进行修改，它返回的结果仍是当前`Array`
+
+### 闭包
+#### 函数作为返回值
+高阶函数除了可以接受函数作为参数外，还可以把函数作为结果值返回。
+
+比如返回一个求和的函数：
+```javascript
+function lazy_sum(arr) {
+    var sum = function () {
+        return arr.reduce(function (x, y) {
+            return x + y;
+        });
+    }
+    return sum;
+}
+```
+当我们调用`lazy_sum()`时，返回的并不是求和结果，而是求和函数：
+```javascript
+var f = lazy_sum([1, 2, 3, 4, 5]); // function sum()
+```
+调用函数f时，才真正计算求和的结果：
+```javascript
+f(); // 15
+```
+当`lazy_sum`返回函数`sum`时，相关参数和变量都保存在返回的函数中，这种称为“闭包（Closure）”(但是JS中`this`不遵循闭包)
+
+### 闭包
+需要注意的问题是，返回的函数并没有立刻执行，而是直到调用了f()才执行。我们来看一个例子：
+```javascript
+function count() {
+    var arr = [];
+    for (var i=1; i<=3; i++) {
+        arr.push(function () {
+            return i * i;
+        });
+    }
+    return arr;
+}
+
+var results = count();
+var f1 = results[0];
+var f2 = results[1];
+var f3 = results[2];
+```
+
+上面的例子中，每次循环，都创建了一个新的函数，然后，把创建的3个函数都添加到一个Array中返回了，**或者说返回了三个闭包**.
+调用的结果全是`16`,因为返回函数都引用了变量`i`，由于闭包性，等到3个函数都返回时，它们所引用的变量i已经变成了`4`。
+
+**返回闭包时牢记的一点就是：返回函数不要引用任何循环变量，或者后续会发生变化的变量。**
+
+如何一定要引用循环变量？方法是再创建一个函数，用该函数的参数绑定循环变量当前的值，无论该循环变量后续如何更改，已绑定到函数参数的值不变：
+```javascript
+function count() {
+    var arr = [];
+    for (var i=1; i<=3; i++) {
+        arr.push((function (n) {
+            return function () {
+                return n * n;
+            }
+        })(i));
+    }
+    return arr;
+}
+
+var results = count();
+var f1 = results[0];
+var f2 = results[1];
+var f3 = results[2];
+
+f1(); // 1
+f2(); // 4
+f3(); // 9
+```
+
+注意这里用了一个“创建一个匿名函数并立刻执行”的语法：
+```
+(function (x) {
+    return x * x;
+})(3); // 9
+``` 
+
+**实际上，上面的代码相当于在外层函数拿了一个变量`n`截取了`i`,由于外层函数是立刻执行了的匿名函数(即立刻执行了`var n = i;`)，那么`n`就固定了下来**：
+```javascript
+function count() {
+    var arr = [];
+    for (var i=1; i<=3; i++) {
+        arr.push((function () {
+            var n =i
+            return function () {
+                return n*n;
+            }
+        })());
+    }
+    return arr;
+}
+```
+相反的，如果内存函数还是用的`i`，那么结果就会全是`16`.
+```javascript
+function count() {
+    var arr = [];
+    for (var i=1; i<=3; i++) {
+        arr.push((function () {
+            // var n =i
+            return function () {
+                return i*i;
+            }
+        })());
+    }
+    return arr;
+}
+```
 
 
 
