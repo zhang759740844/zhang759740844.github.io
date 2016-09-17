@@ -938,5 +938,478 @@ function count() {
 }
 ```
 
+### 箭头函数
+ES6标准新增了一种新的函数：Arrow Function（箭头函数）。
+```javascript
+x => x*x
+```
+相当于一个输入为`x`输出为`x*x`的匿名函数
+```
+function (x) {
+    return x * x;
+}
+```
+如果参数不是一个，就需要用括号()括起来：
+```javascript
+// 两个参数:
+(x, y) => x * x + y * y
+
+// 无参数:
+() => 3.14
+
+// 可变参数:
+(x, y, ...rest) => {
+    var i, sum = x + y;
+    for (i=0; i<rest.length; i++) {
+        sum += rest[i];
+    }
+    return sum;
+}
+```
+语法糖，类似于python中的lambda函数
+
+当然，箭头函数还是有点用处的，由于是es6的新特性，箭头函数内部的this是词法作用域，由上下文确定。
+试做比较：
+```
+//由于JavaScript函数对this绑定的错误处理，下面的例子无法得到预期结果
+var obj = {
+    birth: 1990,
+    getAge: function () {
+        var b = this.birth; // 1990
+        var fn = function () {
+            return new Date().getFullYear() - this.birth; // this指向window或undefined
+        };
+        return fn();
+    }
+};
+//箭头函数完全修复了this的指向，this总是指向词法作用域，也就是外层调用者obj：
+var obj = {
+    birth: 1990,
+    getAge: function () {
+        var b = this.birth; // 1990
+        var fn = () => new Date().getFullYear() - this.birth; // this指向obj对象
+        return fn();
+    }
+};
+obj.getAge(); // 25
+```
+如果使用箭头函数,以前`var that = this;`这种写法就不需要了。
+
+
+### generator
+generator（生成器）是ES6标准引入的新的数据类型，类似于Python的generator的概念和语法。一个generator看上去像一个函数，但可以返回多次。
+
+定义如下：
+```javascript
+function* foo(x) {
+    yield x + 1;
+    yield x + 2;
+    return x + 3;
+}
+```
+generator由`function*`定义（注意多出的`*`号），并且，除了`return`语句，还可以用`yield`返回多次。好处就是**函数只能返回一次，所以必须返回一个Array。但是，如果换成generator，就可以一次返回一个数，不断返回多次。**(其实这东西很像调试函数时候的断点！)
+
+执行generator和调用函数不一样，调用generator对象有两个方法，一是不断地调用generator对象的`next()`方法：
+```javascript
+var f = fib(5);
+f.next(); // {value: 0, done: false}
+f.next(); // {value: 1, done: false}
+f.next(); // {value: 1, done: true}
+```
+`next()`方法会执行generator的代码，然后，每次遇到`yield x;`就返回一个对象`{value: x, done: true/false}`，然后“暂停”。返回的`value`就是`yield`的返回值，`done`表示这个generator是否已经执行结束了。如果`done`为`true`，则`value`就是`return`的返回值。
+
+第二个方法是直接用`for ... of`循环迭代generator对象，这种方式不需要我们自己判断`done`：
+```javascript
+for (var x of fib(5)) {
+    console.log(x); // 依次输出0, 1, 1
+}
+```
+
+因为generator可以在执行过程中多次返回，所以它看上去就像一个可以记住执行状态的函数。**看起来蛮有用的**
+
+举个例子，要生成一个自增的ID，可以编写一个next_id()函数：
+```javascript
+var current_id = 0;
+
+function next_id() {
+    current_id ++;
+    return current_id;
+}
+```
+
+由于函数无法保存状态，故需要一个全局变量`current_id`来保存数字。现在改用generator：
+```javascript
+function* next_id() {
+	var i = 0;
+	while (true){
+    	yield ++i;
+   	}
+}
+```
+
+## 标准对象
+一些原则：
+- 不要使用`new Number()`、`new Boolean()`、`new String()`创建包装对象；
+- 用`parseInt()`或`parseFloat()`来转换任意类型到`number`；
+- 用`String()`来转换任意类型到`string`，或者直接调用某个对象的`toString()`方法；
+- 通常不必把任意类型转换为`boolean`再判断，因为可以直接写`if (myVar) {...}`；
+- `typeof`操作符可以判断出`number`、`boolean`、`string`、`function`和`undefined`；
+- 判断`Array`要使用`Array.isArray(arr)`；
+- 判断`null`请使用`myVar === null`；
+- 判断某个全局变量是否存在用`typeof window.myVar === 'undefined'`；
+
+### Date
+在JavaScript中，`Date`对象用来表示日期和时间。
+
+要获取系统当前时间，用：
+```javascript
+var now = new Date();
+now; // Wed Jun 24 2015 19:49:22 GMT+0800 (CST)
+now.getFullYear(); // 2015, 年份
+now.getMonth(); // 5, 月份，注意月份范围是0~11，5表示六月
+now.getDate(); // 24, 表示24号
+now.getDay(); // 3, 表示星期三
+now.getHours(); // 19, 24小时制
+now.getMinutes(); // 49, 分钟
+now.getSeconds(); // 22, 秒
+now.getMilliseconds(); // 875, 毫秒数
+now.getTime(); // 1435146562875, 以number形式表示的时间戳
+```
+
+如果要创建一个指定日期和时间的Date对象，可以用：
+```javascript
+var d = new Date(2015, 5, 19, 20, 15, 30, 123);
+d; // Fri Jun 19 2015 20:15:30 GMT+0800 (CST)
+```
+
+一个非常非常坑爹的地方，就是JavaScript的月份范围用整数表示是`0~11`，`0`表示一月，`1`表示二月……，所以要表示`6`月，我们传入的是`5`！
+
+第二种创建一个指定日期和时间的方法是解析一个符合ISO 8601格式的字符串：
+```javascript
+var d = Date.parse('2015-06-24T19:49:22.875+08:00');
+d; // 1435146562875
+```
+但它返回的不是`Date`对象，而是一个**时间戳**。不过有时间戳就可以很容易地把它转换为一个`Date`：
+```javascript
+var d = new Date(1435146562875);
+d; // Wed Jun 24 2015 19:49:22 GMT+0800 (CST)
+```
+
+时间戳是个什么东西？时间戳是一个自增的整数，它表示从1970年1月1日零时整的GMT时区开始的那一刻，到现在的毫秒数。假设浏览器所在电脑的时间是准确的，那么世界上无论哪个时区的电脑，它们此刻产生的时间戳数字都是一样的，所以，时间戳可以精确地表示一个时刻，并且与时区无关。
+
+要获取当前时间戳，可以用：
+```javascript
+if (Date.now) {
+    alert(Date.now()); // 老版本IE没有now()方法
+} else {
+    alert(new Date().getTime());
+}
+```
+
+### Json
+JSON（JavaScript Object Notation）实际上是JavaScript的一个子集。在JSON中，一共就这么几种数据类型：
+- number：和JavaScript的`number`完全一致；
+- boolean：就是JavaScript的`true`或`false`；
+- string：就是JavaScript的`string`；
+- null：就是JavaScript的`null`；
+- array：就是JavaScript的`Array`表示方式——`[]`；
+- object：就是JavaScript的`{ ... }`表示方式。
+
+#### 序列化
+先把小明这个对象序列化成JSON格式的字符串：
+```javascript
+var xiaoming = {
+    name: '小明',
+    age: 14,
+    gender: true,
+    height: 1.65,
+    grade: null,
+    'middle-school': '\"W3C\" Middle School',
+    skills: ['JavaScript', 'Java', 'Python', 'Lisp']
+};
+
+JSON.stringify(xiaoming); // '{"name":"小明","age":14,"gender":true,"height":1.65,"grade":null,"middle-school":"\"W3C\" Middle School","skills":["JavaScript","Java","Python","Lisp"]}'
+```
+
+要输出得好看一些，可以加上参数，按缩进输出：
+```javascript
+JSON.stringify(xiaoming, null, '  ');
+```
+结果：
+```javascript
+{
+  "name": "小明",
+  "age": 14,
+  "gender": true,
+  "height": 1.65,
+  "grade": null,
+  "middle-school": "\"W3C\" Middle School",
+  "skills": [
+    "JavaScript",
+    "Java",
+    "Python",
+    "Lisp"
+  ]
+}
+```
+第二个参数用于控制如何筛选对象的键值，如果我们只想输出指定的属性，可以传入`Array`：
+```javacript
+JSON.stringify(xiaoming, ['name', 'skills'], '  ');
+```
+结果:
+```javascript
+{
+  "name": "小明",
+  "skills": [
+    "JavaScript",
+    "Java",
+    "Python",
+    "Lisp"
+  ]
+}
+```
+还可以传入一个函数，这样对象的每个键值对都会被函数先处理：
+```javascript
+function convert(key, value) {
+    if (typeof value === 'string') {
+        return value.toUpperCase();
+    }
+    return value;
+}
+
+JSON.stringify(xiaoming, convert, '  ');
+```
+上面的代码把所有属性值都变成大写：
+
+```javascript
+{
+  "name": "小明",
+  "age": 14,
+  "gender": true,
+  "height": 1.65,
+  "grade": null,
+  "middle-school": "\"W3C\" MIDDLE SCHOOL",
+  "skills": [
+    "JAVASCRIPT",
+    "JAVA",
+    "PYTHON",
+    "LISP"
+  ]
+}
+```
+如果我们还想要精确控制如何序列化小明，可以给`xiaoming`定义一个`toJSON()`的方法，直接返回JSON应该序列化的数据：
+```javascript
+var xiaoming = {
+    name: '小明',
+    age: 14,
+    gender: true,
+    height: 1.65,
+    grade: null,
+    'middle-school': '\"W3C\" Middle School',
+    skills: ['JavaScript', 'Java', 'Python', 'Lisp'],
+    toJSON: function () {
+        return { // 只输出name和age，并且改变了key：
+            'Name': this.name,
+            'Age': this.age
+        };
+    }
+};
+
+JSON.stringify(xiaoming); // '{"Name":"小明","Age":14}'
+```
+
+#### 反序列化
+拿到一个JSON格式的字符串，我们直接用`JSON.parse()`把它变成一个JavaScript对象：
+```javascript
+JSON.parse('[1,2,3,true]'); // [1, 2, 3, true]
+JSON.parse('{"name":"小明","age":14}'); // Object {name: '小明', age: 14}
+JSON.parse('true'); // true
+JSON.parse('123.45'); // 123.45
+```
+`JSON.parse()`还可以接收一个函数，用来转换解析出的属性：
+```javascript
+JSON.parse('{"name":"小明","age":14}', function (key, value) {
+    // 把number * 2:
+    if (key === 'name') {
+        return value + '同学';
+    }
+    return value;
+}); // Object {name: '小明同学', age: 14}
+```
+
+## 面向对象编程
+JavaScript不区分类和实例的概念，而是通过原型（prototype）来实现面向对象编程。
+
+prototype有点类似于继承，`A`的原型是`B`，意味着，`A`拥有`B`的全部属性。
+```javascript
+// 原型对象:
+var Student = {
+    name: 'Robot',
+    height: 1.2,
+    run: function () {
+        console.log(this.name + ' is running...');
+    }
+};
+
+function createStudent(name) {
+    // 基于Student原型创建一个新对象:
+    var s = Object.create(Student);
+    // 初始化新对象:
+    s.name = name;
+    return s;
+}
+
+var xiaoming = createStudent('小明');
+xiaoming.run(); // 小明 is running...
+xiaoming.__proto__ === Student; // true
+```
+
+### 创建对象
+JavaScript对每个创建的对象都会设置一个原型，指向它的原型对象。当我们用`obj.xxx`访问一个对象的属性时，JavaScript引擎先在当前对象上查找该属性，如果没有找到，就到其原型对象上找，如果还没有找到，就一直上溯到`Object.prototype`对象，最后，如果还没有找到，就只能返回`undefined`。
+
+例如，创建一个`Array`对象：
+```javascript
+var arr = [1, 2, 3];
+```
+其原型链是：
+```javascript
+arr ----> Array.prototype ----> Object.prototype ----> null
+```
+`Array.prototype`定义了`indexOf()`、`shift()`等方法，因此你可以在所有的`Array`对象上直接调用这些方法。
+
+当我们创建一个函数时：
+```javascript
+function foo() {
+    return 0;
+}
+```
+函数也是一个对象，它的原型链是：
+```javascript
+foo ----> Function.prototype ----> Object.prototype ----> null
+```
+由于`Function.prototype`定义了`apply()`等方法，因此，所有函数都可以调用`apply()`方法。
+
+#### 构造函数
+除了直接用`{ ... }`创建一个对象外，JavaScript还可以用一种构造函数的方法来创建对象。它的用法是，先定义一个构造函数：
+```javascript
+function Student(name) {
+    this.name = name;
+    this.hello = function () {
+        alert('Hello, ' + this.name + '!');
+    }
+}
+```
+在JavaScript中，可以用关键字`new`来调用这个函数，并返回一个对象：
+```javascript
+var xiaoming = new Student('小明');
+xiaoming.name; // '小明'
+xiaoming.hello(); // Hello, 小明!
+```
+注意，如果不写`new`，这就是一个普通函数，它返回`undefined`。但是，如果写了`new`，它就变成了一个构造函数，它绑定的`this`指向新创建的对象，并默认返回`this`，也就是说，不需要在最后写`return this;`。
+
+用`new Student()`创建的对象还从原型上获得了一个`constructor`属性，它指向函数`Student`本身：
+```javascript
+xiaoming.constructor === Student.prototype.constructor; // true
+Student.prototype.constructor === Student; // true
+
+Object.getPrototypeOf(xiaoming) === Student.prototype; // true
+
+xiaoming instanceof Student; // true
+```
+他们之间的关系就是:
+![constructor](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/js_constructor.png?raw=true)
+
+红色箭头是原型链。注意，`Student.prototype`指向的对象就是`xiaoming`、`xiaohong`的原型对象，这个原型对象自己还有个属性`constructor`，指向`Student`函数本身。
+
+另外，函数`Student`恰好有个属性`prototype`指向`xiaoming`、`xiaohong`的原型对象，但是`xiaoming`、`xiaohong`这些对象可没有`prototype`这个属性，不过可以用`__proto__`这个非标准用法来查看。
+
+不过还有一个小问题，注意观察：
+```javascript
+xiaoming.name; // '小明'
+xiaohong.name; // '小红'
+xiaoming.hello; // function: Student.hello()
+xiaohong.hello; // function: Student.hello()
+xiaoming.hello === xiaohong.hello; // false
+```
+`xiaoming`和`xiaohong`各自的`hello`是一个函数，但它们是两个不同的函数，虽然函数名称和代码都是相同的！
+
+如果我们通过`new Student()`创建了很多对象，这些对象的`hello`函数实际上只需要共享同一个函数就可以了，这样可以节省很多内存。
+要让创建的对象共享一个`hello`函数，根据对象的属性查找原则，我们只要把`hello`函数移动到`xiaoming`、`xiaohong`这些对象共同的原型上就可以了，也就是`Student.prototype`：
+![constructor2](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/js_constructor2.png?raw=true)
+修改代码如下：
+```javascript
+function Student(name) {
+    this.name = name;
+}
+
+Student.prototype.hello = function () {
+    alert('Hello, ' + this.name + '!');
+};
+```
+
+### class继承
+新的关键字`class`从ES6开始正式被引入到JavaScript中。`class`的目的就是让定义类更简单。
+
+我们先回顾用函数实现`Student`的方法：
+```javscript
+function Student(name) {
+    this.name = name;
+}
+
+Student.prototype.hello = function () {
+    alert('Hello, ' + this.name + '!');
+}
+```
+
+如果用新的`class`关键字来编写`Student`，可以这样写：
+```javascript
+class Student {
+    constructor(name) {
+        this.name = name;
+    }
+
+    hello() {
+        alert('Hello, ' + this.name + '!');
+    }
+}
+```
+
+比较一下就可以发现，`class`的定义包含了**构造函数**`constructor`和定义在原型对象上的函数`hello()`（注意没有`function`关键字），这样就避免了`Student.prototype.hello = function () {...}`这样分散的代码。
+
+最后，创建一个Student对象代码和前面章节完全一样：
+```javascript
+var xiaoming = new Student('小明');
+xiaoming.hello();
+```
+
+#### class继承
+用`class`定义对象的另一个巨大的好处是继承更方便了,直接通过`extends`来实现：
+```javascript
+class PrimaryStudent extends Student {
+    constructor(name, grade) {
+        super(name); // 记得用super调用父类的构造方法!
+        this.grade = grade;
+    }
+
+    myGrade() {
+        alert('I am at grade ' + this.grade);
+    }
+}
+```
+
+通过`super(name)`来调用父类的构造函数。`PrimaryStudent`已经自动获得了父类`Student`的`hello`方法，我们又在子类中定义了新的`myGrade`方法。
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

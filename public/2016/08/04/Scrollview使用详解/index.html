@@ -68,7 +68,7 @@
 <link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="Xcode," />
+  <meta name="keywords" content="UI,基本控件," />
 
 
 
@@ -84,19 +84,16 @@
 
 
 
-<meta name="description" content="写ios小demo的时候，真机调试出现View不能满屏显示的情况。屏幕上下都有一条粗粗的黑条。">
+<meta name="description" content="UIScrollView是iOS开发中最常用的UI组件，本次将参考iOS 性能优化之 UIScrollView 实践经验对UIScrollView的使用方式进行详细介绍">
 <meta property="og:type" content="article">
-<meta property="og:title" content="IPhone6全屏黑边处理">
-<meta property="og:url" content="http://zhang759740844.github.io/2016/09/05/IPhone6全屏黑边处理/index.html">
+<meta property="og:title" content="UIScrollView详细介绍">
+<meta property="og:url" content="http://zhang759740844.github.io/2016/08/04/Scrollview使用详解/index.html">
 <meta property="og:site_name" content="Zachary's blog">
-<meta property="og:description" content="写ios小demo的时候，真机调试出现View不能满屏显示的情况。屏幕上下都有一条粗粗的黑条。">
-<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/SetLaunchImage2.png?raw=true">
-<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/SetLaunchImage1.png?raw=true">
-<meta property="og:updated_time" content="2016-09-05T13:23:04.000Z">
+<meta property="og:description" content="UIScrollView是iOS开发中最常用的UI组件，本次将参考iOS 性能优化之 UIScrollView 实践经验对UIScrollView的使用方式进行详细介绍">
+<meta property="og:updated_time" content="2016-09-14T14:25:57.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="IPhone6全屏黑边处理">
-<meta name="twitter:description" content="写ios小demo的时候，真机调试出现View不能满屏显示的情况。屏幕上下都有一条粗粗的黑条。">
-<meta name="twitter:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/SetLaunchImage2.png?raw=true">
+<meta name="twitter:title" content="UIScrollView详细介绍">
+<meta name="twitter:description" content="UIScrollView是iOS开发中最常用的UI组件，本次将参考iOS 性能优化之 UIScrollView 实践经验对UIScrollView的使用方式进行详细介绍">
 
 
 
@@ -117,9 +114,9 @@
 
 
 
-  <link rel="canonical" href="http://zhang759740844.github.io/2016/09/05/IPhone6全屏黑边处理/"/>
+  <link rel="canonical" href="http://zhang759740844.github.io/2016/08/04/Scrollview使用详解/"/>
 
-  <title> IPhone6全屏黑边处理 | Zachary's blog </title>
+  <title> UIScrollView详细介绍 | Zachary's blog </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -282,7 +279,7 @@
             
             
               
-                IPhone6全屏黑边处理
+                UIScrollView详细介绍
               
             
           </h1>
@@ -294,8 +291,8 @@
               <i class="fa fa-calendar-o"></i>
             </span>
             <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-09-05T14:07:12+08:00" content="2016-09-05">
-              2016-09-05
+            <time itemprop="dateCreated" datetime="2016-08-04T14:07:12+08:00" content="2016-08-04">
+              2016-08-04
             </time>
           </span>
 
@@ -341,14 +338,16 @@
       
 
       
-        <p>写ios小demo的时候，真机调试出现View不能满屏显示的情况。屏幕上下都有一条粗粗的黑条。</p>
-<a id="more"></a>
-<p>检查了许久，代码里都是直接设置的<code>UIScreen</code>的<code>bounds</code>。因此，不可能是代码的问题。那么需要在设置中找原因。</p>
-<p>通过和正确的demo进行对比，发现了差异所在。</p>
-<p>这是有黑边情况下的设置：</p>
-<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/SetLaunchImage2.png?raw=true" alt="错误设置"></p>
-<p>这是没有黑边情况下的设置：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/SetLaunchImage1.png?raw=true" alt="正确设置"></p>
-<p>通过比较可以发现：<br>出现黑边的原因是在设置里设置了<code>Launch Images Source</code>为<code>LaunchImage</code>,但是在Images.xcassets中并没有<code>LaunchImage</code>资源。所以，需要给<code>LaunchImage</code>设置图片资源。<br>也可以像上面的那样设置<code>Launch Images Source</code>为<code>Use Asset Catalog</code>,并且将<code>Launch Screen File</code>设置为<code>LaunchImage</code>即可解决。</p>
+        <p>UIScrollView是iOS开发中最常用的UI组件，本次将参考<a href="https://my.oschina.net/zhxx/blog/620969#OSC_h3_11" target="_blank" rel="external">iOS 性能优化之 UIScrollView 实践经验</a>对UIScrollView的使用方式进行详细介绍<br><a id="more"></a></p>
+<h2 id="ScrollView和Auto-Layout"><a href="#ScrollView和Auto-Layout" class="headerlink" title="ScrollView和Auto Layout"></a>ScrollView和Auto Layout</h2><p><code>UIScrollView</code> 在 <code>Auto Layout</code> 是一个很特殊的 <code>view</code>，对于 <code>UIScrollView</code> 的 <code>subview</code> 来说，它的 <code>leading/trailing/top/bottom space</code> 是<strong>相对于 <code>UIScrollView</code>的 <code>contentSize</code> 而不是 <code>bounds</code> 来确定的。</strong></p>
+<p>所以，一般的做法是在<code>UIScrollVIew</code>和它的<code>subViews</code>之间增加一个<code>content view</code>。这样可以方便地给 <code>subview</code> 提供 <code>leading/trailing/top/bottom</code>，方便 <code>subview</code> 的布局，并且可以 通过调整<code>content view</code> 的 <code>size</code>（调整<code>constraint</code> 的 <code>IBOutlet</code>）来调整 <code>contentSize</code>。</p>
+<h3 id="添加ContentView的注意点"><a href="#添加ContentView的注意点" class="headerlink" title="添加ContentView的注意点"></a>添加ContentView的注意点</h3><p><code>scrollview</code>中添加的<code>contentview</code>和添加一般的视图不同，一般的视图只要只要提供<code>leading/trailing/top/bottom space</code>就能唯一确定长宽，位置。<br>而<code>ScrollView</code>的<code>contentView</code>除了上述四个约束，还需要设置长宽，作为滚动的范围的一部分。</p>
+<p>所以整个<code>scrollview</code>的<code>contentSize</code>的等式应该是：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">scrollView.contentSize.width = (scrollview与contentview之间leading的constant)+（contentView的width）+（scrollview与contentview之间trailing的constant）</div></pre></td></tr></table></figure></p>
+<p><strong>另外一点需要强调两点：</strong></p>
+<ol>
+<li><code>ScrollView</code>的<code>bounds</code>早就确定了下来，在设置<code>contentview</code>的宽度的时候，如果设置<code>contentview.width = superview.width + constant</code>这里的<code>superview.width</code>是指<code>ScrollView.bounds</code>而不是<code>contentSize</code></li>
+<li>在设置<code>contentview</code>的上下左右约束的时候，如果设置<code>contentview.trailing = superview.trailing + constant</code>,这里的<code>superview.trailing</code>指的是<code>contentSize.trailing</code>而不是<code>bounds</code>。此时就可以通过上面的公式计算<code>contentSize</code>的宽度了。</li>
+</ol>
 
       
     </div>
@@ -371,7 +370,9 @@
       
         <div class="post-tags">
           
-            <a href="/tags/Xcode/" rel="tag">#Xcode</a>
+            <a href="/tags/UI/" rel="tag">#UI</a>
+          
+            <a href="/tags/基本控件/" rel="tag">#基本控件</a>
           
         </div>
       
@@ -380,16 +381,16 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2016/09/05/UIGestureRecognizer/" rel="next" title="UIGestureRecognizer">
-                <i class="fa fa-chevron-left"></i> UIGestureRecognizer
+              <a href="/2016/08/04/UIScrollView部分属性/" rel="next" title="UIScrollView部分属性">
+                <i class="fa fa-chevron-left"></i> UIScrollView部分属性
               </a>
             
           </div>
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2016/09/07/oc中的枚举/" rel="prev" title="移位与枚举">
-                移位与枚举 <i class="fa fa-chevron-right"></i>
+              <a href="/2016/08/05/UICollectionView/" rel="prev" title="UICollectionView 使用方法总结">
+                UICollectionView 使用方法总结 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -524,7 +525,7 @@
               
             
             
-              <p class="post-toc-empty">此文章未包含目录</p>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#ScrollView和Auto-Layout"><span class="nav-number">1.</span> <span class="nav-text">ScrollView和Auto Layout</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#添加ContentView的注意点"><span class="nav-number">1.1.</span> <span class="nav-text">添加ContentView的注意点</span></a></li></ol></li></ol></div>
             
           </div>
         </section>
