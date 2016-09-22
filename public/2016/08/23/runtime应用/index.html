@@ -94,7 +94,7 @@
 <meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/runtime_transmit.png?raw=true">
 <meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/runtime_swizzling_1.png?raw=true">
 <meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/runtime_swizzling_2.png?raw=true">
-<meta property="og:updated_time" content="2016-09-20T06:53:36.000Z">
+<meta property="og:updated_time" content="2016-09-20T11:43:58.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="runtime应用笔记">
 <meta name="twitter:description" content="了解了runtime的基本原理，那么runtime究竟有什么用处呢？参考Runtime全方位装逼指南，总结了以下几点应用场景。">
@@ -408,6 +408,7 @@
 <hr>
 <p>其中<strong>v</strong>表示返回<code>void</code>类型，<strong>@</strong>表示参数<code>id(self)</code>，<strong>：</strong>表示<code>SEL(_cmd)</code>这几个是必须要有的，后面可以接入参类型。</p>
 <p>举个例子：<code>&quot;i@:@&quot;</code><br><strong>i</strong>表示返回值类型<code>int</code><br><strong>@：</strong>和上面意义相同<br><strong>@</strong>最后一个@表示有一个入参，是<code>id</code>类型。</p>
+<p>不过，实际上，这个东西好像没什么用，因为在<code>class_addMethod</code>上试验过，随便传任何字符串都一样能正常运行。</p>
 <hr>
 <p>一般来说可以使用<code>method_getTypeEncoding()</code>获取更详细的Type_Encoding,下面例子中也会用到。</p>
 <h3 id="转发与多继承"><a href="#转发与多继承" class="headerlink" title="转发与多继承"></a>转发与多继承</h3><p>转发和继承相似，可以用于为Objc编程添加一些多继承的效果。就像下图那样，一个对象把消息转发出去，就好似它把另一个对象中的方法借过来或是“继承”过来一样。<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/runtime_transmit.png?raw=true" alt="runtime_transmit"></p>
@@ -438,6 +439,9 @@
 <p><code>object_getClass((id)self)</code> 与 <code>[self class]</code> 返回的结果类型都是 <code>Class</code>,但前者为元类,后者为其本身,因为此时 <code>self</code> 为 <code>Class</code> 而不是实例.注意 <code>[NSObject class]</code> 与 <code>[object实例 class]</code> 的区别：<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">+ (Class)<span class="keyword">class</span> &#123;</div><div class="line">    <span class="keyword">return</span> <span class="keyword">self</span>;</div><div class="line">&#125;</div><div class="line"></div><div class="line">- (Class)<span class="keyword">class</span> &#123;</div><div class="line">    <span class="keyword">return</span> object_getClass(<span class="keyword">self</span>);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
 <p><code>object_getClass()</code>方法返回对象的<code>isa</code>。</p>
 <p>最后，<code>xxx_viewWillAppear:</code>方法的定义看似是递归调用引发死循环，其实不会的。因为<code>[self xxx_viewWillAppear:animated]</code>消息会动态找到<code>xxx_viewWillAppear:</code>方法的实现，而它的实现已经被我们与<code>viewWillAppear:</code>方法实现进行了互换，所以这段代码不仅不会死循环，如果你把<code>[self xxx_viewWillAppear:animated]换成[self viewWillAppear:animated]</code>反而会引发死循环。</p>
+<blockquote>
+<p>Demo 详见RuntimeLearn</p>
+</blockquote>
 
       
     </div>
@@ -477,8 +481,8 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2016/08/26/初识Provisioning_Profile/" rel="prev" title="初识Provisioning Profile">
-                初识Provisioning Profile <i class="fa fa-chevron-right"></i>
+              <a href="/2016/08/26/UITableview自适应高度/" rel="prev" title="tableview自适应高度">
+                tableview自适应高度 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -547,7 +551,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">40</span>
+              <span class="site-state-item-count">41</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -564,7 +568,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">19</span>
+                <span class="site-state-item-count">20</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

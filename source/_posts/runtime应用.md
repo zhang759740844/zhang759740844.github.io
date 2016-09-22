@@ -596,6 +596,6 @@ method_setImplementation(m2, imp1);
 
 最后，`xxx_viewWillAppear:`方法的定义看似是递归调用引发死循环，其实不会的。因为`[self xxx_viewWillAppear:animated]`消息会动态找到`xxx_viewWillAppear:`方法的实现，而它的实现已经被我们与`viewWillAppear:`方法实现进行了互换，所以这段代码不仅不会死循环，如果你把`[self xxx_viewWillAppear:animated]换成[self viewWillAppear:animated]`反而会引发死循环。
 
-
+> Demo 详见RuntimeLearn
 
 
