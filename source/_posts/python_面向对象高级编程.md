@@ -2,7 +2,7 @@ title: python 3.5 面向对象高级编程
 date: 2016/8/10 10:07:12  
 categories: python
 tags:
-	- 读书笔记
+	- 学习笔记
 
 ---
 

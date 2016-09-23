@@ -2,7 +2,6 @@ title: UIButton 简介
 date: 2016/8/29 14:07:12  
 categories: IOS
 tags: 
-	- UI
 	- 基本控件
 	
 ---

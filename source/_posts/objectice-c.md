@@ -2,8 +2,8 @@ title: objective-c 学习笔记
 date: 2016/7/31 10:07:12  
 categories: IOS
 tags:
-	- objective-c
-	- 读书笔记
+	- Objective-C
+	- 学习笔记
 
 ---
 

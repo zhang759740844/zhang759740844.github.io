@@ -1,8 +1,10 @@
 title: 使用xib设置view的border的宽度和颜色
 date: 2016/8/10 14:07:12  
 categories: IOS
-tags: [runtime]
-
+tags: 
+	- Runtime
+	- UI
+	
 ---
 
 使用User Defined Runtime Attributes可以配置一些在interface builder 中不能配置的属性。有助于编写更加轻量级的viewcontroller。

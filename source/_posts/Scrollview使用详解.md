@@ -2,7 +2,6 @@ title: UIScrollView详细介绍
 date: 2016/9/18 14:07:12  
 categories: IOS
 tags: 
-	- UI
 	- 基本控件
 	
 ---

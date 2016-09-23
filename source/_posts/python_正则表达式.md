@@ -2,7 +2,7 @@ title: python 3.5 正则表达式
 date: 2016/8/20 10:07:12  
 categories: python
 tags:
-	- 读书笔记
+	- 学习笔记
 
 ---
 

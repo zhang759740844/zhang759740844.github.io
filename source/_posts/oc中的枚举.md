@@ -2,7 +2,7 @@ title: 移位与枚举
 date: 2016/9/7 10:07:12  
 categories: IOS
 tags:
-	- objective-c
+	- Objective-C
 
 ---
 
