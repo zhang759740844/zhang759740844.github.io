@@ -101,9 +101,32 @@ NSIndexPath *indexPath = [NSIndexPath indexPathForRow:1 inSection:1];
 UIView *headerView = [[[NSBundle mainBundle] loadNibNamed:@"HotelReviewsHeaderView" owner:nil options:nil]lastObject];
 ```
 
-**loadNibNamed:owner:options:**返回的是个数组，保存了xib中的各个view。`initWithNibName`的实现和该方法类似，其中也会用到该方法。不过`initWithNibName`用在获取Controller的xib中。
-`initWithNibName`是延迟加载，view上的控件是 nil 的,只有到 需要显示时，才会不是 nil. `loadNibNamed:`是即时加载。
-`initWithNibName`的class是所属Controller，`loadNibNamed:`的class是NSObject。
+**loadNibNamed:owner:options:**返回的是个数组，保存了xib中的各个view。xib中有几个view，数组元素就是几。因此，可以将多个自定义的view或者cell放在一个xib中，通过数组的方式获取想要的view。`initWithNibName`的实现和该方法类似，其中也会用到该方法。不过`initWithNibName`用在获取Controller的xib中。
+
+---
+
+差个题外话，这里我们来介绍下`loaNibNamed`方法和`initWithNibName`方法的异同。
+
+首先明确一点：`loadNibNamed`、`initWithNibName`以及`nibWithNibName`后面跟的都是**文件名**，那么，怎么确定该xib文件下对应的是哪个view呢？
+
+先介绍下xib文件中的`File's Owner`:
+`File's Owner` 表示视图控制器。UIViewController(或其子类)在生成的时候，首先会寻找相应的`.xib`去生成，于是controller的实例(instance)就把`.xib`载入内存，并成为`FIle's Owner`（也就是说明了为什么叫做占位符）。**所以我们定义的controller是这个`.xib`的`custom class`。**并且需要把这个`FIle Owner`上的`outlet`连到某个控件上去。（Action也同样道理）换个角度，如果我们看`.xib`文件，发现它有个`File
+ Owner`,其实就是我们用来设定，究竟是那个Object来读取并载入这个`.xib`文件，也就是说，谁own这个文件。
+ 
+那么，也就是说，对于`initWithNibName`方法而言，它加载的必须是设置了`File's Owner`为自身的xib，**设置了`File's Owner`就说明，这个xib被这个Controller承包了，别的Controller用不了。**`File's Owner`会和文件中需要加载的view关联(也就是连线，`File's Owner`的view属性会联结要显示的view)，从而从众多view中确定要显示的view是哪一个。这就说明了两点：第一，一个Controller可以有多个xib，只要xib的`File's Owner`都指向那个Controller就行。第二，不用担心一个xib中有多个并列的view导致机器不知道要加载哪个的情况，因为`File's Owner`的`view`只会联结这些view中的一个。
+
+对于自定义的view，任何Controller都能获得该view，因此，不能设置其xib文件的`File's Owner`。上面也说了，通过`loadNibNamed`方法会返回各个view的数组，需要自己手动选择要加载哪个。
+
+`loadNibNamed`方法也可以获得`initWithNibName`的view。`loadNibNamed:owner:options:`方法中有一个`owner`参数，就是用来传`File's Owner`的。
+对于自定义的view所属的xib文件，由于没有`File's Owner`，因此加载的时候`owner`传入`nil`。
+对于有`File's Owner`的Controller的xib，`owner`需要传入该xib文件相应`File's Owner`的实例，否则无法加载，返回该xib内所有view的数组。在lldb中可以验证Controller的view属性就是通过`loadNibNamed`拿到的view：
+
+```objc
+(lldb) p [[[NSBundle mainBundle]loadNibNamed:@"xxxController" owner:self options:nil] firstObject] == self.view
+(bool) $1 = true
+```
+
+---
 
 ```objc
 - (void)viewDidLoad{

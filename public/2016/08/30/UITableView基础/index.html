@@ -90,7 +90,7 @@
 <meta property="og:url" content="http://zhang759740844.github.io/2016/08/30/UITableView基础/index.html">
 <meta property="og:site_name" content="Zachary's blog">
 <meta property="og:description" content="UITableView是最常用的基本控件。此处对其一般用法进行总结。">
-<meta property="og:updated_time" content="2016-09-23T05:44:47.000Z">
+<meta property="og:updated_time" content="2016-09-29T03:39:48.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="UITableView 基础">
 <meta name="twitter:description" content="UITableView是最常用的基本控件。此处对其一般用法进行总结。">
@@ -364,7 +364,17 @@
 <p>在<code>cellForRowAtIndexPath:</code>方法中，需要区分不同section返回不同cell。区分section的方式在于该方法传入的参数<code>(NSIndexPath *)indexPath</code>。</p>
 <p><code>NSIndexPath</code>是一个结构体，具有两个属性<code>row</code>和<code>section</code>。表示所在section和section内row。<br><code>NSIndexPath</code>中的属性是只读的，不能直接修改。只能通过重新创建的形式，达到修改属性的目的。<br>创建方式:<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">NSIndexPath</span> *indexPath = [<span class="built_in">NSIndexPath</span> indexPathForRow:<span class="number">1</span> inSection:<span class="number">1</span>];</div></pre></td></tr></table></figure></p>
 <h3 id="TableView表头视图"><a href="#TableView表头视图" class="headerlink" title="TableView表头视图"></a>TableView表头视图</h3><p>表头视图是指UITableView对象可以在其表格上方显示的特定视图，是和放置针对某个表格段或整张表格的标题和控件。表头视图可以是任意UIView对象。表格视图有两种，分别针对表格段和表格。类似的，还有表尾视图。<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">UIView</span> *headerView = [[[<span class="built_in">NSBundle</span> mainBundle] loadNibNamed:<span class="string">@"HotelReviewsHeaderView"</span> owner:<span class="literal">nil</span> options:<span class="literal">nil</span>]lastObject];</div></pre></td></tr></table></figure></p>
-<p><strong>loadNibNamed:owner:options:</strong>返回的是个数组，保存了xib中的各个view。<code>initWithNibName</code>的实现和该方法类似，其中也会用到该方法。不过<code>initWithNibName</code>用在获取Controller的xib中。<br><code>initWithNibName</code>是延迟加载，view上的控件是 nil 的,只有到 需要显示时，才会不是 nil. <code>loadNibNamed:</code>是即时加载。<br><code>initWithNibName</code>的class是所属Controller，<code>loadNibNamed:</code>的class是NSObject。</p>
+<p><strong>loadNibNamed:owner:options:</strong>返回的是个数组，保存了xib中的各个view。xib中有几个view，数组元素就是几。因此，可以将多个自定义的view或者cell放在一个xib中，通过数组的方式获取想要的view。<code>initWithNibName</code>的实现和该方法类似，其中也会用到该方法。不过<code>initWithNibName</code>用在获取Controller的xib中。</p>
+<hr>
+<p>差个题外话，这里我们来介绍下<code>loaNibNamed</code>方法和<code>initWithNibName</code>方法的异同。</p>
+<p>首先明确一点：<code>loadNibNamed</code>、<code>initWithNibName</code>以及<code>nibWithNibName</code>后面跟的都是<strong>文件名</strong>，那么，怎么确定该xib文件下对应的是哪个view呢？</p>
+<p>先介绍下xib文件中的<code>File&#39;s Owner</code>:<br><code>File&#39;s Owner</code> 表示视图控制器。UIViewController(或其子类)在生成的时候，首先会寻找相应的<code>.xib</code>去生成，于是controller的实例(instance)就把<code>.xib</code>载入内存，并成为<code>FIle&#39;s Owner</code>（也就是说明了为什么叫做占位符）。<strong>所以我们定义的controller是这个<code>.xib</code>的<code>custom class</code>。</strong>并且需要把这个<code>FIle Owner</code>上的<code>outlet</code>连到某个控件上去。（Action也同样道理）换个角度，如果我们看<code>.xib</code>文件，发现它有个<code>File
+ Owner</code>,其实就是我们用来设定，究竟是那个Object来读取并载入这个<code>.xib</code>文件，也就是说，谁own这个文件。</p>
+<p>那么，也就是说，对于<code>initWithNibName</code>方法而言，它加载的必须是设置了<code>File&#39;s Owner</code>为自身的xib，<strong>设置了<code>File&#39;s Owner</code>就说明，这个xib被这个Controller承包了，别的Controller用不了。</strong><code>File&#39;s Owner</code>会和文件中需要加载的view关联(也就是连线，<code>File&#39;s Owner</code>的view属性会联结要显示的view)，从而从众多view中确定要显示的view是哪一个。这就说明了两点：第一，一个Controller可以有多个xib，只要xib的<code>File&#39;s Owner</code>都指向那个Controller就行。第二，不用担心一个xib中有多个并列的view导致机器不知道要加载哪个的情况，因为<code>File&#39;s Owner</code>的<code>view</code>只会联结这些view中的一个。</p>
+<p>对于自定义的view，任何Controller都能获得该view，因此，不能设置其xib文件的<code>File&#39;s Owner</code>。上面也说了，通过<code>loadNibNamed</code>方法会返回各个view的数组，需要自己手动选择要加载哪个。</p>
+<p><code>loadNibNamed</code>方法也可以获得<code>initWithNibName</code>的view。<code>loadNibNamed:owner:options:</code>方法中有一个<code>owner</code>参数，就是用来传<code>File&#39;s Owner</code>的。<br>对于自定义的view所属的xib文件，由于没有<code>File&#39;s Owner</code>，因此加载的时候<code>owner</code>传入<code>nil</code>。<br>对于有<code>File&#39;s Owner</code>的Controller的xib，<code>owner</code>需要传入该xib文件相应<code>File&#39;s Owner</code>的实例，否则无法加载，返回该xib内所有view的数组。在lldb中可以验证Controller的view属性就是通过<code>loadNibNamed</code>拿到的view：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">(lldb) p [[[<span class="built_in">NSBundle</span> mainBundle]loadNibNamed:<span class="string">@"xxxController"</span> owner:<span class="keyword">self</span> options:<span class="literal">nil</span>] firstObject] == <span class="keyword">self</span>.view</div><div class="line">(<span class="keyword">bool</span>) $<span class="number">1</span> = <span class="literal">true</span></div></pre></td></tr></table></figure>
+<hr>
 <figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)viewDidLoad&#123;</div><div class="line">	<span class="built_in">UIView</span> *header = <span class="keyword">self</span>.headerView;</div><div class="line">	[<span class="keyword">self</span>.tableView setTableHeaderView:header];</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p>加载完headerView后，将其设置为UITableView对象的表头视图。<br>也可以在 <strong>(UIView *)tableView:viewForHeaderInSection:</strong>方法中设置，当只有一个section时效果相同。<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">- (<span class="built_in">UIView</span> *)tableView:(<span class="built_in">UITableView</span> *)tableView viewForHeaderInSection:(<span class="built_in">NSInteger</span>)section&#123;</div><div class="line">    <span class="built_in">UIView</span> *view = [[[<span class="built_in">NSBundle</span> mainBundle] loadNibNamed:<span class="string">@"HeaderView"</span> owner:<span class="literal">nil</span> options:<span class="literal">nil</span>] lastObject];</div><div class="line">    <span class="keyword">return</span> view;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
 <h3 id="tableview的字母索引"><a href="#tableview的字母索引" class="headerlink" title="tableview的字母索引"></a>tableview的字母索引</h3><p>实现<code>sectionIndexTitlesForTableView</code>方法，返回一个字符串数组：<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">- (<span class="built_in">NSArray</span>&lt;<span class="built_in">NSString</span> *&gt; *)sectionIndexTitlesForTableView:(<span class="built_in">UITableView</span> *)tableView&#123;</div><div class="line">    <span class="built_in">NSMutableArray</span> *indexs = [[<span class="built_in">NSMutableArray</span> alloc]init];</div><div class="line">    [indexs addObject:<span class="string">@"我"</span>];</div><div class="line">    [indexs addObject:<span class="string">@"是"</span>];</div><div class="line">    <span class="keyword">return</span> indexs;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
@@ -505,7 +515,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">43</span>
+              <span class="site-state-item-count">44</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -522,7 +532,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">17</span>
+                <span class="site-state-item-count">19</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

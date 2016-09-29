@@ -68,7 +68,7 @@
 <link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="Block," />
+  <meta name="keywords" content="Objective-C," />
 
 
 
@@ -84,18 +84,21 @@
 
 
 
-<meta name="description" content="类似于匿名函数，oc中提供block,可以将一段代码块像对象一样作为参数传递、执行。">
+<meta name="description" content="oc中添加了一些关键字，主要作用于编译期，对程序没有任何影响，相当于是一个提示。下面将结合Objective—C语言的新魅力——Nullability、泛型集合与类型延拓对oc的这些新特性进行研究。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Block 的使用">
-<meta property="og:url" content="http://zhang759740844.github.io/2016/09/01/Block基础/index.html">
+<meta property="og:title" content="oc 中的泛型与nullability">
+<meta property="og:url" content="http://zhang759740844.github.io/2016/09/28/oc新特性/index.html">
 <meta property="og:site_name" content="Zachary's blog">
-<meta property="og:description" content="类似于匿名函数，oc中提供block,可以将一段代码块像对象一样作为参数传递、执行。">
-<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_struct.jpg?raw=true">
-<meta property="og:updated_time" content="2016-09-05T01:55:19.000Z">
+<meta property="og:description" content="oc中添加了一些关键字，主要作用于编译期，对程序没有任何影响，相当于是一个提示。下面将结合Objective—C语言的新魅力——Nullability、泛型集合与类型延拓对oc的这些新特性进行研究。">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/oc_new_1.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/oc_new_2.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/oc_new_3.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/oc_new_4.png?raw=true">
+<meta property="og:updated_time" content="2016-09-28T07:47:50.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Block 的使用">
-<meta name="twitter:description" content="类似于匿名函数，oc中提供block,可以将一段代码块像对象一样作为参数传递、执行。">
-<meta name="twitter:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_struct.jpg?raw=true">
+<meta name="twitter:title" content="oc 中的泛型与nullability">
+<meta name="twitter:description" content="oc中添加了一些关键字，主要作用于编译期，对程序没有任何影响，相当于是一个提示。下面将结合Objective—C语言的新魅力——Nullability、泛型集合与类型延拓对oc的这些新特性进行研究。">
+<meta name="twitter:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/oc_new_1.png?raw=true">
 
 
 
@@ -116,9 +119,9 @@
 
 
 
-  <link rel="canonical" href="http://zhang759740844.github.io/2016/09/01/Block基础/"/>
+  <link rel="canonical" href="http://zhang759740844.github.io/2016/09/28/oc新特性/"/>
 
-  <title> Block 的使用 | Zachary's blog </title>
+  <title> oc 中的泛型与nullability | Zachary's blog </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -281,7 +284,7 @@
             
             
               
-                Block 的使用
+                oc 中的泛型与nullability
               
             
           </h1>
@@ -293,8 +296,8 @@
               <i class="fa fa-calendar-o"></i>
             </span>
             <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-09-01T10:07:12+08:00" content="2016-09-01">
-              2016-09-01
+            <time itemprop="dateCreated" datetime="2016-09-28T10:07:12+08:00" content="2016-09-28">
+              2016-09-28
             </time>
           </span>
 
@@ -340,41 +343,39 @@
       
 
       
-        <p>类似于匿名函数，oc中提供<code>block</code>,可以将一段代码块像对象一样作为参数传递、执行。</p>
+        <p>oc中添加了一些关键字，主要作用于编译期，对程序没有任何影响，相当于是一个提示。下面将结合<a href="https://my.oschina.net/u/2340880/blog/514804" target="_blank" rel="external">Objective—C语言的新魅力——Nullability、泛型集合与类型延拓</a>对oc的这些新特性进行研究。</p>
 <a id="more"></a>
-<h2 id="Block的使用"><a href="#Block的使用" class="headerlink" title="Block的使用"></a>Block的使用</h2><h3 id="Block实例"><a href="#Block实例" class="headerlink" title="Block实例"></a>Block实例</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">^(<span class="keyword">double</span> dividend)&#123;</div><div class="line">	<span class="keyword">double</span> quotient = dividend / divisor;</div><div class="line">	<span class="keyword">return</span> quotient;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>Block对象可以被当做一个实参来传递给可以接收block的方法。</p>
-<h3 id="声明block变量"><a href="#声明block变量" class="headerlink" title="声明block变量:"></a>声明block变量:</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">void</span> (^devowelizer)(<span class="keyword">id</span>, <span class="built_in">NSUInteger</span>, <span class="built_in">BOOL</span>*);</div></pre></td></tr></table></figure>
-<p><code>void</code> 表示返回类型<br><code>^</code> 表示是一个block对象<br><code>devowelizer</code> 表示block变量的名称<br>后面的是实参类型<br>方法的调用参数类型为<code>^(id  string, NSUInteger i, BOOL *stop)block</code></p>
-<h3 id="编写Block对象"><a href="#编写Block对象" class="headerlink" title="编写Block对象"></a>编写Block对象</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">devowelizer = ^(<span class="keyword">id</span> string,<span class="built_in">NSUInteger</span> i, <span class="built_in">BOOL</span> *stop)&#123;</div><div class="line">	……</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
-<h3 id="调用block变量"><a href="#调用block变量" class="headerlink" title="调用block变量"></a>调用block变量</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">devowelizer(string,i,stop);</div></pre></td></tr></table></figure>
-<h3 id="typedef"><a href="#typedef" class="headerlink" title="typedef"></a>typedef</h3><p>不能在方法的实现代码中使用typedef，需要在实现文件的顶部，或者头文件内使用typedef。<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">typedef</span> <span class="keyword">void</span>(^ArrayEnumerationBlock)(<span class="keyword">id</span>,<span class="built_in">NSUInteger</span>,<span class="built_in">BOOL</span> *);</div></pre></td></tr></table></figure></p>
-<p>需要注意的是，这里定义的是一个新的类型，不是变量。跟在^后面的是类型名称。创建这个新类型后，可以简化相应Block的声明。<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ArrayEnumerationBlock devowelizer；</div></pre></td></tr></table></figure></p>
-<h3 id="外部变量"><a href="#外部变量" class="headerlink" title="外部变量"></a>外部变量</h3><p>在执行Block对象时，为了确保其下的外部变量能够始终存在，相应的Block对象会捕获这些变量，意味着程序会拷贝变量的值。</p>
-<p><strong>当外部对象是引用时，block会复制其引用的地址(指针指向的堆上的地址)，只能改变地址指向的对象的属性，不能将外部对象指向新的地址，类似于Java的引用机制。</strong></p>
-<h3 id="修改外部变量"><a href="#修改外部变量" class="headerlink" title="修改外部变量"></a>修改外部变量</h3><p>如果需要在Block对象内修改某个外部变量，则可以声明相应的外部变量时，在前面加上__block关键字。</p>
-<p><strong>__block关键字让block内部拿到外部对象的指针。这样就可以改变地址上指向实例对象地址的指针的指向，从而达到改变外部对象的结果。</strong></p>
-<h3 id="在Block中使用self"><a href="#在Block中使用self" class="headerlink" title="在Block中使用self"></a>在Block中使用self</h3><p>如果要写一个使用self的Block对象，需要避免强引用循环。<br>在Block外声明一个_weak指正，然后将这个指针指向Block对象使用的self，最后在Block对象中使用这个新的指针。<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">_<span class="keyword">weak</span> BNREmployee *weakSelf = <span class="keyword">self</span>;	<span class="comment">//弱引用指针</span></div><div class="line">	myBlock = ^&#123;</div><div class="line">		<span class="built_in">NSLog</span>(@“Employee:%@”,weakSelf);</div><div class="line">	&#125;;</div></pre></td></tr></table></figure></p>
-<h2 id="block的实现"><a href="#block的实现" class="headerlink" title="block的实现"></a>block的实现</h2><p>block的实现主要参考<a href="http://blog.devtang.com/2013/07/28/a-look-inside-blocks/#" target="_blank" rel="external">唐巧谈Objective-C block的实现</a></p>
-<h3 id="block的结构"><a href="#block的结构" class="headerlink" title="block的结构"></a>block的结构</h3><p>block的结构如下:<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">struct</span> Block_descriptor &#123;</div><div class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">int</span> reserved;</div><div class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">int</span> size;</div><div class="line">    <span class="keyword">void</span> (*<span class="keyword">copy</span>)(<span class="keyword">void</span> *dst, <span class="keyword">void</span> *src);</div><div class="line">    <span class="keyword">void</span> (*dispose)(<span class="keyword">void</span> *);</div><div class="line">&#125;;</div><div class="line"></div><div class="line"><span class="keyword">struct</span> Block_layout &#123;</div><div class="line">    <span class="keyword">void</span> *isa;</div><div class="line">    <span class="keyword">int</span> flags;</div><div class="line">    <span class="keyword">int</span> reserved;</div><div class="line">    <span class="keyword">void</span> (*invoke)(<span class="keyword">void</span> *, ...);</div><div class="line">    <span class="keyword">struct</span> Block_descriptor *descriptor;</div><div class="line">    <span class="comment">/* Imported variables. */</span></div><div class="line">&#125;;</div></pre></td></tr></table></figure></p>
-<p>结构图如下：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_struct.jpg?raw=true" alt="block结构图"></p>
-<p>通过该图，我们可以知道，一个 block 实例实际上由 6 部分构成：</p>
-<ol>
-<li><code>isa</code> 指针，所有对象都有该指针，用于实现对象相关的功能。</li>
-<li><code>flags</code>，用于按 bit 位表示一些 block 的附加信息。</li>
-<li><code>reserved</code>，保留变量。</li>
-<li><code>invoke</code>，函数指针，指向具体的 block 实现的函数调用地址。</li>
-<li><code>descriptor</code>， 表示该 block 的附加描述信息，主要是 size 大小，以及 copy 和 dispose 函数的指针。</li>
-<li>各种从外部复制过来的变量，block 能够访问它外部的局部变量，就是因为将这些变量（或变量的地址）复制到了结构体中。</li>
-</ol>
-<h3 id="block种类"><a href="#block种类" class="headerlink" title="block种类"></a>block种类</h3><p>block的isa是以下三个的一种：</p>
-<ol>
-<li><code>_NSConcreteGlobalBlock</code> 全局的静态 block，不会访问任何外部变量。</li>
-<li><code>_NSConcreteStackBlock</code> 保存在栈中的 block，当函数返回时会被销毁。</li>
-<li><code>_NSConcreteMallocBlock</code> 保存在堆中的 block，当引用计数为 0 时会被销毁。</li>
-</ol>
-<p>在 ARC 开启的情况下，将只会有 <code>NSConcreteGlobalBlock</code> 和 <code>NSConcreteMallocBlock</code>类型的 block。原本的 <code>NSConcreteStackBlock</code> 的 block 会被 <code>NSConcreteMallocBlock</code> 类型的 block 替代。</p>
-<h3 id="研究工具：clang"><a href="#研究工具：clang" class="headerlink" title="研究工具：clang"></a>研究工具：clang</h3><p>clang 提供一个命令，可以将 Objetive-C 的源码改写成 c 语言的，借此可以研究各种结构的源码实现方式。该命令是<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">clang -rewrite-objc xxxx</div></pre></td></tr></table></figure></p>
+<h2 id="Nullability检测的支持"><a href="#Nullability检测的支持" class="headerlink" title="Nullability检测的支持"></a>Nullability检测的支持</h2><p>可以使用<code>nullable</code>关键字，表明该对象可以是空值;使用<code>nonnull</code>关键字表明不可以是空对象。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">@property</span> (<span class="keyword">nullable</span>, <span class="keyword">nonatomic</span>, <span class="keyword">strong</span>) ObjectType firstObject;</div><div class="line"><span class="keyword">@property</span> (<span class="keyword">nullable</span>, <span class="keyword">nonatomic</span>, <span class="keyword">strong</span>) ObjectType lastObject;</div></pre></td></tr></table></figure>
+<p>这是NSArray中的两个属性，其中<code>nullable</code>关键字说明了这里可能返回空的值。</p>
+<p>如果仅仅是在返回值中给开发者一些提示，你可能觉得应用并不大，是的，对开发者最大的帮助是这一特性可以用于函数的参数中，这样我们在调用函数时起到的提示作用，将是非常重要的,例如：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">-(<span class="keyword">void</span>)setValue:(<span class="built_in">NSNumber</span> * _Nonnull )number&#123;</div><div class="line">	</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>如果传入了空值，编译器会警告：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/oc_new_1.png?raw=true" alt="oc_new_1"></p>
+<h2 id="泛型的使用"><a href="#泛型的使用" class="headerlink" title="泛型的使用"></a>泛型的使用</h2><p>这一特性和Nullability一样，只作用于编译期，是为我们开发者服务的另一重要特性。</p>
+<h3 id="有类型约定的集合"><a href="#有类型约定的集合" class="headerlink" title="有类型约定的集合"></a>有类型约定的集合</h3><p>在Xcode7中，我们可以给集合类型添加一个泛型的约定，如下：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">NSMutableArray</span>&lt;<span class="built_in">NSString</span> *&gt; *array = [[<span class="built_in">NSMutableArray</span> alloc]init];</div></pre></td></tr></table></figure>
+<p>声明了这样一个数组后，就告诉了编译器，这个数组中的数据类型都是NSString*类型的，可以使用该类型的方法，如：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/oc_new_2.png?raw=true" alt="oc_new_2"></p>
+<p>在我们向这个数组中追加元素的时候，编译器将元素的类型提示了出来，并且将FromArray方法中需要的元素类型也提示了出来:</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/oc_new_3.png?raw=true" alt="oc_new_3"></p>
+<p>如果我们向这个数组中追加类型不匹配的元素,编译器会给我们一个这样的警告：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/oc_new_4.png?raw=true" alt="oc_new_4"></p>
+<h3 id="类型通配符"><a href="#类型通配符" class="headerlink" title="类型通配符"></a>类型通配符</h3><p>iOS的系统类中，大量使用了<code>ObjectType</code>关键字，如下是系统的<code>NSMutableArray</code>的头文件：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">NSMutableArray</span>&lt;<span class="title">ObjectType</span>&gt; : <span class="title">NSArray</span>&lt;<span class="title">ObjectType</span>&gt;</span></div><div class="line">- (<span class="keyword">void</span>)addObject:(ObjectType)anObject;</div><div class="line">- (<span class="keyword">void</span>)insertObject:(ObjectType)anObject atIndex:(<span class="built_in">NSUInteger</span>)index;</div><div class="line">- (<span class="keyword">void</span>)removeLastObject;</div><div class="line">- (<span class="keyword">void</span>)removeObjectAtIndex:(<span class="built_in">NSUInteger</span>)index;</div><div class="line">- (<span class="keyword">void</span>)replaceObjectAtIndex:(<span class="built_in">NSUInteger</span>)index withObject:(ObjectType)anObject;</div><div class="line">- (<span class="keyword">instancetype</span>)init <span class="built_in">NS_DESIGNATED_INITIALIZER</span>;</div><div class="line">- (<span class="keyword">instancetype</span>)initWithCapacity:(<span class="built_in">NSUInteger</span>)numItems <span class="built_in">NS_DESIGNATED_INITIALIZER</span>;</div><div class="line">- (<span class="keyword">nullable</span> <span class="keyword">instancetype</span>)initWithCoder:(<span class="built_in">NSCoder</span> *)aDecoder <span class="built_in">NS_DESIGNATED_INITIALIZER</span>;</div><div class="line"><span class="keyword">@end</span></div></pre></td></tr></table></figure>
+<p>这个<code>ObjectType</code>就是泛型的类型标识符,我们可以用它自己定义一个集合类，如包装一个NSSarray：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">MyArray</span>&lt;<span class="title">Type</span>&gt; : <span class="title">NSObject</span></span></div><div class="line"><span class="keyword">@property</span>(<span class="keyword">nonatomic</span>,<span class="keyword">strong</span>,<span class="keyword">nonnull</span>)<span class="built_in">NSMutableArray</span>&lt;Type&gt; *array;</div><div class="line">-(<span class="keyword">void</span>)addObject:(<span class="keyword">nonnull</span> Type)obj;</div><div class="line"><span class="keyword">@end</span></div></pre></td></tr></table></figure>
+<p>实现如下：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">- (<span class="keyword">instancetype</span>)init</div><div class="line">&#123;</div><div class="line">    <span class="keyword">self</span> = [<span class="keyword">super</span> init];</div><div class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>) &#123;</div><div class="line">        _array = [[<span class="built_in">NSMutableArray</span> alloc]init];</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> <span class="keyword">self</span>;</div><div class="line">&#125;</div><div class="line">- (<span class="keyword">void</span>)addObject:(<span class="keyword">id</span>)obj&#123;</div><div class="line">    [_array addObject:obj];</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><strong>注意</strong>：</p>
+<ul>
+<li>这个类型通配符只能在interfave里使用，作用域为@interface到@end之间。</li>
+<li>实现时，对于定义的<code>Type</code>类型的参数，使用<code>id</code>代替。</li>
+<li>泛型<code>Type</code>不用写成<code>Type *</code>。</li>
+<li>对于多参的集合，将参数类型用“,”隔开即可，如<code>NSMultableDictionary&lt;NSString * ,NSString *&gt; *dic = [[NSMultableDictionary alloc] init];</code></li>
+</ul>
+<h3 id="kindof"><a href="#kindof" class="headerlink" title="__kindof"></a>__kindof</h3><p>在小类向大类赋值时，往往没有任何问题。但是大类向小类赋值时，就会产生警告。譬如<code>UIView</code>的实例<code>view</code>和<code>UIButton</code>的实例<code>button</code>,可以<code>view = button</code>，但是最好不要<code>button = view</code>。如果想要使用，又不希望产生警告怎么办？使用<code>__kindof</code>。<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">UIButton</span> *b = [[<span class="built_in">UIButton</span> alloc] init];</div><div class="line">__kindof <span class="built_in">UIView</span> *view = [[<span class="built_in">UIButton</span> alloc]init];</div><div class="line">b = view;</div></pre></td></tr></table></figure></p>
+<p>这里，由于<code>view</code>使用<code>__kindof</code>表示<code>UIView</code>的子类，不会产生警告。否则要进行强转<code>b = (UIButton *)view;</code></p>
 
       
     </div>
@@ -397,7 +398,7 @@
       
         <div class="post-tags">
           
-            <a href="/tag/Block/" rel="tag">#Block</a>
+            <a href="/tag/Objective-C/" rel="tag">#Objective-C</a>
           
         </div>
       
@@ -406,17 +407,13 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2016/08/30/UITableView基础/" rel="next" title="UITableView 基础">
-                <i class="fa fa-chevron-left"></i> UITableView 基础
+              <a href="/2016/09/23/XVim安装/" rel="next" title="Xcode插件XVim安装与使用">
+                <i class="fa fa-chevron-left"></i> Xcode插件XVim安装与使用
               </a>
             
           </div>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2016/09/02/CALayer的transform属性/" rel="prev" title="CALayer的transform">
-                CALayer的transform <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -550,7 +547,7 @@
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Block的使用"><span class="nav-number">1.</span> <span class="nav-text">Block的使用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Block实例"><span class="nav-number">1.1.</span> <span class="nav-text">Block实例</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#声明block变量"><span class="nav-number">1.2.</span> <span class="nav-text">声明block变量:</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#编写Block对象"><span class="nav-number">1.3.</span> <span class="nav-text">编写Block对象</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#调用block变量"><span class="nav-number">1.4.</span> <span class="nav-text">调用block变量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#typedef"><span class="nav-number">1.5.</span> <span class="nav-text">typedef</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#外部变量"><span class="nav-number">1.6.</span> <span class="nav-text">外部变量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#修改外部变量"><span class="nav-number">1.7.</span> <span class="nav-text">修改外部变量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#在Block中使用self"><span class="nav-number">1.8.</span> <span class="nav-text">在Block中使用self</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#block的实现"><span class="nav-number">2.</span> <span class="nav-text">block的实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#block的结构"><span class="nav-number">2.1.</span> <span class="nav-text">block的结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#block种类"><span class="nav-number">2.2.</span> <span class="nav-text">block种类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#研究工具：clang"><span class="nav-number">2.3.</span> <span class="nav-text">研究工具：clang</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Nullability检测的支持"><span class="nav-number">1.</span> <span class="nav-text">Nullability检测的支持</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#泛型的使用"><span class="nav-number">2.</span> <span class="nav-text">泛型的使用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#有类型约定的集合"><span class="nav-number">2.1.</span> <span class="nav-text">有类型约定的集合</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#类型通配符"><span class="nav-number">2.2.</span> <span class="nav-text">类型通配符</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#kindof"><span class="nav-number">2.3.</span> <span class="nav-text">__kindof</span></a></li></ol></li></ol></div>
             
           </div>
         </section>

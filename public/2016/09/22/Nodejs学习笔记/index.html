@@ -68,7 +68,7 @@
 <link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="学习笔记," />
+  <meta name="keywords" content="学习笔记,NodeJs," />
 
 
 
@@ -84,13 +84,16 @@
 
 
 
+<meta name="description" content="nodejs的笔记记录。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="JavaScript基本语法">
+<meta property="og:title" content="NodeJs学习笔记">
 <meta property="og:url" content="http://zhang759740844.github.io/2016/09/22/Nodejs学习笔记/index.html">
 <meta property="og:site_name" content="Zachary's blog">
-<meta property="og:updated_time" content="2016-09-22T11:57:24.000Z">
+<meta property="og:description" content="nodejs的笔记记录。">
+<meta property="og:updated_time" content="2016-09-29T01:45:29.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="JavaScript基本语法">
+<meta name="twitter:title" content="NodeJs学习笔记">
+<meta name="twitter:description" content="nodejs的笔记记录。">
 
 
 
@@ -113,7 +116,7 @@
 
   <link rel="canonical" href="http://zhang759740844.github.io/2016/09/22/Nodejs学习笔记/"/>
 
-  <title> JavaScript基本语法 | Zachary's blog </title>
+  <title> NodeJs学习笔记 | Zachary's blog </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -276,7 +279,7 @@
             
             
               
-                JavaScript基本语法
+                NodeJs学习笔记
               
             
           </h1>
@@ -335,8 +338,42 @@
       
 
       
-        <a id="more"></a>
-
+        <p>nodejs的笔记记录。</p>
+<a id="more"></a>
+<h2 id="模块"><a href="#模块" class="headerlink" title="模块"></a>模块</h2><h3 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h3><p>模块化的好处不多说，下面看看Node中如何模块化.我们编写了一个<code>hello.js</code>文件，这个<code>hello.js</code>文件就是一个模块，模块的名字就是文件名（去掉<code>.js</code>后缀），所以<code>hello.js</code>文件就是名为<code>hello</code>的模块:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> s = <span class="string">'Hello'</span>;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">greet</span>(<span class="params">name</span>) </span>&#123;</div><div class="line">    <span class="built_in">console</span>.log(s + <span class="string">', '</span> + name + <span class="string">'!'</span>);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="built_in">module</span>.exports = greet;</div></pre></td></tr></table></figure>
+<p>上面定义了一个函数<code>greet()</code>，<code>module.exports = greet</code>的意思是，把函数greet作为模块的输出暴露出去，这样其他模块就可以使用greet函数了。</p>
+<p>其他模块怎么使用<code>hello</code>模块的这个<code>greet</code>函数呢？我们再编写一个<code>main.js</code>文件，调用<code>hello</code>模块的<code>greet</code>函数：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 引入hello模块:</span></div><div class="line"><span class="keyword">var</span> greet = <span class="built_in">require</span>(<span class="string">'./hello'</span>);</div><div class="line"></div><div class="line"><span class="keyword">var</span> s = <span class="string">'Michael'</span>;</div><div class="line"></div><div class="line">greet(s); <span class="comment">// Hello, Michael!</span></div></pre></td></tr></table></figure>
+<p><code>greet</code>变量就是上面<code>module.exports = greet</code>输出的<code>greet</code>。在使用<code>require()</code>引入模块的时候，请注意模块的相对路径。</p>
+<p>一个模块想要对外暴露变量（函数也是变量），可以用<code>module.exports = variable;</code>，一个模块要引用其他模块暴露的变量，用<code>var ref = require(&#39;module_name&#39;);</code>就拿到了引用模块的变量。</p>
+<h3 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h3><p>模块化保证不同模块可以使用相同的变量名，那么这是如何实现的呢？</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 准备module对象,require就是根据id获得相应module的exports:</span></div><div class="line"><span class="keyword">var</span> <span class="built_in">module</span> = &#123;</div><div class="line">    id: <span class="string">'hello'</span>,</div><div class="line">    exports: &#123;&#125;</div><div class="line">&#125;;</div><div class="line"><span class="keyword">var</span> load = <span class="function"><span class="keyword">function</span> (<span class="params">module</span>) </span>&#123;</div><div class="line">    <span class="comment">// 读取的hello.js代码:</span></div><div class="line">    <span class="function"><span class="keyword">function</span> <span class="title">greet</span>(<span class="params">name</span>) </span>&#123;</div><div class="line">        <span class="built_in">console</span>.log(<span class="string">'Hello, '</span> + name + <span class="string">'!'</span>);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="built_in">module</span>.exports = greet;</div><div class="line">    <span class="comment">// hello.js代码结束</span></div><div class="line">    <span class="keyword">return</span> <span class="built_in">module</span>.exports;</div><div class="line">&#125;;</div><div class="line"><span class="keyword">var</span> exported = load(<span class="built_in">module</span>);</div><div class="line"><span class="comment">// 保存module:</span></div><div class="line">save(<span class="built_in">module</span>, exported);</div></pre></td></tr></table></figure>
+<p>全局变量现在变成了匿名函数内部的局部变量，所以，Node利用JavaScript的函数式编程的特性，轻而易举地实现了模块的隔离。</p>
+<p>变量<code>module</code>是Node在加载js文件前准备的一个变量，并将其传入加载函数，我们在<code>hello.js</code>中可以直接使用变量<code>module</code>原因就在于它实际上是函数的一个参数.</p>
+<p>通过把参数<code>module</code>传递给<code>load()</code>函数，<code>hello.js</code>就顺利地把一个变量传递给了Node执行环境，Node会把<code>module</code>变量保存到某个地方。</p>
+<p>由于Node保存了所有导入的<code>module</code>，当我们用<code>require()</code>获取<code>module</code>时，Node找到对应的<code>module</code>，把这个<code>module</code>的<code>exports</code>变量返回，这样，另一个模块就顺利拿到了模块的输出。</p>
+<h2 id="基本模块"><a href="#基本模块" class="headerlink" title="基本模块"></a>基本模块</h2><h3 id="基本模块-1"><a href="#基本模块-1" class="headerlink" title="基本模块"></a>基本模块</h3><h4 id="global"><a href="#global" class="headerlink" title="global"></a>global</h4><p>JavaScript有且仅有一个全局对象，在浏览器中，叫<code>window</code>对象。而在Node.js环境中，也有唯一的全局对象，叫<code>global</code>。</p>
+<h4 id="process"><a href="#process" class="headerlink" title="process"></a>process</h4><p><code>process</code>也是Node.js提供的一个对象，它代表当前Node.js进程。通过<code>process</code>对象可以拿到许多有用信息：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">&gt; process === global.process;</div><div class="line"><span class="literal">true</span></div><div class="line">&gt; process.version;</div><div class="line"><span class="string">'v4.5.0'</span></div><div class="line">&gt; process.platform;</div><div class="line"><span class="string">'darwin'</span></div><div class="line">&gt; process.arch;</div><div class="line"><span class="string">'x64'</span></div><div class="line">&gt; process.cwd(); <span class="comment">//返回当前工作目录</span></div><div class="line"><span class="string">'/Users/michael'</span></div><div class="line">&gt; process.chdir(<span class="string">'/private/tmp'</span>); <span class="comment">// 切换当前工作目录</span></div><div class="line"><span class="literal">undefined</span></div><div class="line">&gt; process.cwd();</div><div class="line"><span class="string">'/private/tmp'</span></div></pre></td></tr></table></figure>
+<p>JavaScript程序是由事件驱动执行的单线程模型，Node.js也不例外。Node.js不断执行响应事件的JavaScript函数，直到没有任何响应事件的函数可以执行时，Node.js就退出了。如果我们想要在下一次事件响应中执行代码，可以调用<code>process.nextTick()</code>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">// process.nextTick()将在下一轮事件循环中调用:</div><div class="line">process.nextTick(function () &#123;</div><div class="line">    console.log(&apos;nextTick callback!&apos;);</div><div class="line">&#125;);</div><div class="line">console.log(&apos;nextTick was set!&apos;);</div></pre></td></tr></table></figure>
+<p>用Node执行上面的代码<code>node test.js</code>，你会看到，打印输出是：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">nextTick was set!</div><div class="line">nextTick callback!</div></pre></td></tr></table></figure>
+<p>这说明传入<code>process.nextTick()</code>的函数不是立刻执行，而是要等到下一次事件循环。</p>
+<p>Node.js进程本身的事件就由<code>process</code>对象来处理。如果我们响应<code>exit</code>事件，就可以在程序即将退出时执行某个回调函数：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 程序即将退出时的回调函数:</span></div><div class="line">process.on(<span class="string">'exit'</span>, <span class="function"><span class="keyword">function</span> (<span class="params">code</span>) </span>&#123;</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">'about to exit with code: '</span> + code);</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<h4 id="判断JavaScript执行环境"><a href="#判断JavaScript执行环境" class="headerlink" title="判断JavaScript执行环境"></a>判断JavaScript执行环境</h4><p>有很多JavaScript代码既能在浏览器中执行，也能在Node环境执行，但有些时候，程序本身需要判断自己到底是在什么环境下执行的，常用的方式就是根据浏览器和Node环境提供的全局变量名称来判断：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">if (typeof(window) === &apos;undefined&apos;) &#123;</div><div class="line">    console.log(&apos;node.js&apos;);</div><div class="line">&#125; else &#123;</div><div class="line">    console.log(&apos;browser&apos;);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="fs"><a href="#fs" class="headerlink" title="fs"></a>fs</h3><h4 id="异步读取文件"><a href="#异步读取文件" class="headerlink" title="异步读取文件"></a>异步读取文件</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>);</div><div class="line"></div><div class="line">fs.readFile(<span class="string">'sample.txt'</span>, <span class="string">'utf-8'</span>, <span class="function"><span class="keyword">function</span> (<span class="params">err, data</span>) </span>&#123;</div><div class="line">    <span class="keyword">if</span> (err) &#123;</div><div class="line">        <span class="built_in">console</span>.log(err);</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        <span class="built_in">console</span>.log(data);</div><div class="line">    &#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p><code>sample.txt</code>文件必须在当前目录下，且文件编码为<code>utf-8</code>。异步读取时，传入的回调函数接收两个参数，当正常读取时，<code>err</code>参数为<code>null</code>，<code>data</code>参数为读取到的<code>String</code>。当读取发生错误时，<code>err</code>参数代表一个错误对象，<code>data</code>为<code>undefined</code>。这也是Node.js标准的回调函数：第一个参数代表错误信息，第二个参数代表结果。</p>
+<p>当读取二进制文件时，不传入文件编码时，回调函数的<code>data</code>参数将返回一个<code>Buffer</code>对象。在Node.js中，<code>Buffer</code>对象就是一个包含零个或任意个字节的数组（注意和<code>Array</code>不同）。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>);</div><div class="line"></div><div class="line">fs.readFile(<span class="string">'sample.png'</span>, <span class="function"><span class="keyword">function</span> (<span class="params">err, data</span>) </span>&#123;</div><div class="line">    <span class="keyword">if</span> (err) &#123;</div><div class="line">        <span class="built_in">console</span>.log(err);</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        <span class="built_in">console</span>.log(data);</div><div class="line">        <span class="built_in">console</span>.log(data.length + <span class="string">' bytes'</span>);</div><div class="line">    &#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p><code>Buffer</code>对象可以和<code>String</code>作转换，例如，把一个<code>Buffer</code>对象转换成<code>String</code>：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// Buffer -&gt; String</span></div><div class="line"><span class="keyword">var</span> text = data.toString(<span class="string">'utf-8'</span>);</div><div class="line"><span class="built_in">console</span>.log(text);</div></pre></td></tr></table></figure>
+<p>或者把一个<code>String</code>转换成<code>Buffer</code>：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// String -&gt; Buffer</span></div><div class="line"><span class="keyword">var</span> buf = <span class="keyword">new</span> Buffer(text, <span class="string">'utf-8'</span>);</div><div class="line"><span class="built_in">console</span>.log(buf);</div></pre></td></tr></table></figure>
+<h4 id="同步读取文件"><a href="#同步读取文件" class="headerlink" title="同步读取文件"></a>同步读取文件</h4>
       
     </div>
 
@@ -359,6 +396,8 @@
         <div class="post-tags">
           
             <a href="/tag/学习笔记/" rel="tag">#学习笔记</a>
+          
+            <a href="/tag/NodeJs/" rel="tag">#NodeJs</a>
           
         </div>
       
@@ -445,7 +484,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">43</span>
+              <span class="site-state-item-count">44</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -462,7 +501,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">17</span>
+                <span class="site-state-item-count">19</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
@@ -511,7 +550,7 @@
               
             
             
-              <p class="post-toc-empty">此文章未包含目录</p>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#模块"><span class="nav-number">1.</span> <span class="nav-text">模块</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#实现"><span class="nav-number">1.1.</span> <span class="nav-text">实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#原理"><span class="nav-number">1.2.</span> <span class="nav-text">原理</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#基本模块"><span class="nav-number">2.</span> <span class="nav-text">基本模块</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#基本模块-1"><span class="nav-number">2.1.</span> <span class="nav-text">基本模块</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#global"><span class="nav-number">2.1.1.</span> <span class="nav-text">global</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#process"><span class="nav-number">2.1.2.</span> <span class="nav-text">process</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#判断JavaScript执行环境"><span class="nav-number">2.1.3.</span> <span class="nav-text">判断JavaScript执行环境</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#fs"><span class="nav-number">2.2.</span> <span class="nav-text">fs</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#异步读取文件"><span class="nav-number">2.2.1.</span> <span class="nav-text">异步读取文件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#同步读取文件"><span class="nav-number">2.2.2.</span> <span class="nav-text">同步读取文件</span></a></li></ol></li></ol></li></ol></div>
             
           </div>
         </section>
