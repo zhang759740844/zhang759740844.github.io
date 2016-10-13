@@ -38,6 +38,8 @@ Images.xcassets目录下存放着所有图片，其中LaunchImage保存启动图
 当某个属性是指向其他对象的指针，并且该对象的类有可修改的子类，如NSString、NSArray时，应该将该属性的内存管理特性设置为copy。相当于发送一个copy消息。  
 当一个不可修改的对象进行copy时，返回原来对象。当一个可修改对象进行copy时，返回新创建的不可修改对象。
 
+举个例子，比如有个`@property(nonatomic,copy) NSString *name`。如果不用`copy`而用`strong`那么将一个可修改的`NSMutableString`对象赋给`name`时，那就直接将`name`指向`NSMutableString`对象。此时，`NSMutableString`修改了自身的string值，那么相当于`name`的值也改变了，这和设计原则相悖。因此，需要使用`copy`,当`NSMutableString`对象赋给`name`时，深复制一个新的不可修改的对象，让`name`指向它，如果`NSString`对象赋给`name`时，浅赋值，将`NSString`的引用计数器加一。
+
 copy和strong的区别就是：
 - 对于不可修改对象没有区别，都是直接返回对象地址
 - 对于可修改对象，copy新创建一个不可修改的原对象的实例，并返回地址。strong直接返回原对象地址。
