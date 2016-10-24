@@ -328,6 +328,46 @@ for (var f of js_files) {
 ```
 
 #### Controller Middleware
+最后，我们把扫描`controllers`目录和创建`router`的代码从`app.js`中提取出来，作为一个简单的`middleware`使用，命名为`controller.js`：
+
+```javascript
+const fs = require('fs');
+
+function addMapping(router, mapping) {
+    ...
+}
+
+function addControllers(router, dir) {
+    ...
+}
+
+module.exports = function (dir) {
+    let
+        controllers_dir = dir || 'controllers', // 如果不传参数，扫描目录默认为'controllers'
+        router = require('koa-router')();
+    addControllers(router, controllers_dir);
+    return router.routes();
+};
+```
+
+这样一来，我们在`app.js`的代码又简化了：
+
+```javascript
+...
+
+// 导入controller middleware:
+const controller = require('./controller');
+
+...
+
+// 使用middleware:
+app.use(controller());
+
+...
+```
+
+经过重新整理后的工程`url2-koa`目前具备非常好的模块化，所有处理URL的函数按功能组存放在`controllers`目录，今后我们也只需要不断往这个目录下加东西就可以了，`app.js`保持不变。
+
 
 
 
