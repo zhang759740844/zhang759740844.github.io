@@ -4,6 +4,152 @@
   
     
     <entry>
+      <title><![CDATA[ios中库的介绍与使用]]></title>
+      <url>http://zhang759740844.github.io/2016/10/17/%E6%89%93%E5%8C%85%E9%9D%99%E6%80%81%E5%BA%93/</url>
+      <content type="html"><![CDATA[<p>最近由于要接入第三方库，因此想要了解库的相关知识。网上查阅了许多资料，仍然比较疑惑。比如，静态库能否以及如何引入动态库？动态库能否以及如何引入静态库？自建动态库(非系统动态库)的好处体现在哪，怎么实现？等等。在一番探索之后，总结了一篇较为详尽全面的库的使用方法。</p>
+<a id="more"></a>
+<p>先来看一张思维导图：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/库.png?raw=true" alt="库"></p>
+<h2 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h2><h3 id="什么是库"><a href="#什么是库" class="headerlink" title="什么是库"></a>什么是库</h3><p>库是共享程序代码的方式。库从本质上来说是一种可执行代码的二进制格式，可以被载入内存中执行。在开发过程中，一些核心技术或者常用框架，出于安全性和稳定性的考虑，不想被外界知道，所以会把核心代码打包成库，只暴露出头文件以供使用。库分静态库和动态库两种。</p>
+<h3 id="库的分类"><a href="#库的分类" class="headerlink" title="库的分类"></a>库的分类</h3><h4 id="静态库"><a href="#静态库" class="headerlink" title="静态库"></a>静态库</h4><p>存在 <code>.a</code> 和 <code>.framework</code> 两种形式。 <code>.a</code> 是一个纯二进制文件，<code>.framework</code> 中除了有二进制文件之外还有资源文件。 <code>.a</code> ，要有 <code>.h</code> 文件以及资源文件配合， <code>.framework</code> 文件可以直接使用。总的来说，<code>.a + .h + sourceFile = .framework</code>。所以创建静态库最好还是用<code>.framework</code>的形式。</p>
+<p>对于静态库而言，类似于一个编译好的 <code>.o</code> 的集合。在build的过程中，只会参与链接的操作，链接器会将静态库中被使用的部分合并到可执行文件中去，用函数的实际地址来代替函数引用。链接流程如下图：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/lib_1.jpg?raw=true" alt="静态库的链接过程"></p>
+<h4 id="动态库"><a href="#动态库" class="headerlink" title="动态库"></a>动态库</h4><p>存在<code>.framework</code>和<code>.tbd</code>两种形式。</p>
+<p>在 iOS8 之前，苹果不允许第三方框架使用动态方式加载，从 iOS8 开始允许开发者有条件地创建和使用动态框架，这种框架叫做 Cocoa Touch Framework。虽然同样是动态框架，但是和系统 framework 不同，app 中的使用的 Cocoa Touch Framework 在打包和提交 app 时会被放到 app bundle 中，运行在沙盒里，而不是系统中。也就是说，不同的 app 就算使用了同样的 framework，但还是会有多份的框架被分别签名，打包和加载。不过 iOS8 上开放了 <strong>App Extension</strong> 功能，可以为一个应用创建插件，这样主app和插件之间共享动态库还是可行的。</p>
+<p>动态链接是使用了 <strong>Procedure Linkage Table (PLT)</strong>。首先这个 <strong>PLT</strong> 列出了程序中每一个函数的调用，<strong>当程序开始运行</strong>，如果动态库被加载到内存中，<strong>PLT</strong> 会去寻找动态的地址并记录下来，如果函数被调用过的话，下一次调用就可以通过 <strong>PLT</strong> 直接跳转了。</p>
+<h3 id="优劣"><a href="#优劣" class="headerlink" title="优劣"></a>优劣</h3><p>静态库，在链接时会被完整地复制到可执行文件中，被多次使用就有多份冗余拷贝。<br>好处很明显，编译完成之后，库文件实际上就没有作用了。目标程序没有外部依赖，直接就可以运行。当然其缺点也很明显，就是会使用目标程序的体积增大。</p>
+<p>动态库，与静态库相反，动态库在编译时并不会被拷贝到目标程序中，目标程序中只会存储指向动态库的引用。等到程序运行时，动态库才会被真正加载进来。<br>系统的动态库不需要拷贝到目标程序中，自建的动态库可以由工程内的多个库共享，因此可以减小目标程序的体积。但是，由于其把静态链接做的事情都搬到运行时来做，程序的启动会变慢。</p>
+<h2 id="库的创建"><a href="#库的创建" class="headerlink" title="库的创建"></a>库的创建</h2><h3 id="a静态库的创建"><a href="#a静态库的创建" class="headerlink" title=".a静态库的创建"></a>.a静态库的创建</h3><p>创建一个 <code>.a</code> 静态库项目，如下图所示：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/lib_2.png?raw=true" alt="lib_2"><br>静态库的文件列表如下，在 <strong>products</strong> 文件夹内的就是要生成的静态库。此刻是红色的，等到生成成功就会变成黑色。<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/lib_3.png?raw=true" alt="lib_3"><br>现在新建自己的类<code>PrintString.h</code>，声明和实现一个第三方库的方法。<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/lib_4.png?raw=true" alt="lib_4"><br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/lib_5.png?raw=true" alt="lib_5"><br>现在可以打包这个静态库了。由于模拟器和真机架构不同，需要选择该包将运行在哪个环境下，如下图所示，选择运行在真机上：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/lib_6.png?raw=true" alt="lib_6"><br>打包生成了静态库在 <strong>products</strong> 文件夹内：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/lib_7.png?raw=true" alt="lib_7"><br>打开 <strong>products</strong> 文件夹， 但是此时暴露出来的头文件并没有<code>PrintString.h</code>。需要对暴露的头文件进行设置。<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/lib_8.png?raw=true" alt="lib_8"><br>如下图，在 <strong>Build Phase</strong> ，的 <strong>Copy Files</strong> 目录下加入想要公开的头文件：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/lib_9.png?raw=true" alt="lib_9"><br>现在再 run 一次，就得到了正确的静态库。<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/lib_10.png?raw=true" alt="lib_10"><br>现在，可以测试一下这个静态库。可以再创建一个工程，把库拖进去。不过更推荐如下图所示，新建一个 <strong>target</strong> ：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/lib_11.png?raw=true" alt="lib_11"><br>先要在工程和库间建立关联。如下图所示，在 <strong>Link Binary With Libraries</strong> 中添加库：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/lib_12.png?raw=true" alt="lib_12"><br>在 <code>ViewController.m</code> 中调用库的方法：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/lib_13.png?raw=true" alt="lib_13"><br>现在可以运行了，不过运行前要选择对 <strong>target</strong> ：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/lib_14.png?raw=true" alt="lib_14"><br>可以在控制台看到库中的方法被调用了：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/lib_15.png?raw=true" alt="lib_15"></p>
+<h3 id="framework的创建"><a href="#framework的创建" class="headerlink" title=".framework的创建"></a>.framework的创建</h3><h4 id="动态framework"><a href="#动态framework" class="headerlink" title="动态framework"></a>动态framework</h4><p>创建一个framework：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/fram_1.png?raw=true" alt="frame_1"><br>创建后的文件列表如下，可以看到只有一个 <code>framework.h</code> 头文件。通过注释，我们可以理解，这个头文件是所有 public 头文件的集合：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/fram_2.png?raw=true" alt="frame_2"><br>将前面创建的 <code>PrintString.h</code> 和 <code>PrintString.m</code> 导入，并且 import 到 <code>framework.h</code> 中去：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/fram_3.png?raw=true" alt="frame_3"><br>设置需要暴露的头文件，头文件默认在 <strong>project header</strong> 中，将需要暴露出来的拖到 <strong>public header</strong> 中去。<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/fram_4.png?raw=true" alt="frame_4"><br>我们可以看到此处有三种头文件，分别是 <strong>project header</strong> ， <strong>public header</strong> ， <strong>private header</strong> 。区别如下：</p>
+<blockquote>
+<p>Public: The interface is finalized and meant to be used by your product’s clients. A public header is included in the product as readable source code without restriction.</p>
+<p>Private: The interface isn’t intended for your clients or it’s in early stages of development. A private header is included in the product, but it’s marked “private”. Thus the symbols are visible to all clients, but clients should understand that they’re not supposed to use them.</p>
+<p>Project: The interface is for use only by implementation files in the current project. A project header is not included in the target, except in object code. The symbols are not visible to clients at all, only to you.</p>
+</blockquote>
+<p>生成的 framework 文件目录如下：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/fram_5.png?raw=true" alt="frame_5"></p>
+<p>将生成的 framework 放入工程中测试，编译通过，运行时出现如下错误：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/fram_6.png?raw=true" alt="frame_6"></p>
+<p>需要将动态库嵌入工程的 bundle 中。因此，需要在 General 中的 <strong>Embedded Binary</strong> 一项中加入相应动态库：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/fram_7.png?raw=true" alt="frame_7"></p>
+<p>现在就可以正确运行了</p>
+<h4 id="静态framework"><a href="#静态framework" class="headerlink" title="静态framework"></a>静态framework</h4><p>静态framework和动态framework创建的基本流程一致，唯一的区别需要设置 <strong>Mach-O Type</strong> 为 <code>Static Library</code> ：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/fram_8.png?raw=true" alt="frame_8"></p>
+<h3 id="静态库与动态库的引用"><a href="#静态库与动态库的引用" class="headerlink" title="静态库与动态库的引用"></a>静态库与动态库的引用</h3><p>一个库的开发经常会需要用到其他的库(如 <code>AFNetWorking</code> )的配合，因此，需要在库中嵌入其他的库。如何在自己的静态/动态库中集成第三方的静态/动态库是我比较困惑的点。</p>
+<p><em>网上没有找到相关教程，以下是我不断尝试后得出的结论，如果有错误还请指正。</em></p>
+<h4 id="动态库引用静态库"><a href="#动态库引用静态库" class="headerlink" title="动态库引用静态库"></a>动态库引用静态库</h4><p>创建一个动态库 <code>DynamicWithStatic</code>。</p>
+<p>使用 <strong>cocoapods</strong> 的方式为动态库引入静态库。在工程目录下新建 <code>podfile</code>,写入:</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">target <span class="string">'DynamicWithStatic'</span> <span class="keyword">do</span></div><div class="line">pod <span class="string">'SVProgressHUD'</span></div><div class="line"><span class="keyword">end</span></div></pre></td></tr></table></figure>
+<p>这里引入<code>SVProgressHUD</code>，因为调试起来比较简单。</p>
+<p>在执行完 <code>pod install</code> 后，打开 <code>Frameworks.xcworkspace</code> ,在其中添加<code>SVProgress</code>类。现在的工程目录如下：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/dynamicstatic_1.png?raw=true" alt="动静库引用"></p>
+<p>在<code>SVProgress.h</code>中添加代码：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">typedef</span> <span class="keyword">void</span>(^SVProgresshud)();</div><div class="line"></div><div class="line"><span class="meta">#import <span class="meta-string">&lt;Foundation/Foundation.h&gt;</span></span></div><div class="line"></div><div class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">SVProgress</span> : <span class="title">NSObject</span></span></div><div class="line"></div><div class="line">+ (SVProgresshud)getBlock;</div><div class="line"><span class="keyword">@end</span></div></pre></td></tr></table></figure>
+<p>在<code>SVProgress.m</code>中添加代码：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#import <span class="meta-string">"SVProgress.h"</span></span></div><div class="line"><span class="meta">#import <span class="meta-string">"SVProgressHUD.h"</span></span></div><div class="line"></div><div class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">SVProgress</span></span></div><div class="line">+(SVProgresshud)getBlock&#123;</div><div class="line">    <span class="keyword">return</span> ^()&#123;</div><div class="line">        [SVProgressHUD showSuccessWithStatus:<span class="string">@"成功！"</span>];</div><div class="line">    &#125;;</div><div class="line">&#125;</div><div class="line"><span class="keyword">@end</span></div></pre></td></tr></table></figure>
+<p><code>SVProgress</code>类的目的是提供一个 block 以供调用。将 <code>SVProgress.h</code> 头文件暴露出来后， run 生成动态库。</p>
+<p>动态库内引用静态库相当于直接把代码写入动态库中，非常的简单。现在思考一个问题，如果工程中引用了这个动态库，并且工程本身也用到了 <code>SVProgressHUD</code> 库，那么会发生什么？尝试一下，在 Pod 中为 <code>FrameworkTest</code> 添加 <code>SVProgressHUD</code> ,会产生如下的警告：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/dynamicstatic_2.png?raw=true" alt="重复实现"></p>
+<p><code>SVProgressHUD</code> 库中的各个类在工程和库中都进行了实现，但是没有指明使用哪一个实现。不过这个警告，并不影响运行，非强迫症可以选择无视，那么对于强迫症患者，如何消除掉这些警告呢？修改库中 <code>SVProgressHUD</code> 中各个类的命名。有两种方式：手动和自动，将在下面介绍。</p>
+<h4 id="动态库引用动态库"><a href="#动态库引用动态库" class="headerlink" title="动态库引用动态库"></a>动态库引用动态库</h4><p>这次被引用的动态库还是 <code>SVProgressHUD</code> 库。先用 pod 下载 <code>SVProgressHUD</code> 的源码，然后打包成动态库，这里就不多做说明了。</p>
+<p>将动态库 <code>SVProgressHUD</code> 拖入工程中，新建 <code>DynamicWithDynamic</code> 动态库。将上面的 <code>SVProgress.h</code> 和 <code>SVProgress.m</code> 拖入 <code>DynamicWithDynamic</code> 中，设置暴露出 <code>SVProgress.h</code>。</p>
+<p>记得注意一定要在 <code>DynamicWithDynamic</code> 中引入 <code>SVProgressHUD</code> ,如下图所示：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/dynamicstatic_3.png?raw=true" alt="引入SVProgressHUD"></p>
+<p>现在 run 一下，就可以成功生成了。</p>
+<p>下面在 <code>FrameworkTest</code> 中测试，使其 embed <code>DynamicWithDynamic</code> 。微调一下 <code>ViewController.m</code> 使其引入目标库，运行。</p>
+<p>在运行中出现如下错误：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/dynamicstatic_4.png?raw=true" alt="错误原因"></p>
+<p>这个错误上面也提到过了，是因为必要的动态库没有 embed 进工程中。但是明明已经将 <code>DynamicWithDynamic</code> embed 了啊。好吧，由于 <code>SVProgressHUD</code> 现在是动态库了，还需要将 <code>SVProgressHUD</code> 库 embed 进 <code>FrameworkTest</code> 中。</p>
+<p>动态库引入动态库，不会将要引入的动态库打包到自身中，即只是 link 产生关联，而不是 embed 嵌入。 需要在外部使用该动态库时，手动 embed 动态库内要使用的动态库。这样的做法很麻烦，那么有什么意义呢？正如动态库本身的作用，如果工程本身也要用到该 <code>SVProgressHUD</code> 动态库时，那么仅需导入一份，就不会产生重复代码了。</p>
+<h4 id="静态库引用静态库"><a href="#静态库引用静态库" class="headerlink" title="静态库引用静态库"></a>静态库引用静态库</h4><p>新建一个 <code>target</code> 命名为 <code>StaticWithStatic</code> ，使用 cocoapods 管理 <code>SVProgressHUD</code> 。基本方法和上面一样，唯一需要改变的地方是 <strong>Mach-O</strong> 需要改为 <strong>Static Library</strong> ，运行。 </p>
+<p>然而运行失败，报错如下：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/dynamicstatic_5.png?raw=true" alt="错误原因"></p>
+<p>大概意思是在对 <code>ViewController.h</code> 进行链接的时候没有找到 <code>SVProgressHUD.m</code> 。这就很奇怪了，明明已经在 <code>StaticWithStatic</code> 中通过 cocoapods 管理了，怎么会没有 <code>SVProgressHUD.m</code> 呢？我想可能是因为cocoapods只是起到 Link 作用，并没有把第三方库也打进去，那么为什么动态库引入静态库的时候是可行的呢？这就不太清楚了。虽然不知道原因，但是解决方法是有的。需要在工程里，即 <code>FrameworkTest</code> 的 cocoapods 中添加 <code>SVProgressHUD</code>：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">target <span class="string">'DynamicWithStatic'</span> <span class="keyword">do</span></div><div class="line">pod <span class="string">'SVProgressHUD'</span></div><div class="line"><span class="keyword">end</span></div><div class="line"></div><div class="line">target <span class="string">'StaticWithStatic'</span> <span class="keyword">do</span></div><div class="line">pod <span class="string">'SVProgressHUD'</span></div><div class="line"><span class="keyword">end</span></div><div class="line"></div><div class="line">target <span class="string">'FrameworksTest'</span> <span class="keyword">do</span></div><div class="line">    pod <span class="string">'SVProgressHUD'</span></div><div class="line"><span class="keyword">end</span></div><div class="line"></div><div class="line">target <span class="string">'DynamicWithDynamic'</span> <span class="keyword">do</span></div><div class="line"><span class="keyword">end</span></div></pre></td></tr></table></figure>
+<p>再次 build ，错误消除，可以使用。</p>
+<h4 id="静态库引用动态库"><a href="#静态库引用动态库" class="headerlink" title="静态库引用动态库"></a>静态库引用动态库</h4><p>静态库貌似不能引用动态库。如果尝试一下，会发现，即使将动态库 <strong>Link Binary With Libraries</strong> 入静态库，也是找不到 <code>SVProgressHUD.h</code> 头文件的。</p>
+<h2 id="一些需要知道的点"><a href="#一些需要知道的点" class="headerlink" title="一些需要知道的点"></a>一些需要知道的点</h2><h3 id="debug与release"><a href="#debug与release" class="headerlink" title="debug与release"></a>debug与release</h3><p>库分为 debug 和 release 两种版本。一般来说, 我们应该发布的是 release 版本。</p>
+<ul>
+<li><strong>debug</strong> :调试版本, 系统本身也会有一些调试代码. 此版本体积会稍大, 运行会稍慢。</li>
+<li><strong>release</strong> : 发布版本, 系统会去除调试代码, 体积变小, 运行速度变快. 对用户来说没有明显的感觉。</li>
+</ul>
+<p>debug 与 release 的设置方式如下图：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_point_1.png?raw=true" alt="debug与release设置"></p>
+<p>对于别人给的库，貌似并不能区分是 debug 还是 release 版本的。</p>
+<h3 id="多架构编译"><a href="#多架构编译" class="headerlink" title="多架构编译"></a>多架构编译</h3><p>库不仅按 debug 和 release 分类，还会因为运行系统的不同而编译出不同框架的版本。上面的例子都是在真机下的编译，为 arm64 版本，在其他的框架下不能正确运行。</p>
+<p>框架分类：</p>
+<ul>
+<li>模拟器架构: <ul>
+<li>i386   : 32位架构  4S ~ 5</li>
+<li>x86_64 : 64位架构  5S ~ 现在的机型</li>
+</ul>
+</li>
+<li>真机架构:<ul>
+<li>arm7: 在最老的支持iOS7的设备上使用</li>
+<li>arm7s: 在iPhone5和5C上使用 </li>
+<li>arm64: 运行于iPhone5S的64位 ARM 处理器 上</li>
+</ul>
+</li>
+</ul>
+<p>修改框架的方式如下图：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_point_2.png?raw=true" alt="修改框架设置"></p>
+<p>debug 项默认为 YES ，表示仅生成当前选择的框架的库； release 项默认为 NO ，表示生成支持所有模拟器或真机的库。生成的库将会保存在 products 目录下的不同分类目录内：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_point_3.png?raw=true" alt="库所在目录"></p>
+<h3 id="lipo"><a href="#lipo" class="headerlink" title="lipo"></a>lipo</h3><p>lipo 是个很有用的命令，主要用来查看库支持的架构以及合并拆分库。</p>
+<h4 id="info"><a href="#info" class="headerlink" title="-info"></a>-info</h4><p>查看刚才编译的 Framework 库在 debug 和 release 下支持的框架：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_point_4.png?raw=true" alt="查看库"><br>可以看到正如上面所说 debug 下不是 fat file ，只支持 arm64 ， release 下是 fat file ， 支持 arm7 和 arm64。</p>
+<h4 id="create"><a href="#create" class="headerlink" title="-create"></a>-create</h4><p>上面生成的库，要么是只支持模拟器的，要么是只支持真机的，那么如何才能又能兼顾真机和模拟器呢？ -create 使用方式：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">lipo -create 库<span class="number">1</span> 库<span class="number">2</span> -output 新库</div></pre></td></tr></table></figure>
+<p>使用结果如下图：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_point_5.png?raw=true" alt="合并"></p>
+<h4 id="thin"><a href="#thin" class="headerlink" title="-thin"></a>-thin</h4><p>如果有一个 fat file 但是你不需要支持那么多框架，也可以通过拆分，为库瘦身， -thin 使用方式：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">lipo 旧库 -thin 需拆分框架 -output 新库</div></pre></td></tr></table></figure>
+<p>使用结果如下图：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_point_6.png?raw=true" alt="拆分"></p>
+<h3 id="bundle"><a href="#bundle" class="headerlink" title="bundle"></a>bundle</h3><p>在 framework 中使用 storyboard/xib 创建的页面，可以直接访问 framework 中图片资源。但是 framework 中通过<code>imageNamed：</code>方式加载的照片都会丢失。这是因为 <code>imageNamed:</code>的方法默认是从 <code>mainBundle</code> 中查找资源的，而 framework 中的照片是从 framework 内部加载的，这是的 bundle 并不是 <code>mainBundle</code> ，而是存在于主程序的 docment 文件中的 framework 包，图片加载的路径发生了变化，自然找不到图片资源，所以需要修改加载图片的方法！</p>
+<p>一般的方法是创建一个 bundle ：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_point_7.png?raw=true" alt="创建bundle"></p>
+<p>bundle 一般和库命名相同。需要注意的是， bundle 并不会被打包进库中的，而是添加要单独添加到工程中，和 framework 相独立的两部分。向 bundle 中直接添加图片：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_point_9.png?raw=true" alt="添加图片"></p>
+<p>先在主工程的 <strong>Copy Bundle Resources</strong> 中添加 bundle ，如下图所示：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_point_8.png?raw=true" alt="添加bundle"></p>
+<p>现在就可以通过<code>[NSBundle mainBundle]</code>获取图片，一下两种方式皆可：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">[<span class="built_in">UIImage</span> imageNamed:[[[<span class="built_in">NSBundle</span> mainBundle] pathForResource:<span class="string">@"Frameworks"</span> ofType:<span class="string">@"bundle"</span>] stringByAppendingString:<span class="string">@"/Images/author.png"</span>]]</div><div class="line"></div><div class="line">[<span class="built_in">UIImage</span> imageNamed:<span class="string">@"Frameworks.bundle/Images/author.png"</span>]</div></pre></td></tr></table></figure>
+<h2 id="cocoapods打包库"><a href="#cocoapods打包库" class="headerlink" title="cocoapods打包库"></a>cocoapods打包库</h2><p>好了，终于到最后一部分了。前面已经介绍了手动创建库的方式，那么如何自动创建一个库？另外一点，前面提到过，在动态库内引入静态库，会和项目本身由 cocoapods 引入的库同名冲突，如何消除这一冲突？以上问题都可以通过 cocoapods 打包库实现</p>
+<h3 id="创建工程"><a href="#创建工程" class="headerlink" title="创建工程"></a>创建工程</h3><p>只需要输入 pod 的 <code>lib</code> 命令即可完成初始项目的搭建:</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">pod lib create StaticWithCocoapods</div></pre></td></tr></table></figure>
+<p>输出指令后，会提示确认五个问题，按需求回答即可：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_cocoapods_1.png?raw=true" alt="创建库"></p>
+<p>稍等片刻，就会自动生成一个工程。</p>
+<h3 id="配置信息"><a href="#配置信息" class="headerlink" title="配置信息"></a>配置信息</h3><p>在项目目录下有一个 <code>xxx.podspec</code> 配置文件，需要进行修改，摘录如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div></pre></td><td class="code"><pre><div class="line">Pod::Spec.new do |s|</div><div class="line">  s.name             = &apos;StaticWithCocoapods&apos;</div><div class="line">  s.version          = &apos;0.1.0&apos;</div><div class="line">  s.summary          = &apos;A short description of StaticWithCocoapods.&apos;</div><div class="line"></div><div class="line"># This description is used to generate tags and improve search results.</div><div class="line">#   * Think: What does it do? Why did you write it? What is the focus?</div><div class="line">#   * Try to keep it short, snappy and to the point.</div><div class="line">#   * Write the description between the DESC delimiters below.</div><div class="line">#   * Finally, don&apos;t worry about the indent, CocoaPods strips it!</div><div class="line"></div><div class="line">  s.description      = &lt;&lt;-DESC</div><div class="line">TODO: Add long description of the pod here.</div><div class="line">                       DESC</div><div class="line"></div><div class="line">  s.homepage         = &apos;https://github.com/zhang759740844&apos;</div><div class="line">  s.license          = &#123; :type =&gt; &apos;MIT&apos;, :file =&gt; &apos;LICENSE&apos; &#125;</div><div class="line">  s.author           = &#123; &apos;Zachary&apos; =&gt; &apos;759740844@qq.com&apos; &#125;</div><div class="line">  s.source           = &#123; :git =&gt; &apos;/Users/zachary/Desktop/StaticWithCocoapods&apos;, :tag =&gt; s.version.to_s &#125;</div><div class="line"></div><div class="line">  s.ios.deployment_target = &apos;8.0&apos;</div><div class="line"></div><div class="line">  s.source_files = &apos;StaticWithCocoapods/Classes/**/*&apos;</div><div class="line">  </div><div class="line">  s.resource_bundles = &#123;</div><div class="line">    &apos;StaticWithCocoapods&apos; =&gt; [&apos;StaticWithCocoapods/Assets/*.png&apos;]</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  s.public_header_files = &apos;StaticWithCocoapods/Classes/**/*.h&apos;</div><div class="line">  s.frameworks = &apos;UIKit&apos;, &apos;MapKit&apos;</div><div class="line">  s.dependency &apos;AFNetworking&apos;, &apos;~&gt; 2.3&apos;</div><div class="line">  s.denpendency &apos;SVProgressHUD&apos;</div><div class="line">end</div></pre></td></tr></table></figure>
+<ul>
+<li>s.version 表示的是当前类库的版本号</li>
+<li>s.source 表示当前类库源</li>
+<li>s.sources_files 表示类库的源文件存放目录</li>
+<li>s.resource_bundles 表示资源文件存放目录</li>
+<li>s.frameworks 表示类库依赖的framework</li>
+<li>s.dependency 表示依赖的第三方类库</li>
+</ul>
+<p>其中要说明的是： </p>
+<ol>
+<li>source 可以填写远端 git 仓库，也可以是像我写的那样的本地 git 仓库。</li>
+<li>依赖项不仅要包含你自己类库的依赖，还要包括所有第三方类库的依赖，只有这样当你的类库打包成 .a 或 .framework 时才能让其他项目正常使用。</li>
+<li>source_file 路径中出现的通配符 <code>*</code> 表示匹配任意字符， <code>**</code> 表示匹配所有当前文件夹和子文件夹。</li>
+<li>source_bundles 中花括号内的 <code>&#39;StaticWithCocoapods&#39;</code> 就表示一个 <code>StaticWithCocoapods</code> bundle。</li>
+</ol>
+<h3 id="添加文件"><a href="#添加文件" class="headerlink" title="添加文件"></a>添加文件</h3><p>向 <strong>sources_files</strong> 和 <strong>public_header_files</strong> 以及 <strong>resource_bundle</strong> 中添加图片和类文件。在 demo 的文件夹下执行 <code>pod install</code>。现在打开 demo 工程，可以看到创建的 <code>StaticWithCocoapods</code> 库的文件结构如下图：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_cocoapods_2.png?raw=true" alt="文件结构"></p>
+<p>到这里一切正常，也可以使用 <code>SVProgressHUD</code> ，但是当我想用 <code>[UIImage imageNamed:[[[NSBundle mainBundle] pathForResource:@&quot;StaticWithCocoapods&quot; ofType:@&quot;bundle&quot;] stringByAppendingString:@&quot;/author.png&quot;]]</code> 加载图片资源文件时，一直返回 <code>nil</code> 。</p>
+<p>好吧。虽然网上cocoapods打包教程不少，但是真正试过添加图片的人应该不多，最后在 Stackoverflow 的一个评论里总算找到了解决方法<a href="http://stackoverflow.com/questions/25402782/cocoapodsresource-bundle-not-accessbile" target="_blank" rel="external">[Cocoapods]:Resource Bundle not accessbile</a></p>
+<p>原先 demo 中 profile 的内容如下：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">use_frameworks!</div><div class="line"></div><div class="line">target <span class="string">'StaticWithCocoapods_Example'</span> <span class="keyword">do</span></div><div class="line">  pod <span class="string">'StaticW'</span>, <span class="symbol">:path</span> =&gt; <span class="string">'../'</span></div><div class="line"></div><div class="line">  target <span class="string">'StaticWithCocoapods_Tests'</span> <span class="keyword">do</span></div><div class="line">    inherit! <span class="symbol">:search_paths</span></div><div class="line"></div><div class="line">    pod <span class="string">'FBSnapshotTestCase'</span></div><div class="line">  <span class="keyword">end</span></div><div class="line"><span class="keyword">end</span></div></pre></td></tr></table></figure>
+<p>现在要删除 <code>use_frameworks!</code> 以及其相关内容，变成这样：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">target <span class="string">'StaticWithCocoapods_Example'</span> <span class="keyword">do</span></div><div class="line">  pod <span class="string">'StaticWithCocoapods'</span>, <span class="symbol">:path</span> =&gt; ‘../‘</div><div class="line"><span class="keyword">end</span></div></pre></td></tr></table></figure>
+<p>再次尝试加载图片，可以得到正确结果. ^_^</p>
+<h3 id="提交代码"><a href="#提交代码" class="headerlink" title="提交代码"></a>提交代码</h3><ol>
+<li>使用 sourcetree 添加本地仓库</li>
+<li>提交上面的所有改动</li>
+<li>为改动添加 tag 为 <code>0.1.0</code></li>
+</ol>
+<p>设置好后如图：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_cocoapods_3.png?raw=true" alt="提交代码"></p>
+<p>这里要注意，tag 一定要打上，版本控制的时候就是以 tag 来辨别的。</p>
+<h3 id="验证类库"><a href="#验证类库" class="headerlink" title="验证类库"></a>验证类库</h3><p>开发完成静态类库之后，需要运行pod lib lint验证一下类库是否符合pod的要求。添加 <code>--allow-warnings</code> 忽略警告：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_cocoapods_4.png?raw=true" alt="验证类库"></p>
+<h3 id="打包库"><a href="#打包库" class="headerlink" title="打包库"></a>打包库</h3><p>打包库需要一个 cocoapods 的插件 <strong>cocoapods-packager</strong>来完成类库的打包。</p>
+<p>在终端执行以下命令，安装插件：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">sudo gem install cocoapods-packager</div></pre></td></tr></table></figure>
+<p>在目标文件夹内执行以下命令，完成打包：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">pod package StaticWithCocoapods.podspec --force</div></pre></td></tr></table></figure>
+<p>打包成 <code>.framework</code> ，也可以用 <code>--library</code> 打包成 <code>.a</code> 。不过 cocoapods 之前有过打包成 <code>.a</code> 但是没有暴露出头文件的bug，懒得试有没有修复了，所以还是都打成 <code>.framework</code> 吧。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_cocoapods_5.png?raw=true" alt="打包过程"></p>
+<p>现在在目标文件夹下就会多出一个 <code>StaticWithCocoapods-0.2.0</code> 目录，里面是打包好的 framework 。</p>
+<p>至于如何将打包好的库添加到 cocoapods 的官方库内，这个就没有研究了，因为，在很长的一段时间内我都不会用到。有兴趣的可以看看 cocoapods 的官方文档，自行研究下。</p>
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><p><a href="http://foggry.com/blog/2014/06/12/wwdc2014zhi-iosshi-yong-dong-tai-ku/" target="_blank" rel="external">WWDC2014之iOS使用动态库</a><br><a href="http://blog.csdn.net/lijuan3203/article/details/52105911" target="_blank" rel="external">手把手教你使用CocoaPods打包静态库</a><br><a href="http://www.jianshu.com/p/8f5b9855efb8" target="_blank" rel="external">iOS 静态库开发</a><br><a href="http://www.cnblogs.com/brycezhang/p/4117180.html" target="_blank" rel="external">使用CocoaPods开发并打包静态库</a><br><a href="http://www.cocoachina.com/ios/20150228/11206.html" target="_blank" rel="external">使用Cocoapods创建私有podspec</a><br><a href="https://my.oschina.net/kaqijiang/blog/649632" target="_blank" rel="external">iOS静态库 【.a 和framework】【超详细】</a><br><a href="http://www.samirchen.com/create-a-framework/" target="_blank" rel="external">创建一个 iOS Framework 项目</a><br><a href="http://blog.csdn.net/u013604612/article/details/43197465" target="_blank" rel="external">iOS开发——创建你自己的Framework</a><br><a href="http://chenhuaizhe.com/jekyll/update/2015/12/13/iOS中的workspace与静态库.html" target="_blank" rel="external">iOS中workspace与静态库</a><br><a href="http://www.cocoachina.com/ios/20150906/13323.html" target="_blank" rel="external">Cocoapods 应用第一部分 - Xcode 创建 .framework 相关</a><br><a href="http://www.lhjzzu.com/2016/05/06/static-lib/" target="_blank" rel="external">ios打包–打包静态库(五)</a></p>
+<p>呼~总算把库的相关知识看完了，写成这第二篇。花了半个月才总结完。期间各种问题，各种错误不知道怎么解决，真的累。以后还是研究些经常能用得到的东西吧。自己基本不需要打包库<del>~</del></p>
+<p><a href="https://github.com/zhang759740844/MyOCDemo/tree/develop/Framework" target="_blank" rel="external">我的demo地址，欢迎参考</a></p>
+]]></content>
+    </entry>
+    
+    <entry>
       <title><![CDATA[Storyboard 使用方法]]></title>
       <url>http://zhang759740844.github.io/2016/10/13/storyboard%E5%9F%BA%E7%A1%80/</url>
       <content type="html"><![CDATA[<p>Storyboard是苹果官方主推的一个代替xib的策略。有必要详细学习下它的使用方法。</p>
@@ -790,6 +936,20 @@
     </entry>
     
     <entry>
+      <title><![CDATA[IPhone6全屏黑边处理]]></title>
+      <url>http://zhang759740844.github.io/2016/09/05/IPhone6%E5%85%A8%E5%B1%8F%E9%BB%91%E8%BE%B9%E5%A4%84%E7%90%86/</url>
+      <content type="html"><![CDATA[<p>写ios小demo的时候，真机调试出现View不能满屏显示的情况。屏幕上下都有一条粗粗的黑条。</p>
+<a id="more"></a>
+<p>检查了许久，代码里都是直接设置的<code>UIScreen</code>的<code>bounds</code>。因此，不可能是代码的问题。那么需要在设置中找原因。</p>
+<p>通过和正确的demo进行对比，发现了差异所在。</p>
+<p>这是有黑边情况下的设置：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/SetLaunchImage2.png?raw=true" alt="错误设置"></p>
+<p>这是没有黑边情况下的设置：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/SetLaunchImage1.png?raw=true" alt="正确设置"></p>
+<p>通过比较可以发现：<br>出现黑边的原因是在设置里设置了<code>Launch Images Source</code>为<code>LaunchImage</code>,但是在Images.xcassets中并没有<code>LaunchImage</code>资源。所以，需要给<code>LaunchImage</code>设置图片资源。<br>也可以像上面的那样设置<code>Launch Images Source</code>为<code>Use Asset Catalog</code>,并且将<code>Launch Screen File</code>设置为<code>LaunchImage</code>即可解决。</p>
+]]></content>
+    </entry>
+    
+    <entry>
       <title><![CDATA[UIGestureRecognizer]]></title>
       <url>http://zhang759740844.github.io/2016/09/05/UIGestureRecognizer/</url>
       <content type="html"><![CDATA[<p>在iOS系统中，手势是进行用户交互的重要方式，通过<code>UIGestureRecognizer</code>类，我们可以轻松的创建出各种手势应用于app中。关于<code>UIGestureRecognizer</code>类，是对iOS中的事件传递机制面向应用的封装，将手势消息的传递抽象为了对象。有关消息传递的讨论，在上一篇中已经讨论过了。</p>
@@ -830,20 +990,6 @@
 <blockquote>
 <p>Demo 详见UIGestureRecognizer</p>
 </blockquote>
-]]></content>
-    </entry>
-    
-    <entry>
-      <title><![CDATA[IPhone6全屏黑边处理]]></title>
-      <url>http://zhang759740844.github.io/2016/09/05/IPhone6%E5%85%A8%E5%B1%8F%E9%BB%91%E8%BE%B9%E5%A4%84%E7%90%86/</url>
-      <content type="html"><![CDATA[<p>写ios小demo的时候，真机调试出现View不能满屏显示的情况。屏幕上下都有一条粗粗的黑条。</p>
-<a id="more"></a>
-<p>检查了许久，代码里都是直接设置的<code>UIScreen</code>的<code>bounds</code>。因此，不可能是代码的问题。那么需要在设置中找原因。</p>
-<p>通过和正确的demo进行对比，发现了差异所在。</p>
-<p>这是有黑边情况下的设置：</p>
-<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/SetLaunchImage2.png?raw=true" alt="错误设置"></p>
-<p>这是没有黑边情况下的设置：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/SetLaunchImage1.png?raw=true" alt="正确设置"></p>
-<p>通过比较可以发现：<br>出现黑边的原因是在设置里设置了<code>Launch Images Source</code>为<code>LaunchImage</code>,但是在Images.xcassets中并没有<code>LaunchImage</code>资源。所以，需要给<code>LaunchImage</code>设置图片资源。<br>也可以像上面的那样设置<code>Launch Images Source</code>为<code>Use Asset Catalog</code>,并且将<code>Launch Screen File</code>设置为<code>LaunchImage</code>即可解决。</p>
 ]]></content>
     </entry>
     
@@ -1150,42 +1296,6 @@
     </entry>
     
     <entry>
-      <title><![CDATA[初识Provisioning Profile]]></title>
-      <url>http://zhang759740844.github.io/2016/08/26/%E5%88%9D%E8%AF%86Provisioning_Profile/</url>
-      <content type="html"><![CDATA[<p>真机调试的时候遇到了<em>provisioning profile即将过期</em>的警告，于是搜索并对provisioning profile作了一定了解。结合<a href="http://www.cnblogs.com/cywin888/p/3263027.html" target="_blank" rel="external">关于Certificate、Provisioning Profile、App ID的介绍及其之间的关系</a>进行梳理。</p>
-<a id="more"></a>
-<h2 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h2><h3 id="Certificate"><a href="#Certificate" class="headerlink" title="Certificate"></a>Certificate</h3><p>证书是用来给应用程序签名的，只有经过签名的应用程序才能保证他的来源是可信任的，并且代码是完整的， 未经修改的。在Xcode Build Setting(点击工程文件)的Code Signing Identity中，你可以设置用于为代码签名的证书。</p>
-<p>众所周知，我们申请一个Certificate之前，需要先申请一个Certificate Signing Request (CSR) 文件，而这个过程中实际上是生成了一对公钥和私钥，保存在你Mac的Keychain中。代码签名正是使用这种基于非对称秘钥的加密方式，用私钥进行签名，用公钥进行验证。如下图所示，在你Mac的keychain的login中存储着相关的公钥和私钥，而证书中包含了公钥。你只能用私钥来进行签名，所以如果没有了私钥，就意味着你不能进行签名了，所以就无法使用这个证书了，此时你只能revoke之前的证书再申请一个。因此在申请完证书时，最好导出并保存好你的私钥。当你想与其他人或其他设备共享证书时，把私钥传给它就可以了。私钥保存在你的Mac中，而苹果生成的Certificate中包含了公钥。当你用自己的私钥对代码签名后，苹果就可以用证书中的公钥来进行验证，确保是你对代码进行了签名，而不是别人冒充你，同时也确保代码的完整性等。 </p>
-<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/profile_certificate.png?raw=true" alt="证书的私钥和公钥"></p>
-<p>证书主要分为两类：Development和Production，Development证书用来开发和调试应用程序，Production主要用来分发（生产，上架Appstore）应用程序（根据证书种类有不同作用）</p>
-<h3 id="APP-ID"><a href="#APP-ID" class="headerlink" title="APP ID"></a>APP ID</h3><p>App ID用于标识一个或者一组App，App ID应该是和Xcode中的Bundle ID是一致的或者匹配的。App ID主要有以下两种：</p>
-<ul>
-<li>Explicit App ID：唯一的App ID，这种App ID用于唯一标识一个应用程序，例如com.ABC.demo1，标识Bundle ID为com.ABC.demo1的程序。</li>
-<li>Wildcard App ID：通配符App ID，用于标识一组应用程序。例如*可以表示所有应用程序，而com.ABC.*可以表示以com.ABC开头的所有应用程序。</li>
-</ul>
-<p>每创建一个App ID，我们都可以设置该App ID所使用的APP Services，也就是其所使用的额外服务。每种额外服务都有着不同的要求，例如，如果要使用Apple Push Notification Services，则必须是一个explicit App ID，以便能唯一标识一个应用程序。</p>
-<h3 id="Device"><a href="#Device" class="headerlink" title="Device"></a>Device</h3><p>Device最简单了，就是iOS设备。Devices中包含了该账户中所有可用于开发和测试的设备。 每台设备使用UDID来唯一标识。</p>
-<p>每个账户中的设备数量限制是100个。Disable 一台设备也不会增加名额，只能在membership year 开始的时候才能通过删除设备来增加名额。</p>
-<h3 id="Provisioning-Profile"><a href="#Provisioning-Profile" class="headerlink" title="Provisioning Profile"></a>Provisioning Profile</h3><p>一个Provisioning Profile文件包含了上述的所有内容：证书、App ID、设备。</p>
-<p>试想一下，如果我们要打包或者在真机上运行一个应用程序，我们首先需要证书来进行签名，用来标识这个应用程序是合法的、安全的、完整的等等；然后需要指明它的App ID，并且验证Bundle ID是否与其一致；再次，如果是真机调试，需要确认这台设备能否用来运行程序。而Provisioning Profile就把这些信息全部打包在一起，方便我们在调试和发布程序打包时使用，这样我们只要在不同的情况下选择不同的profile文件就可以了。而且这个Provisioning Profile文件会在打包时嵌入.ipa的包里。</p>
-<p>例如，如下图所示，一个用于Development的Provisioning Profile中包含了该Provisioning Profile对应的App ID，可使用的证书和设备。这意味着使用这个Provisioning Profile打包程序必须拥有相应的证书，并且是将App ID对应的程序运行到Devices中包含的设备上去。</p>
-<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/Provisioning_Profile_consist.png?raw=true" alt="Provisioning Profile组成"></p>
-<p>如上所述，在一台设备上运行应用程序的过程如下：</p>
-<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/Provisioning_Profile_Confirm.png?raw=true" alt="Provisioning Profile验证"></p>
-<p>与证书一样，Provisioning Profile也分为Development和Distribution两种</p>
-<h2 id="Xcode-7-免证书真机调试"><a href="#Xcode-7-免证书真机调试" class="headerlink" title="Xcode 7+ 免证书真机调试"></a>Xcode 7+ 免证书真机调试</h2><p>在Xcode 7+ 中，苹果改变了自己在许可权限上的策略，此前Xcode只开放给注册开发者下载，但Xcode 7改变了这种惯有的做法，无需注册开发者账号，仅使用普通的Apple ID就能下载和上手体验。此前开发者需每年支付99美元的费用成为注册开发者才能在iPhone、iPad、Apple Watch等真机上运行代码，苹果新的开发者计划则放宽要求，无需购买，只要你感兴趣同样可以在真机设备上测试app</p>
-<h3 id="使用方法"><a href="#使用方法" class="headerlink" title="使用方法"></a>使用方法</h3><ol>
-<li>打开自己已有的工程或者打开Xcode新建一个简单工程</li>
-<li>菜单栏选择Xcode,下拉菜单中选择Preferences…(快捷键 command + , )<br> <img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/NoCertificateDebug.png?raw=true" alt="1"></li>
-<li>在Accounts选项卡添加自己的Apple ID。添加完成后你会看到这样的信息。可以看到下面显示了iOS和Mac的Free标记了，在这之前是没有这些标记的。<br> <img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/NoCertificateDebg2.png?raw=true" alt="2"></li>
-<li>将测试的iPhone或者其他真机测试设备连接Mac，Xcode选中真机测试设备，直接点击运行。<br> <img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/NoCertificateDebg3.png?raw=true" alt="3"></li>
-<li>Xcode报错如下图所示，直接点击Fix Issue。<br> <img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/NoCertificateDebg4.png?raw=true" alt="4"></li>
-<li>警告也没了，证书也生成了，重新点击run按钮，可以开始愉快的玩耍了😁。<br> <img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/NoCertificateDebg5.png?raw=true" alt="5"></li>
-</ol>
-]]></content>
-    </entry>
-    
-    <entry>
       <title><![CDATA[tableview自适应高度]]></title>
       <url>http://zhang759740844.github.io/2016/08/26/UITableview%E8%87%AA%E9%80%82%E5%BA%94%E9%AB%98%E5%BA%A6/</url>
       <content type="html"><![CDATA[<p>由于tableview的cell的高度会随着内部label以及textview字符长度的变化而变化，因此不能一味的设置heightForRowAtIndexPath为定值。</p>
@@ -1224,6 +1334,42 @@
 <p>用户将要展示的cell分类，然后将分类的key传入。</p>
 <h3 id="Frame-layout-mode"><a href="#Frame-layout-mode" class="headerlink" title="Frame layout mode"></a>Frame layout mode</h3><p>对于<code>Auto layout mode</code>和<code>Frame layout mode</code>。框架提供了两种方式，默认是自动布局。 </p>
 <h3 id="再次注意"><a href="#再次注意" class="headerlink" title="再次注意"></a>再次注意</h3><p>需要再次提醒的是，如上文所说，一个好的自适应cell，一定要将cell内subview的上下左右约束设置好。</p>
+]]></content>
+    </entry>
+    
+    <entry>
+      <title><![CDATA[初识Provisioning Profile]]></title>
+      <url>http://zhang759740844.github.io/2016/08/26/%E5%88%9D%E8%AF%86Provisioning_Profile/</url>
+      <content type="html"><![CDATA[<p>真机调试的时候遇到了<em>provisioning profile即将过期</em>的警告，于是搜索并对provisioning profile作了一定了解。结合<a href="http://www.cnblogs.com/cywin888/p/3263027.html" target="_blank" rel="external">关于Certificate、Provisioning Profile、App ID的介绍及其之间的关系</a>进行梳理。</p>
+<a id="more"></a>
+<h2 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h2><h3 id="Certificate"><a href="#Certificate" class="headerlink" title="Certificate"></a>Certificate</h3><p>证书是用来给应用程序签名的，只有经过签名的应用程序才能保证他的来源是可信任的，并且代码是完整的， 未经修改的。在Xcode Build Setting(点击工程文件)的Code Signing Identity中，你可以设置用于为代码签名的证书。</p>
+<p>众所周知，我们申请一个Certificate之前，需要先申请一个Certificate Signing Request (CSR) 文件，而这个过程中实际上是生成了一对公钥和私钥，保存在你Mac的Keychain中。代码签名正是使用这种基于非对称秘钥的加密方式，用私钥进行签名，用公钥进行验证。如下图所示，在你Mac的keychain的login中存储着相关的公钥和私钥，而证书中包含了公钥。你只能用私钥来进行签名，所以如果没有了私钥，就意味着你不能进行签名了，所以就无法使用这个证书了，此时你只能revoke之前的证书再申请一个。因此在申请完证书时，最好导出并保存好你的私钥。当你想与其他人或其他设备共享证书时，把私钥传给它就可以了。私钥保存在你的Mac中，而苹果生成的Certificate中包含了公钥。当你用自己的私钥对代码签名后，苹果就可以用证书中的公钥来进行验证，确保是你对代码进行了签名，而不是别人冒充你，同时也确保代码的完整性等。 </p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/profile_certificate.png?raw=true" alt="证书的私钥和公钥"></p>
+<p>证书主要分为两类：Development和Production，Development证书用来开发和调试应用程序，Production主要用来分发（生产，上架Appstore）应用程序（根据证书种类有不同作用）</p>
+<h3 id="APP-ID"><a href="#APP-ID" class="headerlink" title="APP ID"></a>APP ID</h3><p>App ID用于标识一个或者一组App，App ID应该是和Xcode中的Bundle ID是一致的或者匹配的。App ID主要有以下两种：</p>
+<ul>
+<li>Explicit App ID：唯一的App ID，这种App ID用于唯一标识一个应用程序，例如com.ABC.demo1，标识Bundle ID为com.ABC.demo1的程序。</li>
+<li>Wildcard App ID：通配符App ID，用于标识一组应用程序。例如*可以表示所有应用程序，而com.ABC.*可以表示以com.ABC开头的所有应用程序。</li>
+</ul>
+<p>每创建一个App ID，我们都可以设置该App ID所使用的APP Services，也就是其所使用的额外服务。每种额外服务都有着不同的要求，例如，如果要使用Apple Push Notification Services，则必须是一个explicit App ID，以便能唯一标识一个应用程序。</p>
+<h3 id="Device"><a href="#Device" class="headerlink" title="Device"></a>Device</h3><p>Device最简单了，就是iOS设备。Devices中包含了该账户中所有可用于开发和测试的设备。 每台设备使用UDID来唯一标识。</p>
+<p>每个账户中的设备数量限制是100个。Disable 一台设备也不会增加名额，只能在membership year 开始的时候才能通过删除设备来增加名额。</p>
+<h3 id="Provisioning-Profile"><a href="#Provisioning-Profile" class="headerlink" title="Provisioning Profile"></a>Provisioning Profile</h3><p>一个Provisioning Profile文件包含了上述的所有内容：证书、App ID、设备。</p>
+<p>试想一下，如果我们要打包或者在真机上运行一个应用程序，我们首先需要证书来进行签名，用来标识这个应用程序是合法的、安全的、完整的等等；然后需要指明它的App ID，并且验证Bundle ID是否与其一致；再次，如果是真机调试，需要确认这台设备能否用来运行程序。而Provisioning Profile就把这些信息全部打包在一起，方便我们在调试和发布程序打包时使用，这样我们只要在不同的情况下选择不同的profile文件就可以了。而且这个Provisioning Profile文件会在打包时嵌入.ipa的包里。</p>
+<p>例如，如下图所示，一个用于Development的Provisioning Profile中包含了该Provisioning Profile对应的App ID，可使用的证书和设备。这意味着使用这个Provisioning Profile打包程序必须拥有相应的证书，并且是将App ID对应的程序运行到Devices中包含的设备上去。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/Provisioning_Profile_consist.png?raw=true" alt="Provisioning Profile组成"></p>
+<p>如上所述，在一台设备上运行应用程序的过程如下：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/Provisioning_Profile_Confirm.png?raw=true" alt="Provisioning Profile验证"></p>
+<p>与证书一样，Provisioning Profile也分为Development和Distribution两种</p>
+<h2 id="Xcode-7-免证书真机调试"><a href="#Xcode-7-免证书真机调试" class="headerlink" title="Xcode 7+ 免证书真机调试"></a>Xcode 7+ 免证书真机调试</h2><p>在Xcode 7+ 中，苹果改变了自己在许可权限上的策略，此前Xcode只开放给注册开发者下载，但Xcode 7改变了这种惯有的做法，无需注册开发者账号，仅使用普通的Apple ID就能下载和上手体验。此前开发者需每年支付99美元的费用成为注册开发者才能在iPhone、iPad、Apple Watch等真机上运行代码，苹果新的开发者计划则放宽要求，无需购买，只要你感兴趣同样可以在真机设备上测试app</p>
+<h3 id="使用方法"><a href="#使用方法" class="headerlink" title="使用方法"></a>使用方法</h3><ol>
+<li>打开自己已有的工程或者打开Xcode新建一个简单工程</li>
+<li>菜单栏选择Xcode,下拉菜单中选择Preferences…(快捷键 command + , )<br> <img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/NoCertificateDebug.png?raw=true" alt="1"></li>
+<li>在Accounts选项卡添加自己的Apple ID。添加完成后你会看到这样的信息。可以看到下面显示了iOS和Mac的Free标记了，在这之前是没有这些标记的。<br> <img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/NoCertificateDebg2.png?raw=true" alt="2"></li>
+<li>将测试的iPhone或者其他真机测试设备连接Mac，Xcode选中真机测试设备，直接点击运行。<br> <img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/NoCertificateDebg3.png?raw=true" alt="3"></li>
+<li>Xcode报错如下图所示，直接点击Fix Issue。<br> <img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/NoCertificateDebg4.png?raw=true" alt="4"></li>
+<li>警告也没了，证书也生成了，重新点击run按钮，可以开始愉快的玩耍了😁。<br> <img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/NoCertificateDebg5.png?raw=true" alt="5"></li>
+</ol>
 ]]></content>
     </entry>
     
@@ -1772,6 +1918,30 @@
     </entry>
     
     <entry>
+      <title><![CDATA[python 3.5 模块]]></title>
+      <url>http://zhang759740844.github.io/2016/08/09/python_%E6%A8%A1%E5%9D%97/</url>
+      <content type="html"><![CDATA[<p>当时学的是2.x版本，有点过时了，现在看了<a href="http://www.liaoxuefeng.com/" target="_blank" rel="external">廖雪峰的博客</a>的3.5版本的语法介绍，做一些摘录。</p>
+<a id="more"></a>
+<p>Python又引入了按目录来组织模块的方法，称为包（Package）。引入了包以后，只要顶层的包名不与别人冲突，那所有模块都不会与别人冲突。<br>请注意，每一个包目录下面都会有一个<strong>init__.py的文件，这个文件是必须存在的，否则，Python就把这个目录当成普通目录，而不是一个包。</strong>init__.py可以是空文件，也可以有Python代码，因为<strong>init</strong>.py本身就是一个模块</p>
+<h3 id="使用模块"><a href="#使用模块" class="headerlink" title="使用模块"></a>使用模块</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">import</span> sys</div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">test</span><span class="params">()</span>:</span></div><div class="line">	<span class="keyword">pass</span></div><div class="line"><span class="keyword">if</span> __name__==<span class="string">'__main__'</span>:</div><div class="line">	test()</div></pre></td></tr></table></figure>
+<p>导入sys模块后,就有了变量sys指向该模块，利用sys这个变量，就可以访问sys模块的所有功能。<br>sys模块有一个argv变量，用list存储了<strong>命令行的所有参数</strong>。argv至少有一个元素，因为第一个参数永远是该.py文件的名称。<br>在命令行运行该模块文件时，Python解释器把一个特殊变量<strong>name</strong>置为<strong>main</strong>，而如果在其他地方导入该模块时，if判断将失败，因此，这种if测试可以让一个模块通过命令行运行时执行一些额外的代码，最常见的就是运行测试。</p>
+<p>作用域：</p>
+<ul>
+<li>正常的函数和变量名是公开的（public），可以被直接引用</li>
+<li>类似<strong>xxx</strong>这样的变量是特殊变量，可以被直接引用，但是有特殊用途。</li>
+<li>类似_xxx和__xxx这样的函数或变量就是非公开的（private），不应该被直接引用。</li>
+</ul>
+<h3 id="安装第三方模块"><a href="#安装第三方模块" class="headerlink" title="安装第三方模块"></a>安装第三方模块</h3><p>使用pip3 install XXX 安装第三方库<br>当我们试图加载一个模块时，Python会在指定的路径下搜索对应的.py文件，如果找不到，就会报错。<br>搜索路径存放在sys模块的path变量中<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">import</span> sys</div><div class="line">print(sys.path)</div></pre></td></tr></table></figure></p>
+<p>当要添加自己的搜索目录时可以</p>
+<ol>
+<li>直接修改sys.path:<strong>sys.path.append(‘/Users/xxx/xxx’)</strong></li>
+<li>设置环境变量PYTHONPATH</li>
+</ol>
+<p>最后再次感谢廖老师的辛勤劳动。</p>
+]]></content>
+    </entry>
+    
+    <entry>
       <title><![CDATA[python 3.5 面向对象编程]]></title>
       <url>http://zhang759740844.github.io/2016/08/09/python_%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E7%BC%96%E7%A8%8B/</url>
       <content type="html"><![CDATA[<p>当时学的是2.x版本，有点过时了，现在看了<a href="http://www.liaoxuefeng.com/" target="_blank" rel="external">廖雪峰的博客</a>的3.5版本的语法介绍，做一些摘录。</p>
@@ -1813,48 +1983,6 @@
     
     <entry>
       <title><![CDATA[python 3.5 模块]]></title>
-      <url>http://zhang759740844.github.io/2016/08/09/python_%E6%A8%A1%E5%9D%97/</url>
-      <content type="html"><![CDATA[<p>当时学的是2.x版本，有点过时了，现在看了<a href="http://www.liaoxuefeng.com/" target="_blank" rel="external">廖雪峰的博客</a>的3.5版本的语法介绍，做一些摘录。</p>
-<a id="more"></a>
-<p>Python又引入了按目录来组织模块的方法，称为包（Package）。引入了包以后，只要顶层的包名不与别人冲突，那所有模块都不会与别人冲突。<br>请注意，每一个包目录下面都会有一个<strong>init__.py的文件，这个文件是必须存在的，否则，Python就把这个目录当成普通目录，而不是一个包。</strong>init__.py可以是空文件，也可以有Python代码，因为<strong>init</strong>.py本身就是一个模块</p>
-<h3 id="使用模块"><a href="#使用模块" class="headerlink" title="使用模块"></a>使用模块</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">import</span> sys</div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">test</span><span class="params">()</span>:</span></div><div class="line">	<span class="keyword">pass</span></div><div class="line"><span class="keyword">if</span> __name__==<span class="string">'__main__'</span>:</div><div class="line">	test()</div></pre></td></tr></table></figure>
-<p>导入sys模块后,就有了变量sys指向该模块，利用sys这个变量，就可以访问sys模块的所有功能。<br>sys模块有一个argv变量，用list存储了<strong>命令行的所有参数</strong>。argv至少有一个元素，因为第一个参数永远是该.py文件的名称。<br>在命令行运行该模块文件时，Python解释器把一个特殊变量<strong>name</strong>置为<strong>main</strong>，而如果在其他地方导入该模块时，if判断将失败，因此，这种if测试可以让一个模块通过命令行运行时执行一些额外的代码，最常见的就是运行测试。</p>
-<p>作用域：</p>
-<ul>
-<li>正常的函数和变量名是公开的（public），可以被直接引用</li>
-<li>类似<strong>xxx</strong>这样的变量是特殊变量，可以被直接引用，但是有特殊用途。</li>
-<li>类似_xxx和__xxx这样的函数或变量就是非公开的（private），不应该被直接引用。</li>
-</ul>
-<h3 id="安装第三方模块"><a href="#安装第三方模块" class="headerlink" title="安装第三方模块"></a>安装第三方模块</h3><p>使用pip3 install XXX 安装第三方库<br>当我们试图加载一个模块时，Python会在指定的路径下搜索对应的.py文件，如果找不到，就会报错。<br>搜索路径存放在sys模块的path变量中<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">import</span> sys</div><div class="line">print(sys.path)</div></pre></td></tr></table></figure></p>
-<p>当要添加自己的搜索目录时可以</p>
-<ol>
-<li>直接修改sys.path:<strong>sys.path.append(‘/Users/xxx/xxx’)</strong></li>
-<li>设置环境变量PYTHONPATH</li>
-</ol>
-<p>最后再次感谢廖老师的辛勤劳动。</p>
-]]></content>
-    </entry>
-    
-    <entry>
-      <title><![CDATA[python 3.5 高级特性]]></title>
-      <url>http://zhang759740844.github.io/2016/08/08/python_%E9%AB%98%E7%BA%A7%E7%89%B9%E6%80%A7/</url>
-      <content type="html"><![CDATA[<p>当时学的是2.x版本，有点过时了，现在看了<a href="http://www.liaoxuefeng.com/" target="_blank" rel="external">廖雪峰的博客</a>的3.5版本的语法介绍，做一些摘录。</p>
-<a id="more"></a>
-<h3 id="切片"><a href="#切片" class="headerlink" title="切片"></a>切片</h3><p>切片（Slice）操作符用来简化经常取指定索引范围的操作<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&gt;&gt;&gt; </span>L = [<span class="string">'Michael'</span>, <span class="string">'Sarah'</span>, <span class="string">'Tracy'</span>, <span class="string">'Bob'</span>, <span class="string">'Jack'</span>]</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>L[<span class="number">0</span>:<span class="number">3</span>]</div><div class="line">[<span class="string">'Michael'</span>, <span class="string">'Sarah'</span>, <span class="string">'Tracy'</span>]</div></pre></td></tr></table></figure></p>
-<p>从索引0开始取，直到索引3为止，但不包括索引3,正好是3个元素.</p>
-<p>各种用法示例：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># Python支持L[-1]取倒数第一个元素,同样支持倒数切片</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span>L[<span class="number">-2</span>:]</div><div class="line">[<span class="string">'Bob'</span>, <span class="string">'Jack'</span>]</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>L[<span class="number">-2</span>:<span class="number">-1</span>]</div><div class="line">[<span class="string">'Bob'</span>]</div><div class="line"></div><div class="line"><span class="comment"># 前10个数，每两个取一个：</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span>L[:<span class="number">10</span>:<span class="number">2</span>]</div><div class="line">[<span class="number">0</span>, <span class="number">2</span>, <span class="number">4</span>, <span class="number">6</span>, <span class="number">8</span>]</div><div class="line"></div><div class="line"><span class="comment"># 所有数，每5个取一个：</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span>L[::<span class="number">5</span>]</div><div class="line">[<span class="number">0</span>, <span class="number">5</span>, <span class="number">10</span>, <span class="number">15</span>, <span class="number">20</span>, <span class="number">25</span>, <span class="number">30</span>, <span class="number">35</span>, <span class="number">40</span>, <span class="number">45</span>, <span class="number">50</span>, <span class="number">55</span>, <span class="number">60</span>, <span class="number">65</span>, <span class="number">70</span>, <span class="number">75</span>, <span class="number">80</span>, <span class="number">85</span>, <span class="number">90</span>, <span class="number">95</span>]</div><div class="line"></div><div class="line"><span class="comment"># 什么都不写，只写[:]就可以原样复制一个list</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span>L[:]</div><div class="line">[<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, ..., <span class="number">99</span>]</div><div class="line"></div><div class="line"><span class="comment"># tuple也是一种list，唯一区别是tuple不可变。因此，tuple也可以用切片操作，只是操作的结果仍是tuple</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span>(<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>)[:<span class="number">3</span>]</div><div class="line">(<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>)</div><div class="line"></div><div class="line"><span class="comment">#字符串'xxx'也可以看成是一种list，每个元素就是一个字符。因此，字符串也可以用切片操作，只是操作结果仍是字符串：</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span><span class="string">'ABCDEFG'</span>[:<span class="number">3</span>]</div><div class="line"><span class="string">'ABC'</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span><span class="string">'ABCDEFG'</span>[::<span class="number">2</span>]</div><div class="line"><span class="string">'ACEG'</span></div></pre></td></tr></table></figure></p>
-<h3 id="迭代"><a href="#迭代" class="headerlink" title="迭代"></a>迭代</h3><p>我们可以通过for循环来遍历这个list或tuple，这种遍历我们称为迭代（Iteration）。只要是可迭代对象，无论有无下标，都可以迭代。</p>
-<p>判断一个对象是否是可迭代对象：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> collections <span class="keyword">import</span> Iterable</div><div class="line">isinstance(<span class="string">'abc'</span>, Iterable)</div></pre></td></tr></table></figure></p>
-<h3 id="列表生成式"><a href="#列表生成式" class="headerlink" title="列表生成式"></a>列表生成式</h3><p>感觉没啥用。</p>
-<h3 id="生成器"><a href="#生成器" class="headerlink" title="生成器"></a>生成器</h3><p>列表元素可以按照某种算法在不断循环的过程中推算出后续元素，不必创建完整的list，节省大量空间。这种一边循环一边计算的机制，叫做generator。<br>例如实现斐波那契函数：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">fib</span><span class="params">(max)</span>:</span></div><div class="line">    n, a, b = <span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span></div><div class="line">    <span class="keyword">while</span> n &lt; max:</div><div class="line">        <span class="keyword">yield</span> b</div><div class="line">        a, b = b, a + b</div><div class="line">        n = n + <span class="number">1</span></div><div class="line">    <span class="keyword">return</span> <span class="string">'done'</span></div><div class="line">    </div><div class="line"><span class="keyword">for</span> n <span class="keyword">in</span> fib(<span class="number">6</span>):</div><div class="line">	print(n)</div></pre></td></tr></table></figure></p>
-<p>如果一个函数定义中包含yield关键字，那么这个函数就不再是一个普通函数，而是一个generator.<br>函数是顺序执行，遇到return语句或者最后一行函数语句就返回。而变成generator的函数，在每次调用next()的时候执行，遇到yield语句返回，再次执行时从上次返回的yield语句处继续执行。</p>
-<p>其实就相当于在yield处有个断点，可以获得当时的yield处的值，供for循环内使用。</p>
-<p>最后再次感谢廖老师的辛勤劳动。</p>
-]]></content>
-    </entry>
-    
-    <entry>
-      <title><![CDATA[python 3.5 模块]]></title>
       <url>http://zhang759740844.github.io/2016/08/08/python_%E5%87%BD%E6%95%B0%E5%BC%8F%E7%BC%96%E7%A8%8B/</url>
       <content type="html"><![CDATA[<p>当时学的是2.x版本，有点过时了，现在看了<a href="http://www.liaoxuefeng.com/" target="_blank" rel="external">廖雪峰的博客</a>的3.5版本的语法介绍，做一些摘录。</p>
 <a id="more"></a>
@@ -1888,32 +2016,19 @@
     </entry>
     
     <entry>
-      <title><![CDATA[python 3.5 基础语法]]></title>
-      <url>http://zhang759740844.github.io/2016/08/07/python%E8%AF%AD%E6%B3%95/</url>
-      <content type="html"><![CDATA[<p>python还是大一时学的第一门课编程课，学的时候由于没有编程基础，最主要的是完全没有好好学，很煎熬。现在真是悔不当初。<br>当时学的是2.x版本，有点过时了，现在看了<a href="http://www.liaoxuefeng.com/" target="_blank" rel="external">廖雪峰的博客</a>的3.5版本的语法介绍，做一些摘录。</p>
+      <title><![CDATA[python 3.5 高级特性]]></title>
+      <url>http://zhang759740844.github.io/2016/08/08/python_%E9%AB%98%E7%BA%A7%E7%89%B9%E6%80%A7/</url>
+      <content type="html"><![CDATA[<p>当时学的是2.x版本，有点过时了，现在看了<a href="http://www.liaoxuefeng.com/" target="_blank" rel="external">廖雪峰的博客</a>的3.5版本的语法介绍，做一些摘录。</p>
 <a id="more"></a>
-<p>Python采用缩进方式,写出来的代码就像下面的样子：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># print absolute value of an integer:</span></div><div class="line">a = <span class="number">100</span></div><div class="line"><span class="keyword">if</span> a &gt;= <span class="number">0</span>:</div><div class="line">    print(a)</div><div class="line"><span class="keyword">else</span>:</div><div class="line">    print(-a)</div></pre></td></tr></table></figure></p>
-<p>以#开头的语句是注释<br>其他每一行都是一个语句，当语句以冒号:结尾时，缩进的语句视为代码块.</p>
-<h3 id="数据类型和变量"><a href="#数据类型和变量" class="headerlink" title="数据类型和变量"></a>数据类型和变量</h3><h4 id="字符串"><a href="#字符串" class="headerlink" title="字符串"></a>字符串</h4><p>字符串是以单引号’或双引号”括起来的任意文本.如果字符串内部既包含’又包含”,可以用转义字符\来标识。<br>要计算str包含多少个字符，可以用len()函数。<br>%运算符就是用来格式化字符串，如：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&gt;&gt;&gt; </span><span class="string">'Hello, %s'</span> % <span class="string">'world'</span></div><div class="line"><span class="string">'Hello, world'</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span><span class="string">'Hi, %s, you have $%d.'</span> % (<span class="string">'Michael'</span>, <span class="number">1000000</span>)</div><div class="line"><span class="string">'Hi, Michael, you have $1000000.'</span></div></pre></td></tr></table></figure></p>
-<p>有些时候，字符串里面的%是一个普通字符怎么办？这个时候就需要转义，用%%来表示一个%.</p>
-<h4 id="布尔值"><a href="#布尔值" class="headerlink" title="布尔值"></a>布尔值</h4><p>一个布尔值只有True、False两种值<br>布尔值可以用and、or和not运算。</p>
-<h4 id="空值"><a href="#空值" class="headerlink" title="空值"></a>空值</h4><p>空值是Python里一个特殊的值，用None表示。</p>
-<h4 id="变量"><a href="#变量" class="headerlink" title="变量"></a>变量</h4><p>等号=是赋值语句，可以把任意数据类型赋值给变量，同一个变量可以反复赋值，而且可以是不同类型的变量</p>
-<h3 id="数组和元组"><a href="#数组和元组" class="headerlink" title="数组和元组"></a>数组和元组</h3><h4 id="list"><a href="#list" class="headerlink" title="list"></a>list</h4><p>list是一种<strong>可变的</strong>有序的集合，用len()函数可以获得list元素的个数<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">classmates = [<span class="string">'Michael'</span>, <span class="string">'Bob'</span>, <span class="string">'Tracy'</span>]</div></pre></td></tr></table></figure></p>
-<p>要把某个元素替换成别的元素，可以直接赋值给对应的索引位置<br>list里面的元素的数据类型也可以不同<br>列表可以看成一个多维数组 s[2][1]拿到元素。<br>如果一个list中一个元素也没有，就是一个空的list，它的长度为0</p>
-<h4 id="tuple"><a href="#tuple" class="headerlink" title="tuple"></a>tuple</h4><p>另一种有序列表叫元组，但是tuple一旦初始化就不能修改<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">classmates = (<span class="string">'Michael'</span>, <span class="string">'Bob'</span>, <span class="string">'Tracy'</span>)</div></pre></td></tr></table></figure></p>
-<p>因为tuple不可变，所以代码更安全。如果可能，能用tuple代替list就尽量用tuple。<br>当你定义一个tuple时，在定义的时候，tuple的元素就必须被确定下来.</p>
-<p>如果要定义一个空的tuple，可以写成(),但是，要定义一个只有1个元素的tuple,必须写成如下<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">t = (<span class="number">1</span>,)</div></pre></td></tr></table></figure></p>
-<p>这是因为括号()既可以表示tuple，又可以表示数学公式中的小括号，这就产生了歧义</p>
-<h3 id="条件判断"><a href="#条件判断" class="headerlink" title="条件判断"></a>条件判断</h3><p>if-else语句实现：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">age = <span class="number">20</span></div><div class="line"><span class="keyword">if</span> age &gt;= <span class="number">18</span>:</div><div class="line">    print(<span class="string">'your age is'</span>, age)</div><div class="line">    print(<span class="string">'adult'</span>)</div><div class="line"><span class="keyword">else</span>:</div><div class="line">    print(<span class="string">'your age is'</span>, age)</div><div class="line">    print(<span class="string">'teenager'</span>)</div></pre></td></tr></table></figure></p>
-<p>注意不要少写了冒号:<br>完全可以用elif做更细致的判断,elif是else if的缩写</p>
-<h3 id="循环"><a href="#循环" class="headerlink" title="循环"></a>循环</h3><h4 id="for…in"><a href="#for…in" class="headerlink" title="for…in"></a>for…in</h4><p>依次把list或tuple中的每个元素迭代出来<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">names = [<span class="string">'Michael'</span>, <span class="string">'Bob'</span>, <span class="string">'Tracy'</span>]</div><div class="line"><span class="keyword">for</span> name <span class="keyword">in</span> names:</div><div class="line">    print(name)</div></pre></td></tr></table></figure></p>
-<p>Python提供一个range()函数，可以生成一个整数序列，再通过list()函数可以转换为list.在for…in中可以简写成range()<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">sum = <span class="number">0</span></div><div class="line"><span class="keyword">for</span> x <span class="keyword">in</span> range(<span class="number">101</span>):</div><div class="line">    sum = sum + x</div><div class="line">print(sum)</div></pre></td></tr></table></figure></p>
-<h4 id="while"><a href="#while" class="headerlink" title="while"></a>while</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">sum = <span class="number">0</span></div><div class="line">n = <span class="number">99</span></div><div class="line"><span class="keyword">while</span> n &gt; <span class="number">0</span>:</div><div class="line">    sum = sum + n</div><div class="line">    n = n - <span class="number">2</span></div><div class="line">print(sum)</div></pre></td></tr></table></figure>
-<h3 id="容器"><a href="#容器" class="headerlink" title="容器"></a>容器</h3><h4 id="dict"><a href="#dict" class="headerlink" title="dict"></a>dict</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">d = &#123;<span class="string">'Michael'</span>: <span class="number">95</span>, <span class="string">'Bob'</span>: <span class="number">75</span>, <span class="string">'Tracy'</span>: <span class="number">85</span>&#125;</div></pre></td></tr></table></figure>
-<p><strong>要保证hash的正确性，作为key的对象就不能变。在Python中，字符串、整数等都是不可变的，因此，可以放心地作为key。而list是可变的，就不能作为key</strong></p>
-<h4 id="set"><a href="#set" class="headerlink" title="set"></a>set</h4><p>set和dict类似，<strong>也是一组key的集合</strong>，但不存储value。由于key不能重复，所以，在set中，没有重复的key。<br>要创建一个set，需要<strong>提供一个list作为输入集合</strong>：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&gt;&gt;&gt; </span>s = set([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>])</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>s</div><div class="line">&#123;<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>&#125;</div></pre></td></tr></table></figure></p>
-<p>重复元素在set中自动被过滤<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&gt;&gt;&gt; </span>s = set([<span class="number">1</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">3</span>])</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>s</div><div class="line">&#123;<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>&#125;</div></pre></td></tr></table></figure></p>
+<h3 id="切片"><a href="#切片" class="headerlink" title="切片"></a>切片</h3><p>切片（Slice）操作符用来简化经常取指定索引范围的操作<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&gt;&gt;&gt; </span>L = [<span class="string">'Michael'</span>, <span class="string">'Sarah'</span>, <span class="string">'Tracy'</span>, <span class="string">'Bob'</span>, <span class="string">'Jack'</span>]</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>L[<span class="number">0</span>:<span class="number">3</span>]</div><div class="line">[<span class="string">'Michael'</span>, <span class="string">'Sarah'</span>, <span class="string">'Tracy'</span>]</div></pre></td></tr></table></figure></p>
+<p>从索引0开始取，直到索引3为止，但不包括索引3,正好是3个元素.</p>
+<p>各种用法示例：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># Python支持L[-1]取倒数第一个元素,同样支持倒数切片</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span>L[<span class="number">-2</span>:]</div><div class="line">[<span class="string">'Bob'</span>, <span class="string">'Jack'</span>]</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>L[<span class="number">-2</span>:<span class="number">-1</span>]</div><div class="line">[<span class="string">'Bob'</span>]</div><div class="line"></div><div class="line"><span class="comment"># 前10个数，每两个取一个：</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span>L[:<span class="number">10</span>:<span class="number">2</span>]</div><div class="line">[<span class="number">0</span>, <span class="number">2</span>, <span class="number">4</span>, <span class="number">6</span>, <span class="number">8</span>]</div><div class="line"></div><div class="line"><span class="comment"># 所有数，每5个取一个：</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span>L[::<span class="number">5</span>]</div><div class="line">[<span class="number">0</span>, <span class="number">5</span>, <span class="number">10</span>, <span class="number">15</span>, <span class="number">20</span>, <span class="number">25</span>, <span class="number">30</span>, <span class="number">35</span>, <span class="number">40</span>, <span class="number">45</span>, <span class="number">50</span>, <span class="number">55</span>, <span class="number">60</span>, <span class="number">65</span>, <span class="number">70</span>, <span class="number">75</span>, <span class="number">80</span>, <span class="number">85</span>, <span class="number">90</span>, <span class="number">95</span>]</div><div class="line"></div><div class="line"><span class="comment"># 什么都不写，只写[:]就可以原样复制一个list</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span>L[:]</div><div class="line">[<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, ..., <span class="number">99</span>]</div><div class="line"></div><div class="line"><span class="comment"># tuple也是一种list，唯一区别是tuple不可变。因此，tuple也可以用切片操作，只是操作的结果仍是tuple</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span>(<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>)[:<span class="number">3</span>]</div><div class="line">(<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>)</div><div class="line"></div><div class="line"><span class="comment">#字符串'xxx'也可以看成是一种list，每个元素就是一个字符。因此，字符串也可以用切片操作，只是操作结果仍是字符串：</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span><span class="string">'ABCDEFG'</span>[:<span class="number">3</span>]</div><div class="line"><span class="string">'ABC'</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span><span class="string">'ABCDEFG'</span>[::<span class="number">2</span>]</div><div class="line"><span class="string">'ACEG'</span></div></pre></td></tr></table></figure></p>
+<h3 id="迭代"><a href="#迭代" class="headerlink" title="迭代"></a>迭代</h3><p>我们可以通过for循环来遍历这个list或tuple，这种遍历我们称为迭代（Iteration）。只要是可迭代对象，无论有无下标，都可以迭代。</p>
+<p>判断一个对象是否是可迭代对象：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> collections <span class="keyword">import</span> Iterable</div><div class="line">isinstance(<span class="string">'abc'</span>, Iterable)</div></pre></td></tr></table></figure></p>
+<h3 id="列表生成式"><a href="#列表生成式" class="headerlink" title="列表生成式"></a>列表生成式</h3><p>感觉没啥用。</p>
+<h3 id="生成器"><a href="#生成器" class="headerlink" title="生成器"></a>生成器</h3><p>列表元素可以按照某种算法在不断循环的过程中推算出后续元素，不必创建完整的list，节省大量空间。这种一边循环一边计算的机制，叫做generator。<br>例如实现斐波那契函数：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">fib</span><span class="params">(max)</span>:</span></div><div class="line">    n, a, b = <span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span></div><div class="line">    <span class="keyword">while</span> n &lt; max:</div><div class="line">        <span class="keyword">yield</span> b</div><div class="line">        a, b = b, a + b</div><div class="line">        n = n + <span class="number">1</span></div><div class="line">    <span class="keyword">return</span> <span class="string">'done'</span></div><div class="line">    </div><div class="line"><span class="keyword">for</span> n <span class="keyword">in</span> fib(<span class="number">6</span>):</div><div class="line">	print(n)</div></pre></td></tr></table></figure></p>
+<p>如果一个函数定义中包含yield关键字，那么这个函数就不再是一个普通函数，而是一个generator.<br>函数是顺序执行，遇到return语句或者最后一行函数语句就返回。而变成generator的函数，在每次调用next()的时候执行，遇到yield语句返回，再次执行时从上次返回的yield语句处继续执行。</p>
+<p>其实就相当于在yield处有个断点，可以获得当时的yield处的值，供for循环内使用。</p>
 <p>最后再次感谢廖老师的辛勤劳动。</p>
 ]]></content>
     </entry>
@@ -1949,6 +2064,37 @@
 <p><strong>kw表示一个dict<br>**kw表示取出kw中的所有键值对元素，代表多个参数</strong></p>
 <p><strong>另外，和上面的list传入的是tuple一样，kw获得的dict是外部传入的一份拷贝，在函数内部对kw的修改不会影响到外部dict。</strong></p>
 <h4 id="命名关键字参数"><a href="#命名关键字参数" class="headerlink" title="命名关键字参数"></a>命名关键字参数</h4><p>不知道这么脑残的语法有什么意义。</p>
+<p>最后再次感谢廖老师的辛勤劳动。</p>
+]]></content>
+    </entry>
+    
+    <entry>
+      <title><![CDATA[python 3.5 基础语法]]></title>
+      <url>http://zhang759740844.github.io/2016/08/07/python%E8%AF%AD%E6%B3%95/</url>
+      <content type="html"><![CDATA[<p>python还是大一时学的第一门课编程课，学的时候由于没有编程基础，最主要的是完全没有好好学，很煎熬。现在真是悔不当初。<br>当时学的是2.x版本，有点过时了，现在看了<a href="http://www.liaoxuefeng.com/" target="_blank" rel="external">廖雪峰的博客</a>的3.5版本的语法介绍，做一些摘录。</p>
+<a id="more"></a>
+<p>Python采用缩进方式,写出来的代码就像下面的样子：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># print absolute value of an integer:</span></div><div class="line">a = <span class="number">100</span></div><div class="line"><span class="keyword">if</span> a &gt;= <span class="number">0</span>:</div><div class="line">    print(a)</div><div class="line"><span class="keyword">else</span>:</div><div class="line">    print(-a)</div></pre></td></tr></table></figure></p>
+<p>以#开头的语句是注释<br>其他每一行都是一个语句，当语句以冒号:结尾时，缩进的语句视为代码块.</p>
+<h3 id="数据类型和变量"><a href="#数据类型和变量" class="headerlink" title="数据类型和变量"></a>数据类型和变量</h3><h4 id="字符串"><a href="#字符串" class="headerlink" title="字符串"></a>字符串</h4><p>字符串是以单引号’或双引号”括起来的任意文本.如果字符串内部既包含’又包含”,可以用转义字符\来标识。<br>要计算str包含多少个字符，可以用len()函数。<br>%运算符就是用来格式化字符串，如：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&gt;&gt;&gt; </span><span class="string">'Hello, %s'</span> % <span class="string">'world'</span></div><div class="line"><span class="string">'Hello, world'</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span><span class="string">'Hi, %s, you have $%d.'</span> % (<span class="string">'Michael'</span>, <span class="number">1000000</span>)</div><div class="line"><span class="string">'Hi, Michael, you have $1000000.'</span></div></pre></td></tr></table></figure></p>
+<p>有些时候，字符串里面的%是一个普通字符怎么办？这个时候就需要转义，用%%来表示一个%.</p>
+<h4 id="布尔值"><a href="#布尔值" class="headerlink" title="布尔值"></a>布尔值</h4><p>一个布尔值只有True、False两种值<br>布尔值可以用and、or和not运算。</p>
+<h4 id="空值"><a href="#空值" class="headerlink" title="空值"></a>空值</h4><p>空值是Python里一个特殊的值，用None表示。</p>
+<h4 id="变量"><a href="#变量" class="headerlink" title="变量"></a>变量</h4><p>等号=是赋值语句，可以把任意数据类型赋值给变量，同一个变量可以反复赋值，而且可以是不同类型的变量</p>
+<h3 id="数组和元组"><a href="#数组和元组" class="headerlink" title="数组和元组"></a>数组和元组</h3><h4 id="list"><a href="#list" class="headerlink" title="list"></a>list</h4><p>list是一种<strong>可变的</strong>有序的集合，用len()函数可以获得list元素的个数<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">classmates = [<span class="string">'Michael'</span>, <span class="string">'Bob'</span>, <span class="string">'Tracy'</span>]</div></pre></td></tr></table></figure></p>
+<p>要把某个元素替换成别的元素，可以直接赋值给对应的索引位置<br>list里面的元素的数据类型也可以不同<br>列表可以看成一个多维数组 s[2][1]拿到元素。<br>如果一个list中一个元素也没有，就是一个空的list，它的长度为0</p>
+<h4 id="tuple"><a href="#tuple" class="headerlink" title="tuple"></a>tuple</h4><p>另一种有序列表叫元组，但是tuple一旦初始化就不能修改<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">classmates = (<span class="string">'Michael'</span>, <span class="string">'Bob'</span>, <span class="string">'Tracy'</span>)</div></pre></td></tr></table></figure></p>
+<p>因为tuple不可变，所以代码更安全。如果可能，能用tuple代替list就尽量用tuple。<br>当你定义一个tuple时，在定义的时候，tuple的元素就必须被确定下来.</p>
+<p>如果要定义一个空的tuple，可以写成(),但是，要定义一个只有1个元素的tuple,必须写成如下<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">t = (<span class="number">1</span>,)</div></pre></td></tr></table></figure></p>
+<p>这是因为括号()既可以表示tuple，又可以表示数学公式中的小括号，这就产生了歧义</p>
+<h3 id="条件判断"><a href="#条件判断" class="headerlink" title="条件判断"></a>条件判断</h3><p>if-else语句实现：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">age = <span class="number">20</span></div><div class="line"><span class="keyword">if</span> age &gt;= <span class="number">18</span>:</div><div class="line">    print(<span class="string">'your age is'</span>, age)</div><div class="line">    print(<span class="string">'adult'</span>)</div><div class="line"><span class="keyword">else</span>:</div><div class="line">    print(<span class="string">'your age is'</span>, age)</div><div class="line">    print(<span class="string">'teenager'</span>)</div></pre></td></tr></table></figure></p>
+<p>注意不要少写了冒号:<br>完全可以用elif做更细致的判断,elif是else if的缩写</p>
+<h3 id="循环"><a href="#循环" class="headerlink" title="循环"></a>循环</h3><h4 id="for…in"><a href="#for…in" class="headerlink" title="for…in"></a>for…in</h4><p>依次把list或tuple中的每个元素迭代出来<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">names = [<span class="string">'Michael'</span>, <span class="string">'Bob'</span>, <span class="string">'Tracy'</span>]</div><div class="line"><span class="keyword">for</span> name <span class="keyword">in</span> names:</div><div class="line">    print(name)</div></pre></td></tr></table></figure></p>
+<p>Python提供一个range()函数，可以生成一个整数序列，再通过list()函数可以转换为list.在for…in中可以简写成range()<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">sum = <span class="number">0</span></div><div class="line"><span class="keyword">for</span> x <span class="keyword">in</span> range(<span class="number">101</span>):</div><div class="line">    sum = sum + x</div><div class="line">print(sum)</div></pre></td></tr></table></figure></p>
+<h4 id="while"><a href="#while" class="headerlink" title="while"></a>while</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">sum = <span class="number">0</span></div><div class="line">n = <span class="number">99</span></div><div class="line"><span class="keyword">while</span> n &gt; <span class="number">0</span>:</div><div class="line">    sum = sum + n</div><div class="line">    n = n - <span class="number">2</span></div><div class="line">print(sum)</div></pre></td></tr></table></figure>
+<h3 id="容器"><a href="#容器" class="headerlink" title="容器"></a>容器</h3><h4 id="dict"><a href="#dict" class="headerlink" title="dict"></a>dict</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">d = &#123;<span class="string">'Michael'</span>: <span class="number">95</span>, <span class="string">'Bob'</span>: <span class="number">75</span>, <span class="string">'Tracy'</span>: <span class="number">85</span>&#125;</div></pre></td></tr></table></figure>
+<p><strong>要保证hash的正确性，作为key的对象就不能变。在Python中，字符串、整数等都是不可变的，因此，可以放心地作为key。而list是可变的，就不能作为key</strong></p>
+<h4 id="set"><a href="#set" class="headerlink" title="set"></a>set</h4><p>set和dict类似，<strong>也是一组key的集合</strong>，但不存储value。由于key不能重复，所以，在set中，没有重复的key。<br>要创建一个set，需要<strong>提供一个list作为输入集合</strong>：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&gt;&gt;&gt; </span>s = set([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>])</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>s</div><div class="line">&#123;<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>&#125;</div></pre></td></tr></table></figure></p>
+<p>重复元素在set中自动被过滤<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&gt;&gt;&gt; </span>s = set([<span class="number">1</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">3</span>])</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>s</div><div class="line">&#123;<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>&#125;</div></pre></td></tr></table></figure></p>
 <p>最后再次感谢廖老师的辛勤劳动。</p>
 ]]></content>
     </entry>
