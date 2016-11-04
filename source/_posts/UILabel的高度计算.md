@@ -1,6 +1,6 @@
 title: UILabel高度控制
 date: 2016/9/12 14:07:12  
-categories: IOS 
+categories: iOS 
 tags: 
 	- UI
 	

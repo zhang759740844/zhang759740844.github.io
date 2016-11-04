@@ -1,6 +1,6 @@
 title: Xcode插件XVim安装与使用
 date: 2016/9/23 10:07:12  
-categories: IOS
+categories: iOS
 tags:
 	- Xcode
 	- Vim 

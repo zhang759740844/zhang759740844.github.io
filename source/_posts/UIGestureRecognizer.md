@@ -1,6 +1,6 @@
 title: UIGestureRecognizer
 date: 2016/9/5 14:07:12  
-categories: IOS
+categories: iOS
 tags: 
 	- UIGesture
 	

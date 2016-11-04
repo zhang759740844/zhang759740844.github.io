@@ -1,6 +1,6 @@
 title: runtime原理笔记
 date: 2016/8/22 14:07:12  
-categories: IOS
+categories: iOS
 tags: [Runtime]
 
 ---
@@ -292,3 +292,4 @@ void attachLists(List* const * addedLists, uint32_t addedCount) {
 ```
 需要注意的是，无论执行哪种逻辑，参数列表中的方法都会被添加到二维数组的前面。因此 category 中定义的同名方法不会替换类中原有的方法，但是对原方法的调用实际上会调用 category 中的方法。
 
+[runtime的一篇较好的参考资料](http://www.jianshu.com/p/9d649ce6d0b8)

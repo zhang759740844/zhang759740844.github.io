@@ -1,6 +1,6 @@
 title: IPhone6全屏黑边处理
 date: 2016/9/5 14:07:12  
-categories: IOS
+categories: iOS
 tags: 
 	- Xcode
 	

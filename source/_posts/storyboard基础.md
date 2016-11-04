@@ -1,6 +1,6 @@
 title: Storyboard 使用方法	
 date: 2016/10/13 14:07:12  
-categories: IOS 
+categories: iOS 
 tags: 
 	- Xcode
 

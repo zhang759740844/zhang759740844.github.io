@@ -90,10 +90,12 @@
 <meta property="og:url" content="http://zhang759740844.github.io/2016/08/02/GCD队列/index.html">
 <meta property="og:site_name" content="Zachary's blog">
 <meta property="og:description" content="Grand Central Dispatch或者GCD，是一套低层API，提供了一种新的方法来进行并发程序编写。从基本功能上讲，GCD有点像NSOperationQueue，他们都允许程序将任务切分为多个单一任务然后提交至工作队列来并发地或者串行地执行。GCD比之NSOpertionQueue更底层更高效，并且它不是Cocoa框架的一部分。">
-<meta property="og:updated_time" content="2016-09-23T05:44:17.000Z">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/gcd_死锁.png?raw=true">
+<meta property="og:updated_time" content="2016-11-03T04:26:27.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="GCD队列 学习与整理">
 <meta name="twitter:description" content="Grand Central Dispatch或者GCD，是一套低层API，提供了一种新的方法来进行并发程序编写。从基本功能上讲，GCD有点像NSOperationQueue，他们都允许程序将任务切分为多个单一任务然后提交至工作队列来并发地或者串行地执行。GCD比之NSOpertionQueue更底层更高效，并且它不是Cocoa框架的一部分。">
+<meta name="twitter:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/gcd_死锁.png?raw=true">
 
 
 
@@ -305,8 +307,8 @@
               <span class="post-meta-item-text">分类于</span>
               
                 <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/IOS/" itemprop="url" rel="index">
-                    <span itemprop="name">IOS</span>
+                  <a href="/categories/iOS/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS</span>
                   </a>
                 </span>
 
@@ -354,7 +356,7 @@
 <li><strong>用户队列</strong><br>用户自己创建的队列。可以创建单线程的串行队列，也可以创建多线程的并行队列。</li>
 </ol>
 <h3 id="队列创建方式"><a href="#队列创建方式" class="headerlink" title="队列创建方式"></a>队列创建方式</h3><ol>
-<li><strong>dispatch_queue_t queue = dispatch_queue_create(“com.dispatch.serial”, DISPATCH_QUEUE_SERIAL);</strong><br>生成一个串行队列。第一个参数是队列的名称，在调试程序时会非常有用，所有尽量不要重名。</li>
+<li><strong>dispatch_queue_t queue = dispatch_queue_create(“com.dispatch.serial”, DISPATCH_QUEUE_SERIAL);</strong><br>生成一个串行队列。第一个参数是队列的名称，在调试程序时会非常有用，所有尽量不要重名。第二个参数表示生成的队列是串行的，如果传入 null 默认是串行的。</li>
 <li><strong>dispatch_queue_t queue = dispatch_queue_create(“com.dispatch.concurrent”, DISPATCH_QUEUE_CONCURRENT);</strong><br>生成一个并发执行队列。</li>
 <li><strong>dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);</strong><br>获得全局队列。</li>
 <li><strong>dispatch_queue_t queue = dispatch_get_main_queue()</strong><br>获得主线程队列。</li>
@@ -366,10 +368,12 @@
 <p> 在典型的Cocoa程序中，你很有可能希望在任务完成时更新界面，这就意味着需要在主线程中执行一些代码。你可以简单地完成这个任务——使用嵌套的dispatch，在外层中执行后台任务，在内层中将任务dispatch到main queue：</p>
 <figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">dispatch_async</span>(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, <span class="number">0</span>), ^&#123;</div><div class="line">        [<span class="keyword">self</span> goDoSomethingLongAndInvolved];</div><div class="line">        <span class="built_in">dispatch_async</span>(dispatch_get_main_queue(), ^&#123;</div><div class="line">            [textField setStringValue:<span class="string">@"Done doing something long and involved"</span>];</div><div class="line">        &#125;);</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
 </li>
-<li><p><strong>dispatch_sync</strong><br>dispatch_sync //同步执行block，函数不返回，一直等到block执行完毕。编译器会根据实际情况优化代码，所以有时候你会发现block其实还在当前线程上执行，并没用产生新线程。<br>实际编程经验告诉我们，尽可能避免使用dispatch<em>sync，嵌套使用时还容易引起程序死锁，比如嵌套调用主线程。<br>![gcd</em>死锁](<a href="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/gcd_死锁.png?raw=true" target="_blank" rel="external">https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/gcd_死锁.png?raw=true</a>)</p>
+<li><p><strong>dispatch_sync</strong><br>dispatch_sync 同步执行block，函数不返回，一直等到block执行完毕。一般情况下是在当前线程中完成，因为派发同步任务，本身就要等到任务完成才能继续执行，那么就没有必要再开一个线程去专门执行这个同步任务，执行完后，再返回该线程了。但是如果在其他线程里往主队列里派发同步任务，那么这个同步任务还是会在主线程里执行，当前线程阻塞。</p>
 </li>
 </ol>
-<p><strong>总结：队列是串行或并发的，操作队列的函数是同步或者异步执行的。</strong></p>
+<p>实际编程经验告诉我们，尽可能避免使用dispatch_sync，嵌套使用同一个队列时极易产生程序死锁，比如嵌套调用主线程：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/gcd_死锁.png?raw=true" alt="gcd_死锁"></p>
+<p><strong>总结：队列是串行或并发的，操作队列的函数是同步或者异步执行的。一个队列中的任务可以在不同线程中执行。</strong></p>
 <h3 id="常用方法"><a href="#常用方法" class="headerlink" title="常用方法"></a>常用方法</h3><ol>
 <li><p><strong>dispatch_apply</strong><br>重复执行block，需要注意的是这个方法是同步返回，也就是说等到所有block执行完毕才返回。多个block的运行是否并发或串行执行也依赖queue的是否并发或串行。</p>
 <figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">dispatch_queue_t</span> queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, <span class="number">0</span>);</div><div class="line">dispatch_apply([array count], queue, ^(size_t index)&#123;</div><div class="line">    [<span class="keyword">self</span> doSomethingIntensiveWith:[array objectAtIndex:index]];</div><div class="line">&#125;);</div><div class="line">[<span class="keyword">self</span> doSomethingWith:array];</div></pre></td></tr></table></figure>
@@ -385,14 +389,22 @@
 </li>
 </ul>
 </li>
-<li><p><strong>dispatch_after</strong><br>延迟执行block</p>
+<li><p><strong>dispatch_after</strong><br>延迟提交 block：</p>
 <figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">double</span> delayInSeconds = <span class="number">1.0</span>; </div><div class="line">dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * <span class="built_in">NSEC_PER_SEC</span>));</div><div class="line">dispatch_after(popTime, dispatch_get_main_queue(), ^(<span class="keyword">void</span>)&#123;</div><div class="line">     <span class="comment">// code to be executed on the main queue after delay</span></div><div class="line">&#125;);</div></pre></td></tr></table></figure>
 </li>
-<li><p><strong>dispatch_once</strong><br>保证在APP运行期间，block中的代码只执行一次</p>
-<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">static</span> <span class="built_in">dispatch_once_t</span> onceToken;</div><div class="line"><span class="built_in">dispatch_once</span>(&amp;onceToken, ^&#123;</div><div class="line">    <span class="comment">// code to be executed once</span></div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+</ol>
+<p>dispatch_after 是延迟提交，不是延迟运行，<strong>不是在特定的时间后立即运行！</strong>：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//创建串行队列</span></div><div class="line"><span class="built_in">dispatch_queue_t</span> queue = dispatch_queue_create(<span class="string">"me.tutuge.test.gcd"</span>, DISPATCH_QUEUE_SERIAL);</div><div class="line"></div><div class="line"><span class="comment">//立即打印一条信息</span></div><div class="line"><span class="built_in">NSLog</span>(<span class="string">@"Begin add block..."</span>);</div><div class="line"></div><div class="line"><span class="comment">//提交一个block</span></div><div class="line"><span class="built_in">dispatch_async</span>(queue, ^&#123;</div><div class="line">    <span class="comment">//Sleep 10秒</span></div><div class="line">    [<span class="built_in">NSThread</span> sleepForTimeInterval:<span class="number">10</span>];</div><div class="line">    <span class="built_in">NSLog</span>(<span class="string">@"First block done..."</span>);</div><div class="line">&#125;);</div><div class="line"></div><div class="line"><span class="comment">//5 秒以后提交block</span></div><div class="line">dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(<span class="number">5</span> * <span class="built_in">NSEC_PER_SEC</span>)), queue, ^&#123;</div><div class="line">    <span class="built_in">NSLog</span>(<span class="string">@"After..."</span>);</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>结果如下:</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="number">2015</span><span class="number">-03</span><span class="number">-31</span> <span class="number">20</span>:<span class="number">57</span>:<span class="number">27.122</span> GCDTest[<span class="number">45633</span>:<span class="number">1812016</span>] Begin add block...</div><div class="line"><span class="number">2015</span><span class="number">-03</span><span class="number">-31</span> <span class="number">20</span>:<span class="number">57</span>:<span class="number">37.127</span> GCDTest[<span class="number">45633</span>:<span class="number">1812041</span>] First block done...</div><div class="line"><span class="number">2015</span><span class="number">-03</span><span class="number">-31</span> <span class="number">20</span>:<span class="number">57</span>:<span class="number">37.127</span> GCDTest[<span class="number">45633</span>:<span class="number">1812041</span>] After...</div></pre></td></tr></table></figure>
+<p>对于这个串行的队列，先 async 执行了阻塞10秒，此时，添加一个5秒的延时任务。由于5秒前一个任务还未返回，所以延迟任务不能立刻执行。当前一个任务返回后，延迟任务执行时发现已经过了预定时间，那么立即执行。</p>
+<ol>
+<li><strong>dispatch_once</strong><br>保证在APP运行期间，block中的代码只执行一次<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">static</span> <span class="built_in">dispatch_once_t</span> onceToken;</div><div class="line"><span class="built_in">dispatch_once</span>(&amp;onceToken, ^&#123;</div><div class="line">    <span class="comment">// code to be executed once</span></div><div class="line">&#125;);</div></pre></td></tr></table></figure>
 </li>
-<li><p><strong>dispatch_group</strong><br>一个dispatch group可以用来将多个block组成一组以监测这些Block全部完成或者等待全部完成时发出的消息。</p>
-</li>
+</ol>
+<p>一定要注意的是 <code>dispatch_once_t</code> <strong>必须是全局或 static 变量</strong>。否则使用时会导致非常不好排查的 bug。</p>
+<ol>
+<li><strong>dispatch_group</strong><br>一个dispatch group可以用来将多个block组成一组以监测这些Block全部完成或者等待全部完成时发出的消息。</li>
 </ol>
 <ul>
 <li><em>dispatch_group_create</em>创建一个调度任务组</li>
@@ -401,6 +413,7 @@
 <li><em>dispatch_group_wait</em> 设置等待时间，在等待时间结束后，如果还没有执行完任务组，则返回。返回0代表执行成功，非0则执行失败<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">dispatch_queue_t</span> queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, <span class="number">0</span>);</div><div class="line">dispatch_group_t group = dispatch_group_create();</div><div class="line"><span class="keyword">for</span>(<span class="keyword">id</span> obj <span class="keyword">in</span> array)</div><div class="line">    dispatch_group_async(group, queue, ^&#123;</div><div class="line">        [<span class="keyword">self</span> doSomethingIntensiveWith:obj];</div><div class="line">    &#125;);</div><div class="line">dispatch_group_notify(group, queue, ^&#123;</div><div class="line">    [<span class="keyword">self</span> doSomethingWith:array];</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
 </li>
 </ul>
+<p>还有一个参考文章：<br><a href="http://tutuge.me/2015/04/03/something-about-gcd/" target="_blank" rel="external">GCD使用经验与技巧浅谈</a></p>
 
       
     </div>
@@ -510,7 +523,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">46</span>
+              <span class="site-state-item-count">48</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>

@@ -1,6 +1,6 @@
 title: UICollectionView 使用方法总结
 date: 2016/8/5 14:07:12  
-categories: IOS
+categories: iOS
 tags: 
 	- 基本控件	
 

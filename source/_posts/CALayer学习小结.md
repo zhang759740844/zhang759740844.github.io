@@ -1,6 +1,6 @@
 title: CALayer学习小结
 date: 2016/8/12 14:07:12  
-categories: IOS
+categories: iOS
 tags: 
 	- Animation
 	- UI

@@ -1,6 +1,6 @@
 title: 初识Provisioning Profile
 date: 2016/8/26 14:07:12  
-categories: IOS
+categories: iOS
 tags: [Xcode]
 
 ---

@@ -1,6 +1,6 @@
 title: ios响应机制
 date: 2016/9/3 10:07:12  
-categories: IOS
+categories: iOS
 tags:
 	- UIResponder
 

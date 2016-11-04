@@ -1,6 +1,6 @@
 title: CALayer的transform
 date: 2016/9/2 14:07:12  
-categories: IOS
+categories: iOS
 tags: 
 	- Animation
 	- UI

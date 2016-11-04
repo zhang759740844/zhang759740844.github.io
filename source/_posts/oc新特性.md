@@ -1,6 +1,6 @@
 title: oc 中的泛型与nullability
 date: 2016/9/28 10:07:12  
-categories: IOS
+categories: iOS
 tags:
 	- Objective-C
 

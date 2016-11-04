@@ -1,6 +1,6 @@
 title: UITableView 基础
 date: 2016/8/30 14:07:12  
-categories: IOS 
+categories: iOS 
 tags: 
 	- 基本控件
 

@@ -1,6 +1,6 @@
 title: 删除Storyboard
 date: 2016/8/11 14:07:12  
-categories: IOS 
+categories: iOS 
 tags: 
 	- UI
 	- Xcode

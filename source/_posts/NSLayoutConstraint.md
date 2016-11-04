@@ -1,6 +1,6 @@
 title: NSLayoutConstraint 学习笔记
 date: 2016/9/8 10:07:12  
-categories: IOS
+categories: iOS
 tags:
 	- AutoLayout
 

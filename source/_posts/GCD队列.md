@@ -1,6 +1,6 @@
 title: GCD队列 学习与整理
 date: 2016/8/2 14:07:12  
-categories: IOS
+categories: iOS
 tags: [GCD]
 
 ---
@@ -32,7 +32,7 @@ Grand Central Dispatch或者GCD，是一套低层API，提供了一种新的方�
 
 ### 队列创建方式
 1. **dispatch_queue_t queue = dispatch_queue_create("com.dispatch.serial", DISPATCH_QUEUE_SERIAL);**
-生成一个串行队列。第一个参数是队列的名称，在调试程序时会非常有用，所有尽量不要重名。
+生成一个串行队列。第一个参数是队列的名称，在调试程序时会非常有用，所有尽量不要重名。第二个参数表示生成的队列是串行的，如果传入 null 默认是串行的。
 2. **dispatch_queue_t queue = dispatch_queue_create("com.dispatch.concurrent", DISPATCH_QUEUE_CONCURRENT);**
 生成一个并发执行队列。
 3. **dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);**
@@ -61,11 +61,13 @@ dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
 });
 ```
 2. **dispatch_sync**
-dispatch_sync //同步执行block，函数不返回，一直等到block执行完毕。编译器会根据实际情况优化代码，所以有时候你会发现block其实还在当前线程上执行，并没用产生新线程。
-实际编程经验告诉我们，尽可能避免使用dispatch_sync，嵌套使用时还容易引起程序死锁，比如嵌套调用主线程。
+dispatch_sync 同步执行block，函数不返回，一直等到block执行完毕。一般情况下是在当前线程中完成，因为派发同步任务，本身就要等到任务完成才能继续执行，那么就没有必要再开一个线程去专门执行这个同步任务，执行完后，再返回该线程了。但是如果在其他线程里往主队列里派发同步任务，那么这个同步任务还是会在主线程里执行，当前线程阻塞。
+
+实际编程经验告诉我们，尽可能避免使用dispatch_sync，嵌套使用同一个队列时极易产生程序死锁，比如嵌套调用主线程：
+
 ![gcd_死锁](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/gcd_死锁.png?raw=true)
 
-**总结：队列是串行或并发的，操作队列的函数是同步或者异步执行的。**
+**总结：队列是串行或并发的，操作队列的函数是同步或者异步执行的。一个队列中的任务可以在不同线程中执行。**
 
 ### 常用方法
 1. **dispatch_apply**
@@ -96,7 +98,7 @@ dispatch_async(queue, ^{
 	- 并发队列：对于并发循环来说是很好选择，特别是当你需要追踪任务的进度时。
 	
 2. **dispatch_after**
-延迟执行block
+延迟提交 block：
 ```objc
 double delayInSeconds = 1.0; 
 dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
@@ -104,6 +106,39 @@ dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
      // code to be executed on the main queue after delay
 });
 ```
+
+dispatch_after 是延迟提交，不是延迟运行，**不是在特定的时间后立即运行！**：
+
+```objc
+//创建串行队列
+dispatch_queue_t queue = dispatch_queue_create("me.tutuge.test.gcd", DISPATCH_QUEUE_SERIAL);
+
+//立即打印一条信息
+NSLog(@"Begin add block...");
+
+//提交一个block
+dispatch_async(queue, ^{
+    //Sleep 10秒
+    [NSThread sleepForTimeInterval:10];
+    NSLog(@"First block done...");
+});
+
+//5 秒以后提交block
+dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), queue, ^{
+    NSLog(@"After...");
+});
+```
+
+结果如下:
+
+```objc
+2015-03-31 20:57:27.122 GCDTest[45633:1812016] Begin add block...
+2015-03-31 20:57:37.127 GCDTest[45633:1812041] First block done...
+2015-03-31 20:57:37.127 GCDTest[45633:1812041] After...
+```
+
+对于这个串行的队列，先 async 执行了阻塞10秒，此时，添加一个5秒的延时任务。由于5秒前一个任务还未返回，所以延迟任务不能立刻执行。当前一个任务返回后，延迟任务执行时发现已经过了预定时间，那么立即执行。
+
 3. **dispatch_once**
 保证在APP运行期间，block中的代码只执行一次
 ```objc
@@ -112,6 +147,8 @@ dispatch_once(&onceToken, ^{
     // code to be executed once
 });
 ```
+
+一定要注意的是 `dispatch_once_t` **必须是全局或 static 变量**。否则使用时会导致非常不好排查的 bug。
 
 4. **dispatch_group**
 一个dispatch group可以用来将多个block组成一组以监测这些Block全部完成或者等待全部完成时发出的消息。
@@ -130,4 +167,8 @@ dispatch_group_notify(group, queue, ^{
     [self doSomethingWith:array];
 });
 ```
+
+
+还有一个参考文章：
+[GCD使用经验与技巧浅谈](http://tutuge.me/2015/04/03/something-about-gcd/)
 

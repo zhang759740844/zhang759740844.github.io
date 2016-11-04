@@ -1,6 +1,6 @@
 title: NSNotification的使用
 date: 2016/9/13 14:07:12  
-categories: IOS
+categories: iOS
 tags: 
 	- NSNotification
 	

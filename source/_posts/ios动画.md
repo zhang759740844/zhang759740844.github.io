@@ -1,6 +1,6 @@
 title: ios核心动画
 date: 2016/8/16 14:07:12  
-categories: IOS
+categories: iOS
 tags: [Animation]
 
 ---

@@ -1,6 +1,6 @@
 title: lldb 调试方法
 date: 2016/9/21 14:07:12  
-categories: IOS
+categories: iOS
 tags:
 	- Debug
 

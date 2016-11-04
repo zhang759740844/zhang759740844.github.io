@@ -1,6 +1,6 @@
 title: 使用xib设置view的border的宽度和颜色
 date: 2016/8/10 14:07:12  
-categories: IOS
+categories: iOS
 tags: 
 	- Runtime
 	- UI

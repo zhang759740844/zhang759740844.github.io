@@ -1,6 +1,6 @@
 title: UIScrollView详细介绍
 date: 2016/9/18 14:07:12  
-categories: IOS
+categories: iOS
 tags: 
 	- 基本控件
 	
@@ -10,7 +10,7 @@ tags:
 <!--more-->
 
 ## ScrollView和Auto Layout
-`UIScrollView` 在 `Auto Layout` 是一个很特殊的 `view`，对于 `UIScrollView` 的 `subview` 来说，它的 `leading/trailing/top/bottom space` 是**相对于 `UIScrollView`的 `contentSize` 而不是 `bounds` 来确定的。**
+`UIScrollView` 在 `Auto Layout` 是一个很特殊的 `view`，对于 `UIScrollView` 的 `subview` 来说，它的 `leading/trailing/top/bottom space` 是**相对于 `UIScrollView`的 `contentSize` 而不是 `bounds` (自身在屏幕上显示的边界，不明白的可以查一下 bounds 和 frame 的区别)来确定的。**
 
 所以，一般的做法是在`UIScrollVIew`和它的`subViews`之间增加一个`content view`。这样可以方便地给 `subview` 提供 `leading/trailing/top/bottom`，方便 `subview` 的布局，并且可以 通过调整`content view` 的 `size`（调整`constraint` 的 `IBOutlet`）来调整 `contentSize`。
 
@@ -61,7 +61,7 @@ scrollView.contentSize.width = (scrollview与contentview之间leading的constant
 ### - (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView
 用户开始拖动 scroll view 的时候被调用。
 
-### - (void)scrollViewWillEndDragging:(UIScrollView *)scrollView withVelocity:(CGPoint)velocity targetContentOffset:(inout CGPoint *)targetContentOffset
+### - (void)scrollViewWillEndDragging:(UIScrollView \*)scrollView withVelocity:(CGPoint)velocity targetContentOffset:(inout CGPoint \*)targetContentOffset
 在 didEndDragging 前被调用，当 willEndDragging 方法中 `velocity` 为 `CGPointZero`（结束拖动时两个方向都没有速度）时，didEndDragging 中的 `decelerate` 为 `NO`，即没有减速过程，willBeginDecelerating 和 didEndDecelerating 也就不会被调用。反之，当 `velocity` 不为 `CGPointZero` 时，scroll view 会以 `velocity` 为初速度，减速直到 `targetContentOffset`。值得注意的是，这里的 `targetContentOffset` 是个指针，可以改变减速运动的目的地，这在一些效果的实现时十分有用。
 
 ### - (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate

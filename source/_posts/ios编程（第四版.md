@@ -1,6 +1,6 @@
 title: ios编程(第四版) 学习笔记
 date: 2016/7/31 14:07:12  
-categories: IOS
+categories: iOS
 tags: 
 	- 学习笔记
 
