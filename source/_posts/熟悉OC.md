@@ -180,39 +180,666 @@ _firstName = @"Zachary";
 上面这种，那就直接用实例变量操作了，用属性就是多此一举；如果有乱七八糟的东西，那么就要用属性的方式。
 
 ### 第8条：理解“对象等同性”这一概念
+`NSObject` 类中有两个用于判断等同性的方法：
+- `- (BOOL)isEqual:(id)object;`
+- `- (NSUInteger)hash;`
+
+`NSObject` 类中默认的实现是：当且仅当其内存地址完全相等时，两个对象才相等。自定义对象中可以覆写这两个方法（其实好像没必要重写 hash 方法，因为我们重写的 `isEqual:` 方法里根本没有用到 hash 方法，重写了也没啥用），完成自己的相等判断。如果 `isEqual:` 方法判断对象相等，那么其 hash 方法也必须返回同一个值；反之，如果 hash 方法返回了同一个值，`isEqual:` 方法未必认为两者相等。
+
+如果已知两个对象是字符串，最好通过 `isEqualToString:` 方法来比较。对于数组和字典，也有 `isEqualToArray:` 方法和 `isEqualToDictionary:`方法。
+
+如果比较的对象类型和当前对象类型相同，就可以采用自己编写的判定方法，否则调用父类的 `isEqual:` 方法：
+```objc
+- (BOOL)isEqualToPerson:(EOCPerson*)otherPerson {
+
+     //先比较对象类型，然后比较每个属性
+     if (self == object) return YES;
+     if (![_firstName isEqualToString:otherPerson.firstName])
+         return NO;
+     if (![_lastName isEqualToString:otherPerson.lastName])
+         return NO;
+     if (_age != otherPerson.age)
+         return NO;
+     return YES;
+}
+
+
+- (BOOL)isEqual:(id)object {
+    //如果对象所属类型相同，就调用自己编写的判定方法，如果不同，调用父类的isEqual:方法
+     if ([self class] == [object class]) {    
+         return [self isEqualToPerson:(EOCPerson*)object];
+    } else {    
+         return [super isEqual:object];
+    }
+}
+```
+
+### 第9条 以“类族模式“隐藏实现细节
+其实就是通过抽象类完成工厂模式。
+
+例如,对于“员工”这个类，可以有各种不同的“子类型”：开发员工，设计员工和财政员工。这些“实体类”可以由“员工”这个抽象基类来获得：
+
+```objc
+//EOCEmployee.h
+
+typedef NS_ENUM(NSUInteger, EOCEmployeeType) {
+    EOCEmployeeTypeDeveloper,
+    EOCEmployeeTypeDesigner,
+    EOCEmployeeTypeFinance,
+};
+
+@interface EOCEmployee : NSObject
+
+@property (copy) NSString *name;
+@property NSUInteger salary;
+
+
+// Helper for creating Employee objects
++ (EOCEmployee*)employeeWithType:(EOCEmployeeType)type;
+
+// Make Employees do their respective day's work
+- (void)doADaysWork;
+
+@end
+```
+
+```objc
+//EOCEmployee.m
+
+@implementation EOCEmployee
+
++ (EOCEmployee*)employeeWithType:(EOCEmployeeType)type {
+     switch (type) {
+         case EOCEmployeeTypeDeveloper:
+            return [EOCEmployeeDeveloper new];
+         break; 
+
+        case EOCEmployeeTypeDesigner:
+             return [EOCEmployeeDesigner new];
+         break;
+
+        case EOCEmployeeTypeFinance:
+             return [EOCEmployeeFinance new];
+         break;
+    }
+}
+
+- (void)doADaysWork {
+ // 需要子类来实现
+}
+
+@end
+```
+
+```objc
+@interface EOCEmployeeDeveloper : EOCEmployee
+@end
+
+@implementation EOCEmployeeDeveloper
+
+- (void)doADaysWork {
+    [self writeCode];
+}
+
+@end
+```
+
+这样，表面上对象是 `EOCEmployee`，但是实际上操作的是 `EOCEmployeeDeveloper`。
+
+这里需要注意一点：对于这种类族，不能通过以下方式判断：
+
+```objc
+if ([employeeDeveloper class] == [EOCEmployee class]){
+	// will do
+}
+```
+
+因为 `employeeDeveloper` 对象是 `EOCEmployee` 类的一个子集，需要使用 `isKindOfClass:` 方法：
+
+```objc
+if ([employeeDeveloper isKindOfClass:[EOCEmployee class]]){
+	// will do
+}
+```
+
+### 第10条：在既有类中使用关联对象存放自定义数据
+这一条和 runtime 息息相关。背景是，我们可以通过 category 为系统类添加方法，但是无法添加属性。当需要为系统类添加属性时，可以使用下面的方法：
+
+```objc
+//为某个对象设置关联对象的值：
+//第一个参数是主对象，第二个参数是键，第三个参数是关联的对象，第四个参数是存储策略:是枚举，定义了内存管理语义。 void objc_setAssociatedObject(id object, void *key, id value, objc_AssociationPolicy policy)
+
+//根据给定的键从某对象中获取相应的关联对象值：
+id objc_getAssociatedObject(id object, void *key)
+
+//移除指定对象的关联对象：
+void objc_removeAssociatedObjects(id object)
+```
+
+这里要强调的是，要拿到设置的属性，键必须要完全相等。因此，需要设置成静态全局变量：
+
+```objc
+static void *EOCMyAlertViewKey = "EOCMyAlertViewKey";
+```
+
+### 第11条：理解objc_msgSend的作用
+这部分在[runtime](https://zhang759740844.github.io/2016/08/22/runtime原理/)中已经写得很详细了，参见就行了。
+
+### 第12条：理解消息转发机制
+这部分在[runtime](https://zhang759740844.github.io/2016/08/23/runtime应用/)中已经写得很详细了，参见就行了。
+
+### 第13条：用“方法调配技术”调试“黑盒方法”
+这部分在[runtime](https://zhang759740844.github.io/2016/08/23/runtime应用/)中也介绍了。
+
+### 第14条：理解“类对象”的用意
+这部分在[runtime](https://zhang759740844.github.io/2016/08/22/runtime原理/)中也介绍了。
+
+## 接口与API设计
+### 第15条：用前缀 避免命名空间冲突
+Apple 宣称其保留使用所有"两字母前缀"的权利，所以我们选用的前缀应该是三个字母的。而且，如果自己开发的程序使用到了第三方库，也应该加上前缀。
+
+### 第16条：提供"全能初始化方法"
+所谓全能初始化方法，就是所有初始化方法都要调用的初始化方法。这个初始化方法初始化方法是初始化方法里参数最多的一个，因为它使用了尽可能多的初始化所需要的参数，以便其他的方法来调用自己。
+
+算是一种写代码的技巧吧。平时写代码的时候也都是这样的，不具体说明了。
+
+### 第17条：实现description方法
+自定义的类调用 `NSLog();` 的时候，往往不能返回想要的结果。需要重写 `NSObject` 类中的 `description` 方法，返回需要的字符串。
+```objc
+- (NSString*)description {
+     return [NSString stringWithFormat:@"<%@: %p, %@ %@>", [self class], self, firstName, lastName];
+}
+```
+
+其中，`%p` 表示对象的内存地址。
+
+### 第18条：尽量使用不可变对象
+尽量使用不可变对象。没啥可说的。
+里面推荐的方法没用过，感觉并不好，就不写了。
+
+### 第19条：使用清晰而协调的命名方式
+没啥好说的，注意就好
+
+### 第20条：为私有方法名加前缀
+建议在实现文件里将非公开的方法都加上前缀，便于调试，而且这样一来也很容易区分哪些是公共方法，哪些是私有方法。因为往往公共方法是不便于任意修改的。
+
+```objc
+#import <Foundation/Foundation.h>
+
+@interface EOCObject : NSObject
+
+- (void)publicMethod;
+
+@end
+
+
+@implementation EOCObject
+
+- (void)publicMethod {
+ /* ... */
+}
+
+- (void)p_privateMethod {
+ /* ... */
+}
+
+@end
+```
+
+很有用的建议，注意不要用下划线来区分私有方法和公共方法，因为会和苹果公司的API重复。
+
+### 第21条：理解Objective-C错误类型
+OC 中仅在及其严重的错误情况下抛出异常。比如一个抽象基类。由于 OC 中没办法将某个类标识为抽象类。如果想要实现抽象类的功能，那么就要在必须要覆写的方法里抛出异常：
+
+```objc
+- (void)mustOverrideMethod{
+	NSString *reason = [NSString stringWithFormat:@"%@ must be overridden", NSStringFromeSelector(_cmd)];
+	@throw [NSException exceptionWithName:NSInternalInconsistencyException
+									    reason:reason
+									  userInfo:nil];
+}
+```
+
+对于不严重的异常，可以使用返回 `nil` 或者 `NSError` 的方式(其实也没啥用，这些都是手动设置的，我都知道哪里会出现问题了，还要新建 `NSError` 对象干嘛(可能我的理解有偏差))。
+
+### 第22条：理解NSCopying协议
+#### 自定义拷贝
+如果我们想令自己的类支持拷贝操作，那就要实现 `NSCopying` 协议，该协议只有一个方法：
+
+```objc
+- (id)copyWithZone:(NSZone*)zone
+```
+
+比如要拷贝一个 `EOCPerson` 对象：
+
+```objc
+- (id)copyWithZone:(NSZone*)zone {
+     EOCPerson *copy = [[[self class] allocWithZone:zone] initWithFirstName:_firstName  andLastName:_lastName];
+    copy->_friends = [_friends mutableCopy];
+     return copy;
+}
+``` 
+
+这里面的 `NSZone *zone` 对象不用在意是什么，现在已经没用了。其实也就是新建一个 `EOCPerson` 对象，然后调用它的构造函数把东西全都塞进去。这里的 `->` 用箭头是因为定义的时候这个 `_friends` 不是一个属性(代码没有贴出来，详见书)，而只是在实现文件中定义的一个实例变量，没有 get/set 方法，所以不能用 `.` 
+
+这里的 `mutableCopy` 方法也可以自定义，就是下面方法的实现 
+```objc
+- (id)mutableCopyWithZone:(NSZone*)zone；
+```
+
+#### 浅拷贝与深拷贝
+浅拷贝和深拷贝应该并不陌生。浅拷贝只增加引用计数，深拷贝将创建另一个一模一样的对象。
+
+- 不可变对象的 `copy` 是浅拷贝。
+- 可变对象的 `copy` 是深拷贝，返回不可变对象。
+- 不可变对象的 `mutableCopy` 是深拷贝，返回可变对象。
+- 可变对象的 `mutableCopy` 是浅拷贝。
+
+容器对象(`NSArray`)本身也遵循上面的规则。但是需要注意的是，**容器对象内的元素是浅拷贝**。因此上面的自定义 copy 方法如果想让 `_friends` 内的元素深拷贝，就不能用 `[_friends mutableCopy]` 方法，需要新建一个 Set:
+
+```objc
+- (id)deepCopy {
+   EOCPerson *copy = [[[self class] alloc] initWithFirstName:_firstName andLastName:_lastName];
+	copy->_friends = [[NSMutableSet alloc] initWithSet:_friends copyItems:YES];
+   return copy;
+}
+```
+
+## 协议与分类
+### 第23条：通过委托与数据源协议进行对象间通信
+其实也是老生常谈的东西了，不过也有一些注意点。
+
+受代理对象内持有代理对象的实例时要写成这样：
+
+```objc
+@property (nonatomic, weak) id <NetworkDelegate> delegate;
+```
+
+这里书中指明了要用 `weak`，不能用 `strong`，否则会引起引用循环。比如系统中的 `TableViewCellDelegate`，在 `TableViewController` 作为代理类确实拥有被代理对象 `TableViewCell`，用 `weak` 确实是合理的，但是所有情况都这样吗？不知道，不过确实基本上的代理对象都是 `ViewController`，所以用 `weak` 肯定是不会有问题的。
+
+实现委托对象的方法是声明某个类遵从委托协议：
+
+```objc
+@implementation EOCDataModel () <EOCNetworkFetcherDelegate>
+@end
+@implementation EOCDataModel
+// 各个实现方法
+@end
+```
+
+基本所有的 Delegate 都在 `.m` 文件中的类拓展中声明，之前一直没有留意，看了书后才问自己，为什么不在 `.h` 中声明？两者有什么差别吗？其实也没什么差别，在实现文件中声明的好处是能隐藏细节。如果只是自己用可能没什么区别，但是如果打包给别人用，那么就不应该让别人看到你的实现细节了，因此，就把这个 Delegate 的声明放到了实现文件中。
+好吧。一个简单的道理。只是我一开始没想明白。
+
+### 第24条：将类的实现代码分散到便于管理的数个分类中
+当一个类越来越大时，就变得不利于管理，因此需要将类代码按照逻辑划分入几个分区中，可以通过范畴的方式实现。书中有一个例子：
+
+无分类:
+```objc
+#import <Foundation/Foundation.h>
+
+@interface EOCPerson : NSObject
+
+@property (nonatomic, copy, readonly) NSString *firstName;
+@property (nonatomic, copy, readonly) NSString *lastName;
+@property (nonatomic, strong, readonly) NSArray *friends;
+
+- (id)initWithFirstName:(NSString*)firstName andLastName:(NSString*)lastName;
+
+/* Friendship methods */
+- (void)addFriend:(EOCPerson*)person;
+- (void)removeFriend:(EOCPerson*)person;
+- (BOOL)isFriendsWith:(EOCPerson*)person;
+
+
+/* Work methods */
+- (void)performDaysWork;
+- (void)takeVacationFromWork;
+
+
+/* Play methods */
+- (void)goToTheCinema;
+- (void)goToSportsGame;
+
+
+@end 
+```
+分类后:
+```objc
+
+#import <Foundation/Foundation.h>
+
+
+@interface EOCPerson : NSObject
+
+@property (nonatomic, copy, readonly) NSString *firstName;
+@property (nonatomic, copy, readonly) NSString *lastName;
+@property (nonatomic, strong, readonly) NSArray *friends;
 
 
 
+- (id)initWithFirstName:(NSString*)firstName
+
+andLastName:(NSString*)lastName;
+
+@end
 
 
 
+@interface EOCPerson (Friendship)
+
+- (void)addFriend:(EOCPerson*)person;
+- (void)removeFriend:(EOCPerson*)person;
+- (BOOL)isFriendsWith:(EOCPerson*)person;
+
+@end
 
 
 
+@interface EOCPerson (Work)
+
+- (void)performDaysWork;
+- (void)takeVacationFromWork;
+
+@end
 
 
 
+@interface EOCPerson (Play)
+
+- (void)goToTheCinema;
+- (void)goToSportsGame;
+
+@end
+```
+
+如果觉得写在一个实现文件中太长了，可以拆开，比如将其中的 `Friendship` 拆开。
+
+```objc
+// EOCPerson+Friendship.h
+#import "EOCPerson.h"
 
 
+@interface EOCPerson (Friendship)
+
+- (void)addFriend:(EOCPerson*)person;
+- (void)removeFriend:(EOCPerson*)person;
+- (BOOL)isFriendsWith:(EOCPerson*)person;
+
+@end
 
 
+// EOCPerson+Friendship.m
+#import "EOCPerson+Friendship.h"
 
 
+@implementation EOCPerson (Friendship)
+
+- (void)addFriend:(EOCPerson*)person {
+ /* ... */
+}
+
+- (void)removeFriend:(EOCPerson*)person {
+ /* ... */
+}
+
+- (BOOL)isFriendsWith:(EOCPerson*)person {
+ /* ... */
+}
+
+@end
+```
+
+不过要注意，在新建分类文件时，一定要引入被分类的类文件。
+
+这个技巧说有用也有用，说没用，也没用，看具体实际情况吧。另外，还有一个技巧是将所有"私有"方法都归入名叫 Private 的分类中，以隐藏实现细节，好像是个挺有意思的想法。
+
+### 第25条：总是为第三方类的分类名称加前缀
+如果我们想给第三方库或者iOS框架里的类添加分类时，最好将分类名和方法名加上前缀。否则可能会替换掉系统的方法。
+
+### 第26条:勿在分类中声明属性
+这本书要是早点看到就好了，当时纠结这个很久，走了很多弯路。
+
+分类机制，目标在于扩展类的功能，而不是封装数据。
+
+### 第27条：使用class-continuation分类 隐藏实现细节
+通常，我们需要减少在公共接口中向外暴露的部分(包括属性和方法)，而因此带给我们的局限性可以利用 class-continuation 分类的特性来补偿：
+- 可以在 class-continuation 分类中增加实例变量。
+- 可以在 class-continuation 分类中将公共接口的只读属性设置为读写。
+- 可以在 class-continuation 分类中遵循协议，使其不为人知。
+
+### 第28条:通过协议提供匿名对象
+OC 里的**匿名对象**和 Java 里的匿名对象不同，这里的匿名对象没有类型。有时我们用协议来提供匿名对象，目的在于说明它仅仅表示“遵从某个协议的对象”，而不是“属于某个类的对象”。它的表示方法为：`id<protocol>`。
+
+通过协议提供匿名对象的主要使用场景有两个：
+- 作为属性
+- 作为方法参数
+
+#### 匿名对象作为属性
+在设定某个类为自己的代理属性时，可以不声明代理的类，而是用 `id<protocol>`，因为成为代理的终点并不是某个类的实例，而是遵循了某个协议。
+
+```objc
+@property (nonatomic, weak) id <EOCDelegate> delegate;
+```
+
+在这里使用匿名对象的原因有两个：
+1. 将来可能会有很多不同类的实例对象作为该类的代理。
+2. 我们不想指明具体要使用哪个类来作为这个类的代理。
 
 
+也就是说，能作为该类的代理的条件只有一个：它遵从了 `<EOCDelegate>` 协议。
+
+#### 匿名对象作为方法参数
+有时，我们不会在意方法里某个参数的具体类型，而是遵循了某种协议，这个时候就可以使用匿名对象来作为方法参数。
+
+```objc
+- (void)setObject:(id)object forKey:(id<NSCopying>)key;
+```
+
+这个方法是 NSDictionary 的设值方法，它的参数只要遵从了 `<NSCopying>` 协议，就可以作为参数传进去,作为 NSDictionary 的键。
+
+## 内存管理
+### 第29条：理解引用计数
+将对象放入自动释放池之后，不会马上使其引用计数 -1，而是在当前线程的下一次事件循环时递减。
+
+其他没什么好说的。
+
+### 第30条：以ARC简化引用计数
+使用ARC，可以省略对于引用计数的操作，没太多好说的。
+
+需要了解一个修饰符 `__weak`。块内引用外部变量时，会自动保留其所捕获的全部对象，如果这其中有某个对象保留了块本身（如将 ViewController 传入），将会形成“保留环”。所以要用 `__weak` 局部变量来打破这种保留环。
+
+```objc
+EOCNetwork * __weak weakFetcher = fetcher;
+```
+
+因此，我们可以定义一个 `weakSelf` 来简化这种声明方式：
+
+```objc
+#define WEAKSELF typeof(self) __weak weakSelf = self;
+```
+
+这样，在 ViewController 中用到 `self` 时，就可以直接用 `weakSelf` 替代。
+
+### 第31条：在dealloc方法中只释放引用并解除监听
+对象在经历生命期后，最终会被系统回收，这里就是执行 `dealloc` 方法了。永远不要自己调用 `dealloc` 方法，运行期系统会在适当的时候调用它。根据性能需求我们有时需要在 `dealloc` 方法中做一些操作。那么我们可以在 `dealloc` 方法里做什么呢？
+- 释放对象所拥有的所有引用，不过ARC会自动添加这些释放代码，可以不必操心。
+- 对象拥有的其他非OC对象也要释放（CoreFoundation 对象就必须手动释放）
+- 释放原来的观测行为：注销通知。如果没有及时注销，就会向其发送通知，使得程序崩溃。
+
+例如：
+```objc
+- (void)dealloc {
+     CFRelease(coreFoundationObject);
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+```
+
+除了释放引用和注销通知，不要在 `dealloc` 中做其他任何事（比如调用属性的存取方法，以及异步操作）。如果对象持有文件描述符等系统资源，那么应该专门编写一个方法来释放该资源。这样的类要和使用者约定，用完资源后必须调用 `close` 方法。
+
+### 第32条：编写“异常安全代码”时留意内存管理问题
+在发生异常时的内存管理需要仔细考虑内存管理的问题：在 try 块中，如果先保留了某个对象，然后在释放它之前又抛出了异常，那么除非在 catch 块中能处理此问题，否则对象所占内存就将泄漏。
+
+```objc
+@try {
+     EOCSomeClass *object = [[EOCSomeClass alloc] init];
+     [object doSomethingThatMayThrow];
+}
+@catch (...) {
+ NSLog(@"Whoops, there was an error. Oh well...");
+}
+```
+
+但是在 ARC 状态下，我们不能手动释放对象，解决办法是使用：`-fobjc-arc-exceptions` 标志来让系统自动加入清理代码，不过会导致应用程序变大，而且会降低运行效率。
+
+### 第33条：以弱引用避免保留环
+对象之间都用强指针引用对方的话会造成保留环。如果保留环连接了多个对象，而这里其中一个对象被外界引用，那么当这个引用被移除后，整个保留环就泄漏了。不像 Java 那种处理方式，OC 中孤立的保留环不能被自动释放。
+
+![保留环](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/effective_oc1.png?raw=true)
 
 
+那么就要用弱引用的方式：
+
+```objc
+//EOCClassB.m
+//第一种弱引用：unsafe_unretained
+@property (nonatomic, unsafe_unretained) EOCClassA *other;
 
 
+//第二种弱引用：weak
+@property (nonatomic, weak) EOCClassA *other;
+```
 
+这两种弱引用有什么区别呢？
+当指向 `EOCClassA` 实例的引用移除后，`unsafe_unretained` 属性仍然指向那个已经回收的实例，而 `weak` 指向 `nil`。显然，用 `weak` 字段应该是更安全的，因为不再使用的对象按理说应该设置为 `nil`,而不应该产生依赖。
 
+所以只要用 `weak` 就行了。
 
+### 第34条：以“自动释放池快”降低内存峰值
+这个部分在 `runloop` 相关文章中有学习过。主要用的是这样一个例子：
 
+```objc
+for (int i = 0; i < 100000; i++) {
+      [self doSomethingWithInt:i];
+}
+```
 
+由于线程自动释放池在 event loop 时，进行清空，上面的代码将可能造成内存峰值。因此，可以手动添加一个自动释放池，把循环内的代码包裹在内，那么循环中自动释放的独享就会在这个池中，而不是在线程的主池中。
 
+```objc
+NSArray *databaseRecords = /* ... */;
+NSMutableArray *people = [NSMutableArray new];
+for (NSDictionary *record in databaseRecords) {
+     @autoreleasepool {
+             EOCPerson *person = [[EOCPerson alloc] initWithRecord:record];
+            [people addObject:person];
+      }
+}
+```
 
+### 第35条：用“僵尸对象”调试内存管理问题
+某个对象被回收后，再向它发送消息是不安全的，这并不一定会引起程序崩溃。如果程序没有崩溃，可能是因为：
+- 该内存的部分原数据没有被覆写。
+- 该内存恰好被另一个对象占据，而这个对象可以应答这个方法。
 
+如果被回收的对象占用的原内存被新的对象占据，那么收到消息的对象就不会是我们预想的那个对象。在这样的情况下，如果这个对象无法响应那个方法的话，程序依旧会崩溃。因此，我们希望可以通过一种方法捕捉到对象被释放后收到消息的情况。这种方法就是利用僵尸对象！ 
+Cocoa 提供了“僵尸对象”的功能。如果开启了这个功能，运行期系统会把所有已经回收的实例转化成特殊的“僵尸对象”（通过修改 isa 指针，令其指向特殊的僵尸类），而不会真正回收它们，而且它们所占据的核心内存将无法被重用，这样也就避免了覆写的情况。在僵尸对象收到消息后，会抛出异常，它会说明发送过来的消息，也会描述回收之前的那个对象。
 
+(感觉好像没什么用的样子，不知道这和让程序直接 crash 比，有什么优势)
+
+### 第36条：不要使用retainCount
+ARC 后，这个 `retainCount` 方法就废弃了。反正从来没用过，也就没啥好看的了。
+
+## 块与大小枢派发
+### 第37条：理解“块”这一概念
+基本概念无需多说，这里强调一下块的种类。
+
+块分为三类：
+- 栈块
+- 堆块
+- 全局块
+
+#### 栈块
+这是比较容易被忽略的一块。定义块的时候，其所占内存区域是**分配在栈中**的，而且只在定义它的那个范围内有效：
+
+```objc
+void (^block)();
+
+if ( /* some condition */ ) {
+    block = ^{
+     NSLog(@"Block A");
+    };
+
+} else {
+    block = ^{
+     NSLog(@"Block B");
+    };
+}
+
+block();
+```
+
+上面定义的两个块只在 `if else` 语句范围内有效，一旦离开了最后一个右括号，如果编译器覆写了分配给块的内存，那么就会造成程序崩溃。
+
+并不明白把块保存在栈上是个什么机制。应该可以这么理解吧:`block` 是一个指向栈上内存的指针，栈和堆的引用机制不同，在代码块运行结束后就会将代码块中的局部变量出栈，这个时候 `block` 指向的地方就被回收，`block` 就成了野指针，因此就会 crash 了。
+
+一般情况下，我们平时要么就定义完就传出去了，要么就把 `block` 定义成了类的属性，所以就没有发生过这种情况。 
+
+#### 堆块
+平时对块的操作肯定不能以栈块的形式来存储啊。堆块，要在原来的基础上执行 `copy`，让代码保存在堆上。
+
+```objc
+void (^block)();
+
+if ( /* some condition */ ) {
+    block = [^{
+         NSLog(@"Block A");
+   } copy];
+} else {
+    block = [^{
+         NSLog(@"Block B");
+    } copy];
+}
+
+block();
+```
+
+至于 `copy` 怎么让栈上的东西保存到堆上就不得而知了，反正就是保存过去了。然后 `block` 就能指向堆上的地址了。
+
+平时我们用属性方式保存块的时候都是这样声明的：
+
+```objc
+@property (nonatomic,copy) Block block;
+```
+
+这个属性里暗含了 `copy` 操作了。
+
+#### 全局块
+在全局内存里声明的就是全局块，没用过。不知道有什么好处。
+
+### 第38条：为常用的块类型创建typedef
+如果我们需要重复创建某种块（相同参数，返回值）的变量，我们就可以通过typedef来给某一种块定义属于它自己的新类型：
+
+```objc
+int (^variableName)(BOOL flag, int value) =^(BOOL flag, int value){
+     // Implementation
+     return someInt;
+}
+
+- (void)startWithCompletionHandler: (void(^)(NSData *data, NSError *error))completion;
+```
+
+这个块有一个 bool 参数和一个 int 参数，并返回 int 类型。我们可以给它定义类型：
+
+```objc
+typedef int(^EOCSomeBlock)(BOOL flag, int value);
+typedef void(^EOCCompletionHandler)(NSData *data, NSError *error);
+
+EOCSomeBlock block = ^(BOOL flag, int value){
+     // Implementation
+};
+
+- (void)startWithCompletionHandler:(EOCCompletionHandler)completion;
+```
 
 
 
