@@ -841,6 +841,269 @@ EOCSomeBlock block = ^(BOOL flag, int value){
 - (void)startWithCompletionHandler:(EOCCompletionHandler)completion;
 ```
 
+### 第39条：用handler块降低代码分散程度
+可以通过块的方式代替代理模式。
+
+代理模式主要是为了让其他类在必要时候调用自己类的方法。而使用块的方式可以直接将方法内容作为参数或者属性传入调用块。这样设计业务逻辑更加直观清晰。
+
+### 第40条：用块引用其所属对象时不要出现保留环
+注意使用块的时候不要产生保留环，要在块执行完成后，将块置为 `nil`。
+
+### 第41条：多用派发队列，少用同步锁
+多个线程执行同一份代码时，很可能会造成数据不同步。作者建议使用 GCD 来为代码加锁的方式解决这个问题。
+
+#### 方案一：使用串行同步队列来将读写操作都安排到同一个队列里：
+```objc
+_syncQueue = dispatch_queue_create("com.effectiveobjectivec.syncQueue", NULL);
+
+//读取字符串
+- (NSString*)someString {
+    __block NSString *localSomeString;
+    dispatch_sync(_syncQueue, ^{
+        localSomeString = _someString;
+    });
+    return localSomeString;
+}
+
+//设置字符串
+- (void)setSomeString:(NSString*)someString {
+    dispatch_sync(_syncQueue, ^{
+        _someString = someString;
+    });
+}
+```
+
+这里，用了一个串行队列，保证了读写操作都加了锁，是一种解决方式。但是，我们要明确一点，数据的正确性主要取决于写入操作，只要保证写入时，线程是安全的，那么即便读取操作是并发的，也可以保证数据是同步的。因此，我们要加以改进，读操作并行，写操作串行。可以通过  `dispatch_barrier_async`、`dispatch_barrier_sync` 完成。
+
+#### 将写操作放入栅栏块中，让他们单独执行；将读取操作并发执行
+在队列中，栅栏块必须单独执行，不能与其他块并行。这只对并发队列有意义，因为串行队列中的块总是按照顺序逐个执行。并发队列如果发现接下来要处理的块是个栅栏块，那么就一直等到当前所有并发块都执行完毕，才会单独执行这个栅栏块。待栅栏块执行过后，再按正常方式继续向下处理。**相当于给并行队列里加个锁**
+
+```objc
+_syncQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+
+//读取字符串
+- (NSString*)someString {
+    __block NSString *localSomeString;
+    dispatch_sync(_syncQueue, ^{
+       localSomeString = _someString;
+    });
+    return localSomeString;
+}
+
+//设置字符串
+- (void)setSomeString:(NSString*)someString {
+
+    dispatch_barrier_async(_syncQueue, ^{
+        _someString = someString;
+    });
+}
+```
+
+这里解释下为什么读取用的是 `sync`，写入用的是 `async`，因为读取是要有返回值的，要将值返回给调用的对象，总不能还没有拿到值，就已经 `return` 了吧；而写入操作没有返回值，那么就让它立即 `return` 执行后面的代码，另开线程写入。
+
+### 第42条：多用GCD，少用performSelector系列方法
+在iOS开发中，有时会使用 `performSelector` 来执行某个方法，但是 `performSelector` 系列的方法能处理的选择子很局限，最好使用 GCD：
+- 它无法处理带有多个参数的选择子（有最多支持两个选择子的方法）
+- 返回值只能是void或者对象类型
+- 会引起内存泄露
+
+但是如果将方法放在块中，通过 GCD 来操作就能很好地解决这些问题。尤其是我们如果想要让一个任务在另一个线程上执行，最好应该将任务放到块里，交给 GCD 来实现，而不是通过 `performSelector` 方法。
+
+#### 延后执行某个任务的方法
+```objc
+// 使用 performSelector:withObject:afterDelay:
+[self performSelector:@selector(doSomething) withObject:nil afterDelay:5.0];
+
+
+// 使用 dispatch_after
+dispatch_time_t time = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5.0 * NSEC_PER_SEC));
+dispatch_after(time, dispatch_get_main_queue(), ^(void){
+    [self doSomething];
+});
+```
+
+#### 将任务放在主线程执行
+```
+// 使用 performSelectorOnMainThread:withObject:waitUntilDone:
+[self performSelectorOnMainThread:@selector(doSomething) withObject:nil waitUntilDone:NO];
+
+
+// 使用 dispatch_async
+// (or if waitUntilDone is YES, then dispatch_sync)
+dispatch_async(dispatch_get_main_queue(), ^{
+        [self doSomething];
+});
+```
+
+如果 `waitUntilDone` 的参数是 `Yes`，那么就对应 GCD 的 `dispatch_sync` 方法。我们可以看到，使用 GCD 的方式可以将线程操作代码和方法调用代码写在同一处，一目了然；而且完全不受调用方法的选择子和方法参数个数的限制。
+
+### 第43条：掌握GCD及操作队列的使用时机
+除了 GCD，**操作队列（NSOperationQueue）**也是解决多线程任务管理问题的一个方案。对于不同的环境，我们要采取不同的策略来解决问题：有时候使用 GCD 好些，有时则是使用操作队列更加合理。（并不清楚操作队列怎么用的，反正就抄一下哪里好）
+
+- 可以取消操作：在运行任务前，可以在NSOperation对象调用 `cancel` 方法，标明此任务不需要执行。但是 GCD 队列是无法取消的，因为它遵循“安排好之后就不管了（fire and forget）”的原则。
+- 可以指定操作间的依赖关系：例如从服务器下载并处理文件的动作可以用操作来表示。而在处理其他文件之前必须先下载“清单文件”。而后续的下载工作，都要依赖于先下载的清单文件这一操作。
+- 监控 `NSOperation` 对象的属性：可以通过 KVO 来监听 `NSOperation` 的属性：可以通过 `isCancelled` 属性来判断任务是否已取消；通过 `isFinished` 属性来判断任务是否已经完成。
+- 可以指定操作的优先级：操作的优先级表示此操作与队列中其他操作之间的优先关系，我们可以指定它。
+
+### 第44条：通过Dispath Group机制，根据系统资源状况来执行任务
+有时需要等待多个并行任务结束的那一刻执行某个任务，这个时候就可以使用 `dispath group` 函数来实现这个需求：
+
+通过 `dispath group` 函数，可以把并发执行的多个任务合为一组，于是调用者就可以知道这些任务何时才能全部执行完毕。
+
+```objc
+//一个优先级低的并发队列
+dispatch_queue_t lowPriorityQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0);
+
+//一个优先级高的并发队列
+dispatch_queue_t highPriorityQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0);
+
+//创建dispatch_group
+dispatch_group_t dispatchGroup = dispatch_group_create();
+
+//将优先级低的队列放入dispatch_group
+for (id object in lowPriorityObjects) {
+ dispatch_group_async(dispatchGroup,lowPriorityQueue,^{ [object performTask]; });
+}
+
+//将优先级高的队列放入dispatch_group
+for (id object in highPriorityObjects) {
+ dispatch_group_async(dispatchGroup,highPriorityQueue,^{ [object performTask]; });
+}
+
+//dispatch_group里的任务都结束后调用块中的代码
+dispatch_queue_t notifyQueue = dispatch_get_main_queue();
+dispatch_group_notify(dispatchGroup,notifyQueue,^{
+     // Continue processing after completing tasks
+});
+```
+
+想要更详细的了解，还是看之前的 GCD 介绍文章吧。
+
+### 第45条：使用dispatch_once来执行只需运行一次的线程安全代码
+有时我们可能只需要将某段代码执行一次，这时可以通过 `dispatch_once` 函数来解决。
+
+`dispatch_once` 函数比较重要的使用例子是单例模式：
+我们在创建单例模式的实例时，可以使用 `dispatch_once` 函数来令初始化代码只执行一次，并且内部是线程安全的。
+
+而且，对于执行一次的 `block` 来说，每次调用函数时传入的标记都必须完全相同，通常标记变量声明在 `static` 或 `global` 作用域里。
+
+```objc
++ (id)sharedInstance {
+     static EOCClass *sharedInstance = nil;
+     static dispatch_once_t onceToken;
+     dispatch_once(&onceToken, ^{
+﻿            sharedInstance = [[self alloc] init];
+    });
+     return sharedInstance;
+}
+```
+
+### 第46条：不要使用dispatch_get_current_queue
+已经被废弃的 API，不说了。
+
+## 系统框架
+### 第47条：熟悉系统框架
+主要的系统框架：
+- Foundation  :NSObject,NSArray,NSDictionary 等
+- CFoundation :C 语言 API，Foundation 框架中的许多功能，都可以在这里找到对应的 C 语言 API
+- CFNetwork   :C 语言 API，提供了 C 语言级别的网络通信能力 
+- CoreAudio   :C 语言 API，操作设备上的音频硬件
+- AVFoundation:提供的 OC 对象可以回放并录制音频和视频
+- CoreData    :OC 的 API，将对象写入数据库
+- CoreText    :C 语言 API，高效执行文字排版和渲染操作
+
+
+### 第48条：多用块枚举，少用for循环
+#### 传统的for遍历
+```objc
+NSArray *anArray = /* ... */;
+for (int i = 0; i < anArray.count; i++) {
+   id object = anArray[i];
+   // Do something with 'object'
+}
+
+
+
+// Dictionary
+NSDictionary *aDictionary = /* ... */;
+NSArray *keys = [aDictionary allKeys];
+for (int i = 0; i < keys.count; i++) {
+   id key = keys[i];
+   id value = aDictionary[key];
+   // Do something with 'key' and 'value'
+}
+
+
+// Set
+NSSet *aSet = /* ... */;
+NSArray *objects = [aSet allObjects];
+for (int i = 0; i < objects.count; i++) {
+   id object = objects[i];
+   // Do something with 'object'
+
+}
+```
+
+我们可以看到，在遍历 NSDictionary,和 NSet 时，我们又新创建了一个数组。虽然遍历的目的达成了，但是却加大了系统的开销。
+
+#### 利用快速遍历
+```objc
+NSArray *anArray = /* ... */;
+for (id object in anArray) {
+ // Do something with 'object'
+}
+
+// Dictionary
+NSDictionary *aDictionary = /* ... */;
+for (id key in aDictionary) {
+ id value = aDictionary[key];
+ // Do something with 'key' and 'value'
+
+}
+
+
+NSSet *aSet = /* ... */;
+for (id object in aSet) {
+ // Do something with 'object'
+}
+```
+
+这种快速遍历的方法要比传统的遍历方法更加简洁易懂，但是缺点是无法方便获取元素的下标。
+
+#### 利用基于块（block）的遍历
+其实我觉得没啥用，不看也罢。
+
+### 第49条：对自定义其内存管理语义的collection使用无缝桥接
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
