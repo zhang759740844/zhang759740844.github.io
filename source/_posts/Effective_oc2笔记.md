@@ -1,5 +1,5 @@
 title: Effective Objective-C 学习笔记
-date: 2016/9/8 10:07:12  
+date: 2016/11/11 10:07:12  
 categories: iOS
 tags:
 	- Objective-C
@@ -303,16 +303,17 @@ if ([employeeDeveloper isKindOfClass:[EOCEmployee class]]){
 ```
 
 ### 第10条：在既有类中使用关联对象存放自定义数据
+
 这一条和 runtime 息息相关。背景是，我们可以通过 category 为系统类添加方法，但是无法添加属性。当需要为系统类添加属性时，可以使用下面的方法：
 
 ```objc
-//为某个对象设置关联对象的值：
-//第一个参数是主对象，第二个参数是键，第三个参数是关联的对象，第四个参数是存储策略:是枚举，定义了内存管理语义。 void objc_setAssociatedObject(id object, void *key, id value, objc_AssociationPolicy policy)
+//为某个对象设置关联对象的值，第一个参数是主对象，第二个参数是键，第三个参数是关联的对象，第四个参数是存储策略:是枚举，定义了内存管理语义
+void objc_setAssociatedObject(id object, void *key, id value, objc_AssociationPolicy policy)
 
-//根据给定的键从某对象中获取相应的关联对象值：
+//根据给定的键从某对象中获取相应的关联对象值
 id objc_getAssociatedObject(id object, void *key)
 
-//移除指定对象的关联对象：
+//移除指定对象的关联对象
 void objc_removeAssociatedObjects(id object)
 ```
 
@@ -321,6 +322,7 @@ void objc_removeAssociatedObjects(id object)
 ```objc
 static void *EOCMyAlertViewKey = "EOCMyAlertViewKey";
 ```
+
 
 ### 第11条：理解objc_msgSend的作用
 这部分在[runtime](https://zhang759740844.github.io/2016/08/22/runtime原理/)中已经写得很详细了，参见就行了。
@@ -736,16 +738,19 @@ for (NSDictionary *record in databaseRecords) {
 }
 ```
 
+
 ### 第35条：用“僵尸对象”调试内存管理问题
+
 某个对象被回收后，再向它发送消息是不安全的，这并不一定会引起程序崩溃。如果程序没有崩溃，可能是因为：
+
 - 该内存的部分原数据没有被覆写。
 - 该内存恰好被另一个对象占据，而这个对象可以应答这个方法。
 
-如果被回收的对象占用的原内存被新的对象占据，那么收到消息的对象就不会是我们预想的那个对象。在这样的情况下，如果这个对象无法响应那个方法的话，程序依旧会崩溃。因此，我们希望可以通过一种方法捕捉到对象被释放后收到消息的情况。这种方法就是利用僵尸对象！ 
+如果被回收的对象占用的原内存被新的对象占据，那么收到消息的对象就不会是我们预想的那个对象。在这样的情况下，如果这个对象无法响应那个方法的话，程序依旧会崩溃。因此，我们希望可以通过一种方法捕捉到对象被释放后收到消息的情况。这种方法就是利用僵尸对象！
+
 Cocoa 提供了“僵尸对象”的功能。如果开启了这个功能，运行期系统会把所有已经回收的实例转化成特殊的“僵尸对象”（通过修改 isa 指针，令其指向特殊的僵尸类），而不会真正回收它们，而且它们所占据的核心内存将无法被重用，这样也就避免了覆写的情况。在僵尸对象收到消息后，会抛出异常，它会说明发送过来的消息，也会描述回收之前的那个对象。
 
 (感觉好像没什么用的样子，不知道这和让程序直接 crash 比，有什么优势)
-
 ### 第36条：不要使用retainCount
 ARC 后，这个 `retainCount` 方法就废弃了。反正从来没用过，也就没啥好看的了。
 
@@ -1074,6 +1079,75 @@ for (id object in aSet) {
 其实我觉得没啥用，不看也罢。
 
 ### 第49条：对自定义其内存管理语义的collection使用无缝桥接
+通过无缝桥接技术，可以在 Foundation 框架中的 OC 对象和 CoreFoundation 框架中的 C 语言数据结构之间来回转换。
+
+为什么要使用无缝桥接技术呢？因为有些OC对象的特性是其对应的CF数据结构不具备的，反之亦然。因此我们需要通过无缝桥接技术来让这两者进行功能上的“互补”。
+
+具体怎么用，用在什么场景呢？ 没看懂。呵呵
+
+### 第50条：构建缓存时选用 NSCache 而非 NSDictionary
+不知道有啥用，用到时候再说。
+
+### 第51条: 精简initialize 与 load的实现代码
+每个类和分类在**加入运行期系统时**，都会调用 `load` 方法，而且仅仅调用一次。`load` 方法不遵循继承规则，某个类本身没有重写 `load`，那也不会调用超类的 `load` 方法。可能有些小伙伴习惯在这里调用一些方法，但是作者建议尽量不要在这个方法里调用其他方法，尤其是使用其他的类。原因是每个类载入程序库的时机是不同的，如果该类调用了还未载入程序库的类，就会很危险。
+
+`initialize` 方法与 `load` 方法类似，区别是这个方法会在程序首次调用这个类的时候调用（**惰性调用**），而且只调用一次（绝对不能主动使用代码调用）。如果子类没有实现它，它的超类却实现了，那么就会运行超类的代码。如果在 `initialize` 方法里执行过多的操作的话，会使得程序难以维护，也可能引起其他的bug。因此，在 `initialize` 方法里，最好只是设置内部的数据，不要调用其他的方法，因为将来可能会给这些方法添加其它的功能，那么会可能会引起难以排查的 bug。
+
+### 第52条: 别忘了NSTimer会保留其目标对象
+在使用 `NSTimer` 的时候，`NSTimer` 会生成指向其使用者的引用，而其使用者如果也引用了 `NSTimer`，那么就会生成保留环。
+
+```objc
+#import <Foundation/Foundation.h>
+
+@interface EOCClass : NSObject
+- (void)startPolling;
+- (void)stopPolling;
+@end
+
+
+@implementation EOCClass {
+     NSTimer *_pollTimer;
+}
+
+
+- (id)init {
+     return [super init];
+}
+
+
+- (void)dealloc {
+    [_pollTimer invalidate];
+}
+
+
+- (void)stopPolling {
+
+    [_pollTimer invalidate];
+    _pollTimer = nil;
+}
+
+
+- (void)startPolling {
+   _pollTimer = [NSTimer scheduledTimerWithTimeInterval:5.0
+                                                 target:self
+                                               selector:@selector(p_doPoll)
+                                               userInfo:nil
+                                                repeats:YES];
+}
+
+- (void)p_doPoll {
+    // Poll the resource
+}
+
+@end
+```
+
+这里可以看到 `EOCClass` 和 `_pollTimer` 之间由于 `target:self` 的存在，相互形成了保留环，如果不主动调用 `stopPolling` 方法将 `_pollTimer`取消并清空就无法打破这个保留环。像这种通过主动调用方法来打破保留环的设计显然是不好的。这可能是一个极其危险的情况，因为 NSTimer 没有消失，它还有可能持续执行一些任务，不断消耗系统资源。而且，如果任务涉及到下载，那么可能会更糟。。
+
+那么如何解决呢？
+
+我觉得文章里举的方法简直脱裤子放屁，所以就不列出来了。直接将 `target:self` 设置成 `target:weakSelf` 不就行了？
+
 
 
 
