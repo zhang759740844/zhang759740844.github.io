@@ -118,5 +118,124 @@ image和title默认image在左，title紧贴在其右边。不过这个位置其
 
 而在横轴方面，开始时，**左边距+右边距+图片宽度<button宽度**。图片只会平移直到边距增加到使等式相等才会进行压缩。
 
+## UIControl
+### 概览
+`UIControl` 是控件类的基类，它是一个抽象基类，我们不能直接使用 `UIControl` 类来实例化控件，它只是为控件子类定义一些通用的接口，并提供一些基础实现，以在事件发生时，预处理这些消息并将它们发送到指定目标对象上。
+![UIControl](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/uibutton_1.png?raw=true)
+
+### Target-Action机制
+Target-action 是一种设计模式，直译过来就是”目标-行为”。当我们通过代码为一个按钮添加一个点击事件时，通常是如下处理：
+
+```objc
+[button addTarget:self action:@selector(tapButton:) forControlEvents:UIControlEventTouchUpInside];
+```
+
+也就是说，当按钮的点击事件发生时，会将消息发送到 `target`(此处即为 `self` 对象)，并由 `target` 对象的 `tapButton:` 方法来处理相应的事件。因此，Target-Action 机制由两部分组成：即目标对象和行为 `Selector`。目标对象指定最终处理事件的对象，而行为 `Selector` 则是处理事件的方法。
+
+我们先来看看 UIControl 为我们提供了哪些自定义跟踪行为的方法:
+```objc
+- (BOOL)beginTrackingWithTouch:(UITouch *)touch withEvent:(UIEvent *)event
+- (BOOL)continueTrackingWithTouch:(UITouch *)touch withEvent:(UIEvent *)event
+- (void)endTrackingWithTouch:(UITouch *)touch withEvent:(UIEvent *)event
+- (void)cancelTrackingWithEvent:(UIEvent *)event
+```
+
+这四个方法分别对应的时跟踪开始、移动、结束、取消四种状态。跟 `UIResponse` 提供的四个事件跟踪方法是不是挺像的？我们来看看 `UIResponse` 的四个方法：
+
+```objc
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
+- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
+- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event
+```
+
+上面两组方法的参数基本相同，只不过 `UIControl` 的是针对单点触摸，而 `UIResponse` 可能是多点触摸。另外，返回值也是大同小异。由于 `UIControl` 本身是视图，所以它实际上也继承了 `UIResponse` 的这四个方法。如果测试一下，我们会发现**在针对控件的触摸事件发生时，这两组方法都会被调用，而且互不干涉。**
+
+对于一个给定的事件，`UIControl` 会调用 `sendAction:to:forEvent:` 来将行为消息转发到 `UIApplication`对象，再由 `UIApplication` 对象调用其 `sendAction:to:fromSender:forEvent:` 方法来将消息分发到指定的 `target` 上。而如果子类想监控或修改这种行为的话，则可以重写这个方法:
+
+```objc
+// ImageControl.m
+- (void)sendAction:(SEL)action to:(id)target forEvent:(UIEvent *)event {
+  // 将事件传递到对象本身来处理
+    [super sendAction:@selector(handleAction:) to:self forEvent:event];
+}
+ 
+- (void)handleAction:(id)sender {
+ 
+    NSLog(@"handle Action");
+}
+ 
+// ViewController.m
+ 
+- (void)viewDidLoad {
+    [super viewDidLoad];
+ 
+    self.view.backgroundColor = [UIColor whiteColor];
+ 
+    ImageControl *control = [[ImageControl alloc] initWithFrame:(CGRect){50.0f, 100.0f, 200.0f, 300.0f} title:@"This is a demo" image:[UIImage imageNamed:@"demo"]];
+    // ...
+ 
+    [control addTarget:self action:@selector(tapImageControl:) forControlEvents:UIControlEventTouchUpInside];
+}
+- (void)tapImageControl:(id)sender {
+ 
+    NSLog(@"sender = %@", sender);
+}
+```
+
+由于我们重写了 `sendAction:to:forEvent:` 方法，所以最后处理事件的 `Selector` 是 `ImageControl的handleAction:` 方法，而不是 `ViewController` 的 `tapImageControl:` 方法。
+
+### Target-Action的管理
+为一个控件对象添加、删除Target-Action的操作我们都已经很熟悉了，主要使用的是以下两个方法：
+```objc
+// 添加
+- (void)addTarget:(id)target action:(SEL)action forControlEvents:(UIControlEvents)controlEvents
+ 
+- (void)removeTarget:(id)target action:(SEL)action forControlEvents:(UIControlEvents)controlEvents
+```
+
+如果想获取控件对象所有相关的 `target` 对象，则可以调用 `allTargets` 方法，该方法返回一个集合。集合中可能包含 `NSNull` 对象，表示至少有一个 `nil` 目标对象。
+
+而如果想获取某个 `target` 对象及事件相关的所有 `action`，则可以调用 `actionsForTarget:forControlEvent:` 方法。返回一个可变数组。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 就是这样~~O(∩_∩)O~~
