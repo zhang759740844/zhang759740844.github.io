@@ -734,7 +734,43 @@ xiaoming.age(); // 25
 getAge.apply(xiaoming, []); // 25, this指向xiaoming, 参数为空
 ```
 
-另一个与`apply()`类似的方法是`call()`，唯一区别是：
+再举一个例子：
+
+```javascript
+var numbers = {  
+   numberA: 5,
+   numberB: 10,
+   sum: function() {
+     console.log(this === numbers); // => true
+     function calculate() {
+       // this is window or undefined in strict mode
+       console.log(this === numbers); // => false
+       return this.numberA + this.numberB;
+     }
+     return calculate();
+   }
+};
+numbers.sum(); // => NaN or throws TypeError in strict mode  
+
+var numbers = {  
+   numberA: 5,
+   numberB: 10,
+   sum: function() {
+     console.log(this === numbers); // => true
+     function calculate() {
+       console.log(this === numbers); // => true
+       return this.numberA + this.numberB;
+     }
+     // use .call() method to modify the context
+     return calculate.call(this);
+   }
+};
+numbers.sum(); // => 15
+
+```
+
+
+上面的`call()`与`apply()`是类似的方法，唯一区别是：
 - `apply()`把参数打包成`Array`再传入；
 - `call()`把参数按顺序传入。 
 
@@ -744,6 +780,28 @@ Math.max.apply(null, [3, 5, 4]); // 5
 Math.max.call(null, 3, 5, 4); // 5
 ```
 对普通函数调用，我们通常把this绑定为null。
+
+#### .bind()
+
+对比方法 `.apply()` 和 `.call()`，它俩都立即执行了函数，而 `.bind()` 函数返回了一个新方法，绑定了预先指定好的 `this` ，并可以延后调用。`.bind()` 方法的作用是创建一个新的函数，执行时的上下文环境为 `.bind()` 传递的第一个参数，它允许创建预先设置好 `this` 的函数。
+
+```javascript
+var numbers = {  
+  array: [3, 5, 10],
+  getNumbers: function() {
+    return this.array;    
+  }
+};
+// Create a bound function
+var boundGetNumbers = numbers.getNumbers.bind(numbers);  
+boundGetNumbers(); // => [3, 5, 10]  
+// Extract method from object
+var simpleGetNumbers = numbers.getNumbers;  
+simpleGetNumbers(); // => undefined or throws an error in strict mode  
+```
+
+使用 `.bind()` 时应该注意，`.bind()` 创建了一个永恒的上下文链并不可修改。一个绑定函数即使使用 `.call()` 或者 `.apply()`传入其他不同的上下文环境，也不会更改它之前连接的上下文环境，重新绑定也不会起任何作用。
+
 
 #### 装饰器
 利用`apply()`，我们还可以动态改变函数的行为。
@@ -968,7 +1026,7 @@ function (x) {
 ```
 语法糖，类似于python中的lambda函数
 
-当然，箭头函数还是有点用处的，由于是es6的新特性，箭头函数内部的this是词法作用域，由上下文确定。
+当然，箭头函数还是有点用处的，由于是es6的新特性，**箭头函数内部的this是词法作用域**，由上下文确定。
 试做比较：
 ```
 //由于JavaScript函数对this绑定的错误处理，下面的例子无法得到预期结果
@@ -993,8 +1051,43 @@ var obj = {
 };
 obj.getAge(); // 25
 ```
-如果使用箭头函数,以前`var that = this;`这种写法就不需要了。
+如果使用箭头函数,以前 `var that = this;` 以及 `.apply()` 和 `.call()` 这种写法就不需要了。
 
+箭头函数并不创建它自身执行的上下文，使得 `this` 取决于它在定义时的外部函数。**箭头函数一次绑定上下文后便不可更改，即使使用了上下文更改的方法**：
+
+```javascript
+    var numbers = [1, 2];  
+    (function() {  
+      var get = () => {
+        console.log(this === numbers); // => true
+        return this;
+      };
+      console.log(this === numbers); // => true
+      get(); // => [1, 2]
+      // 箭头函数使用 .apply() 和 .call()
+      get.call([0]);  // => [1, 2]
+      get.apply([0]); // => [1, 2]
+      // Bind
+      get.bind([0])(); // => [1, 2]
+    }).call(numbers);
+```
+
+这是因为箭头函数拥有静态的上下文环境，不会因为不同的调用而改变。但是要注意：
+
+```javascript
+	function Period (hours, minutes) {  
+      this.hours = hours;
+      this.minutes = minutes;
+    }
+    Period.prototype.format = () => {  
+      console.log(this === window); // => true
+      return this.hours + ' hours and ' + this.minutes + ' minutes';
+    };
+    var walkPeriod = new Period(2, 30);  
+    walkPeriod.format(); // => 'undefined hours and undefined minutes' 
+```
+
+注意这里的 `this === window` 返回的是 `true`。
 
 ### generator
 generator（生成器）是ES6标准引入的新的数据类型，类似于Python的generator的概念和语法。一个generator看上去像一个函数，但可以返回多次。
