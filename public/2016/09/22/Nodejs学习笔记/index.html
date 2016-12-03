@@ -90,7 +90,7 @@
 <meta property="og:url" content="http://zhang759740844.github.io/2016/09/22/Nodejs学习笔记/index.html">
 <meta property="og:site_name" content="Zachary's blog">
 <meta property="og:description" content="本篇是NodeJs的学习笔记">
-<meta property="og:updated_time" content="2016-10-08T01:38:40.000Z">
+<meta property="og:updated_time" content="2016-11-26T15:32:23.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="NodeJs学习笔记">
 <meta name="twitter:description" content="本篇是NodeJs的学习笔记">
@@ -340,6 +340,10 @@
       
         <p>本篇是NodeJs的学习笔记</p>
 <a id="more"></a>
+<h2 id="单线程"><a href="#单线程" class="headerlink" title="单线程"></a>单线程</h2><p>node 中，所有的任务都<strong>在一个线程中完成(I/O等除外)</strong>，在 node.js 执行的时候维护着一个事件队列；程序在执行时进入<strong>事件循环</strong>等待下一个事件到来，每个异步 I/O 请求完成后都会被推送到事件队列中的等待执行。</p>
+<p>优势是避免了频繁的切换线程带来的消耗，缺点是面对 cpu 密集型模型(比如 while 循环)，就会造成阻塞。</p>
+<p>所谓事件循环是指node.js会把所有的异步操作使用事件机制解决，有个线程在不断地循环检测事件队列。<br>node.js中所有的逻辑都是事件的回调函数，所以node.js始终在事件循环中，程序入口就是事件循环第一个事件的回调函数。事件的回调函数中可能会发出I/O请求或直接发射（emit）事件，执行完毕后返回事件循环。事件循环会检查事件队列中有没有未处理的事件，直到程序结束。node.js的事件循环对开发者不可见，由libev库实现，libev不断检查是否有活动的、可供检测的事件监听器，直到检查不到时才退出事件循环，程序结束。</p>
+<p><a href="http://blog.csdn.net/leftfist/article/details/41891407" target="_blank" rel="external">Node.js机制及原理理解初步</a></p>
 <h2 id="模块"><a href="#模块" class="headerlink" title="模块"></a>模块</h2><h3 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h3><p>模块化的好处不多说，下面看看Node中如何模块化.我们编写了一个<code>hello.js</code>文件，这个<code>hello.js</code>文件就是一个模块，模块的名字就是文件名（去掉<code>.js</code>后缀），所以<code>hello.js</code>文件就是名为<code>hello</code>的模块:</p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> s = <span class="string">'Hello'</span>;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">greet</span>(<span class="params">name</span>) </span>&#123;</div><div class="line">    <span class="built_in">console</span>.log(s + <span class="string">', '</span> + name + <span class="string">'!'</span>);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="built_in">module</span>.exports = greet;</div></pre></td></tr></table></figure>
 <p>上面定义了一个函数<code>greet()</code>，<code>module.exports = greet</code>的意思是，把函数greet作为模块的输出暴露出去，这样其他模块就可以使用greet函数了。</p>
@@ -518,7 +522,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">50</span>
+              <span class="site-state-item-count">52</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -526,7 +530,7 @@
           
             <div class="site-state-item site-state-categories">
               <a href="/categories">
-                <span class="site-state-item-count">6</span>
+                <span class="site-state-item-count">7</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -535,7 +539,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">19</span>
+                <span class="site-state-item-count">20</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
@@ -584,7 +588,7 @@
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#模块"><span class="nav-number">1.</span> <span class="nav-text">模块</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#实现"><span class="nav-number">1.1.</span> <span class="nav-text">实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#原理"><span class="nav-number">1.2.</span> <span class="nav-text">原理</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#基本模块"><span class="nav-number">2.</span> <span class="nav-text">基本模块</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#基本模块-1"><span class="nav-number">2.1.</span> <span class="nav-text">基本模块</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#global"><span class="nav-number">2.1.1.</span> <span class="nav-text">global</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#process"><span class="nav-number">2.1.2.</span> <span class="nav-text">process</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#判断JavaScript执行环境"><span class="nav-number">2.1.3.</span> <span class="nav-text">判断JavaScript执行环境</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#fs"><span class="nav-number">2.2.</span> <span class="nav-text">fs</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#异步读取文件"><span class="nav-number">2.2.1.</span> <span class="nav-text">异步读取文件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#同步读取文件"><span class="nav-number">2.2.2.</span> <span class="nav-text">同步读取文件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#写文件"><span class="nav-number">2.2.3.</span> <span class="nav-text">写文件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#stat"><span class="nav-number">2.2.4.</span> <span class="nav-text">stat</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#同步还是异步"><span class="nav-number">2.2.5.</span> <span class="nav-text">同步还是异步</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#stream"><span class="nav-number">2.3.</span> <span class="nav-text">stream</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#流读取文件"><span class="nav-number">2.3.1.</span> <span class="nav-text">流读取文件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#流写入文件"><span class="nav-number">2.3.2.</span> <span class="nav-text">流写入文件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#pipe"><span class="nav-number">2.3.3.</span> <span class="nav-text">pipe</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#http"><span class="nav-number">2.4.</span> <span class="nav-text">http</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Http服务器"><span class="nav-number">2.4.1.</span> <span class="nav-text">Http服务器</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#文件服务器"><span class="nav-number">2.4.2.</span> <span class="nav-text">文件服务器</span></a></li></ol></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#单线程"><span class="nav-number">1.</span> <span class="nav-text">单线程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#模块"><span class="nav-number">2.</span> <span class="nav-text">模块</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#实现"><span class="nav-number">2.1.</span> <span class="nav-text">实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#原理"><span class="nav-number">2.2.</span> <span class="nav-text">原理</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#基本模块"><span class="nav-number">3.</span> <span class="nav-text">基本模块</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#基本模块-1"><span class="nav-number">3.1.</span> <span class="nav-text">基本模块</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#global"><span class="nav-number">3.1.1.</span> <span class="nav-text">global</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#process"><span class="nav-number">3.1.2.</span> <span class="nav-text">process</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#判断JavaScript执行环境"><span class="nav-number">3.1.3.</span> <span class="nav-text">判断JavaScript执行环境</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#fs"><span class="nav-number">3.2.</span> <span class="nav-text">fs</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#异步读取文件"><span class="nav-number">3.2.1.</span> <span class="nav-text">异步读取文件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#同步读取文件"><span class="nav-number">3.2.2.</span> <span class="nav-text">同步读取文件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#写文件"><span class="nav-number">3.2.3.</span> <span class="nav-text">写文件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#stat"><span class="nav-number">3.2.4.</span> <span class="nav-text">stat</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#同步还是异步"><span class="nav-number">3.2.5.</span> <span class="nav-text">同步还是异步</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#stream"><span class="nav-number">3.3.</span> <span class="nav-text">stream</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#流读取文件"><span class="nav-number">3.3.1.</span> <span class="nav-text">流读取文件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#流写入文件"><span class="nav-number">3.3.2.</span> <span class="nav-text">流写入文件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#pipe"><span class="nav-number">3.3.3.</span> <span class="nav-text">pipe</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#http"><span class="nav-number">3.4.</span> <span class="nav-text">http</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Http服务器"><span class="nav-number">3.4.1.</span> <span class="nav-text">Http服务器</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#文件服务器"><span class="nav-number">3.4.2.</span> <span class="nav-text">文件服务器</span></a></li></ol></li></ol></li></ol></div>
             
           </div>
         </section>
