@@ -68,7 +68,7 @@
 <link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="NSNotification," />
+  <meta name="keywords" content="keep moving" />
 
 
 
@@ -84,16 +84,15 @@
 
 
 
-<meta name="description" content="本篇是对ios的通知使用方法的一个简单罗列。">
-<meta property="og:type" content="article">
-<meta property="og:title" content="NSNotification的使用">
-<meta property="og:url" content="http://zhang759740844.github.io/2016/09/13/NSNotification基本使用/index.html">
+<meta name="description" content="Less is more">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Zachary's blog">
+<meta property="og:url" content="http://zhang759740844.github.io/archives/2016/12/index.html">
 <meta property="og:site_name" content="Zachary's blog">
-<meta property="og:description" content="本篇是对ios的通知使用方法的一个简单罗列。">
-<meta property="og:updated_time" content="2016-12-03T08:44:27.000Z">
+<meta property="og:description" content="Less is more">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="NSNotification的使用">
-<meta name="twitter:description" content="本篇是对ios的通知使用方法的一个简单罗列。">
+<meta name="twitter:title" content="Zachary's blog">
+<meta name="twitter:description" content="Less is more">
 
 
 
@@ -114,9 +113,9 @@
 
 
 
-  <link rel="canonical" href="http://zhang759740844.github.io/2016/09/13/NSNotification基本使用/"/>
+  <link rel="canonical" href="http://zhang759740844.github.io/archives/2016/12/"/>
 
-  <title> NSNotification的使用 | Zachary's blog </title>
+  <title> 归档 | Zachary's blog </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -137,7 +136,7 @@
     
   
 
-  <div class="container one-collumn sidebar-position-left page-post-detail ">
+  <div class="container one-collumn sidebar-position-left  page-archive  ">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -258,167 +257,65 @@
           <div id="content" class="content">
             
 
-  <div id="posts" class="posts-expand">
+  <section id="posts" class="posts-collapse">
+    <span class="archive-move-on"></span>
+
+    <span class="archive-page-counter">
+      
+      
+       
+        
+      好! 目前共计 53 篇日志。 继续努力。
+    </span>
+
     
 
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                NSNotification的使用
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-09-13T14:07:12+08:00" content="2016-09-13">
-              2016-09-13
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/iOS/" itemprop="url" rel="index">
-                    <span itemprop="name">iOS</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
+      
       
       
 
-      
-        <p>本篇是对ios的通知使用方法的一个简单罗列。</p>
-<a id="more"></a>
-<h2 id="NSNotificationCenter"><a href="#NSNotificationCenter" class="headerlink" title="NSNotificationCenter"></a>NSNotificationCenter</h2><p><code>NSNotificationCenter</code>就是一个消息通知机制，类似广播。观察者只需要向消息中心注册感兴趣的东西，当有地方发出这个消息的时候，通知中心会发送给注册这个消息的对象。这样也起到了多个对象之间解耦的作用。苹果给我们封装了这个<code>NSNotificationCenter</code>，让我们可以很方便的进行通知的注册和移除。</p>
-<h2 id="注册"><a href="#注册" class="headerlink" title="注册"></a>注册</h2><h3 id="addObserver-selector-name-object"><a href="#addObserver-selector-name-object" class="headerlink" title="addObserver:selector:name:object:"></a>addObserver:selector:name:object:</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">[[<span class="built_in">NSNotificationCenter</span> defaultCenter] addObserver:<span class="keyword">self</span> selector:<span class="keyword">@selector</span>(test) name:<span class="string">@"test"</span> object:<span class="literal">nil</span>];</div></pre></td></tr></table></figure>
-<p>参数：</p>
-<ul>
-<li><code>addObserver</code>:貌似都是<code>controller</code>因为还需要<code>selector</code>来执行</li>
-<li><code>name</code>:通知名。当发送该通知名的通知是，观察者收到消息。</li>
-<li><code>object</code>:缩小接受通知的范围，只接受相对应的<code>object</code>对象发来的通知。<code>nil</code>则全部接收。</li>
-</ul>
-<h3 id="addObserverForName-object-queue-usingBlock"><a href="#addObserverForName-object-queue-usingBlock" class="headerlink" title="addObserverForName:object:queue:usingBlock:"></a>addObserverForName:object:queue:usingBlock:</h3><p><code>NSNotificationCenter</code>消息的接受线程是基于发送消息的线程的,也就是<strong>同步</strong>的，因此，有时候，你发送的消息可能不在主线程，而大家都知道操作UI必须在主线程，不然会出现不响应的情况。所以，在你收到消息通知的时候，注意选择你要执行的线程。<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">id</span> observer = [[<span class="built_in">NSNotificationCenter</span> defaultCenter] addObserverForName:notification object:<span class="literal">nil</span> queue:[<span class="built_in">NSOperationQueue</span> mainQueue] usingBlock:^()&#123;...&#125;];</div></pre></td></tr></table></figure></p>
-<p>参数：</p>
-<ul>
-<li><code>queue</code>:<code>block</code>执行所在的线程。如果是<code>nil</code>那么就在当前线程(posting thread)</li>
-<li><code>block</code>:该种方式不用<code>selector</code>而使用<code>block</code>回调。</li>
-</ul>
-<h2 id="删除"><a href="#删除" class="headerlink" title="删除"></a>删除</h2><p>只要往<code>NSNotificationCenter</code>注册了，就必须有<code>remove</code>的存在。</p>
-<h3 id="removeObserver"><a href="#removeObserver" class="headerlink" title="removeObserver:"></a>removeObserver:</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)removeObserver:(<span class="keyword">id</span>)notificationObserver</div></pre></td></tr></table></figure>
-<p>对应<code>addObserverForName</code>方式，直接把上面的<code>id observer</code>作为参数传入即可。<br>对应<code>addObserver</code>方式，删除<code>controller</code>中全部通知.</p>
-<h3 id="removeObserver-name-object"><a href="#removeObserver-name-object" class="headerlink" title="removeObserver:name:object:"></a>removeObserver:name:object:</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">[[<span class="built_in">NSNotificationCenter</span> defaultCenter] removeObserver:<span class="keyword">self</span> name:NotificationCitySelect object:<span class="literal">nil</span>]</div></pre></td></tr></table></figure>
-<p>删除指定<code>name</code>的通知。</p>
-<h2 id="发送"><a href="#发送" class="headerlink" title="发送"></a>发送</h2><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">[[<span class="built_in">NSNotificationCenter</span> defaultCenter] postNotificationName:NotificationCitySelectChanged object:@&#123;NotificationCitySelect_ObjectLocationChange:@(<span class="literal">YES</span>)&#125;]</div></pre></td></tr></table></figure>
-<p>发送指定<code>objcet</code>的通知，只有注册时注册了该对象的通知才可以接收。</p>
-
-      
-    </div>
-
-    <div>
       
         
-
-      
-    </div>
-
-    <div>
-      
-        
-
-      
-    </div>
-
-    <footer class="post-footer">
-      
-        <div class="post-tags">
-          
-            <a href="/tag/NSNotification/" rel="tag">#NSNotification</a>
-          
+        <div class="collection-title">
+          <h2 class="archive-year motion-element" id="archive-year-2016">2016</h2>
         </div>
       
-
-      
-        <div class="post-nav">
-          <div class="post-nav-next post-nav-item">
-            
-              <a href="/2016/09/12/UILabel的高度计算/" rel="next" title="UILabel高度控制">
-                <i class="fa fa-chevron-left"></i> UILabel高度控制
-              </a>
-            
-          </div>
-
-          <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2016/09/18/Scrollview使用详解/" rel="prev" title="UIScrollView详细介绍">
-                UIScrollView详细介绍 <i class="fa fa-chevron-right"></i>
-              </a>
-            
-          </div>
-        </div>
       
 
       
-      
-    </footer>
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+    <header class="post-header">
+
+      <h1 class="post-title">
+        
+            <a class="post-title-link" href="/2016/12/03/hexo爬过的坑/" itemprop="url">
+              
+                <span itemprop="name">hexo 配置遇到的一些坑</span>
+              
+            </a>
+        
+      </h1>
+
+      <div class="post-meta">
+        <time class="post-time" itemprop="dateCreated"
+              datetime="2016-12-03T14:07:12+08:00"
+              content="2016-12-03" >
+          12-03
+        </time>
+      </div>
+
+    </header>
   </article>
 
 
 
-    <div class="post-spread">
-      
-    </div>
-  </div>
+    
+
+  </section>
+
+  
+
 
 
           </div>
@@ -426,10 +323,6 @@
 
 
           
-  <div class="comments" id="comments">
-    
-  </div>
-
 
         </div>
         
@@ -449,17 +342,8 @@
       
 
       
-        <ul class="sidebar-nav motion-element">
-          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
-            文章目录
-          </li>
-          <li class="sidebar-nav-overview" data-target="site-overview">
-            站点概览
-          </li>
-        </ul>
-      
 
-      <section class="site-overview sidebar-panel ">
+      <section class="site-overview sidebar-panel  sidebar-panel-active ">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           <img class="site-author-image" itemprop="image"
                src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/author.png?raw=true"
@@ -529,17 +413,6 @@
 
       </section>
 
-      
-        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
-          <div class="post-toc">
-            
-              
-            
-            
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#NSNotificationCenter"><span class="nav-number">1.</span> <span class="nav-text">NSNotificationCenter</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#注册"><span class="nav-number">2.</span> <span class="nav-text">注册</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#addObserver-selector-name-object"><span class="nav-number">2.1.</span> <span class="nav-text">addObserver:selector:name:object:</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#addObserverForName-object-queue-usingBlock"><span class="nav-number">2.2.</span> <span class="nav-text">addObserverForName:object:queue:usingBlock:</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#删除"><span class="nav-number">3.</span> <span class="nav-text">删除</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#removeObserver"><span class="nav-number">3.1.</span> <span class="nav-text">removeObserver:</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#removeObserver-name-object"><span class="nav-number">3.2.</span> <span class="nav-text">removeObserver:name:object:</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#发送"><span class="nav-number">4.</span> <span class="nav-text">发送</span></a></li></ol></div>
-            
-          </div>
-        </section>
       
 
     </div>
@@ -636,9 +509,11 @@
   
 
   
-  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
-<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
-
+  
+    <script type="text/javascript" id="motion.page.archive">
+      $('.archive-year').velocity('transition.slideLeftIn');
+    </script>
+  
 
 
   

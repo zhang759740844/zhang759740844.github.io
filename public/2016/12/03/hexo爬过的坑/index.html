@@ -68,7 +68,7 @@
 <link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="NSNotification," />
+  <meta name="keywords" content="Hexo," />
 
 
 
@@ -84,16 +84,16 @@
 
 
 
-<meta name="description" content="本篇是对ios的通知使用方法的一个简单罗列。">
+<meta name="description" content="配置个人博客有时候是一件很蛋疼的事情，经常会出现一些奇奇怪怪的问题。这里我就将把我填上的一些坑总结一下。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="NSNotification的使用">
-<meta property="og:url" content="http://zhang759740844.github.io/2016/09/13/NSNotification基本使用/index.html">
+<meta property="og:title" content="hexo 配置遇到的一些坑">
+<meta property="og:url" content="http://zhang759740844.github.io/2016/12/03/hexo爬过的坑/index.html">
 <meta property="og:site_name" content="Zachary's blog">
-<meta property="og:description" content="本篇是对ios的通知使用方法的一个简单罗列。">
-<meta property="og:updated_time" content="2016-12-03T08:44:27.000Z">
+<meta property="og:description" content="配置个人博客有时候是一件很蛋疼的事情，经常会出现一些奇奇怪怪的问题。这里我就将把我填上的一些坑总结一下。">
+<meta property="og:updated_time" content="2016-12-03T09:28:32.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="NSNotification的使用">
-<meta name="twitter:description" content="本篇是对ios的通知使用方法的一个简单罗列。">
+<meta name="twitter:title" content="hexo 配置遇到的一些坑">
+<meta name="twitter:description" content="配置个人博客有时候是一件很蛋疼的事情，经常会出现一些奇奇怪怪的问题。这里我就将把我填上的一些坑总结一下。">
 
 
 
@@ -114,9 +114,9 @@
 
 
 
-  <link rel="canonical" href="http://zhang759740844.github.io/2016/09/13/NSNotification基本使用/"/>
+  <link rel="canonical" href="http://zhang759740844.github.io/2016/12/03/hexo爬过的坑/"/>
 
-  <title> NSNotification的使用 | Zachary's blog </title>
+  <title> hexo 配置遇到的一些坑 | Zachary's blog </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -279,7 +279,7 @@
             
             
               
-                NSNotification的使用
+                hexo 配置遇到的一些坑
               
             
           </h1>
@@ -291,8 +291,8 @@
               <i class="fa fa-calendar-o"></i>
             </span>
             <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-09-13T14:07:12+08:00" content="2016-09-13">
-              2016-09-13
+            <time itemprop="dateCreated" datetime="2016-12-03T14:07:12+08:00" content="2016-12-03">
+              2016-12-03
             </time>
           </span>
 
@@ -305,8 +305,8 @@
               <span class="post-meta-item-text">分类于</span>
               
                 <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/iOS/" itemprop="url" rel="index">
-                    <span itemprop="name">iOS</span>
+                  <a href="/categories/Git/" itemprop="url" rel="index">
+                    <span itemprop="name">Git</span>
                   </a>
                 </span>
 
@@ -338,29 +338,16 @@
       
 
       
-        <p>本篇是对ios的通知使用方法的一个简单罗列。</p>
+        <p>配置个人博客有时候是一件很蛋疼的事情，经常会出现一些奇奇怪怪的问题。这里我就将把我填上的一些坑总结一下。</p>
 <a id="more"></a>
-<h2 id="NSNotificationCenter"><a href="#NSNotificationCenter" class="headerlink" title="NSNotificationCenter"></a>NSNotificationCenter</h2><p><code>NSNotificationCenter</code>就是一个消息通知机制，类似广播。观察者只需要向消息中心注册感兴趣的东西，当有地方发出这个消息的时候，通知中心会发送给注册这个消息的对象。这样也起到了多个对象之间解耦的作用。苹果给我们封装了这个<code>NSNotificationCenter</code>，让我们可以很方便的进行通知的注册和移除。</p>
-<h2 id="注册"><a href="#注册" class="headerlink" title="注册"></a>注册</h2><h3 id="addObserver-selector-name-object"><a href="#addObserver-selector-name-object" class="headerlink" title="addObserver:selector:name:object:"></a>addObserver:selector:name:object:</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">[[<span class="built_in">NSNotificationCenter</span> defaultCenter] addObserver:<span class="keyword">self</span> selector:<span class="keyword">@selector</span>(test) name:<span class="string">@"test"</span> object:<span class="literal">nil</span>];</div></pre></td></tr></table></figure>
-<p>参数：</p>
-<ul>
-<li><code>addObserver</code>:貌似都是<code>controller</code>因为还需要<code>selector</code>来执行</li>
-<li><code>name</code>:通知名。当发送该通知名的通知是，观察者收到消息。</li>
-<li><code>object</code>:缩小接受通知的范围，只接受相对应的<code>object</code>对象发来的通知。<code>nil</code>则全部接收。</li>
-</ul>
-<h3 id="addObserverForName-object-queue-usingBlock"><a href="#addObserverForName-object-queue-usingBlock" class="headerlink" title="addObserverForName:object:queue:usingBlock:"></a>addObserverForName:object:queue:usingBlock:</h3><p><code>NSNotificationCenter</code>消息的接受线程是基于发送消息的线程的,也就是<strong>同步</strong>的，因此，有时候，你发送的消息可能不在主线程，而大家都知道操作UI必须在主线程，不然会出现不响应的情况。所以，在你收到消息通知的时候，注意选择你要执行的线程。<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">id</span> observer = [[<span class="built_in">NSNotificationCenter</span> defaultCenter] addObserverForName:notification object:<span class="literal">nil</span> queue:[<span class="built_in">NSOperationQueue</span> mainQueue] usingBlock:^()&#123;...&#125;];</div></pre></td></tr></table></figure></p>
-<p>参数：</p>
-<ul>
-<li><code>queue</code>:<code>block</code>执行所在的线程。如果是<code>nil</code>那么就在当前线程(posting thread)</li>
-<li><code>block</code>:该种方式不用<code>selector</code>而使用<code>block</code>回调。</li>
-</ul>
-<h2 id="删除"><a href="#删除" class="headerlink" title="删除"></a>删除</h2><p>只要往<code>NSNotificationCenter</code>注册了，就必须有<code>remove</code>的存在。</p>
-<h3 id="removeObserver"><a href="#removeObserver" class="headerlink" title="removeObserver:"></a>removeObserver:</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)removeObserver:(<span class="keyword">id</span>)notificationObserver</div></pre></td></tr></table></figure>
-<p>对应<code>addObserverForName</code>方式，直接把上面的<code>id observer</code>作为参数传入即可。<br>对应<code>addObserver</code>方式，删除<code>controller</code>中全部通知.</p>
-<h3 id="removeObserver-name-object"><a href="#removeObserver-name-object" class="headerlink" title="removeObserver:name:object:"></a>removeObserver:name:object:</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">[[<span class="built_in">NSNotificationCenter</span> defaultCenter] removeObserver:<span class="keyword">self</span> name:NotificationCitySelect object:<span class="literal">nil</span>]</div></pre></td></tr></table></figure>
-<p>删除指定<code>name</code>的通知。</p>
-<h2 id="发送"><a href="#发送" class="headerlink" title="发送"></a>发送</h2><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">[[<span class="built_in">NSNotificationCenter</span> defaultCenter] postNotificationName:NotificationCitySelectChanged object:@&#123;NotificationCitySelect_ObjectLocationChange:@(<span class="literal">YES</span>)&#125;]</div></pre></td></tr></table></figure>
-<p>发送指定<code>objcet</code>的通知，只有注册时注册了该对象的通知才可以接收。</p>
+<h3 id="next主题空白"><a href="#next主题空白" class="headerlink" title="next主题空白"></a>next主题空白</h3><p>这是16年11月份的问题，突然打开自己的博客发现一片空白，但是在本地 <code>hexo s</code> 就能够显示出来。原本以为是我远端仓库出了问题，就重建了个新的，但是没有效果。很急很难受。网上搜索真的难，以为我不知道有没有人遇到过这样的问题，并且我也不知道该怎么去描述这个出现的问题。不过，几经波折，还是找到了解决的方案。</p>
+<p>因为 Github 在 11月3日的更新中忽略了 <code>venders</code> 和 <code>node_modules</code> 两个文件夹。于是就打不开 <code>venders</code> 目录下的 js 文件了。</p>
+<p>那么如何解决呢？<code>next</code> 的作者推荐我们修改 <code>venders</code> 文件夹名。比如将 <code>source/venders</code> 修改成 <code>source/libs</code>。同时，修改主题下的配置文件 <code>_config.yml</code>,将 <code>_internal: venders</code> 修改成之前修改的名字，如 <code>_internal: libs</code>。</p>
+<p>当然，如果是直接克隆的 <code>next</code> 主题，可以通过 <code>git pull</code> 直接拉取 <code>next</code> 作者的修改。</p>
+<h3 id="缺少-DTraceProviderBindings-模块"><a href="#缺少-DTraceProviderBindings-模块" class="headerlink" title="缺少 DTraceProviderBindings 模块"></a>缺少 DTraceProviderBindings 模块</h3><p>这是在换了 Mac，重新安装 hexo 后，<code>hexo g</code> 时出现的问题。会出现如下 Error 提示：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">&#123; [Error: Cannot find module &apos;./build/Release/DTraceProviderBindings&apos;] code: &apos;MODULE_NOT_FOUND&apos; &#125;</div><div class="line">&#123; [Error: Cannot find module &apos;./build/default/DTraceProviderBindings&apos;] code: &apos;MODULE_NOT_FOUND&apos; &#125;</div><div class="line">&#123; [Error: Cannot find module &apos;./build/Debug/DTraceProviderBindings&apos;] code: &apos;MODULE_NOT_FOUND&apos; &#125;</div></pre></td></tr></table></figure>
+<p>虽然结果上来说并不影响 hexo 的执行，但是每次都提示还是很让人不爽的。于是，搜索了一下，网上确实有很多讨论这个问题的解决方法的。一般比较多的方式是使用 <code>npm install hexo --no-optional</code> 安装 hexo（一般安装还是将 hexo 安装成全局的吧，使用 <code>-g</code> 选项）。</p>
+<p>但是我用了这个方式后，并没有效果，然后又查了几种方式都不行，就很气。然后就看 hexo 的安装文档，突然灵光一闪。因为现在安装 hexo 的方式变成了 <code>npm install hexo-cli -g</code>，那么是不是说原本的  <code>npm install hexo</code> 方式已经被废弃了呢？ 于是我就尝试在终端输入 <code>npm install hexo-cli -g --no-optional</code>。果然就没有这个 Error 了。</p>
 
       
     </div>
@@ -383,7 +370,7 @@
       
         <div class="post-tags">
           
-            <a href="/tag/NSNotification/" rel="tag">#NSNotification</a>
+            <a href="/tag/Hexo/" rel="tag">#Hexo</a>
           
         </div>
       
@@ -392,17 +379,13 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2016/09/12/UILabel的高度计算/" rel="next" title="UILabel高度控制">
-                <i class="fa fa-chevron-left"></i> UILabel高度控制
+              <a href="/2016/11/25/RN使用技巧/" rel="next" title="React-Native 技巧总结">
+                <i class="fa fa-chevron-left"></i> React-Native 技巧总结
               </a>
             
           </div>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2016/09/18/Scrollview使用详解/" rel="prev" title="UIScrollView详细介绍">
-                UIScrollView详细介绍 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -536,7 +519,7 @@
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#NSNotificationCenter"><span class="nav-number">1.</span> <span class="nav-text">NSNotificationCenter</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#注册"><span class="nav-number">2.</span> <span class="nav-text">注册</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#addObserver-selector-name-object"><span class="nav-number">2.1.</span> <span class="nav-text">addObserver:selector:name:object:</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#addObserverForName-object-queue-usingBlock"><span class="nav-number">2.2.</span> <span class="nav-text">addObserverForName:object:queue:usingBlock:</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#删除"><span class="nav-number">3.</span> <span class="nav-text">删除</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#removeObserver"><span class="nav-number">3.1.</span> <span class="nav-text">removeObserver:</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#removeObserver-name-object"><span class="nav-number">3.2.</span> <span class="nav-text">removeObserver:name:object:</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#发送"><span class="nav-number">4.</span> <span class="nav-text">发送</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#next主题空白"><span class="nav-number">1.</span> <span class="nav-text">next主题空白</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#缺少-DTraceProviderBindings-模块"><span class="nav-number">2.</span> <span class="nav-text">缺少 DTraceProviderBindings 模块</span></a></li></ol></div>
             
           </div>
         </section>
