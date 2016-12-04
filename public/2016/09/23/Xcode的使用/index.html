@@ -68,7 +68,7 @@
 <link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="Xcode,Vim," />
+  <meta name="keywords" content="Xcode,Vim,Cocoapods," />
 
 
 
@@ -84,18 +84,18 @@
 
 
 
-<meta name="description" content="XVim是Xcode中支持Vim的插件，尝试安装和使用">
+<meta name="description" content="这里主要总结一下开发 iOS 使用工具上遇到的一些问题。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Xcode插件XVim安装与使用">
-<meta property="og:url" content="http://zhang759740844.github.io/2016/09/23/XVim安装/index.html">
+<meta property="og:title" content="iOS开发工具应用中的坑">
+<meta property="og:url" content="http://zhang759740844.github.io/2016/09/23/Xcode的使用/index.html">
 <meta property="og:site_name" content="Zachary's blog">
-<meta property="og:description" content="XVim是Xcode中支持Vim的插件，尝试安装和使用">
+<meta property="og:description" content="这里主要总结一下开发 iOS 使用工具上遇到的一些问题。">
 <meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/XVim_1.png?raw=true">
 <meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/XVim_2.png?raw=true">
-<meta property="og:updated_time" content="2016-12-03T08:44:27.000Z">
+<meta property="og:updated_time" content="2016-12-04T06:23:27.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Xcode插件XVim安装与使用">
-<meta name="twitter:description" content="XVim是Xcode中支持Vim的插件，尝试安装和使用">
+<meta name="twitter:title" content="iOS开发工具应用中的坑">
+<meta name="twitter:description" content="这里主要总结一下开发 iOS 使用工具上遇到的一些问题。">
 <meta name="twitter:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/XVim_1.png?raw=true">
 
 
@@ -117,9 +117,9 @@
 
 
 
-  <link rel="canonical" href="http://zhang759740844.github.io/2016/09/23/XVim安装/"/>
+  <link rel="canonical" href="http://zhang759740844.github.io/2016/09/23/Xcode的使用/"/>
 
-  <title> Xcode插件XVim安装与使用 | Zachary's blog </title>
+  <title> iOS开发工具应用中的坑 | Zachary's blog </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -282,7 +282,7 @@
             
             
               
-                Xcode插件XVim安装与使用
+                iOS开发工具应用中的坑
               
             
           </h1>
@@ -341,20 +341,38 @@
       
 
       
-        <p>XVim是Xcode中支持Vim的插件，尝试安装和使用</p>
+        <p>这里主要总结一下开发 iOS 使用工具上遇到的一些问题。</p>
 <a id="more"></a>
-<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><p>慕名下载了<a href="https://github.com/XVimProject/XVim" target="_blank" rel="external">Xcode</a>，但是安装起来有点曲折。</p>
-<p>先用SourceTree创建了本地仓库，<code>clone</code>了代码。貌似Xcode8和Xcode7安装起来有点区别。由于我的版本还是7.3.1，就省略了Xcode8的步骤。</p>
+<h2 id="安装-XVim"><a href="#安装-XVim" class="headerlink" title="安装 XVim"></a>安装 XVim</h2><p>慕名下载了<a href="https://github.com/XVimProject/XVim" target="_blank" rel="external">Xcode</a>，但是安装起来有点曲折。</p>
+<p>先用SourceTree创建了本地仓库，<code>clone</code>了代码。貌似Xcode8和Xcode7安装起来有点区别。</p>
+<p>Xcode8 的用户要按照他的方法设置个人证书。主要是因为在 Xcode8 中，出于安全原因，官方已经不支持第三方插件了。想要使用第三方插件，就得开个后门，回到 Xcode7 的安全配置。操作没有歧义，按照教程就可以完成。</p>
 <p>Xcode7不能用最新的版本，需要使用<code>commit</code>在<code>809527b</code>之前的版本。(MD，就不能加个tag!)需要自己创建一个本地branch。</p>
-<p>打开xcode，编译XVim。</p>
-<p>接下来这部最坑，由于没有Linux经验，文档上直接<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ make</div></pre></td></tr></table></figure></p>
-<p>但是没说路径，我也不知道在哪里执行，一直都是报没有<code>makefile</code>的错。而且文档上<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ xcode-select -p</div></pre></td></tr></table></figure></p>
-<p>也误导了我。</p>
-<p>网上搜了半天，google到了(Baidu这个垃圾)，在<code>clone</code>下来的XVim目录中执行，进入目录果然有<code>MakeFile</code>，好的，直接<code>make</code>。</p>
+<p>之后有一步在下载下来的 XVim 文件夹下编译的操作，需要 <code>cd XVim/</code>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ make</div></pre></td></tr></table></figure>
+<p>至于下面这个指令，其实不用太在意:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ xcode-select -p</div></pre></td></tr></table></figure>
+<p>这个指令主要是看看 Xcode 的版本是否指定在 <code>/Applications/Xcode.app/Contents/Developer</code> 目录下，不是的话要手动指定。具体这样是为了什么，我也没认真去搞明白。</p>
 <p>重启xcode，会提示是否使用Xvim，选择<code>load</code>就OK了。</p>
-<h2 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h2><p>除了Vim自身的命令外,XVim还有几个Xcode命令:</p>
+<h3 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h3><p>除了Vim自身的命令外,XVim还有几个Xcode命令:</p>
 <p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/XVim_1.png?raw=true" alt="XVim_1"></p>
 <p>附带Vim使用详解：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/XVim_2.png?raw=true" alt="XVim_2"></p>
+<h2 id="pod-的安装和使用"><a href="#pod-的安装和使用" class="headerlink" title="pod 的安装和使用"></a>pod 的安装和使用</h2><h3 id="安装-cocoapods"><a href="#安装-cocoapods" class="headerlink" title="安装 cocoapods"></a>安装 cocoapods</h3><p>安装 cocoapods 本身并没有难度。只是一点，Ruby 的默认源使用的是cocoapods.org，国内访问这个网址有时候会有问题，网上的一种解决方案是将远端替换成淘宝的。不过好像最近<strong>淘宝的镜像也不能用了</strong>，所以再换一个镜像吧：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">//删除默认源</div><div class="line">$gem sources --remove https://rubygems.org/</div><div class="line">//添加新源</div><div class="line">$gem sources -a http://gems.ruby-china.org/</div><div class="line">//查看</div><div class="line">$ gem sources -l</div></pre></td></tr></table></figure>
+<p>这样再安装一次，就能安装成功了：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo gem install cocoapods</div></pre></td></tr></table></figure>
+<h3 id="pod-install-卡在-Setting-up-CocoaPods-master-repo"><a href="#pod-install-卡在-Setting-up-CocoaPods-master-repo" class="headerlink" title="pod install 卡在 Setting up CocoaPods master repo"></a>pod install 卡在 Setting up CocoaPods master repo</h3><p>安装完 pod 后就可以使用 <code>pod install</code> 安装第三方库了，但是第一次 <code>pod install</code> 的时候会自动从 <code>https://github.com/CocoaPods/Specs</code> 克隆到本地的 <code>.cocoapods</code> 目录下。</p>
+<p>但是往往就会卡在这里，如果网络不畅，极有可能失败。因此，需要换手动克隆的方式。</p>
+<p>首先进入该目录，如果没有，可以手动创建：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">cd ~/.cocoapods/repos</div></pre></td></tr></table></figure>
+<p>克隆一个Specs库：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git clone https://github.com/CocoaPods/Specs</div></pre></td></tr></table></figure></p>
+<p>然后打开目录，我们可以看到这样的目录结构：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">repos</div><div class="line">	Specs</div><div class="line">		CocoaPods-version.yml</div><div class="line">		README.md</div><div class="line">		Specs</div><div class="line">		.git</div></pre></td></tr></table></figure>
+<p>现在将第一个 <code>Specs</code> 文件夹修改为 <code>master</code> 即可完成 <code>Setting up CocoaPods master repo</code> 的操作。</p>
+<p>目录结构为：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">repos</div><div class="line">	master</div><div class="line">		CocoaPods-version.yml</div><div class="line">		README.md</div><div class="line">		Specs</div><div class="line">		.git</div></pre></td></tr></table></figure></p>
+<p>现在可以放心 <code>pod install</code> 了。</p>
+<h3 id="pod-install-卡在-Analyzing-dependencies"><a href="#pod-install-卡在-Analyzing-dependencies" class="headerlink" title="pod install 卡在 Analyzing dependencies"></a>pod install 卡在 Analyzing dependencies</h3><p>原因在于当执行以上两个命令的时候会升级 CocoaPods 的 spec 仓库，加一个参数可以省略这一步，然后速度就会提升不少。加参数的命令如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">pod install --verbose --no-repo-update</div></pre></td></tr></table></figure>
+<p>其中 <code>--verbose</code> 表示显示详情。后面的 <code>--no-repo-update</code> 才是正真起作用的。</p>
 
       
     </div>
@@ -380,6 +398,8 @@
             <a href="/tag/Xcode/" rel="tag">#Xcode</a>
           
             <a href="/tag/Vim/" rel="tag">#Vim</a>
+          
+            <a href="/tag/Cocoapods/" rel="tag">#Cocoapods</a>
           
         </div>
       
@@ -483,7 +503,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">20</span>
+                <span class="site-state-item-count">21</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
@@ -532,7 +552,7 @@
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#安装"><span class="nav-number">1.</span> <span class="nav-text">安装</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用"><span class="nav-number">2.</span> <span class="nav-text">使用</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#安装-XVim"><span class="nav-number">1.</span> <span class="nav-text">安装 XVim</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#使用"><span class="nav-number">1.1.</span> <span class="nav-text">使用</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#pod-的安装和使用"><span class="nav-number">2.</span> <span class="nav-text">pod 的安装和使用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#安装-cocoapods"><span class="nav-number">2.1.</span> <span class="nav-text">安装 cocoapods</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pod-install-卡在-Setting-up-CocoaPods-master-repo"><span class="nav-number">2.2.</span> <span class="nav-text">pod install 卡在 Setting up CocoaPods master repo</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pod-install-卡在-Analyzing-dependencies"><span class="nav-number">2.3.</span> <span class="nav-text">pod install 卡在 Analyzing dependencies</span></a></li></ol></li></ol></div>
             
           </div>
         </section>
