@@ -293,7 +293,11 @@ delete操作可以不在编辑模式的情况下，通过左滑cell直接触发�
 
 就不举例了。同上面一样。
 
+## 小技巧
+### 当cell未能填满tableview时，怎么响应空白部分点击事件
+当 tableview 太大，cell 太少，以至于不能填满tableview的时候，那么空白部分的点击事件该怎么设置呢？只要给 tableview 添加一个 footerview，这个 footerview 的大小是整个 tableview 的大小，然后设置这个 footerview 的点击事件即可。
 
+为什么能这样呢？因为 cell 没有填充满的部分都用 footerview 填充了。
 
 
 

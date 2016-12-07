@@ -1,4 +1,4 @@
-title: React-Native 技巧总结
+title: React-Native 技巧与坑总结
 date: 2016/11/25 10:07:12  
 categories: React-Native
 tags:
@@ -6,7 +6,7 @@ tags:
 
 ---
 
-本文将收集关于 React-Native 的各种技巧，不论是摘录的还是自己遇到的。
+本文将收集关于 React-Native 的各种技巧与坑，不论是摘录的还是自己遇到的。
 
 <!--more-->
 
