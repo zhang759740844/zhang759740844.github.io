@@ -5,6 +5,7 @@ tags:
 	- Xcode
 	- Vim 
 	- Cocoapods
+	- 爬坑
 	
 ---
 
@@ -114,4 +115,9 @@ pod install --verbose --no-repo-update
 
 其中 `--verbose` 表示显示详情。后面的 `--no-repo-update` 才是正真起作用的。
 
+### Xcode报错 code signing is required for product type 'Unit Test Bundle' in SDK 'iOS 10.1'
+在网上下载别人项目后，运不起来，总是报这个错。虽然不知道这个错误最根本的解决办法是什么。但是临时性的解决方法还是有的。做法就是不要 build 项目里面的测试工程。
+
+Edit scheme -> build -> remove xxxtest
+![Xcode报错解决](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/xcode_debug.png?raw=true)
 

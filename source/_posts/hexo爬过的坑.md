@@ -1,7 +1,9 @@
 title: hexo 配置遇到的一些坑
 date: 2016/12/3 14:07:12  
 categories: Git
-tags: [Hexo]
+tags: 
+	- Hexo
+	- 爬坑
 
 ---
 

@@ -3,13 +3,14 @@ date: 2016/11/25 10:07:12
 categories: React-Native
 tags:
 	- React-Native
+	- 爬坑
 
 ---
 
 本文将收集关于 React-Native 的各种技巧与坑，不论是摘录的还是自己遇到的。
 
 <!--more-->
-
+### 关于 import，require的区别
 ### 关于编译时 RCTHTTPRequestHandler.m 不存在的问题
 
 升级了一下 React-Native 的版本后（3.2=>3.8），Xcode 编译的时候出现了 `RCTHTTPRequestHandler.m not found` 的编译错误。原因应该是 `RCTHTTPRequestHandler.m` 在后面的版本变为了 `RCTHTTPRequestHandler.mm`。
