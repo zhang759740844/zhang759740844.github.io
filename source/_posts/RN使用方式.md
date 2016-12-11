@@ -13,10 +13,9 @@ tags:
 `index.ios.js` 作为一个组件的注册集合以及入口，在这里，将所有组件像这样注册。
 
 ```javascript
-// index.ios.js 
 AppRegistry.registerComponent('HelloApp', () => HellodApp);
 AppRegistry.registerComponent('HelloWorldApp', () => HelloWorldApp);
-``` 
+```
 
 ### Props
 #### 简介

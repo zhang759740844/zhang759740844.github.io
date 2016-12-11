@@ -68,7 +68,7 @@
 <link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="学习笔记," />
+  <meta name="keywords" content="keep moving" />
 
 
 
@@ -84,16 +84,15 @@
 
 
 
-<meta name="description" content="本篇简单学习下如何使用 KVO。">
-<meta property="og:type" content="article">
-<meta property="og:title" content="KVO 简介">
-<meta property="og:url" content="http://zhang759740844.github.io/2016/11/17/KVO/index.html">
+<meta name="description" content="Less is more">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Zachary's blog">
+<meta property="og:url" content="http://zhang759740844.github.io/tag/爬坑/index.html">
 <meta property="og:site_name" content="Zachary's blog">
-<meta property="og:description" content="本篇简单学习下如何使用 KVO。">
-<meta property="og:updated_time" content="2016-12-03T08:44:27.000Z">
+<meta property="og:description" content="Less is more">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="KVO 简介">
-<meta name="twitter:description" content="本篇简单学习下如何使用 KVO。">
+<meta name="twitter:title" content="Zachary's blog">
+<meta name="twitter:description" content="Less is more">
 
 
 
@@ -114,9 +113,9 @@
 
 
 
-  <link rel="canonical" href="http://zhang759740844.github.io/2016/11/17/KVO/"/>
+  <link rel="canonical" href="http://zhang759740844.github.io/tag/爬坑/"/>
 
-  <title> KVO 简介 | Zachary's blog </title>
+  <title> 标签: 爬坑 | Zachary's blog </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -137,7 +136,7 @@
     
   
 
-  <div class="container one-collumn sidebar-position-left page-post-detail ">
+  <div class="container one-collumn sidebar-position-left  ">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -258,167 +257,102 @@
           <div id="content" class="content">
             
 
-  <div id="posts" class="posts-expand">
-    
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                KVO 简介
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-11-17T14:07:12+08:00" content="2016-11-17">
-              2016-11-17
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/iOS/" itemprop="url" rel="index">
-                    <span itemprop="name">iOS</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        <p>本篇简单学习下如何使用 KVO。</p>
-<a id="more"></a>
-<h2 id="KVO是什么？"><a href="#KVO是什么？" class="headerlink" title="KVO是什么？"></a>KVO是什么？</h2><p>KVO 是 Object-C 中定义的一个通知机制，其定义了一种对象间监控对方状态的改变，并做出反应的机制。对象可以为自己的属性注册观察者，当这个属性的值发生了改变，系统会对这些注册的观察者做出通知。其用途十分广泛，比方说，你的下载进度条是根据下载百分比决定的，那么，可以通过观察下载百分比的改变，刷新进度条的样式，来直观的反应下载进度等等。 </p>
-<h2 id="KVO的用法"><a href="#KVO的用法" class="headerlink" title="KVO的用法"></a>KVO的用法</h2><h3 id="为对象的属性注册观察者"><a href="#为对象的属性注册观察者" class="headerlink" title="为对象的属性注册观察者"></a>为对象的属性注册观察者</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)addObserver:(<span class="built_in">NSObject</span> *)observer  </div><div class="line">         forKeyPath:(<span class="built_in">NSString</span> *)keyPath  </div><div class="line">            options:(<span class="built_in">NSKeyValueObservingOptions</span>)options  </div><div class="line">            context:(<span class="keyword">void</span> *)context</div></pre></td></tr></table></figure>
-<ul>
-<li>observer: 观察者对象. 其必须实现方法 <code>observeValueForKeyPath:ofObject:change:context:</code>.</li>
-<li>keyPath: 被观察的属性，其不能为 <code>nil</code>.</li>
-<li>options: 设定通知观察者时传递的属性值，是传改变前的呢，还是改变后的，通常设置为 <code>NSKeyValueObservingOptionNew</code>。</li>
-<li>context: 一些其他的需要传递给观察者的上下文信息，通常设置为 <code>nil</code>。</li>
-</ul>
-<h3 id="观察者接收通知"><a href="#观察者接收通知" class="headerlink" title="观察者接收通知"></a>观察者接收通知</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)observeValueForKeyPath:(<span class="built_in">NSString</span> *)keyPath  </div><div class="line">                      ofObject:(<span class="keyword">id</span>)object  </div><div class="line">                        change:(<span class="built_in">NSDictionary</span> *)change  </div><div class="line">                       context:(<span class="keyword">void</span> *)context</div></pre></td></tr></table></figure>
-<ul>
-<li>keyPath: 被观察的属性，其不能为 <code>nil</code>.</li>
-<li>object: 被观察者的对象.</li>
-<li>change: 属性值，根据上面提到的 <code>Options</code> 设置，给出对应的属性值。</li>
-<li>context: 上面传递的 <code>context</code> 对象。</li>
-</ul>
-<h3 id="清除观察者"><a href="#清除观察者" class="headerlink" title="清除观察者"></a>清除观察者</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)removeObserver:(<span class="built_in">NSObject</span> *)anObserver forKeyPath:(<span class="built_in">NSString</span> *)keyPath</div></pre></td></tr></table></figure>
-<h3 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h3><p>使用KVO消息传递机制有两个要求：</p>
-<ol>
-<li>观察者必须知道被观察对象，即在同一作用域。</li>
-<li>观察者还需要知道被观察对象的生命周期，因为在销毁发送者对象之前，需要取消观察者的注册。 </li>
-</ol>
-
-      
+  <div id="posts" class="posts-collapse">
+    <div class="collection-title">
+      <h2 >
+        爬坑
+        <small>标签</small>
+      </h2>
     </div>
 
-    <div>
+    
       
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+    <header class="post-header">
+
+      <h1 class="post-title">
         
-
-      
-    </div>
-
-    <div>
-      
+            <a class="post-title-link" href="/2016/12/03/hexo爬过的坑/" itemprop="url">
+              
+                <span itemprop="name">hexo 配置遇到的一些坑</span>
+              
+            </a>
         
+      </h1>
 
-      
-    </div>
+      <div class="post-meta">
+        <time class="post-time" itemprop="dateCreated"
+              datetime="2016-12-03T14:07:12+08:00"
+              content="2016-12-03" >
+          12-03
+        </time>
+      </div>
 
-    <footer class="post-footer">
-      
-        <div class="post-tags">
-          
-            <a href="/tag/学习笔记/" rel="tag">#学习笔记</a>
-          
-        </div>
-      
-
-      
-        <div class="post-nav">
-          <div class="post-nav-next post-nav-item">
-            
-              <a href="/2016/11/11/Effective_oc2笔记/" rel="next" title="Effective Objective-C 学习笔记">
-                <i class="fa fa-chevron-left"></i> Effective Objective-C 学习笔记
-              </a>
-            
-          </div>
-
-          <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2016/11/25/RN使用方式/" rel="prev" title="React-Native 使用方式">
-                React-Native 使用方式 <i class="fa fa-chevron-right"></i>
-              </a>
-            
-          </div>
-        </div>
-      
-
-      
-      
-    </footer>
+    </header>
   </article>
 
 
-
-    <div class="post-spread">
+    
       
-    </div>
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+    <header class="post-header">
+
+      <h1 class="post-title">
+        
+            <a class="post-title-link" href="/2016/11/25/RN使用技巧/" itemprop="url">
+              
+                <span itemprop="name">React-Native 技巧与坑总结</span>
+              
+            </a>
+        
+      </h1>
+
+      <div class="post-meta">
+        <time class="post-time" itemprop="dateCreated"
+              datetime="2016-11-25T10:07:12+08:00"
+              content="2016-11-25" >
+          11-25
+        </time>
+      </div>
+
+    </header>
+  </article>
+
+
+    
+      
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+    <header class="post-header">
+
+      <h1 class="post-title">
+        
+            <a class="post-title-link" href="/2016/09/23/Xcode的使用/" itemprop="url">
+              
+                <span itemprop="name">iOS开发工具应用中的坑</span>
+              
+            </a>
+        
+      </h1>
+
+      <div class="post-meta">
+        <time class="post-time" itemprop="dateCreated"
+              datetime="2016-09-23T10:07:12+08:00"
+              content="2016-09-23" >
+          09-23
+        </time>
+      </div>
+
+    </header>
+  </article>
+
+
+    
   </div>
+
+  
 
 
           </div>
@@ -426,10 +360,6 @@
 
 
           
-  <div class="comments" id="comments">
-    
-  </div>
-
 
         </div>
         
@@ -449,17 +379,8 @@
       
 
       
-        <ul class="sidebar-nav motion-element">
-          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
-            文章目录
-          </li>
-          <li class="sidebar-nav-overview" data-target="site-overview">
-            站点概览
-          </li>
-        </ul>
-      
 
-      <section class="site-overview sidebar-panel ">
+      <section class="site-overview sidebar-panel  sidebar-panel-active ">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           <img class="site-author-image" itemprop="image"
                src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/author.png?raw=true"
@@ -529,17 +450,6 @@
 
       </section>
 
-      
-        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
-          <div class="post-toc">
-            
-              
-            
-            
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#KVO是什么？"><span class="nav-number">1.</span> <span class="nav-text">KVO是什么？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#KVO的用法"><span class="nav-number">2.</span> <span class="nav-text">KVO的用法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#为对象的属性注册观察者"><span class="nav-number">2.1.</span> <span class="nav-text">为对象的属性注册观察者</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#观察者接收通知"><span class="nav-number">2.2.</span> <span class="nav-text">观察者接收通知</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#清除观察者"><span class="nav-number">2.3.</span> <span class="nav-text">清除观察者</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#注意事项"><span class="nav-number">2.4.</span> <span class="nav-text">注意事项</span></a></li></ol></li></ol></div>
-            
-          </div>
-        </section>
       
 
     </div>
@@ -636,10 +546,6 @@
   
 
   
-  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
-<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
-
-
 
   
 
