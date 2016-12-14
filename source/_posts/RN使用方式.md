@@ -139,6 +139,7 @@ const styles = StyleSheet.create({
 其中 `stretch` 表示拉伸撑满次轴，前提是不设置子控件宽度。
 
 ### 布局样式
+#### 属性
 除了上面说的那些，再摘取一些有用的 `style` 中的属性：
 
 1. `border` 系列:设置边框的宽度，`borderTopWidth`,`borderLeftWidth`...上下左右都可以分别设置。
@@ -148,8 +149,19 @@ const styles = StyleSheet.create({
 5. `margin` 系列:设置子控件到相邻子控件的间隔。
 6. `max`,`min` 系列:设置控件的最大(小)宽度(高度).
 7. `padding` 系列:在父控件内设置，设置子控件的起点。
-8. `position`:分为 `absolute` 绝对，`relative`相对。默认是相对的，如果要使用 `left` 等样式，就要使用绝对布局。
+8. `position`:分为 `absolute` 绝对，`relative`相对。默认是相对的，如果要使用 `left` 等样式，就要使用绝对布局。**绝对布局的子控件的大小不会影响父控件的大小**
 9. `zIndex`: 控制控件的绘制层级，该属性越大，越绘在顶层。
+
+#### 使用
+一般使用方式: `style={{height:xx,width:xx,}}`;
+
+如果有多个对象，需要用数组的方式传入：
+
+```JSX
+style={[{height:xx,width:xx,},{height:yy,wudth:yy,}]}
+```
+
+如果有相同的属性重复赋值，则以后一个覆盖前一个为准。
 
 ### TextInput
 #### 例子
@@ -222,8 +234,10 @@ console.log(...array);
 7. `onChange`:当输入框内容改变时，回调该函数
 8. `onChangeText`:当输入框内容改变时，回调该函数。改变后的文字内容将作为参数传入。
 9. `placeholder`:占位符
-10. `placeholderTextColor`:占位符颜色
+10. `placeholderTextColor`:占位符颜色.(注意，貌似没有 placeholderTextSize 这个属性)
 11. `value`:输入框内显示的值 
+12. `underlineColorAndroid`:这是 android 特有的属性，非常的坑。文档里是这么说的“文本框的下划线颜色”，其实不是这个意思，这个属性设置的是整个文本框的颜色。比如在 iOS 上，直接设置 `backgroundColor='red'` 就能把文本框设成红色，但是 android 不然，在 background 之上还有一层，就是这个 `underlineColorAndroid` 需要将这个也设置成红色，才能正确显示成红色。
+13. 这里还有一个坑点，就是一定一定一定设置 TextInput 的高度。不然即使 TextInput 大小为0，任然会显示 placeholder ，这就会导致一直没有点击效果。所以**一个调试技巧：给控件设置醒目的背景颜色，这样有助于了解控件的布局情况，方便调试。**
 
 #### 方法
 1. `isFocusd()`:判断当前输入框是否获得焦点。
@@ -368,4 +382,19 @@ ListView设计到各种优化，以及各种方法，掌握的不是很好，需
 
 #### 一些方法
 1. listview 只是提供了渲染其中 cell 的功能，默认是 cell 竖着排下来。那么如果要实现成 gridview 之类该怎么做呢？就是给 listview 附上从 scrollview 中继承来的 `contentContainerStyle` 这个 style 用来控制其中子视图的样式，只要在其中将 `flexDirection:‘row’,justifyContent: 'space-around',flexWrap: 'wrap'` 这样一设置。就能达到横排 cell，并且自动换行的效果。
+
+### 网络
+感觉没什么好写的，暂且不表
+
+### navigator
+暂时还是用原生的 navigator，感觉 navigator 不太好用，所以暂且不表。
+
+如果需要使用，可以查看这篇[教程](http://bbs.reactnative.cn/topic/20/新手理解navigator的教程)
+
+###
+
+
+
+
+
 
