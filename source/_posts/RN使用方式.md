@@ -153,7 +153,10 @@ const styles = StyleSheet.create({
 9. `zIndex`: 控制控件的绘制层级，该属性越大，越绘在顶层。
 
 #### 使用
-一般使用方式: `style={{height:xx,width:xx,}}`;
+一般使用方式:
+```JSX
+style={{height:xx,width:xx}}
+```
 
 如果有多个对象，需要用数组的方式传入：
 
