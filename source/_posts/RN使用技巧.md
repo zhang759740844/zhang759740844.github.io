@@ -10,12 +10,32 @@ tags:
 本文将收集关于 React-Native 的各种技巧与坑，不论是摘录的还是自己遇到的。
 
 <!--more-->
-### 关于 import，require的区别
+### 关于 import，require，export，module.exports的区别
+ES6标准发布后，module 成为标准，标准的使用是以 export 指令导出接口，以 import 引入模块，但是在我们一贯的 node 模块中，使用 require 引入模块，使用 module.exports 导出接口。那么在混用的情况下到底有什么异同呢？
+
+#### export,module.exports
+首先要明确一点，现今的所有 class 都会被编译器转化为同名的 function，function 内部通过 babel 提供的方法实现 class 内的各个属性和方法。
+
+- `export xx`导出的都是 {} 括起来的对象。如果是对象，那么自动变为 `{target名:target}` 的形式；如果后面跟的是 function，那么会自动变为：`{function名:function}` 的形式。因此一般不能 export 匿名对象和方法。有一个特殊用法 `export default 对象/方法` 相当于导出了一个别名为 default 的对象/方法 `{default:对象/方法}` 一个文件内，可以使用多次 export，但只能将一个对象/方法设置为 default。
+- `module.exports = xx` 较为直接，赋值的是什么，导出的就是什么。
+
+#### import,require
+- import 一般和 export 一起使用，是一种解构的方式。如：`import a {b,c} from './xx'`，等价于 `import {default as a,b,c} from './xx'`。相当于将 default 导出，并给 default取了个别名 a。
+- require 一般和 module.exports 一起使用，直接将 module.exports 导出的对象赋给接收对象。如：`var a = require('./xx')`。
+#### 混用
+- 如果 import 和 `module.exports = xx` 一起使用，则直接 import。如:`import xx from './xx'`。
+- 如果 require 和 export 一起使用则相当于将 export 生成的导出对象付给接收对象。如：`export default funcA`,导入方式一样，`var a = require('./xx');` 但要这样使用 `a.default();`
+
+
+综上，两种export的方式，对于import都一样，但是对于 require有所不同。[参考链接](http://www.tuicool.com/articles/uuUVBv2)
+
+
+
 ### 关于编译时 RCTHTTPRequestHandler.m 不存在的问题
 
 升级了一下 React-Native 的版本后（3.2=>3.8），Xcode 编译的时候出现了 `RCTHTTPRequestHandler.m not found` 的编译错误。原因应该是 `RCTHTTPRequestHandler.m` 在后面的版本变为了 `RCTHTTPRequestHandler.mm`。
 
-解决方法很简单，在 React-Native 版本升级，即使用 `npm update` 后，需要重新 `pod install` 一遍。因为 React 作为 pod 中的一项，Xcode 是通过 `pod install` 后生成的索引来定位 React 中的各个文件的。只 `npm update` 而不 `pod install`，Xcode 编译的时候通过 3.2 的文件索引，去 3.8 里找文件，就很有可能因为版本变化导致找不到文件。
+解决方法很简单，在 React-Native 版本升级，即使用 `npm update` 后，需要重新 `pod install` 一遍。因为 React 作为 pod 中的一项，Xcode 是通过 `pod install` 后生成的索引来定位 React 中的各个文件的。只 `npm update` 而不 `pod install`，Xcode 编译的时候通过 3.2 的文件索引，去 3.8 里找文件，就很有可能因为版本变化导致找不到文件。 
  
 
 ### TextInput 隐藏键盘
