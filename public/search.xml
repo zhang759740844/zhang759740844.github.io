@@ -24,11 +24,24 @@
       <url>http://zhang759740844.github.io/2016/11/25/RN%E4%BD%BF%E7%94%A8%E6%8A%80%E5%B7%A7/</url>
       <content type="html"><![CDATA[<p>本文将收集关于 React-Native 的各种技巧与坑，不论是摘录的还是自己遇到的。</p>
 <a id="more"></a>
-<h3 id="关于-import，require的区别"><a href="#关于-import，require的区别" class="headerlink" title="关于 import，require的区别"></a>关于 import，require的区别</h3><h3 id="关于编译时-RCTHTTPRequestHandler-m-不存在的问题"><a href="#关于编译时-RCTHTTPRequestHandler-m-不存在的问题" class="headerlink" title="关于编译时 RCTHTTPRequestHandler.m 不存在的问题"></a>关于编译时 RCTHTTPRequestHandler.m 不存在的问题</h3><p>升级了一下 React-Native 的版本后（3.2=&gt;3.8），Xcode 编译的时候出现了 <code>RCTHTTPRequestHandler.m not found</code> 的编译错误。原因应该是 <code>RCTHTTPRequestHandler.m</code> 在后面的版本变为了 <code>RCTHTTPRequestHandler.mm</code>。</p>
-<p>解决方法很简单，在 React-Native 版本升级，即使用 <code>npm update</code> 后，需要重新 <code>pod install</code> 一遍。因为 React 作为 pod 中的一项，Xcode 是通过 <code>pod install</code> 后生成的索引来定位 React 中的各个文件的。只 <code>npm update</code> 而不 <code>pod install</code>，Xcode 编译的时候通过 3.2 的文件索引，去 3.8 里找文件，就很有可能因为版本变化导致找不到文件。</p>
+<h3 id="关于-import，require，export，module-exports的区别"><a href="#关于-import，require，export，module-exports的区别" class="headerlink" title="关于 import，require，export，module.exports的区别"></a>关于 import，require，export，module.exports的区别</h3><p>ES6标准发布后，module 成为标准，标准的使用是以 export 指令导出接口，以 import 引入模块，但是在我们一贯的 node 模块中，使用 require 引入模块，使用 module.exports 导出接口。那么在混用的情况下到底有什么异同呢？</p>
+<h4 id="export-module-exports"><a href="#export-module-exports" class="headerlink" title="export,module.exports"></a>export,module.exports</h4><p>首先要明确一点，现今的所有 class 都会被编译器转化为同名的 function，function 内部通过 babel 提供的方法实现 class 内的各个属性和方法。</p>
+<ul>
+<li><code>export xx</code>导出的都是 {} 括起来的对象。如果是对象，那么自动变为 <code>{target名:target}</code> 的形式；如果后面跟的是 function，那么会自动变为：<code>{function名:function}</code> 的形式。因此一般不能 export 匿名对象和方法。有一个特殊用法 <code>export default 对象/方法</code> 相当于导出了一个别名为 default 的对象/方法 <code>{default:对象/方法}</code> 一个文件内，可以使用多次 export，但只能将一个对象/方法设置为 default。</li>
+<li><code>module.exports = xx</code> 较为直接，赋值的是什么，导出的就是什么。</li>
+</ul>
+<h4 id="import-require"><a href="#import-require" class="headerlink" title="import,require"></a>import,require</h4><ul>
+<li>import 一般和 export 一起使用，是一种解构的方式。如：<code>import a {b,c} from &#39;./xx&#39;</code>，等价于 <code>import {default as a,b,c} from &#39;./xx&#39;</code>。相当于将 default 导出，并给 default取了个别名 a。</li>
+<li>require 一般和 module.exports 一起使用，直接将 module.exports 导出的对象赋给接收对象。如：<code>var a = require(&#39;./xx&#39;)</code>。<h4 id="混用"><a href="#混用" class="headerlink" title="混用"></a>混用</h4></li>
+<li>如果 import 和 <code>module.exports = xx</code> 一起使用，则直接 import。如:<code>import xx from &#39;./xx&#39;</code>。</li>
+<li>如果 require 和 export 一起使用则相当于将 export 生成的导出对象付给接收对象。如：<code>export default funcA</code>,导入方式一样，<code>var a = require(&#39;./xx&#39;);</code> 但要这样使用 <code>a.default();</code></li>
+</ul>
+<p>综上，两种export的方式，对于import都一样，但是对于 require有所不同。<a href="http://www.tuicool.com/articles/uuUVBv2" target="_blank" rel="external">参考链接</a></p>
+<h3 id="关于编译时-RCTHTTPRequestHandler-m-不存在的问题"><a href="#关于编译时-RCTHTTPRequestHandler-m-不存在的问题" class="headerlink" title="关于编译时 RCTHTTPRequestHandler.m 不存在的问题"></a>关于编译时 RCTHTTPRequestHandler.m 不存在的问题</h3><p>升级了一下 React-Native 的版本后（3.2=&gt;3.8），Xcode 编译的时候出现了 <code>RCTHTTPRequestHandler.m not found</code> 的编译错误。原因应该是 <code>RCTHTTPRequestHandler.m</code> 在后面的版本变为了 <code>RCTHTTPRequestHandler.mm</code>。</p>
+<p>解决方法很简单，在 React-Native 版本升级，即使用 <code>npm update</code> 后，需要重新 <code>pod install</code> 一遍。因为 React 作为 pod 中的一项，Xcode 是通过 <code>pod install</code> 后生成的索引来定位 React 中的各个文件的。只 <code>npm update</code> 而不 <code>pod install</code>，Xcode 编译的时候通过 3.2 的文件索引，去 3.8 里找文件，就很有可能因为版本变化导致找不到文件。 </p>
 <h3 id="TextInput-隐藏键盘"><a href="#TextInput-隐藏键盘" class="headerlink" title="TextInput 隐藏键盘"></a>TextInput 隐藏键盘</h3><p>Native 中的 <code>UITextField</code> 可以通过 <code>resignFirstResponder</code> 或者 <code>endEditing</code> 的方式取消第一响应者，从而隐藏虚拟键盘。那么，react 中如何做到隐藏键盘呢？</p>
 <p>可以使用 <code>ScrollView</code> 包装我们的 <code>View</code>。<br><code>ScrollView</code> 可以设置 <code>keyboardDismissMode</code>，<code>keyboardShouldPersistTaps</code> 来控制输入法的行为。</p>
-<figure class="highlight jsx"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">&lt;ScrollView </div><div class="line">		contentContainerStyle=&#123;&#123;flex:<span class="number">1</span>&#125;&#125; <span class="comment">//非常重要，让ScrollView的子元素占满整个区域</span></div><div class="line">     	keyboardDismissMode=<span class="string">'on-drag'</span> <span class="comment">//拖动界面输入法退出</span></div><div class="line">     	keyboardShouldPersistTaps=&#123;<span class="literal">false</span>&#125; <span class="comment">//点击输入法意外的区域，输入法退出</span></div><div class="line">   		&gt;</div><div class="line">....</div><div class="line">&lt;<span class="regexp">/ScrollView&gt;</span></div></pre></td></tr></table></figure>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">&lt;ScrollView 	contentContainerStyle=&#123;&#123;flex:<span class="number">1</span>&#125;<span class="comment">//非常重要，让ScrollView的子元素占满整个区域</span></div><div class="line">				keyboardDismissMode=<span class="string">'on-drag'</span> <span class="comment">//拖动界面输入法退出</span></div><div class="line">				keyboardShouldPersistTaps=&#123;<span class="literal">false</span>&#125; <span class="comment">//点击输入法意外的区域，输入法退出</span></div><div class="line">				&gt;</div><div class="line">....</div><div class="line">&lt;<span class="regexp">/ScrollView&gt;</span></div></pre></td></tr></table></figure>
 <h3 id="生命周期回调函数总结"><a href="#生命周期回调函数总结" class="headerlink" title="生命周期回调函数总结"></a>生命周期回调函数总结</h3><p>所谓生命周期，就是一个对象从开始生成到最后消亡所经历的状态</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">生命周期                   调用次数         能否使用 setSate()</div><div class="line">getDefaultProps           1(全局调用一次)  否</div><div class="line">getInitialState           1              否</div><div class="line">componentWillMount        1              是</div><div class="line">render                    &gt;=1            否</div><div class="line">componentDidMount         1              是</div><div class="line">componentWillReceiveProps &gt;=0            是</div><div class="line">shouldComponentUpdate     &gt;=0            否</div><div class="line">componentWillUpdate       &gt;=0            否</div><div class="line">componentDidUpdate        &gt;=0            否</div><div class="line">componentWillUnmount      1              否</div></pre></td></tr></table></figure>
 <h3 id="如何判断对象是否有某个属性"><a href="#如何判断对象是否有某个属性" class="headerlink" title="如何判断对象是否有某个属性"></a>如何判断对象是否有某个属性</h3><ul>
@@ -1694,6 +1707,20 @@
     </entry>
     
     <entry>
+      <title><![CDATA[IPhone6全屏黑边处理]]></title>
+      <url>http://zhang759740844.github.io/2016/09/05/IPhone6%E5%85%A8%E5%B1%8F%E9%BB%91%E8%BE%B9%E5%A4%84%E7%90%86/</url>
+      <content type="html"><![CDATA[<p>写ios小demo的时候，真机调试出现View不能满屏显示的情况。屏幕上下都有一条粗粗的黑条。</p>
+<a id="more"></a>
+<p>检查了许久，代码里都是直接设置的<code>UIScreen</code>的<code>bounds</code>。因此，不可能是代码的问题。那么需要在设置中找原因。</p>
+<p>通过和正确的demo进行对比，发现了差异所在。</p>
+<p>这是有黑边情况下的设置：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/SetLaunchImage2.png?raw=true" alt="错误设置"></p>
+<p>这是没有黑边情况下的设置：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/SetLaunchImage1.png?raw=true" alt="正确设置"></p>
+<p>通过比较可以发现：<br>出现黑边的原因是在设置里设置了<code>Launch Images Source</code>为<code>LaunchImage</code>,但是在Images.xcassets中并没有<code>LaunchImage</code>资源。所以，需要给<code>LaunchImage</code>设置图片资源。<br>也可以像上面的那样设置<code>Launch Images Source</code>为<code>Use Asset Catalog</code>,并且将<code>Launch Screen File</code>设置为<code>LaunchImage</code>即可解决。</p>
+]]></content>
+    </entry>
+    
+    <entry>
       <title><![CDATA[UIGestureRecognizer]]></title>
       <url>http://zhang759740844.github.io/2016/09/05/UIGestureRecognizer/</url>
       <content type="html"><![CDATA[<p>在iOS系统中，手势是进行用户交互的重要方式，通过<code>UIGestureRecognizer</code>类，我们可以轻松的创建出各种手势应用于app中。关于<code>UIGestureRecognizer</code>类，是对iOS中的事件传递机制面向应用的封装，将手势消息的传递抽象为了对象。有关消息传递的讨论，在上一篇中已经讨论过了。</p>
@@ -1734,20 +1761,6 @@
 <blockquote>
 <p>Demo 详见UIGestureRecognizer</p>
 </blockquote>
-]]></content>
-    </entry>
-    
-    <entry>
-      <title><![CDATA[IPhone6全屏黑边处理]]></title>
-      <url>http://zhang759740844.github.io/2016/09/05/IPhone6%E5%85%A8%E5%B1%8F%E9%BB%91%E8%BE%B9%E5%A4%84%E7%90%86/</url>
-      <content type="html"><![CDATA[<p>写ios小demo的时候，真机调试出现View不能满屏显示的情况。屏幕上下都有一条粗粗的黑条。</p>
-<a id="more"></a>
-<p>检查了许久，代码里都是直接设置的<code>UIScreen</code>的<code>bounds</code>。因此，不可能是代码的问题。那么需要在设置中找原因。</p>
-<p>通过和正确的demo进行对比，发现了差异所在。</p>
-<p>这是有黑边情况下的设置：</p>
-<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/SetLaunchImage2.png?raw=true" alt="错误设置"></p>
-<p>这是没有黑边情况下的设置：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/SetLaunchImage1.png?raw=true" alt="正确设置"></p>
-<p>通过比较可以发现：<br>出现黑边的原因是在设置里设置了<code>Launch Images Source</code>为<code>LaunchImage</code>,但是在Images.xcassets中并没有<code>LaunchImage</code>资源。所以，需要给<code>LaunchImage</code>设置图片资源。<br>也可以像上面的那样设置<code>Launch Images Source</code>为<code>Use Asset Catalog</code>,并且将<code>Launch Screen File</code>设置为<code>LaunchImage</code>即可解决。</p>
 ]]></content>
     </entry>
     
@@ -2070,42 +2083,6 @@
     </entry>
     
     <entry>
-      <title><![CDATA[初识Provisioning Profile]]></title>
-      <url>http://zhang759740844.github.io/2016/08/26/%E5%88%9D%E8%AF%86Provisioning_Profile/</url>
-      <content type="html"><![CDATA[<p>真机调试的时候遇到了<em>provisioning profile即将过期</em>的警告，于是搜索并对provisioning profile作了一定了解。结合<a href="http://www.cnblogs.com/cywin888/p/3263027.html" target="_blank" rel="external">关于Certificate、Provisioning Profile、App ID的介绍及其之间的关系</a>进行梳理。</p>
-<a id="more"></a>
-<h2 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h2><h3 id="Certificate"><a href="#Certificate" class="headerlink" title="Certificate"></a>Certificate</h3><p>证书是用来给应用程序签名的，只有经过签名的应用程序才能保证他的来源是可信任的，并且代码是完整的， 未经修改的。在Xcode Build Setting(点击工程文件)的Code Signing Identity中，你可以设置用于为代码签名的证书。</p>
-<p>众所周知，我们申请一个Certificate之前，需要先申请一个Certificate Signing Request (CSR) 文件，而这个过程中实际上是生成了一对公钥和私钥，保存在你Mac的Keychain中。代码签名正是使用这种基于非对称秘钥的加密方式，用私钥进行签名，用公钥进行验证。如下图所示，在你Mac的keychain的login中存储着相关的公钥和私钥，而证书中包含了公钥。你只能用私钥来进行签名，所以如果没有了私钥，就意味着你不能进行签名了，所以就无法使用这个证书了，此时你只能revoke之前的证书再申请一个。因此在申请完证书时，最好导出并保存好你的私钥。当你想与其他人或其他设备共享证书时，把私钥传给它就可以了。私钥保存在你的Mac中，而苹果生成的Certificate中包含了公钥。当你用自己的私钥对代码签名后，苹果就可以用证书中的公钥来进行验证，确保是你对代码进行了签名，而不是别人冒充你，同时也确保代码的完整性等。 </p>
-<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/profile_certificate.png?raw=true" alt="证书的私钥和公钥"></p>
-<p>证书主要分为两类：Development和Production，Development证书用来开发和调试应用程序，Production主要用来分发（生产，上架Appstore）应用程序（根据证书种类有不同作用）</p>
-<h3 id="APP-ID"><a href="#APP-ID" class="headerlink" title="APP ID"></a>APP ID</h3><p>App ID用于标识一个或者一组App，App ID应该是和Xcode中的Bundle ID是一致的或者匹配的。App ID主要有以下两种：</p>
-<ul>
-<li>Explicit App ID：唯一的App ID，这种App ID用于唯一标识一个应用程序，例如com.ABC.demo1，标识Bundle ID为com.ABC.demo1的程序。</li>
-<li>Wildcard App ID：通配符App ID，用于标识一组应用程序。例如*可以表示所有应用程序，而com.ABC.*可以表示以com.ABC开头的所有应用程序。</li>
-</ul>
-<p>每创建一个App ID，我们都可以设置该App ID所使用的APP Services，也就是其所使用的额外服务。每种额外服务都有着不同的要求，例如，如果要使用Apple Push Notification Services，则必须是一个explicit App ID，以便能唯一标识一个应用程序。</p>
-<h3 id="Device"><a href="#Device" class="headerlink" title="Device"></a>Device</h3><p>Device最简单了，就是iOS设备。Devices中包含了该账户中所有可用于开发和测试的设备。 每台设备使用UDID来唯一标识。</p>
-<p>每个账户中的设备数量限制是100个。Disable 一台设备也不会增加名额，只能在membership year 开始的时候才能通过删除设备来增加名额。</p>
-<h3 id="Provisioning-Profile"><a href="#Provisioning-Profile" class="headerlink" title="Provisioning Profile"></a>Provisioning Profile</h3><p>一个Provisioning Profile文件包含了上述的所有内容：证书、App ID、设备。</p>
-<p>试想一下，如果我们要打包或者在真机上运行一个应用程序，我们首先需要证书来进行签名，用来标识这个应用程序是合法的、安全的、完整的等等；然后需要指明它的App ID，并且验证Bundle ID是否与其一致；再次，如果是真机调试，需要确认这台设备能否用来运行程序。而Provisioning Profile就把这些信息全部打包在一起，方便我们在调试和发布程序打包时使用，这样我们只要在不同的情况下选择不同的profile文件就可以了。而且这个Provisioning Profile文件会在打包时嵌入.ipa的包里。</p>
-<p>例如，如下图所示，一个用于Development的Provisioning Profile中包含了该Provisioning Profile对应的App ID，可使用的证书和设备。这意味着使用这个Provisioning Profile打包程序必须拥有相应的证书，并且是将App ID对应的程序运行到Devices中包含的设备上去。</p>
-<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/Provisioning_Profile_consist.png?raw=true" alt="Provisioning Profile组成"></p>
-<p>如上所述，在一台设备上运行应用程序的过程如下：</p>
-<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/Provisioning_Profile_Confirm.png?raw=true" alt="Provisioning Profile验证"></p>
-<p>与证书一样，Provisioning Profile也分为Development和Distribution两种</p>
-<h2 id="Xcode-7-免证书真机调试"><a href="#Xcode-7-免证书真机调试" class="headerlink" title="Xcode 7+ 免证书真机调试"></a>Xcode 7+ 免证书真机调试</h2><p>在Xcode 7+ 中，苹果改变了自己在许可权限上的策略，此前Xcode只开放给注册开发者下载，但Xcode 7改变了这种惯有的做法，无需注册开发者账号，仅使用普通的Apple ID就能下载和上手体验。此前开发者需每年支付99美元的费用成为注册开发者才能在iPhone、iPad、Apple Watch等真机上运行代码，苹果新的开发者计划则放宽要求，无需购买，只要你感兴趣同样可以在真机设备上测试app</p>
-<h3 id="使用方法"><a href="#使用方法" class="headerlink" title="使用方法"></a>使用方法</h3><ol>
-<li>打开自己已有的工程或者打开Xcode新建一个简单工程</li>
-<li>菜单栏选择Xcode,下拉菜单中选择Preferences…(快捷键 command + , )<br> <img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/NoCertificateDebug.png?raw=true" alt="1"></li>
-<li>在Accounts选项卡添加自己的Apple ID。添加完成后你会看到这样的信息。可以看到下面显示了iOS和Mac的Free标记了，在这之前是没有这些标记的。<br> <img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/NoCertificateDebg2.png?raw=true" alt="2"></li>
-<li>将测试的iPhone或者其他真机测试设备连接Mac，Xcode选中真机测试设备，直接点击运行。<br> <img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/NoCertificateDebg3.png?raw=true" alt="3"></li>
-<li>Xcode报错如下图所示，直接点击Fix Issue。<br> <img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/NoCertificateDebg4.png?raw=true" alt="4"></li>
-<li>警告也没了，证书也生成了，重新点击run按钮，可以开始愉快的玩耍了😁。<br> <img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/NoCertificateDebg5.png?raw=true" alt="5"></li>
-</ol>
-]]></content>
-    </entry>
-    
-    <entry>
       <title><![CDATA[tableview自适应高度]]></title>
       <url>http://zhang759740844.github.io/2016/08/26/UITableview%E8%87%AA%E9%80%82%E5%BA%94%E9%AB%98%E5%BA%A6/</url>
       <content type="html"><![CDATA[<p>由于tableview的cell的高度会随着内部label以及textview字符长度的变化而变化，因此不能一味的设置heightForRowAtIndexPath为定值。</p>
@@ -2144,6 +2121,42 @@
 <p>用户将要展示的cell分类，然后将分类的key传入。</p>
 <h3 id="Frame-layout-mode"><a href="#Frame-layout-mode" class="headerlink" title="Frame layout mode"></a>Frame layout mode</h3><p>对于<code>Auto layout mode</code>和<code>Frame layout mode</code>。框架提供了两种方式，默认是自动布局。 </p>
 <h3 id="再次注意"><a href="#再次注意" class="headerlink" title="再次注意"></a>再次注意</h3><p>需要再次提醒的是，如上文所说，一个好的自适应cell，一定要将cell内subview的上下左右约束设置好。</p>
+]]></content>
+    </entry>
+    
+    <entry>
+      <title><![CDATA[初识Provisioning Profile]]></title>
+      <url>http://zhang759740844.github.io/2016/08/26/%E5%88%9D%E8%AF%86Provisioning_Profile/</url>
+      <content type="html"><![CDATA[<p>真机调试的时候遇到了<em>provisioning profile即将过期</em>的警告，于是搜索并对provisioning profile作了一定了解。结合<a href="http://www.cnblogs.com/cywin888/p/3263027.html" target="_blank" rel="external">关于Certificate、Provisioning Profile、App ID的介绍及其之间的关系</a>进行梳理。</p>
+<a id="more"></a>
+<h2 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h2><h3 id="Certificate"><a href="#Certificate" class="headerlink" title="Certificate"></a>Certificate</h3><p>证书是用来给应用程序签名的，只有经过签名的应用程序才能保证他的来源是可信任的，并且代码是完整的， 未经修改的。在Xcode Build Setting(点击工程文件)的Code Signing Identity中，你可以设置用于为代码签名的证书。</p>
+<p>众所周知，我们申请一个Certificate之前，需要先申请一个Certificate Signing Request (CSR) 文件，而这个过程中实际上是生成了一对公钥和私钥，保存在你Mac的Keychain中。代码签名正是使用这种基于非对称秘钥的加密方式，用私钥进行签名，用公钥进行验证。如下图所示，在你Mac的keychain的login中存储着相关的公钥和私钥，而证书中包含了公钥。你只能用私钥来进行签名，所以如果没有了私钥，就意味着你不能进行签名了，所以就无法使用这个证书了，此时你只能revoke之前的证书再申请一个。因此在申请完证书时，最好导出并保存好你的私钥。当你想与其他人或其他设备共享证书时，把私钥传给它就可以了。私钥保存在你的Mac中，而苹果生成的Certificate中包含了公钥。当你用自己的私钥对代码签名后，苹果就可以用证书中的公钥来进行验证，确保是你对代码进行了签名，而不是别人冒充你，同时也确保代码的完整性等。 </p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/profile_certificate.png?raw=true" alt="证书的私钥和公钥"></p>
+<p>证书主要分为两类：Development和Production，Development证书用来开发和调试应用程序，Production主要用来分发（生产，上架Appstore）应用程序（根据证书种类有不同作用）</p>
+<h3 id="APP-ID"><a href="#APP-ID" class="headerlink" title="APP ID"></a>APP ID</h3><p>App ID用于标识一个或者一组App，App ID应该是和Xcode中的Bundle ID是一致的或者匹配的。App ID主要有以下两种：</p>
+<ul>
+<li>Explicit App ID：唯一的App ID，这种App ID用于唯一标识一个应用程序，例如com.ABC.demo1，标识Bundle ID为com.ABC.demo1的程序。</li>
+<li>Wildcard App ID：通配符App ID，用于标识一组应用程序。例如*可以表示所有应用程序，而com.ABC.*可以表示以com.ABC开头的所有应用程序。</li>
+</ul>
+<p>每创建一个App ID，我们都可以设置该App ID所使用的APP Services，也就是其所使用的额外服务。每种额外服务都有着不同的要求，例如，如果要使用Apple Push Notification Services，则必须是一个explicit App ID，以便能唯一标识一个应用程序。</p>
+<h3 id="Device"><a href="#Device" class="headerlink" title="Device"></a>Device</h3><p>Device最简单了，就是iOS设备。Devices中包含了该账户中所有可用于开发和测试的设备。 每台设备使用UDID来唯一标识。</p>
+<p>每个账户中的设备数量限制是100个。Disable 一台设备也不会增加名额，只能在membership year 开始的时候才能通过删除设备来增加名额。</p>
+<h3 id="Provisioning-Profile"><a href="#Provisioning-Profile" class="headerlink" title="Provisioning Profile"></a>Provisioning Profile</h3><p>一个Provisioning Profile文件包含了上述的所有内容：证书、App ID、设备。</p>
+<p>试想一下，如果我们要打包或者在真机上运行一个应用程序，我们首先需要证书来进行签名，用来标识这个应用程序是合法的、安全的、完整的等等；然后需要指明它的App ID，并且验证Bundle ID是否与其一致；再次，如果是真机调试，需要确认这台设备能否用来运行程序。而Provisioning Profile就把这些信息全部打包在一起，方便我们在调试和发布程序打包时使用，这样我们只要在不同的情况下选择不同的profile文件就可以了。而且这个Provisioning Profile文件会在打包时嵌入.ipa的包里。</p>
+<p>例如，如下图所示，一个用于Development的Provisioning Profile中包含了该Provisioning Profile对应的App ID，可使用的证书和设备。这意味着使用这个Provisioning Profile打包程序必须拥有相应的证书，并且是将App ID对应的程序运行到Devices中包含的设备上去。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/Provisioning_Profile_consist.png?raw=true" alt="Provisioning Profile组成"></p>
+<p>如上所述，在一台设备上运行应用程序的过程如下：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/Provisioning_Profile_Confirm.png?raw=true" alt="Provisioning Profile验证"></p>
+<p>与证书一样，Provisioning Profile也分为Development和Distribution两种</p>
+<h2 id="Xcode-7-免证书真机调试"><a href="#Xcode-7-免证书真机调试" class="headerlink" title="Xcode 7+ 免证书真机调试"></a>Xcode 7+ 免证书真机调试</h2><p>在Xcode 7+ 中，苹果改变了自己在许可权限上的策略，此前Xcode只开放给注册开发者下载，但Xcode 7改变了这种惯有的做法，无需注册开发者账号，仅使用普通的Apple ID就能下载和上手体验。此前开发者需每年支付99美元的费用成为注册开发者才能在iPhone、iPad、Apple Watch等真机上运行代码，苹果新的开发者计划则放宽要求，无需购买，只要你感兴趣同样可以在真机设备上测试app</p>
+<h3 id="使用方法"><a href="#使用方法" class="headerlink" title="使用方法"></a>使用方法</h3><ol>
+<li>打开自己已有的工程或者打开Xcode新建一个简单工程</li>
+<li>菜单栏选择Xcode,下拉菜单中选择Preferences…(快捷键 command + , )<br> <img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/NoCertificateDebug.png?raw=true" alt="1"></li>
+<li>在Accounts选项卡添加自己的Apple ID。添加完成后你会看到这样的信息。可以看到下面显示了iOS和Mac的Free标记了，在这之前是没有这些标记的。<br> <img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/NoCertificateDebg2.png?raw=true" alt="2"></li>
+<li>将测试的iPhone或者其他真机测试设备连接Mac，Xcode选中真机测试设备，直接点击运行。<br> <img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/NoCertificateDebg3.png?raw=true" alt="3"></li>
+<li>Xcode报错如下图所示，直接点击Fix Issue。<br> <img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/NoCertificateDebg4.png?raw=true" alt="4"></li>
+<li>警告也没了，证书也生成了，重新点击run按钮，可以开始愉快的玩耍了😁。<br> <img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/NoCertificateDebg5.png?raw=true" alt="5"></li>
+</ol>
 ]]></content>
     </entry>
     
@@ -2757,24 +2770,6 @@
     </entry>
     
     <entry>
-      <title><![CDATA[python 3.5 高级特性]]></title>
-      <url>http://zhang759740844.github.io/2016/08/08/python_%E9%AB%98%E7%BA%A7%E7%89%B9%E6%80%A7/</url>
-      <content type="html"><![CDATA[<p>当时学的是2.x版本，有点过时了，现在看了<a href="http://www.liaoxuefeng.com/" target="_blank" rel="external">廖雪峰的博客</a>的3.5版本的语法介绍，做一些摘录。</p>
-<a id="more"></a>
-<h3 id="切片"><a href="#切片" class="headerlink" title="切片"></a>切片</h3><p>切片（Slice）操作符用来简化经常取指定索引范围的操作<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&gt;&gt;&gt; </span>L = [<span class="string">'Michael'</span>, <span class="string">'Sarah'</span>, <span class="string">'Tracy'</span>, <span class="string">'Bob'</span>, <span class="string">'Jack'</span>]</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>L[<span class="number">0</span>:<span class="number">3</span>]</div><div class="line">[<span class="string">'Michael'</span>, <span class="string">'Sarah'</span>, <span class="string">'Tracy'</span>]</div></pre></td></tr></table></figure></p>
-<p>从索引0开始取，直到索引3为止，但不包括索引3,正好是3个元素.</p>
-<p>各种用法示例：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># Python支持L[-1]取倒数第一个元素,同样支持倒数切片</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span>L[<span class="number">-2</span>:]</div><div class="line">[<span class="string">'Bob'</span>, <span class="string">'Jack'</span>]</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>L[<span class="number">-2</span>:<span class="number">-1</span>]</div><div class="line">[<span class="string">'Bob'</span>]</div><div class="line"></div><div class="line"><span class="comment"># 前10个数，每两个取一个：</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span>L[:<span class="number">10</span>:<span class="number">2</span>]</div><div class="line">[<span class="number">0</span>, <span class="number">2</span>, <span class="number">4</span>, <span class="number">6</span>, <span class="number">8</span>]</div><div class="line"></div><div class="line"><span class="comment"># 所有数，每5个取一个：</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span>L[::<span class="number">5</span>]</div><div class="line">[<span class="number">0</span>, <span class="number">5</span>, <span class="number">10</span>, <span class="number">15</span>, <span class="number">20</span>, <span class="number">25</span>, <span class="number">30</span>, <span class="number">35</span>, <span class="number">40</span>, <span class="number">45</span>, <span class="number">50</span>, <span class="number">55</span>, <span class="number">60</span>, <span class="number">65</span>, <span class="number">70</span>, <span class="number">75</span>, <span class="number">80</span>, <span class="number">85</span>, <span class="number">90</span>, <span class="number">95</span>]</div><div class="line"></div><div class="line"><span class="comment"># 什么都不写，只写[:]就可以原样复制一个list</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span>L[:]</div><div class="line">[<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, ..., <span class="number">99</span>]</div><div class="line"></div><div class="line"><span class="comment"># tuple也是一种list，唯一区别是tuple不可变。因此，tuple也可以用切片操作，只是操作的结果仍是tuple</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span>(<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>)[:<span class="number">3</span>]</div><div class="line">(<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>)</div><div class="line"></div><div class="line"><span class="comment">#字符串'xxx'也可以看成是一种list，每个元素就是一个字符。因此，字符串也可以用切片操作，只是操作结果仍是字符串：</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span><span class="string">'ABCDEFG'</span>[:<span class="number">3</span>]</div><div class="line"><span class="string">'ABC'</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span><span class="string">'ABCDEFG'</span>[::<span class="number">2</span>]</div><div class="line"><span class="string">'ACEG'</span></div></pre></td></tr></table></figure></p>
-<h3 id="迭代"><a href="#迭代" class="headerlink" title="迭代"></a>迭代</h3><p>我们可以通过for循环来遍历这个list或tuple，这种遍历我们称为迭代（Iteration）。只要是可迭代对象，无论有无下标，都可以迭代。</p>
-<p>判断一个对象是否是可迭代对象：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> collections <span class="keyword">import</span> Iterable</div><div class="line">isinstance(<span class="string">'abc'</span>, Iterable)</div></pre></td></tr></table></figure></p>
-<h3 id="列表生成式"><a href="#列表生成式" class="headerlink" title="列表生成式"></a>列表生成式</h3><p>感觉没啥用。</p>
-<h3 id="生成器"><a href="#生成器" class="headerlink" title="生成器"></a>生成器</h3><p>列表元素可以按照某种算法在不断循环的过程中推算出后续元素，不必创建完整的list，节省大量空间。这种一边循环一边计算的机制，叫做generator。<br>例如实现斐波那契函数：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">fib</span><span class="params">(max)</span>:</span></div><div class="line">    n, a, b = <span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span></div><div class="line">    <span class="keyword">while</span> n &lt; max:</div><div class="line">        <span class="keyword">yield</span> b</div><div class="line">        a, b = b, a + b</div><div class="line">        n = n + <span class="number">1</span></div><div class="line">    <span class="keyword">return</span> <span class="string">'done'</span></div><div class="line">    </div><div class="line"><span class="keyword">for</span> n <span class="keyword">in</span> fib(<span class="number">6</span>):</div><div class="line">	print(n)</div></pre></td></tr></table></figure></p>
-<p>如果一个函数定义中包含yield关键字，那么这个函数就不再是一个普通函数，而是一个generator.<br>函数是顺序执行，遇到return语句或者最后一行函数语句就返回。而变成generator的函数，在每次调用next()的时候执行，遇到yield语句返回，再次执行时从上次返回的yield语句处继续执行。</p>
-<p>其实就相当于在yield处有个断点，可以获得当时的yield处的值，供for循环内使用。</p>
-<p>最后再次感谢廖老师的辛勤劳动。</p>
-]]></content>
-    </entry>
-    
-    <entry>
       <title><![CDATA[python 3.5 模块]]></title>
       <url>http://zhang759740844.github.io/2016/08/08/python_%E5%87%BD%E6%95%B0%E5%BC%8F%E7%BC%96%E7%A8%8B/</url>
       <content type="html"><![CDATA[<p>当时学的是2.x版本，有点过时了，现在看了<a href="http://www.liaoxuefeng.com/" target="_blank" rel="external">廖雪峰的博客</a>的3.5版本的语法介绍，做一些摘录。</p>
@@ -2804,6 +2799,24 @@
 <p>简单总结functools.partial的作用就是，把一个函数的某些参数给固定住（也就是设置默认值），返回一个新的函数，调用这个新函数会更简单</p>
 <p>创建偏函数时，实际上可以接收函数对象、*args和**kw这3个参数.<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">max2 = functools.partial(max, <span class="number">10</span>)</div></pre></td></tr></table></figure></p>
 <p>实际上会把10作为*args的一部分<strong>自动加到左边</strong>，也就是：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">max2(<span class="number">5</span>, <span class="number">6</span>, <span class="number">7</span>)</div><div class="line">相当于：</div><div class="line">args = (<span class="number">10</span>, <span class="number">5</span>, <span class="number">6</span>, <span class="number">7</span>)</div><div class="line">max(*args)</div></pre></td></tr></table></figure></p>
+<p>最后再次感谢廖老师的辛勤劳动。</p>
+]]></content>
+    </entry>
+    
+    <entry>
+      <title><![CDATA[python 3.5 高级特性]]></title>
+      <url>http://zhang759740844.github.io/2016/08/08/python_%E9%AB%98%E7%BA%A7%E7%89%B9%E6%80%A7/</url>
+      <content type="html"><![CDATA[<p>当时学的是2.x版本，有点过时了，现在看了<a href="http://www.liaoxuefeng.com/" target="_blank" rel="external">廖雪峰的博客</a>的3.5版本的语法介绍，做一些摘录。</p>
+<a id="more"></a>
+<h3 id="切片"><a href="#切片" class="headerlink" title="切片"></a>切片</h3><p>切片（Slice）操作符用来简化经常取指定索引范围的操作<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&gt;&gt;&gt; </span>L = [<span class="string">'Michael'</span>, <span class="string">'Sarah'</span>, <span class="string">'Tracy'</span>, <span class="string">'Bob'</span>, <span class="string">'Jack'</span>]</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>L[<span class="number">0</span>:<span class="number">3</span>]</div><div class="line">[<span class="string">'Michael'</span>, <span class="string">'Sarah'</span>, <span class="string">'Tracy'</span>]</div></pre></td></tr></table></figure></p>
+<p>从索引0开始取，直到索引3为止，但不包括索引3,正好是3个元素.</p>
+<p>各种用法示例：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># Python支持L[-1]取倒数第一个元素,同样支持倒数切片</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span>L[<span class="number">-2</span>:]</div><div class="line">[<span class="string">'Bob'</span>, <span class="string">'Jack'</span>]</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>L[<span class="number">-2</span>:<span class="number">-1</span>]</div><div class="line">[<span class="string">'Bob'</span>]</div><div class="line"></div><div class="line"><span class="comment"># 前10个数，每两个取一个：</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span>L[:<span class="number">10</span>:<span class="number">2</span>]</div><div class="line">[<span class="number">0</span>, <span class="number">2</span>, <span class="number">4</span>, <span class="number">6</span>, <span class="number">8</span>]</div><div class="line"></div><div class="line"><span class="comment"># 所有数，每5个取一个：</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span>L[::<span class="number">5</span>]</div><div class="line">[<span class="number">0</span>, <span class="number">5</span>, <span class="number">10</span>, <span class="number">15</span>, <span class="number">20</span>, <span class="number">25</span>, <span class="number">30</span>, <span class="number">35</span>, <span class="number">40</span>, <span class="number">45</span>, <span class="number">50</span>, <span class="number">55</span>, <span class="number">60</span>, <span class="number">65</span>, <span class="number">70</span>, <span class="number">75</span>, <span class="number">80</span>, <span class="number">85</span>, <span class="number">90</span>, <span class="number">95</span>]</div><div class="line"></div><div class="line"><span class="comment"># 什么都不写，只写[:]就可以原样复制一个list</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span>L[:]</div><div class="line">[<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, ..., <span class="number">99</span>]</div><div class="line"></div><div class="line"><span class="comment"># tuple也是一种list，唯一区别是tuple不可变。因此，tuple也可以用切片操作，只是操作的结果仍是tuple</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span>(<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>)[:<span class="number">3</span>]</div><div class="line">(<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>)</div><div class="line"></div><div class="line"><span class="comment">#字符串'xxx'也可以看成是一种list，每个元素就是一个字符。因此，字符串也可以用切片操作，只是操作结果仍是字符串：</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span><span class="string">'ABCDEFG'</span>[:<span class="number">3</span>]</div><div class="line"><span class="string">'ABC'</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span><span class="string">'ABCDEFG'</span>[::<span class="number">2</span>]</div><div class="line"><span class="string">'ACEG'</span></div></pre></td></tr></table></figure></p>
+<h3 id="迭代"><a href="#迭代" class="headerlink" title="迭代"></a>迭代</h3><p>我们可以通过for循环来遍历这个list或tuple，这种遍历我们称为迭代（Iteration）。只要是可迭代对象，无论有无下标，都可以迭代。</p>
+<p>判断一个对象是否是可迭代对象：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> collections <span class="keyword">import</span> Iterable</div><div class="line">isinstance(<span class="string">'abc'</span>, Iterable)</div></pre></td></tr></table></figure></p>
+<h3 id="列表生成式"><a href="#列表生成式" class="headerlink" title="列表生成式"></a>列表生成式</h3><p>感觉没啥用。</p>
+<h3 id="生成器"><a href="#生成器" class="headerlink" title="生成器"></a>生成器</h3><p>列表元素可以按照某种算法在不断循环的过程中推算出后续元素，不必创建完整的list，节省大量空间。这种一边循环一边计算的机制，叫做generator。<br>例如实现斐波那契函数：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">fib</span><span class="params">(max)</span>:</span></div><div class="line">    n, a, b = <span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span></div><div class="line">    <span class="keyword">while</span> n &lt; max:</div><div class="line">        <span class="keyword">yield</span> b</div><div class="line">        a, b = b, a + b</div><div class="line">        n = n + <span class="number">1</span></div><div class="line">    <span class="keyword">return</span> <span class="string">'done'</span></div><div class="line">    </div><div class="line"><span class="keyword">for</span> n <span class="keyword">in</span> fib(<span class="number">6</span>):</div><div class="line">	print(n)</div></pre></td></tr></table></figure></p>
+<p>如果一个函数定义中包含yield关键字，那么这个函数就不再是一个普通函数，而是一个generator.<br>函数是顺序执行，遇到return语句或者最后一行函数语句就返回。而变成generator的函数，在每次调用next()的时候执行，遇到yield语句返回，再次执行时从上次返回的yield语句处继续执行。</p>
+<p>其实就相当于在yield处有个断点，可以获得当时的yield处的值，供for循环内使用。</p>
 <p>最后再次感谢廖老师的辛勤劳动。</p>
 ]]></content>
     </entry>

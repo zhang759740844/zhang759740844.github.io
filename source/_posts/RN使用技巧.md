@@ -45,11 +45,10 @@ Native 中的 `UITextField` 可以通过 `resignFirstResponder` 或者 `endEditi
 `ScrollView` 可以设置 `keyboardDismissMode`，`keyboardShouldPersistTaps` 来控制输入法的行为。
 
 ```jsx
-<ScrollView 
-		contentContainerStyle={{flex:1}} //非常重要，让ScrollView的子元素占满整个区域
-     	keyboardDismissMode='on-drag' //拖动界面输入法退出
-     	keyboardShouldPersistTaps={false} //点击输入法意外的区域，输入法退出
-   		>
+<ScrollView 	contentContainerStyle={{flex:1}//非常重要，让ScrollView的子元素占满整个区域
+				keyboardDismissMode='on-drag' //拖动界面输入法退出
+				keyboardShouldPersistTaps={false} //点击输入法意外的区域，输入法退出
+				>
 ....
 </ScrollView>
 ```
