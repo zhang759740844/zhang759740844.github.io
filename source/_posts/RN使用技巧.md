@@ -10,6 +10,89 @@ tags:
 本文将收集关于 React-Native 的各种技巧与坑，不论是摘录的还是自己遇到的。
 
 <!--more-->
+
+
+
+
+
+
+### 关于Prop
+#### propTypes
+组件的属性可以接受任意值，字符串、对象、函数等等都可以。有时，我们需要一种机制，验证别人使用组件时，提供的参数是否符合要求。组件类的 `PropTypes` 属性，就是用来验证组件实例的属性是否符合要求。
+
+```javascript
+class Greeting extends React.Component {
+  render() {
+    return (
+      <Text>{this.props.name}</Text>
+    );
+  }
+}
+
+Greeting.propTypes = {
+  name: React.PropTypes.string
+};
+```
+
+上面例子中，如果 `name` 不是 string 类型，那么就会产生一个警告。还可以设置 `name: React.PropTypes.string.isRequired` 表示必须传入属性 `name`。
+
+除了 string 外，还有许多类型的 PropTypes 可以设置。[参见](https://facebook.github.io/react/docs/typechecking-with-proptypes.html) 再举一个设置单一子节点的例子：
+
+```javascript
+class MyComponent extends React.Component {
+  render() {
+    // This must be exactly one element or it will warn.
+    const children = this.props.children;
+    return (
+        {children}
+    );
+  }
+}
+
+MyComponent.propTypes = {
+  children: React.PropTypes.element.isRequired
+};
+```
+
+#### defaultProps
+可以在 `defaultProps` 中注册设置默认属性值。
+
+```javscript
+class Greeting extends React.Component {
+  render() {
+    return (
+      <Text>{this.props.name}</Text>
+    );
+  }
+}
+
+Greeting.defaultProps = {
+  name: 'hahaha'
+};
+```
+
+结合上面这两个属性，就不必再在构造函数里设置各种值了。
+
+
+### this.props.children
+`this.props` 对象的属性与组件的属性一一对应，但是有一个例外，就是 `this.props.children` 属性。它表示组件的所有子节点。类似于 `TouchableOpaque` 里嵌入 `Text`，通过这种方式可以很方便的嵌套封装控件。
+
+```javascript
+class NewComponent extends React.Component{
+	render(){
+		return(
+			{this.props.children}
+		);
+	}
+}
+
+//调用：
+<NewComponent>
+	<Text>haha</Text>
+</NewComponent>
+```
+
+
 ### 关于 import，require，export，module.exports的区别
 ES6标准发布后，module 成为标准，标准的使用是以 export 指令导出接口，以 import 引入模块，但是在我们一贯的 node 模块中，使用 require 引入模块，使用 module.exports 导出接口。那么在混用的情况下到底有什么异同呢？
 
@@ -54,21 +137,29 @@ Native 中的 `UITextField` 可以通过 `resignFirstResponder` 或者 `endEditi
 ```
 
 ### 生命周期回调函数总结
-所谓生命周期，就是一个对象从开始生成到最后消亡所经历的状态
+#### componentWillMount()
+`componentWillMount` 会在组件 `render` 之前执行，并且永远都只执行一次。
 
-```
-生命周期                   调用次数         能否使用 setSate()
-getDefaultProps           1(全局调用一次)  否
-getInitialState           1              否
-componentWillMount        1              是
-render                    >=1            否
-componentDidMount         1              是
-componentWillReceiveProps >=0            是
-shouldComponentUpdate     >=0            否
-componentWillUpdate       >=0            否
-componentDidUpdate        >=0            否
-componentWillUnmount      1              否
-```
+#### componentDidMount()
+`componentDidMount` 会在组件加载完毕之后立即执行。
+
+#### componentWillReceiveProps(object nextProps)
+在组件接收到一个新的 prop 时被执行。这个方法在初始化 `render` 时不会被调用。
+
+#### boolean shouldComponentUpdate(object nextProps, object nextState)
+返回一个布尔值。在组件的 props 或者 state 改变时被执行。在初始化时或者使用  `forceUpdate` 时不被执行。
+
+如果 `shouldComponentUpdate` 返回 `false`,`render()` 则会在下一个 state change 之前被完全跳过。(另外 `componentWillUpdate` 和  `componentDidUpdate` 也不会被执行)默认情况下 `shouldComponentUpdate` 会返回 `true`.
+
+#### componentWillUpdate(object nextProps, object nextState)
+组件接收到新的 `props` 或者 `state` 但还没有 `render` 时被执行。在初始化时不会被执行。一般用在组件发生更新之前。
+
+#### componentDidUpdate(object prevProps, object prevState)
+在组件完成更新后立即执行。在初始化时不会被执行。一般会在组件完成更新后被使用。例如清除 notification 文字等操作。
+
+#### componentWillUnmount()
+主要用来执行一些必要的清理任务。**注意，`Unmount` 的大小写。**
+
 
 ### 如何判断对象是否有某个属性
 - 使用in关键字 该方法可以判断对象的自有属性和继承来的属性是否存在。
