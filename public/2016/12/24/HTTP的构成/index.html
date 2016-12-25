@@ -1,0 +1,839 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="学习笔记," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="网络协议这块一直没有搞透彻，趁着苹果强制 ATS（App Transport Security）未果，学习一下这方面的知识。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HTTP详解">
+<meta property="og:url" content="http://zhang759740844.github.io/2016/12/24/HTTP的构成/index.html">
+<meta property="og:site_name" content="Zachary's blog">
+<meta property="og:description" content="网络协议这块一直没有搞透彻，趁着苹果强制 ATS（App Transport Security）未果，学习一下这方面的知识。">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/http请求.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/http_header.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/http_response.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/httpproxy_certificate.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/http_request.png?raw=true">
+<meta property="og:updated_time" content="2016-12-25T14:09:51.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="HTTP详解">
+<meta name="twitter:description" content="网络协议这块一直没有搞透彻，趁着苹果强制 ATS（App Transport Security）未果，学习一下这方面的知识。">
+<meta name="twitter:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/http请求.png?raw=true">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://zhang759740844.github.io/2016/12/24/HTTP的构成/"/>
+
+  <title> HTTP详解 | Zachary's blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Zachary's blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">记录成长</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup">
+ <span class="search-icon fa fa-search"></span>
+ <input type="text" id="local-search-input">
+ <div id="local-search-result"></div>
+ <span class="popup-btn-close">close</span>
+</div>
+
+
+    </div>
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                HTTP详解
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-12-24T16:07:12+08:00" content="2016-12-24">
+              2016-12-24
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/计算机/" itemprop="url" rel="index">
+                    <span itemprop="name">计算机</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>网络协议这块一直没有搞透彻，趁着苹果强制 ATS（App Transport Security）未果，学习一下这方面的知识。</p>
+<a id="more"></a>
+<h2 id="HTTP的构成"><a href="#HTTP的构成" class="headerlink" title="HTTP的构成"></a>HTTP的构成</h2><h3 id="HTTP-Request"><a href="#HTTP-Request" class="headerlink" title="HTTP Request"></a>HTTP Request</h3><p>http 请求主要分为三部分，如下图所示。<code>request line</code>，<code>header</code> 和 <code>body</code>，中间的CRLF为换行符。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/http请求.png?raw=true" alt="http请求组成"></p>
+<p>下面将以一个实际的 http 请求来详细看看其内部构造。假设我们的请求URL为：<br><code>http://www.baidu.com/res/static/thirdparty/connect.jpg?t=1480992153433</code></p>
+<h4 id="Request-Line"><a href="#Request-Line" class="headerlink" title="Request Line"></a>Request Line</h4><p>请求行的结构为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Request-Line   = Method SP Request-URI SP HTTP-Version CRLF</div></pre></td></tr></table></figure>
+<ul>
+<li><strong>Method</strong>:请求类型，例如 <code>post/get</code>。</li>
+<li><strong>SP</strong>:分隔符，一般就是空格。</li>
+<li><strong>Request-URI</strong>:对应上述请求为：<code>/res/static/thirdparty/connect.jpg?t=1480992153.564331</code>。注意，Request-URI 也可以是带 host 的完整 uri。不带的话，就要在 <code>Header</code> 里添加 host。</li>
+<li><strong>HTTP-Version</strong>:代表我们当前使用的版本，例如 <code>HTTP/1.1</code></li>
+<li><strong>CRLF</strong>:<code>CR</code> 对应回车键，<code>LF</code>对应换行键，合起来就是我们平常所说的 <code>\r\n</code>。</li>
+</ul>
+<p>所以上述请求的 Request-Line 的文本展示：</p>
+<blockquote>
+<p>GET /res/static/thirdparty/connect.jpg?t=1480992153.564331 HTTP/1.1CRLF</p>
+</blockquote>
+<h4 id="Header"><a href="#Header" class="headerlink" title="Header"></a>Header</h4><p>header 其本质上是一些文本键值对，一个典型的例子如下图所示：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/http_header.png?raw=true" alt="header"></p>
+<p>结构为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Key:空格ValueCRLF</div></pre></td></tr></table></figure>
+<p>上面讲述 Request-URI 的时候，缺失的 <code>Host</code> 就以键值对的形式存在于 header 中，比如， <code>Host： pan.baidu.com</code>。</p>
+<p>将若干个上述格式的键值对组合起来，就成了我们 HTTP 请求的完整 header。最后一个键值对之后再跟一个 <code>CRLF</code>，就表示我们的 header 结束了。</p>
+<h4 id="Body"><a href="#Body" class="headerlink" title="Body"></a>Body</h4><p>body 里面包含请求的实际数据。</p>
+<p>对于 <code>Method=GET</code> 的请求来说，body 体是为空的，Header 最后的两个 <code>CRLF</code> 就标识着请求的结尾。我们一般调用请求的业务参数是通过 Request Line 当中的 Request-URI 来传递的，比如上述请求中的 <code>?t=1480992153.564331</code>，也就是 URI 的 query string 部分。这部分同样是以键值对的形式存在，不过是位于 Request Line 当中。</p>
+<p>对于 <code>Method=POST</code> 的请求来说，实际的业务数据都存放于 body 当中。<strong>POST 请求可以根据 Header 中的 <code>Content-Type</code> 值，以不同的形式将数据保存在 body 体中。获取到请求后，可以仍然通过 Header 中的 <code>Content-Length</code> 值，读取固定长度的body体，直接传递给应用层</strong> </p>
+<h3 id="HTTP-Response"><a href="#HTTP-Response" class="headerlink" title="HTTP Response"></a>HTTP Response</h3><p>response 的结构和 request 大致相似，不过是将 Request Line 换成了 Status Line 。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/http_response.png?raw=true" alt="http_response"></p>
+<p>Status Line 的结构如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Status-Line = HTTP-Version SP Status-Code SP Reason-Phrase CRLF</div></pre></td></tr></table></figure></p>
+<h3 id="Content-Type"><a href="#Content-Type" class="headerlink" title="Content-Type"></a>Content-Type</h3><p>Content-Type 用于指定内容类型，一般是指网页中存在的 Content-Type，Content-Type 属性指定<strong>请求和响应</strong>的 HTTP 内容类型。如果未指定  ContentType，默认为 <code>text/html</code>。</p>
+<p>一些常见的 Content-Type:</p>
+<ul>
+<li>text/html</li>
+<li>text/plain</li>
+<li>text/css</li>
+<li>text/javascript</li>
+<li>application/x-www-form-urlencoded</li>
+<li>multipart/form-data</li>
+<li>application/json</li>
+<li>application/xml</li>
+</ul>
+<p>前面几个都很好理解，都是 html，css，javascript 的文件类型，<strong>后面四个是POST 的发包方式</strong>。</p>
+<p>那我们什么时候用 <code>application/x-www-form-urlencoded</code>，什么时候用 <code>multipart/form-data</code> 呢？大文件如文件图片用后者，小文件如键值对用前者。</p>
+<h2 id="HTTPS"><a href="#HTTPS" class="headerlink" title="HTTPS"></a>HTTPS</h2><h2 id="抓包工具-mitmproxy-使用"><a href="#抓包工具-mitmproxy-使用" class="headerlink" title="抓包工具 mitmproxy 使用"></a>抓包工具 mitmproxy 使用</h2><p>mitmproxy 是一款命令行抓包工具，它除了可以抓包查看 http/https 请求，还可以拦截并修改 request 或者 response。</p>
+<h3 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h3><p>首先需要安装 python 的包管理工具 pip。 OSX El Capitan 及以上的系统版本在安装时会出现 six 模块依赖错误，所以需要执行以下命令进行安装：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">sudo pip install mitmproxy --ignore-installed six</div></pre></td></tr></table></figure>
+<h3 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h3><p>手机和电脑在同一局域网下，设置手机的 http 代理。服务器为电脑当前的 ip，如 192.168.3.10；端口可任意设置，一般设置为8080。网络环境配置好后，在终端输入 <code>mitmproxy -p 8080</code>，进入抓包模式。</p>
+<p>如果想要抓取 https 的包，需要进一步配置。用 iPhone 打开 Safari 浏览器并输入 mitm.it，这时你会看到如下页面，选择对应平台并安装证书，安装完成后就可以抓 https 的包了。注意，用浏览器打开时需要已经在抓包模式，否则是无法看到上述页面的。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/httpproxy_certificate.png?raw=true" alt="下载证书"></p>
+<h3 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h3><p>随便打开一个 app，就可以看到如下的一个请求列表。<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/http_request.png?raw=true" alt="http请求列表"></p>
+<p>常用快捷键：</p>
+<ul>
+<li>enter: 查看详细请求</li>
+<li>Tab: 切换顶部导航栏</li>
+<li>z: 清空列表</li>
+<li>f: 过滤请求。可以参照帮助中的 Filter expression 对过滤关键字进行编辑。删除过滤就是将过滤关键字清空。</li>
+<li>d: 删除请求</li>
+<li>C: 复制请求。直接选中复制可能会复制进空格非常麻烦，可以通过 C 来选择复制的内容。</li>
+</ul>
+<p>关于如何拦截和修改 request 和 response 可以参见<a href="http://ios.jobbole.com/90841/" target="_blank" rel="external">抓包教程</a></p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tag/学习笔记/" rel="tag">#学习笔记</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/12/03/hexo爬过的坑/" rel="next" title="hexo 配置遇到的一些坑">
+                <i class="fa fa-chevron-left"></i> hexo 配置遇到的一些坑
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/author.png?raw=true"
+               alt="Zachary Zhang" />
+          <p class="site-author-name" itemprop="name">Zachary Zhang</p>
+          <p class="site-description motion-element" itemprop="description">Less is more</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">54</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">7</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">22</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://zhang759740844.github.io/" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://www.jianshu.com/users/d6b98b1c1e64/latest_articles" target="_blank" title="JianShu">
+                  
+                    <i class="fa fa-fw fa-globe"></i>
+                  
+                  JianShu
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#HTTP的构成"><span class="nav-number">1.</span> <span class="nav-text">HTTP的构成</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#HTTP-Request"><span class="nav-number">1.1.</span> <span class="nav-text">HTTP Request</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Request-Line"><span class="nav-number">1.1.1.</span> <span class="nav-text">Request Line</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Header"><span class="nav-number">1.1.2.</span> <span class="nav-text">Header</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Body"><span class="nav-number">1.1.3.</span> <span class="nav-text">Body</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#HTTP-Response"><span class="nav-number">1.2.</span> <span class="nav-text">HTTP Response</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Content-Type"><span class="nav-number">1.3.</span> <span class="nav-text">Content-Type</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HTTPS"><span class="nav-number">2.</span> <span class="nav-text">HTTPS</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#抓包工具-mitmproxy-使用"><span class="nav-number">3.</span> <span class="nav-text">抓包工具 mitmproxy 使用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#安装"><span class="nav-number">3.1.</span> <span class="nav-text">安装</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#配置"><span class="nav-number">3.2.</span> <span class="nav-text">配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用"><span class="nav-number">3.3.</span> <span class="nav-text">使用</span></a></li></ol></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2016</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zachary Zhang</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+  
+  
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+       search_path = "search.xml";
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body").append('<div class="popoverlay">').css('overflow', 'hidden');
+      $('.popup').toggle();
+
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+    'use strict';
+    $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+            // get the contents from search data
+            isfetched = true;
+            $('.popup').detach().appendTo('.header-inner');
+            var datas = $( "entry", xmlResponse ).map(function() {
+                return {
+                    title: $( "title", this ).text(),
+                    content: $("content",this).text(),
+                    url: $( "url" , this).text()
+                };
+            }).get();
+            var $input = document.getElementById(search_id);
+            var $resultContent = document.getElementById(content_id);
+            $input.addEventListener('input', function(){
+                var matchcounts = 0;
+                var str='<ul class=\"search-result-list\">';
+                var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                $resultContent.innerHTML = "";
+                if (this.value.trim().length > 1) {
+                // perform local searching
+                datas.forEach(function(data) {
+                    var isMatch = true;
+                    var content_index = [];
+                    var data_title = data.title.trim().toLowerCase();
+                    var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                    var data_url = data.url;
+                    var index_title = -1;
+                    var index_content = -1;
+                    var first_occur = -1;
+                    // only match artiles with not empty titles and contents
+                    if(data_title != '' && data_content != '') {
+                        keywords.forEach(function(keyword, i) {
+                            index_title = data_title.indexOf(keyword);
+                            index_content = data_content.indexOf(keyword);
+                            if( index_title < 0 && index_content < 0 ){
+                                isMatch = false;
+                            } else {
+                                if (index_content < 0) {
+                                    index_content = 0;
+                                }
+                                if (i == 0) {
+                                    first_occur = index_content;
+                                }
+                            }
+                        });
+                    }
+                    // show search results
+                    if (isMatch) {
+                        matchcounts += 1;
+                        str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                        var content = data.content.trim().replace(/<[^>]+>/g,"");
+                        if (first_occur >= 0) {
+                            // cut out 100 characters
+                            var start = first_occur - 20;
+                            var end = first_occur + 80;
+                            if(start < 0){
+                                start = 0;
+                            }
+                            if(start == 0){
+                                end = 50;
+                            }
+                            if(end > content.length){
+                                end = content.length;
+                            }
+                            var match_content = content.substring(start, end);
+                            // highlight all keywords
+                            keywords.forEach(function(keyword){
+                                var regS = new RegExp(keyword, "gi");
+                                match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                            });
+
+                            str += "<p class=\"search-result\">" + match_content +"...</p>"
+                        }
+                        str += "</li>";
+                    }
+                })};
+                str += "</ul>";
+                if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+                if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+                $resultContent.innerHTML = str;
+            });
+            proceedsearch();
+        }
+    });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".popoverlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+
+  
+
+  
+
+  
+
+</body>
+</html>
