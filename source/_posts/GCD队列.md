@@ -67,8 +67,10 @@ dispatch_sync 同步执行 block，函数不返回，一直等到 block 执行�
 
 ![gcd_死锁](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/gcd_死锁.png?raw=true)
 
-### 总结：
-**队列是串行或并发的，操作队列的函数是同步或者异步执行的（也就是在当前线程执行完返回和立即返回另开线程执行的区别）。串行队列其实就相当于加了一个资源锁，无论在多少个线程里，只有当队列中前一个元素执行完，后一个元素的代码块才能继续执行，并行队列则没有任何要求，有需要执行就立即执行。** 比如下面写在主线程里的示例的四种组合：
+### 总结
+**队列是串行或并发的，操作队列的函数是同步或者异步执行的（也就是在当前线程执行完返回和立即返回另开线程执行的区别）。串行队列其实就相当于加了一个资源锁，无论在多少个线程里，只有当队列中前一个元素执行完，后一个元素的代码块才能继续执行，并行队列则没有任何要求，有需要执行就立即执行。** 
+
+比如下面写在主线程里的示例的四种组合：
 
 ```objc
 for (int i = 1; i < 10; i++) {  
@@ -76,28 +78,37 @@ for (int i = 1; i < 10; i++) {
         NSLog(@"%d___%@",i, [NSThread currentThread]);  
     });  
 } 
-NSLog(@"over");
-```  
 
+NSLog(@"over");
+```
+
+结论:
 - 串行同步队列：运行在主线程里，先依次打印 `i` 后，再打印 `over`。
 - 串行异步队列：先打印 `over`，再依次打印 `i`。由于是异步的，`over` 执行在主线程里毋庸置疑，打印 `i` 时，新建了一个线程。为什么是一个呢？因为串行队列，代码块依次执行。创建新线程，执行，销毁，再创建新线程的操作太耗时。所以编译器优化后，仅创建了一个新线程。
 - 并行同步队列：运行在主线程里，先依次打印 `i` 后，再打印 `over`。现在看起来和串行同步队列一样对不对？那么什么时候才不同呢？假如你手动开了一个线程，并且在那个线程里，又运行了一遍上面的代码。串行同步队列由于有锁，执行当前代码块的时候，另一个线程处于阻塞状态，只能等到当前代码块执行完毕才能跳到另一个线程；并行同步队列没有锁，可能代码块没有执行完，由于线程的时间片用完了，就立即跳到另外一个线程上去执行了。
 - 并行异步队列：先打印 `over`，然后瞎JB打印`i`。
 
-[上面的例子，虽然不是很详细](http://blog.csdn.net/qq_30515765/article/details/51790356)
+
+
+
+
+
 
 
 ### 常用方法
-1. **dispatch_apply**
+#### dispatch_apply
 重复执行block，需要注意的是这个方法是同步返回，也就是说等到所有block执行完毕才返回。多个block的运行是否并发或串行执行也依赖queue的是否并发或串行。
-```objc
+
+``` objc
 dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
 dispatch_apply([array count], queue, ^(size_t index){
     [self doSomethingIntensiveWith:[array objectAtIndex:index]];
 });
 [self doSomethingWith:array];
 ```
-	如果需要异步执行这些代码，只需要用dispatch_async方法，将所有代码推至后台。
+
+如果需要异步执行这些代码，只需要用dispatch_async方法，将所有代码推至后台。
+
 ```objc
 dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
 dispatch_async(queue, ^{
@@ -107,16 +118,17 @@ dispatch_async(queue, ^{
     [self doSomethingWith:array];
 });
 ```
-	那何时才适合用 dispatch_apply 呢？
 
-	- 自定义串行队列：串行队列会完全抵消 dispatch_apply 的功能；你还不如直接使用普通的 for 循环。
+那何时才适合用 dispatch_apply 呢？
 
-	- 主队列（串行）：与上面一样，在串行队列上不适合使用 dispatch_apply 。还是用普通的 for 循环吧。
+- 自定义串行队列：串行队列会完全抵消 dispatch_apply 的功能；你还不如直接使用普通的 for 循环。
+- 主队列（串行）：与上面一样，在串行队列上不适合使用 dispatch_apply 。还是用普通的 for 循环吧。
+- 并发队列：对于并发循环来说是很好选择，特别是当你需要追踪任务的进度时。
 
-	- 并发队列：对于并发循环来说是很好选择，特别是当你需要追踪任务的进度时。
-	
-2. **dispatch_after**
+
+#### dispatch_after
 延迟提交 block：
+
 ```objc
 double delayInSeconds = 1.0; 
 dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
@@ -157,7 +169,7 @@ dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), qu
 
 对于这个串行的队列，先 async 执行了阻塞10秒，此时，添加一个5秒的延时任务。由于5秒前一个任务还未返回，所以延迟任务不能立刻执行。当前一个任务返回后，延迟任务执行时发现已经过了预定时间，那么立即执行。
 
-3. **dispatch_once**
+#### dispatch_once
 保证在APP运行期间，block中的代码只执行一次
 ```objc
 static dispatch_once_t onceToken;
@@ -168,7 +180,7 @@ dispatch_once(&onceToken, ^{
 
 一定要注意的是 `dispatch_once_t` **必须是全局或 static 变量**。否则使用时会导致非常不好排查的 bug。
 
-4. **dispatch_group**
+#### dispatch_group
 一个dispatch group可以用来将多个block组成一组以监测这些Block全部完成或者等待全部完成时发出的消息。
 - *dispatch_group_create*创建一个调度任务组
 - *dispatch_group_async* 把一个任务异步提交到任务组里
