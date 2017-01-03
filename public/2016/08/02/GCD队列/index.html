@@ -91,7 +91,7 @@
 <meta property="og:site_name" content="Zachary's blog">
 <meta property="og:description" content="Grand Central Dispatch或者GCD，是一套低层API，提供了一种新的方法来进行并发程序编写。从基本功能上讲，GCD有点像NSOperationQueue，他们都允许程序将任务切分为多个单一任务然后提交至工作队列来并发地或者串行地执行。GCD比之NSOpertionQueue更底层更高效，并且它不是Cocoa框架的一部分。">
 <meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/gcd_死锁.png?raw=true">
-<meta property="og:updated_time" content="2016-12-03T08:44:27.000Z">
+<meta property="og:updated_time" content="2017-01-03T06:21:41.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="GCD队列 学习与整理">
 <meta name="twitter:description" content="Grand Central Dispatch或者GCD，是一套低层API，提供了一种新的方法来进行并发程序编写。从基本功能上讲，GCD有点像NSOperationQueue，他们都允许程序将任务切分为多个单一任务然后提交至工作队列来并发地或者串行地执行。GCD比之NSOpertionQueue更底层更高效，并且它不是Cocoa框架的一部分。">
@@ -373,34 +373,36 @@
 </ol>
 <p>实际编程经验告诉我们，尽可能避免使用 dispatch_sync，嵌套使用同一个队列时极易产生程序死锁，比如嵌套调用主线程：</p>
 <p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/gcd_死锁.png?raw=true" alt="gcd_死锁"></p>
-<h3 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h3><p><strong>队列是串行或并发的，操作队列的函数是同步或者异步执行的（也就是在当前线程执行完返回和立即返回另开线程执行的区别）。串行队列其实就相当于加了一个资源锁，无论在多少个线程里，只有当队列中前一个元素执行完，后一个元素的代码块才能继续执行，并行队列则没有任何要求，有需要执行就立即执行。</strong> 比如下面写在主线程里的示例的四种组合：</p>
-<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt; <span class="number">10</span>; i++) &#123;  </div><div class="line">    dispatch_(a)sync(queue, ^&#123;  </div><div class="line">        <span class="built_in">NSLog</span>(<span class="string">@"%d___%@"</span>,i, [<span class="built_in">NSThread</span> currentThread]);  </div><div class="line">    &#125;);  </div><div class="line">&#125; </div><div class="line"><span class="built_in">NSLog</span>(<span class="string">@"over"</span>);</div><div class="line">```  </div><div class="line"></div><div class="line">- 串行同步队列：运行在主线程里，先依次打印 `i` 后，再打印 `over`。</div><div class="line">- 串行异步队列：先打印 `over`，再依次打印 `i`。由于是异步的，`over` 执行在主线程里毋庸置疑，打印 `i` 时，新建了一个线程。为什么是一个呢？因为串行队列，代码块依次执行。创建新线程，执行，销毁，再创建新线程的操作太耗时。所以编译器优化后，仅创建了一个新线程。</div><div class="line">- 并行同步队列：运行在主线程里，先依次打印 `i` 后，再打印 `over`。现在看起来和串行同步队列一样对不对？那么什么时候才不同呢？假如你手动开了一个线程，并且在那个线程里，又运行了一遍上面的代码。串行同步队列由于有锁，执行当前代码块的时候，另一个线程处于阻塞状态，只能等到当前代码块执行完毕才能跳到另一个线程；并行同步队列没有锁，可能代码块没有执行完，由于线程的时间片用完了，就立即跳到另外一个线程上去执行了。</div><div class="line">- 并行异步队列：先打印 `over`，然后瞎JB打印`i`。</div><div class="line"></div><div class="line">[上面的例子，虽然不是很详细](http:<span class="comment">//blog.csdn.net/qq_30515765/article/details/51790356)</span></div><div class="line"></div><div class="line"></div><div class="line"><span class="meta">### 常用方法</span></div><div class="line"><span class="number">1.</span> **dispatch_apply**</div><div class="line">重复执行block，需要注意的是这个方法是同步返回，也就是说等到所有block执行完毕才返回。多个block的运行是否并发或串行执行也依赖queue的是否并发或串行。</div><div class="line">```objc</div><div class="line"><span class="built_in">dispatch_queue_t</span> queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, <span class="number">0</span>);</div><div class="line">dispatch_apply([array count], queue, ^(size_t index)&#123;</div><div class="line">    [<span class="keyword">self</span> doSomethingIntensiveWith:[array objectAtIndex:index]];</div><div class="line">&#125;);</div><div class="line">[<span class="keyword">self</span> doSomethingWith:array];</div></pre></td></tr></table></figure>
-<pre><code>如果需要异步执行这些代码，只需要用dispatch_async方法，将所有代码推至后台。
-</code></pre><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">dispatch_queue_t</span> queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, <span class="number">0</span>);</div><div class="line"><span class="built_in">dispatch_async</span>(queue, ^&#123;</div><div class="line">    dispatch_apply([array count], queue, ^(size_t index)&#123;</div><div class="line">        [<span class="keyword">self</span> doSomethingIntensiveWith:[array objectAtIndex:index]];</div><div class="line">    &#125;);</div><div class="line">    [<span class="keyword">self</span> doSomethingWith:array];</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
-<pre><code>那何时才适合用 dispatch_apply 呢？
-
-- 自定义串行队列：串行队列会完全抵消 dispatch_apply 的功能；你还不如直接使用普通的 for 循环。
-
-- 主队列（串行）：与上面一样，在串行队列上不适合使用 dispatch_apply 。还是用普通的 for 循环吧。
-
-- 并发队列：对于并发循环来说是很好选择，特别是当你需要追踪任务的进度时。
-</code></pre><ol>
-<li><strong>dispatch_after</strong><br>延迟提交 block：<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">double</span> delayInSeconds = <span class="number">1.0</span>; </div><div class="line">dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * <span class="built_in">NSEC_PER_SEC</span>));</div><div class="line">dispatch_after(popTime, dispatch_get_main_queue(), ^(<span class="keyword">void</span>)&#123;</div><div class="line">     <span class="comment">// code to be executed on the main queue after delay</span></div><div class="line">&#125;);</div></pre></td></tr></table></figure>
-</li>
-</ol>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p><strong>队列是串行或并发的，操作队列的函数是同步或者异步执行的（也就是在当前线程执行完返回和立即返回另开线程执行的区别）。串行队列其实就相当于加了一个资源锁，无论在多少个线程里，只有当队列中前一个元素执行完，后一个元素的代码块才能继续执行，并行队列则没有任何要求，有需要执行就立即执行。</strong> </p>
+<p>比如下面写在主线程里的示例的四种组合：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt; <span class="number">10</span>; i++) &#123;  </div><div class="line">    dispatch_(a)sync(queue, ^&#123;  </div><div class="line">        <span class="built_in">NSLog</span>(<span class="string">@"%d___%@"</span>,i, [<span class="built_in">NSThread</span> currentThread]);  </div><div class="line">    &#125;);  </div><div class="line">&#125; </div><div class="line"></div><div class="line"><span class="built_in">NSLog</span>(<span class="string">@"over"</span>);</div></pre></td></tr></table></figure>
+<p>结论:</p>
+<ul>
+<li>串行同步队列：运行在主线程里，先依次打印 <code>i</code> 后，再打印 <code>over</code>。</li>
+<li>串行异步队列：先打印 <code>over</code>，再依次打印 <code>i</code>。由于是异步的，<code>over</code> 执行在主线程里毋庸置疑，打印 <code>i</code> 时，新建了一个线程。为什么是一个呢？因为串行队列，代码块依次执行。创建新线程，执行，销毁，再创建新线程的操作太耗时。所以编译器优化后，仅创建了一个新线程。</li>
+<li>并行同步队列：运行在主线程里，先依次打印 <code>i</code> 后，再打印 <code>over</code>。现在看起来和串行同步队列一样对不对？那么什么时候才不同呢？假如你手动开了一个线程，并且在那个线程里，又运行了一遍上面的代码。串行同步队列由于有锁，执行当前代码块的时候，另一个线程处于阻塞状态，只能等到当前代码块执行完毕才能跳到另一个线程；并行同步队列没有锁，可能代码块没有执行完，由于线程的时间片用完了，就立即跳到另外一个线程上去执行了。</li>
+<li>并行异步队列：先打印 <code>over</code>，然后瞎JB打印<code>i</code>。</li>
+</ul>
+<h3 id="常用方法"><a href="#常用方法" class="headerlink" title="常用方法"></a>常用方法</h3><h4 id="dispatch-apply"><a href="#dispatch-apply" class="headerlink" title="dispatch_apply"></a>dispatch_apply</h4><p>重复执行block，需要注意的是这个方法是同步返回，也就是说等到所有block执行完毕才返回。多个block的运行是否并发或串行执行也依赖queue的是否并发或串行。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">dispatch_queue_t</span> queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, <span class="number">0</span>);</div><div class="line">dispatch_apply([array count], queue, ^(size_t index)&#123;</div><div class="line">    [<span class="keyword">self</span> doSomethingIntensiveWith:[array objectAtIndex:index]];</div><div class="line">&#125;);</div><div class="line">[<span class="keyword">self</span> doSomethingWith:array];</div></pre></td></tr></table></figure>
+<p>如果需要异步执行这些代码，只需要用dispatch_async方法，将所有代码推至后台。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">dispatch_queue_t</span> queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, <span class="number">0</span>);</div><div class="line"><span class="built_in">dispatch_async</span>(queue, ^&#123;</div><div class="line">    dispatch_apply([array count], queue, ^(size_t index)&#123;</div><div class="line">        [<span class="keyword">self</span> doSomethingIntensiveWith:[array objectAtIndex:index]];</div><div class="line">    &#125;);</div><div class="line">    [<span class="keyword">self</span> doSomethingWith:array];</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>那何时才适合用 dispatch_apply 呢？</p>
+<ul>
+<li>自定义串行队列：串行队列会完全抵消 dispatch_apply 的功能；你还不如直接使用普通的 for 循环。</li>
+<li>主队列（串行）：与上面一样，在串行队列上不适合使用 dispatch_apply 。还是用普通的 for 循环吧。</li>
+<li>并发队列：对于并发循环来说是很好选择，特别是当你需要追踪任务的进度时。</li>
+</ul>
+<h4 id="dispatch-after"><a href="#dispatch-after" class="headerlink" title="dispatch_after"></a>dispatch_after</h4><p>延迟提交 block：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">double</span> delayInSeconds = <span class="number">1.0</span>; </div><div class="line">dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * <span class="built_in">NSEC_PER_SEC</span>));</div><div class="line">dispatch_after(popTime, dispatch_get_main_queue(), ^(<span class="keyword">void</span>)&#123;</div><div class="line">     <span class="comment">// code to be executed on the main queue after delay</span></div><div class="line">&#125;);</div></pre></td></tr></table></figure>
 <p>dispatch_after 是延迟提交，不是延迟运行，<strong>不是在特定的时间后立即运行！</strong>：</p>
 <figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//创建串行队列</span></div><div class="line"><span class="built_in">dispatch_queue_t</span> queue = dispatch_queue_create(<span class="string">"me.tutuge.test.gcd"</span>, DISPATCH_QUEUE_SERIAL);</div><div class="line"></div><div class="line"><span class="comment">//立即打印一条信息</span></div><div class="line"><span class="built_in">NSLog</span>(<span class="string">@"Begin add block..."</span>);</div><div class="line"></div><div class="line"><span class="comment">//提交一个block</span></div><div class="line"><span class="built_in">dispatch_async</span>(queue, ^&#123;</div><div class="line">    <span class="comment">//Sleep 10秒</span></div><div class="line">    [<span class="built_in">NSThread</span> sleepForTimeInterval:<span class="number">10</span>];</div><div class="line">    <span class="built_in">NSLog</span>(<span class="string">@"First block done..."</span>);</div><div class="line">&#125;);</div><div class="line"></div><div class="line"><span class="comment">//5 秒以后提交block</span></div><div class="line">dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(<span class="number">5</span> * <span class="built_in">NSEC_PER_SEC</span>)), queue, ^&#123;</div><div class="line">    <span class="built_in">NSLog</span>(<span class="string">@"After..."</span>);</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
 <p>结果如下:</p>
 <figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="number">2015</span><span class="number">-03</span><span class="number">-31</span> <span class="number">20</span>:<span class="number">57</span>:<span class="number">27.122</span> GCDTest[<span class="number">45633</span>:<span class="number">1812016</span>] Begin add block...</div><div class="line"><span class="number">2015</span><span class="number">-03</span><span class="number">-31</span> <span class="number">20</span>:<span class="number">57</span>:<span class="number">37.127</span> GCDTest[<span class="number">45633</span>:<span class="number">1812041</span>] First block done...</div><div class="line"><span class="number">2015</span><span class="number">-03</span><span class="number">-31</span> <span class="number">20</span>:<span class="number">57</span>:<span class="number">37.127</span> GCDTest[<span class="number">45633</span>:<span class="number">1812041</span>] After...</div></pre></td></tr></table></figure>
 <p>对于这个串行的队列，先 async 执行了阻塞10秒，此时，添加一个5秒的延时任务。由于5秒前一个任务还未返回，所以延迟任务不能立刻执行。当前一个任务返回后，延迟任务执行时发现已经过了预定时间，那么立即执行。</p>
-<ol>
-<li><strong>dispatch_once</strong><br>保证在APP运行期间，block中的代码只执行一次<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">static</span> <span class="built_in">dispatch_once_t</span> onceToken;</div><div class="line"><span class="built_in">dispatch_once</span>(&amp;onceToken, ^&#123;</div><div class="line">    <span class="comment">// code to be executed once</span></div><div class="line">&#125;);</div></pre></td></tr></table></figure>
-</li>
-</ol>
+<h4 id="dispatch-once"><a href="#dispatch-once" class="headerlink" title="dispatch_once"></a>dispatch_once</h4><p>保证在APP运行期间，block中的代码只执行一次<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">static</span> <span class="built_in">dispatch_once_t</span> onceToken;</div><div class="line"><span class="built_in">dispatch_once</span>(&amp;onceToken, ^&#123;</div><div class="line">    <span class="comment">// code to be executed once</span></div><div class="line">&#125;);</div></pre></td></tr></table></figure></p>
 <p>一定要注意的是 <code>dispatch_once_t</code> <strong>必须是全局或 static 变量</strong>。否则使用时会导致非常不好排查的 bug。</p>
-<ol>
-<li><strong>dispatch_group</strong><br>一个dispatch group可以用来将多个block组成一组以监测这些Block全部完成或者等待全部完成时发出的消息。</li>
-</ol>
+<h4 id="dispatch-group"><a href="#dispatch-group" class="headerlink" title="dispatch_group"></a>dispatch_group</h4><p>一个dispatch group可以用来将多个block组成一组以监测这些Block全部完成或者等待全部完成时发出的消息。</p>
 <ul>
 <li><em>dispatch_group_create</em>创建一个调度任务组</li>
 <li><em>dispatch_group_async</em> 把一个任务异步提交到任务组里</li>
@@ -518,7 +520,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">54</span>
+              <span class="site-state-item-count">56</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -526,7 +528,7 @@
           
             <div class="site-state-item site-state-categories">
               <a href="/categories">
-                <span class="site-state-item-count">7</span>
+                <span class="site-state-item-count">8</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -535,7 +537,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">22</span>
+                <span class="site-state-item-count">23</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
@@ -584,7 +586,7 @@
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#基本概念"><span class="nav-number">1.</span> <span class="nav-text">基本概念</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#队列分类"><span class="nav-number">2.</span> <span class="nav-text">队列分类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#队列类型"><span class="nav-number">3.</span> <span class="nav-text">队列类型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#队列创建方式"><span class="nav-number">4.</span> <span class="nav-text">队列创建方式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#提交-Job"><span class="nav-number">5.</span> <span class="nav-text">提交 Job</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结："><span class="nav-number">6.</span> <span class="nav-text">总结：</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#基本概念"><span class="nav-number">1.</span> <span class="nav-text">基本概念</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#队列分类"><span class="nav-number">2.</span> <span class="nav-text">队列分类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#队列类型"><span class="nav-number">3.</span> <span class="nav-text">队列类型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#队列创建方式"><span class="nav-number">4.</span> <span class="nav-text">队列创建方式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#提交-Job"><span class="nav-number">5.</span> <span class="nav-text">提交 Job</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-number">6.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#常用方法"><span class="nav-number">7.</span> <span class="nav-text">常用方法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#dispatch-apply"><span class="nav-number">7.1.</span> <span class="nav-text">dispatch_apply</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#dispatch-after"><span class="nav-number">7.2.</span> <span class="nav-text">dispatch_after</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#dispatch-once"><span class="nav-number">7.3.</span> <span class="nav-text">dispatch_once</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#dispatch-group"><span class="nav-number">7.4.</span> <span class="nav-text">dispatch_group</span></a></li></ol></li></ol></div>
             
           </div>
         </section>
@@ -603,7 +605,7 @@
         <div class="copyright" >
   
   &copy; 
-  <span itemprop="copyrightYear">2016</span>
+  <span itemprop="copyrightYear">2017</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>

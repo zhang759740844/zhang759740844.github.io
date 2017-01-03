@@ -95,7 +95,7 @@
 <meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/http_response.png?raw=true">
 <meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/httpproxy_certificate.png?raw=true">
 <meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/http_request.png?raw=true">
-<meta property="og:updated_time" content="2016-12-25T14:09:51.000Z">
+<meta property="og:updated_time" content="2016-12-26T15:53:09.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="HTTP详解">
 <meta name="twitter:description" content="网络协议这块一直没有搞透彻，趁着苹果强制 ATS（App Transport Security）未果，学习一下这方面的知识。">
@@ -388,11 +388,41 @@
 </ul>
 <p>前面几个都很好理解，都是 html，css，javascript 的文件类型，<strong>后面四个是POST 的发包方式</strong>。</p>
 <p>那我们什么时候用 <code>application/x-www-form-urlencoded</code>，什么时候用 <code>multipart/form-data</code> 呢？大文件如文件图片用后者，小文件如键值对用前者。</p>
-<h2 id="HTTPS"><a href="#HTTPS" class="headerlink" title="HTTPS"></a>HTTPS</h2><h2 id="抓包工具-mitmproxy-使用"><a href="#抓包工具-mitmproxy-使用" class="headerlink" title="抓包工具 mitmproxy 使用"></a>抓包工具 mitmproxy 使用</h2><p>mitmproxy 是一款命令行抓包工具，它除了可以抓包查看 http/https 请求，还可以拦截并修改 request 或者 response。</p>
+<h2 id="HTTPS"><a href="#HTTPS" class="headerlink" title="HTTPS"></a>HTTPS</h2><h3 id="基本介绍"><a href="#基本介绍" class="headerlink" title="基本介绍"></a>基本介绍</h3><p>HTTP 协议传输的数据都是未加密的，也就是明文的，因此使用 HTTP 协议传输隐私信息非常不安全。比如运营商可以轻易劫持你的 http 请求，在 response 中注入 js代码（如网页上弹窗广告、流量球等），甚至是重定向。为了保证这些隐私数据能加密传输，于是网景公司设计了 SSL（Secure Sockets Layer）协议用于对 HTTP 协议传输的数据进行加密，从而就诞生了 HTTPS。之后对 SSL 进行了升级为 TLS（Transport Layer Security）。我们现在的 HTTPS 都是用的 TLS 协议。</p>
+<h3 id="工作原理"><a href="#工作原理" class="headerlink" title="工作原理"></a>工作原理</h3><p>总共分为以下几步：</p>
+<ol>
+<li>浏览器将自己支持的一套加密规则发送给网站。</li>
+<li>网站从中选出一组加密算法与 HASH 算法，并将自己的身份信息以证书的形式发回给浏览器。证书里面包含了网站地址，加密公钥，以及证书的颁发机构等信息。</li>
+<li>获得网站证书之后浏览器要做以下工作：<ol>
+<li>验证证书的合法性（颁发证书的机构是否合法，证书中包含的网站地址是否与正在访问的地址一致等），如果证书受信任，则浏览器栏里面会显示一个小锁头，否则会给出证书不受信的提示。</li>
+<li>如果证书受信任，或者是用户接受了不受信的证书，浏览器会生成一串随机数的密码，并用证书中提供的公钥加密。</li>
+<li>使用约定好的HASH计算握手消息，并使用生成的随机数对消息进行加密，最后将之前生成的所有信息发送给网站。</li>
+</ol>
+</li>
+<li>网站接收浏览器发来的数据之后要做以下的操作：<ol>
+<li>使用自己的私钥将信息解密取出密码，使用密码解密浏览器发来的握手消息，并验证HASH是否与浏览器发来的一致。</li>
+<li>使用密码加密一段握手消息，发送给浏览器。</li>
+</ol>
+</li>
+<li>浏览器解密并计算握手消息的HASH，如果与服务端发来的HASH一致，此时握手过程结束，之后所有的通信数据将由之前浏览器生成的随机密码并利用对称加密算法进行加密。</li>
+</ol>
+<p>这里浏览器与网站互相发送加密的握手消息并验证，目的是为了保证双方都获得了一致的密码，并且可以正常的加密解密数据，为后续真正数据的传输做一次测试。</p>
+<p>其中<strong>非对称加密算法用于在握手过程中加密生成的密码</strong>，<strong>对称加密算法用于对真正传输的数据进行加密</strong>，而 <strong>HASH 算法用于验证数据的完整性</strong>。由于浏览器生成的密码是整个数据加密的关键，因此在传输的时候使用了非对称加密算法对其加密。非对称加密算法会生成公钥和私钥，公钥只能用于加密数据，因此可以随意传输，而网站的私钥用于对数据进行解密，所以网站都会非常小心的保管自己的私钥，防止泄漏。</p>
+<p>为什么不直接全程使用非对称加密算法进行数据传输？这个问题的答案是因为非对称算法的效率对比起对称算法来说，要低得多得多；因此往往只用在HTTPS的握手阶段。</p>
+<h3 id="证书的验证过程"><a href="#证书的验证过程" class="headerlink" title="证书的验证过程"></a>证书的验证过程</h3><p>证书以证书链的形式组织，在颁发证书的时候首先要有根CA机构颁发的根证书，再由根CA机构颁发一个中级CA机构的证书，最后由中级CA机构颁发具体的SSL证书。我们可以这样理解，根CA机构就是一个公司，根证书就是他的身份凭证，每个公司由不同的部门来颁发不同用途的证书，这些不同的部门就是中级CA机构，这些中级CA机构使用中级证书作为自己的身份凭证，其中有一个部门是专门颁发SSL证书，当把根证书，中级证书，以及最后申请的SSL证书连在一起就形成了证书链，也称为证书路径。在验证证书的时候，浏览器会调用系统的证书管理器接口对证书路径中的所有证书一级一级的进行验证，只有路径中所有的证书都是受信的，整个验证的结果才是受信。操作系统在安装过程中会默认安装一些受信任的CA机构的根证书。</p>
+<h3 id="SSL劫持"><a href="#SSL劫持" class="headerlink" title="SSL劫持"></a>SSL劫持</h3><p>SSL 劫持也就是 SSL 证书欺骗攻击，攻击者为了获得 HTTPS 传输的明文数据，需要先将自己接入到浏览器与目标网站之间（中间人），在传输数据的过程中，替换目标网站发给浏览器的证书，之后解密传输中的数据，简单的图示如下：</p>
+<blockquote>
+<p>[浏览器] &lt;======&gt; [目标网站] （正常情况）<br>[浏览器] &lt;======&gt; 中间人 &lt;======&gt; [目标网站] （中间人攻击）</p>
+</blockquote>
+<p>中间人攻击最好的环境是在局域网中，局域网中所有的计算机需要通过一个固定的出口（网关）来接入互联网，因此攻击者只需要在局域网中实施一次中间人攻击就可以顺利的截获所有计算机与网关之间传输的数据。</p>
+<p><strong>中间人攻击(Man-in-the-Middle Attack，缩写 MITM)</strong>。</p>
+<p><a href="http://www.guokr.com/post/114121/" target="_blank" rel="external">参考链接:HTTPS那些事（一）HTTPS原理</a></p>
+<h2 id="抓包工具-mitmproxy-使用"><a href="#抓包工具-mitmproxy-使用" class="headerlink" title="抓包工具 mitmproxy 使用"></a>抓包工具 mitmproxy 使用</h2><p>mitmproxy 是一款命令行抓包工具，它除了可以抓包查看 http/https 请求，还可以拦截并修改 request 或者 response。</p>
 <h3 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h3><p>首先需要安装 python 的包管理工具 pip。 OSX El Capitan 及以上的系统版本在安装时会出现 six 模块依赖错误，所以需要执行以下命令进行安装：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">sudo pip install mitmproxy --ignore-installed six</div></pre></td></tr></table></figure>
 <h3 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h3><p>手机和电脑在同一局域网下，设置手机的 http 代理。服务器为电脑当前的 ip，如 192.168.3.10；端口可任意设置，一般设置为8080。网络环境配置好后，在终端输入 <code>mitmproxy -p 8080</code>，进入抓包模式。</p>
 <p>如果想要抓取 https 的包，需要进一步配置。用 iPhone 打开 Safari 浏览器并输入 mitm.it，这时你会看到如下页面，选择对应平台并安装证书，安装完成后就可以抓 https 的包了。注意，用浏览器打开时需要已经在抓包模式，否则是无法看到上述页面的。</p>
+<p>抓包软件相当于在用户和服务器间增加了一个中间人。安装抓包软件的证书，这样中间人就可以获得用户端生成的密钥，就能够解密用户和服务器间的信息。<strong>注意，一定不可随意下载信任不明的证书</strong></p>
 <p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/httpproxy_certificate.png?raw=true" alt="下载证书"></p>
 <h3 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h3><p>随便打开一个 app，就可以看到如下的一个请求列表。<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/http_request.png?raw=true" alt="http请求列表"></p>
 <p>常用快捷键：</p>
@@ -443,6 +473,10 @@
           </div>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/12/28/EventLoop/" rel="prev" title="从 setTimeout() 看js的 Event Loop 执行过程">
+                从 setTimeout() 看js的 Event Loop 执行过程 <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -510,7 +544,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">54</span>
+              <span class="site-state-item-count">56</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -518,7 +552,7 @@
           
             <div class="site-state-item site-state-categories">
               <a href="/categories">
-                <span class="site-state-item-count">7</span>
+                <span class="site-state-item-count">8</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -527,7 +561,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">22</span>
+                <span class="site-state-item-count">23</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
@@ -576,7 +610,7 @@
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#HTTP的构成"><span class="nav-number">1.</span> <span class="nav-text">HTTP的构成</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#HTTP-Request"><span class="nav-number">1.1.</span> <span class="nav-text">HTTP Request</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Request-Line"><span class="nav-number">1.1.1.</span> <span class="nav-text">Request Line</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Header"><span class="nav-number">1.1.2.</span> <span class="nav-text">Header</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Body"><span class="nav-number">1.1.3.</span> <span class="nav-text">Body</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#HTTP-Response"><span class="nav-number">1.2.</span> <span class="nav-text">HTTP Response</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Content-Type"><span class="nav-number">1.3.</span> <span class="nav-text">Content-Type</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HTTPS"><span class="nav-number">2.</span> <span class="nav-text">HTTPS</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#抓包工具-mitmproxy-使用"><span class="nav-number">3.</span> <span class="nav-text">抓包工具 mitmproxy 使用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#安装"><span class="nav-number">3.1.</span> <span class="nav-text">安装</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#配置"><span class="nav-number">3.2.</span> <span class="nav-text">配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用"><span class="nav-number">3.3.</span> <span class="nav-text">使用</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#HTTP的构成"><span class="nav-number">1.</span> <span class="nav-text">HTTP的构成</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#HTTP-Request"><span class="nav-number">1.1.</span> <span class="nav-text">HTTP Request</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Request-Line"><span class="nav-number">1.1.1.</span> <span class="nav-text">Request Line</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Header"><span class="nav-number">1.1.2.</span> <span class="nav-text">Header</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Body"><span class="nav-number">1.1.3.</span> <span class="nav-text">Body</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#HTTP-Response"><span class="nav-number">1.2.</span> <span class="nav-text">HTTP Response</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Content-Type"><span class="nav-number">1.3.</span> <span class="nav-text">Content-Type</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HTTPS"><span class="nav-number">2.</span> <span class="nav-text">HTTPS</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#基本介绍"><span class="nav-number">2.1.</span> <span class="nav-text">基本介绍</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#工作原理"><span class="nav-number">2.2.</span> <span class="nav-text">工作原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#证书的验证过程"><span class="nav-number">2.3.</span> <span class="nav-text">证书的验证过程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SSL劫持"><span class="nav-number">2.4.</span> <span class="nav-text">SSL劫持</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#抓包工具-mitmproxy-使用"><span class="nav-number">3.</span> <span class="nav-text">抓包工具 mitmproxy 使用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#安装"><span class="nav-number">3.1.</span> <span class="nav-text">安装</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#配置"><span class="nav-number">3.2.</span> <span class="nav-text">配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用"><span class="nav-number">3.3.</span> <span class="nav-text">使用</span></a></li></ol></li></ol></div>
             
           </div>
         </section>
@@ -595,7 +629,7 @@
         <div class="copyright" >
   
   &copy; 
-  <span itemprop="copyrightYear">2016</span>
+  <span itemprop="copyrightYear">2017</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>
