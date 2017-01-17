@@ -114,10 +114,10 @@
 <meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/fram_6.png?raw=true">
 <meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/fram_7.png?raw=true">
 <meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/fram_8.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/dynamicstatic_4.png?raw=true">
 <meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/dynamicstatic_1.png?raw=true">
 <meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/dynamicstatic_2.png?raw=true">
 <meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/dynamicstatic_3.png?raw=true">
-<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/dynamicstatic_4.png?raw=true">
 <meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/dynamicstatic_5.png?raw=true">
 <meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_point_1.png?raw=true">
 <meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_point_2.png?raw=true">
@@ -133,7 +133,7 @@
 <meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_cocoapods_3.png?raw=true">
 <meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_cocoapods_4.png?raw=true">
 <meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_cocoapods_5.png?raw=true">
-<meta property="og:updated_time" content="2017-01-07T07:08:39.000Z">
+<meta property="og:updated_time" content="2017-01-16T04:26:10.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="ios中库的介绍与使用">
 <meta name="twitter:description" content="最近由于要接入第三方库，因此想要了解库的相关知识。网上查阅了许多资料，仍然比较疑惑。比如，静态库能否以及如何引入动态库？动态库能否以及如何引入静态库？自建动态库(非系统动态库)的好处体现在哪，怎么实现？等等。在一番探索之后，总结了一篇较为详尽全面的库的使用方法。">
@@ -411,7 +411,7 @@
 <p>使用 <strong>cocoapods</strong> 的方式为动态库引入静态库。在工程目录下新建 <code>podfile</code>,写入:</p>
 <figure class="highlight ruby"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">target <span class="string">'DynamicWithStatic'</span> <span class="keyword">do</span></div><div class="line">pod <span class="string">'SVProgressHUD'</span></div><div class="line"><span class="keyword">end</span></div></pre></td></tr></table></figure>
 <p>这里引入<code>SVProgressHUD</code>，因为调试起来比较简单。</p>
-<p>在执行完 <code>pod install</code> 后，打开 <code>Frameworks.xcworkspace</code> ,在其中添加<code>SVProgress</code>类。现在的工程目录如下：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/dynamicstatic_1.png?raw=true" alt="动静库引用"></p>
+<p>在执行完 <code>pod install</code> 后，打开 <code>Frameworks.xcworkspace</code> ,在其中添加<code>SVProgress</code>类。现在的工程目录如下：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/dynamicstatic_4.png?raw=true" alt="动静库引用"></p>
 <hr>
 <p><strong>关于 <code>pod install</code> 慢的方法</strong><br>这里插一下，<code>pod</code> 的时候经常会卡在一个包上，会让人以为没有下载速度了。可以通过添加选项 <code>pod install --verbose</code> 的方式，看到安装详情，可以看到速度已经估计时间，这样心里就有数了。</p>
 <hr>
@@ -420,14 +420,14 @@
 <p>在<code>SVProgress.m</code>中添加代码：</p>
 <figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#import <span class="meta-string">"SVProgress.h"</span></span></div><div class="line"><span class="meta">#import <span class="meta-string">"SVProgressHUD.h"</span></span></div><div class="line"></div><div class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">SVProgress</span></span></div><div class="line">+(SVProgresshud)getBlock&#123;</div><div class="line">    <span class="keyword">return</span> ^()&#123;</div><div class="line">        [SVProgressHUD showSuccessWithStatus:<span class="string">@"成功！"</span>];</div><div class="line">    &#125;;</div><div class="line">&#125;</div><div class="line"><span class="keyword">@end</span></div></pre></td></tr></table></figure>
 <p><code>SVProgress</code>类的目的是提供一个 block 以供调用。将 <code>SVProgress.h</code> 头文件暴露出来后， run 生成动态库。</p>
-<p>动态库内引用静态库相当于直接把代码写入动态库中，非常的简单。现在思考一个问题，如果工程中引用了这个动态库，并且工程本身也用到了 <code>SVProgressHUD</code> 库，那么会发生什么？尝试一下，在 Pod 中为 <code>FrameworkTest</code> 添加 <code>SVProgressHUD</code> ,会产生如下的警告：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/dynamicstatic_2.png?raw=true" alt="重复实现"></p>
+<p>动态库内引用静态库相当于直接把代码写入动态库中，非常的简单。现在思考一个问题，如果工程中引用了这个动态库，并且工程本身也用到了 <code>SVProgressHUD</code> 库，那么会发生什么？尝试一下，在 Pod 中为 <code>FrameworkTest</code> 添加 <code>SVProgressHUD</code> ,会产生如下的警告：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/dynamicstatic_1.png?raw=true" alt="重复实现"></p>
 <p><code>SVProgressHUD</code> 库中的各个类在工程和库中都进行了实现，但是没有指明使用哪一个实现。不过这个警告，并不影响运行，非强迫症可以选择无视，那么对于强迫症患者，如何消除掉这些警告呢？修改库中 <code>SVProgressHUD</code> 中各个类的命名。有两种方式：手动和自动，将在下面介绍。</p>
 <h4 id="动态库引用动态库"><a href="#动态库引用动态库" class="headerlink" title="动态库引用动态库"></a>动态库引用动态库</h4><p>这次被引用的动态库还是 <code>SVProgressHUD</code> 库。先用 pod 下载 <code>SVProgressHUD</code> 的源码，然后打包成动态库，这里就不多做说明了。</p>
 <p>将动态库 <code>SVProgressHUD</code> 拖入工程中，新建 <code>DynamicWithDynamic</code> 动态库。将上面的 <code>SVProgress.h</code> 和 <code>SVProgress.m</code> 拖入 <code>DynamicWithDynamic</code> 中，设置暴露出 <code>SVProgress.h</code>。</p>
-<p>记得注意一定要在 <code>DynamicWithDynamic</code> 中引入 <code>SVProgressHUD</code> ,如下图所示：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/dynamicstatic_3.png?raw=true" alt="引入SVProgressHUD"></p>
+<p>记得注意一定要在 <code>DynamicWithDynamic</code> 中引入 <code>SVProgressHUD</code> ,如下图所示：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/dynamicstatic_2.png?raw=true" alt="引入SVProgressHUD"></p>
 <p>现在 run 一下，就可以成功生成了。</p>
 <p>下面在 <code>FrameworkTest</code> 中测试，使其 embed <code>DynamicWithDynamic</code> 。微调一下 <code>ViewController.m</code> 使其引入目标库，运行。</p>
-<p>在运行中出现如下错误：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/dynamicstatic_4.png?raw=true" alt="错误原因"></p>
+<p>在运行中出现如下错误：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/dynamicstatic_3.png?raw=true" alt="错误原因"></p>
 <p>这个错误上面也提到过了，是因为必要的动态库没有 embed 进工程中。但是明明已经将 <code>DynamicWithDynamic</code> embed 了啊。好吧，由于 <code>SVProgressHUD</code> 现在是动态库了，还需要将 <code>SVProgressHUD</code> 库 embed 进 <code>FrameworkTest</code> 中。</p>
 <p>动态库引入动态库，不会将要引入的动态库打包到自身中，即只是 link 产生关联，而不是 embed 嵌入。 需要在外部使用该动态库时，手动 embed 动态库内要使用的动态库。这样的做法很麻烦，那么有什么意义呢？正如动态库本身的作用，如果工程本身也要用到该 <code>SVProgressHUD</code> 动态库时，那么仅需导入一份，就不会产生重复代码了。</p>
 <h4 id="静态库引用静态库"><a href="#静态库引用静态库" class="headerlink" title="静态库引用静态库"></a>静态库引用静态库</h4><p>新建一个 <code>target</code> 命名为 <code>StaticWithStatic</code> ，使用 cocoapods 管理 <code>SVProgressHUD</code> 。基本方法和上面一样，唯一需要改变的地方是 <strong>Mach-O</strong> 需要改为 <strong>Static Library</strong> ，运行。 </p>
@@ -564,8 +564,8 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2016/11/01/iOS多线程学习/" rel="prev" title="iOS中的多线程学习笔记">
-                iOS中的多线程学习笔记 <i class="fa fa-chevron-right"></i>
+              <a href="/2016/11/01/runloop/" rel="prev" title="runLoop学习笔记">
+                runLoop学习笔记 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -634,7 +634,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">56</span>
+              <span class="site-state-item-count">57</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -642,7 +642,7 @@
           
             <div class="site-state-item site-state-categories">
               <a href="/categories">
-                <span class="site-state-item-count">8</span>
+                <span class="site-state-item-count">9</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -651,7 +651,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">23</span>
+                <span class="site-state-item-count">24</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

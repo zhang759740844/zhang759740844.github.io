@@ -90,7 +90,7 @@
 <meta property="og:url" content="http://zhang759740844.github.io/2016/11/25/RN使用方式/index.html">
 <meta property="og:site_name" content="Zachary's blog">
 <meta property="og:description" content="这里基于0.39的官方文档，列举了一些需要知道的点。">
-<meta property="og:updated_time" content="2017-01-07T07:08:39.000Z">
+<meta property="og:updated_time" content="2017-01-10T07:44:33.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="React-Native 使用方式">
 <meta name="twitter:description" content="这里基于0.39的官方文档，列举了一些需要知道的点。">
@@ -387,19 +387,20 @@
 <h3 id="TextInput"><a href="#TextInput" class="headerlink" title="TextInput"></a>TextInput</h3><h4 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h4><p>文本输入组件，先看一个例子：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div></pre></td><td class="code"><pre><div class="line">class UselessTextInput extends Component &#123;</div><div class="line">  render() &#123;</div><div class="line">    return (</div><div class="line">      &lt;TextInput</div><div class="line">        &#123;...this.props&#125; // Inherit any props passed to it; e.g., multiline, numberOfLines below</div><div class="line">        editable = &#123;true&#125;</div><div class="line">        maxLength = &#123;40&#125;</div><div class="line">      /&gt;</div><div class="line">    );</div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">class UselessTextInputMultiline extends Component &#123;</div><div class="line">  constructor(props) &#123;</div><div class="line">    super(props);</div><div class="line">    this.state = &#123;</div><div class="line">      text: &apos;Useless Multiline Placeholder&apos;,</div><div class="line">    &#125;;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  render() &#123;</div><div class="line">    return (</div><div class="line">     &lt;View style=&#123;&#123;</div><div class="line">       backgroundColor: this.state.text,</div><div class="line">       borderBottomColor: &apos;#000000&apos;,</div><div class="line">       borderBottomWidth: 1 &#125;&#125;</div><div class="line">     &gt;</div><div class="line">       &lt;UselessTextInput</div><div class="line">         multiline = &#123;true&#125;</div><div class="line">         numberOfLines = &#123;4&#125;</div><div class="line">         onChangeText=&#123;(text) =&gt; this.setState(&#123;text&#125;)&#125;</div><div class="line">         value=&#123;this.state.text&#125;</div><div class="line">       /&gt;</div><div class="line">     &lt;/View&gt;</div><div class="line">    );</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p>这里为什么要把这个例子贴出来呢？主要有<strong>两个要点</strong>：</p>
-<p>首先，<code>{...this.props}</code> 的语法。这里<code>{}</code> 还是表示使用JS语法的意思。<code>...</code> 是es6的语法，叫做<strong>展开运算符</strong>。可以看看下面这个例子：</p>
+<p>首先，<code>{...this.props}</code> 的语法。这里<code>{}</code> 还是表示使用JS语法的意思。<code>...</code> 是es6的语法，叫做<strong>展开运算符</strong>，该功能用来遍历对象。可以看看下面这个例子：</p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> array = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>,<span class="number">6</span>,<span class="number">7</span>];</div><div class="line"><span class="built_in">console</span>.log(array);</div><div class="line"><span class="comment">//输出 [1, 2, 3, 4, 5, 6, 7]</span></div><div class="line"><span class="built_in">console</span>.log(...array);</div><div class="line"><span class="comment">//输出 1 2 3 4 5 6 7</span></div></pre></td></tr></table></figure>
 <p><code>this.props</code> 是个对象，肯定不能放在 Component 中，但是用了<strong>展开运算符</strong>，里面的属性就全部被展开了，也就符合了 JSX 的语法。不只是 <code>this.props</code> <strong>任何对象都可以用这种展开的方式将参数传入 Component</strong>。不过不建议滥用，因为容易将很多多余参数传入，可能产生一些不易排查的问题。</p>
 <p>其次，<code>onChangeText={(text) =&gt; this.setState({text})}</code>。一般 <code>setState()</code> 中都是对象，为什么这里只是 <code>text</code>？这也是es6的语法，在键和值相等的时候可以省略 <code>{text:text}</code> 为 <code>{text}</code>。也就是本例的 <code>this.setState({text})</code>。</p>
+<p>和 <code>onChangeText</code> 相对应的还有一个 <code>onEndEditing</code> 属性。前者是每次 text 变化的时候都会回调；后者只有在结束输入的时候会回调一次。</p>
 <h4 id="部分属性"><a href="#部分属性" class="headerlink" title="部分属性"></a>部分属性</h4><ol>
 <li><code>autoFocus</code>:在 <code>componentDidMount</code> 后是否自动获得焦点。</li>
 <li><code>defaultValue</code>:提供文本框的初始值。</li>
 <li><code>editable</code>:文本框是否可编辑</li>
 <li><code>maxLength</code>:文本框中最长字符数。使用这个属性而不用JS逻辑去实现，可以避免闪烁的现象。</li>
 <li><code>multiline</code>:是否可以多行，默认 false</li>
-<li><code>onFocus</code>,<code>onBlur</code>,<code>onEndEditing</code>,<code>onSubmitEditing</code>:输入框在各种情况下的回调函数。</li>
+<li><code>onFocus</code>,<code>onBlur</code>,<code>onSubmitEditing</code>:输入框在各种情况下的回调函数。</li>
 <li><code>onChange</code>:当输入框内容改变时，回调该函数</li>
-<li><code>onChangeText</code>:当输入框内容改变时，回调该函数。改变后的文字内容将作为参数传入。</li>
+<li><code>onChangeText</code>,<code>onEndEditing</code>:前者当输入框内容改变时，回调该函数。改变后的文字内容将作为参数传入;后者当输入框结束编辑后回调该函数。</li>
 <li><code>placeholder</code>:占位符</li>
 <li><code>placeholderTextColor</code>:占位符颜色.(注意，貌似没有 placeholderTextSize 这个属性)</li>
 <li><code>value</code>:输入框内显示的值 </li>
@@ -493,16 +494,16 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2016/11/25/RN使用技巧/" rel="next" title="React-Native 技巧与坑总结">
-                <i class="fa fa-chevron-left"></i> React-Native 技巧与坑总结
+              <a href="/2016/11/17/KVO/" rel="next" title="KVO 简介">
+                <i class="fa fa-chevron-left"></i> KVO 简介
               </a>
             
           </div>
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2016/12/03/hexo爬过的坑/" rel="prev" title="hexo 配置遇到的一些坑">
-                hexo 配置遇到的一些坑 <i class="fa fa-chevron-right"></i>
+              <a href="/2016/11/25/RN使用技巧/" rel="prev" title="React-Native 技巧与坑总结">
+                React-Native 技巧与坑总结 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -571,7 +572,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">56</span>
+              <span class="site-state-item-count">57</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -579,7 +580,7 @@
           
             <div class="site-state-item site-state-categories">
               <a href="/categories">
-                <span class="site-state-item-count">8</span>
+                <span class="site-state-item-count">9</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -588,7 +589,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">23</span>
+                <span class="site-state-item-count">24</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

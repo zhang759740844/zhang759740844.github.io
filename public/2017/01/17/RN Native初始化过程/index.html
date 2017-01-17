@@ -1,0 +1,914 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="React-Native," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="RN 是如何启动的，oc 与 js 是如何通信的将是本文探究的重点。虽然网上已经有不少解释 RN 原理的文章，但是到自己读起源码的时候，还是非常累人的。这里，将较为细致的梳理一下 RN 的方法调用过程，希望能对各位有所帮助。
+本文主要针对 RN 0.39 版本，不同版本可能会略有不同。不多bb RN 的基本概要了，直接开始（建议读者还是先自行了解下 RN 的基本原理，有助于理解）。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="React-Native 初始化与通信原理源码分析">
+<meta property="og:url" content="http://zhang759740844.github.io/2017/01/17/RN Native初始化过程/index.html">
+<meta property="og:site_name" content="Zachary's blog">
+<meta property="og:description" content="RN 是如何启动的，oc 与 js 是如何通信的将是本文探究的重点。虽然网上已经有不少解释 RN 原理的文章，但是到自己读起源码的时候，还是非常累人的。这里，将较为细致的梳理一下 RN 的方法调用过程，希望能对各位有所帮助。
+本文主要针对 RN 0.39 版本，不同版本可能会略有不同。不多bb RN 的基本概要了，直接开始（建议读者还是先自行了解下 RN 的基本原理，有助于理解）。">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/RN启动流程.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/moduleConfig.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/jsBundle.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/获取methods.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/bridgeConfig.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/json示例.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/native_js_通信.png?raw=true">
+<meta property="og:updated_time" content="2017-01-17T07:55:16.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="React-Native 初始化与通信原理源码分析">
+<meta name="twitter:description" content="RN 是如何启动的，oc 与 js 是如何通信的将是本文探究的重点。虽然网上已经有不少解释 RN 原理的文章，但是到自己读起源码的时候，还是非常累人的。这里，将较为细致的梳理一下 RN 的方法调用过程，希望能对各位有所帮助。
+本文主要针对 RN 0.39 版本，不同版本可能会略有不同。不多bb RN 的基本概要了，直接开始（建议读者还是先自行了解下 RN 的基本原理，有助于理解）。">
+<meta name="twitter:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/RN启动流程.png?raw=true">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://zhang759740844.github.io/2017/01/17/RN Native初始化过程/"/>
+
+  <title> React-Native 初始化与通信原理源码分析 | Zachary's blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Zachary's blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">记录成长</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup">
+ <span class="search-icon fa fa-search"></span>
+ <input type="text" id="local-search-input">
+ <div id="local-search-result"></div>
+ <span class="popup-btn-close">close</span>
+</div>
+
+
+    </div>
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                React-Native 初始化与通信原理源码分析
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-01-17T10:07:12+08:00" content="2017-01-17">
+              2017-01-17
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/React-Native/" itemprop="url" rel="index">
+                    <span itemprop="name">React-Native</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>RN 是如何启动的，oc 与 js 是如何通信的将是本文探究的重点。虽然网上已经有不少解释 RN 原理的文章，但是到自己读起源码的时候，还是非常累人的。这里，将较为细致的梳理一下 RN 的方法调用过程，希望能对各位有所帮助。</p>
+<p>本文主要针对 RN 0.39 版本，不同版本可能会略有不同。不多bb RN 的基本概要了，直接开始（建议读者还是先自行了解下 RN 的基本原理，有助于理解）。</p>
+<a id="more"></a>
+<h2 id="Native-初始化过程"><a href="#Native-初始化过程" class="headerlink" title="Native 初始化过程"></a>Native 初始化过程</h2><p>先来一张完整的初始化流程图：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/RN启动流程.png?raw=true" alt="RN 初始化流程图"></p>
+<p>下面将对其中的部分方法做一些注释。</p>
+<h3 id="tag1"><a href="#tag1" class="headerlink" title="tag1"></a>tag1</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">RCTRootView *rootView = [[RCTRootView alloc] initWithBundleURL:jsCodeLocation</div><div class="line">                                                    moduleName:<span class="string">@"AwesomeProject"</span></div><div class="line">                                             initialProperties:<span class="literal">nil</span></div><div class="line">                                                 launchOptions:launchOptions];</div></pre></td></tr></table></figure>
+<p>任何 RN 的使用者都应该对这个方法不陌生。在 js 端写的各个 component，都将在 native 转换成 <code>RCTRootView</code> 的形式展现出来。</p>
+<p>这个方法分为两步，第一步创建一个 <code>RCTBridge</code> 的实例，它是 oc 与 js 交互的桥梁，整个初始化的过程就是创建这个 Bridge。第二步通过这个 Bridge 创建一个 <code>RCTRootView</code>。</p>
+<p>这里需要注意一下。对于一个半 RN 半 native 的应用（即不是通过 RN 的 navigator 跳转，而是通过原生跳转好后，再分别创建 RN 的 view），创建页面时不应该直接调用 <code>initWithBundleURL:moduleName:initialProperties:launchOptions:</code> 方法。因为这样每次都要创建 <code>RCTBridge</code>，这是一个耗时耗资源的过程。应该事先创建好 <code>RCTBridge</code>，在要创建页面的时候调用 <code>initWithBridge:moduleName:initialProperties:</code> 方法。</p>
+<h3 id="tag2"><a href="#tag2" class="headerlink" title="tag2"></a>tag2</h3><p>一番跳转来到 <code>setUp</code> 方法内，一些比较次要的代码比如 <code>Logger</code> 我就不分析了：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)setUp</div><div class="line">&#123;</div><div class="line">	...</div><div class="line">  [<span class="keyword">self</span> createBatchedBridge];</div><div class="line">  [<span class="keyword">self</span>.batchedBridge start];</div><div class="line">	...</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>创建并持有了其子类 <code>RCTBatchedBridge</code> 的实例。<code>RCTBridge</code> 中其实没有太多代码，初始化的大部分逻辑都在 <code>[self.batchedBridge start]</code> 中完成。</p>
+<h3 id="tag3"><a href="#tag3" class="headerlink" title="tag3"></a>tag3</h3><p>创建 <code>RCTBatchedBridge</code> 中最重要的方法就是 <code>[self.batchedBridge start]</code> 方法。该方法主要包含以下几步:</p>
+<ol>
+<li>读取 js 源码</li>
+<li>初始化各个需要给 js 调用的模块</li>
+<li>创建一个 JSContext，为 JSContext 设置多个回调方法</li>
+<li>将模块信息写入一个字符串中</li>
+<li>将字符串传递给 js 端</li>
+<li>执行 js 源码</li>
+</ol>
+<p>其中创建了两个 GCDGroup，分别为 <code>initModulesAndLoadSource</code> 和 <code>setupJSExecutorAndModuleConfig</code>。当3、4步完成后才能执行第5步，当1、2、5都完成后才会执行6。</p>
+<h3 id="tag4"><a href="#tag4" class="headerlink" title="tag4"></a>tag4</h3><p>异步地读取 jsBundle，传入加载成功和正在加载中的回调方法。没有太多好说的，都是一些系统 api 的调用。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">  [<span class="keyword">self</span> loadSource:^(<span class="built_in">NSError</span> *error, <span class="built_in">NSData</span> *source, __unused int64_t sourceLength) &#123;</div><div class="line">    <span class="keyword">if</span> (error) &#123;</div><div class="line">      RCTLogWarn(<span class="string">@"Failed to load source: %@"</span>, error);</div><div class="line">      <span class="built_in">dispatch_async</span>(dispatch_get_main_queue(), ^&#123;</div><div class="line">        [weakSelf stopLoadingWithError:error];</div><div class="line">      &#125;);</div><div class="line">    &#125;</div><div class="line">    sourceCode = source;</div><div class="line">    dispatch_group_leave(initModulesAndLoadSource);</div><div class="line">  &#125; onProgress:^(RCTLoadingProgress *progressData) &#123;</div><div class="line"><span class="meta">#ifdef RCT_DEV</span></div><div class="line">    RCTDevLoadingView *loadingView = [weakSelf moduleForClass:[RCTDevLoadingView <span class="keyword">class</span>]];</div><div class="line">    [loadingView updateProgress:progressData];</div><div class="line"><span class="meta">#endif</span></div><div class="line">  &#125;];</div></pre></td></tr></table></figure>
+<p>其中，<code>[weakSelf stopLoadingWithError:error]</code> 就是经常所见的红屏报错。<code>onProgress</code> 的回调方法表示，如果在真机上加载，那么在加载时页面上部显示 “Loading from XXXX” 的提示。</p>
+<h3 id="tag5"><a href="#tag5" class="headerlink" title="tag5"></a>tag5</h3><p><code>initModulesWithDispatchGroup:</code> 是一个比较复杂的方法，用来初始化模块信息。每一个将要暴露给 js 的模块都会保存为 <code>RCTModuleData</code> 的形式，然后被存储为3分配置表。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">NSMutableArray</span>&lt;Class&gt; *moduleClassesByID = [<span class="built_in">NSMutableArray</span> new];</div><div class="line"><span class="built_in">NSMutableArray</span>&lt;RCTModuleData *&gt; *moduleDataByID = [<span class="built_in">NSMutableArray</span> new];</div><div class="line"><span class="built_in">NSMutableDictionary</span>&lt;<span class="built_in">NSString</span> *, RCTModuleData *&gt; *moduleDataByName = [<span class="built_in">NSMutableDictionary</span> new];</div><div class="line"></div><div class="line">moduleDataByName[moduleName] = moduleData;</div><div class="line">[moduleClassesByID addObject:moduleClass];</div><div class="line">[moduleDataByID addObject:moduleData];</div></pre></td></tr></table></figure>
+<h4 id="RCTRegisterModule"><a href="#RCTRegisterModule" class="headerlink" title="RCTRegisterModule"></a>RCTRegisterModule</h4><p>那么，如何找到暴露给 js 的模块呢？RN 提供了 <code>RCTRegisterModule();</code> 的宏：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#define RCT_EXPORT_MODULE(js_name) \</span></div><div class="line">RCT_EXTERN <span class="keyword">void</span> RCTRegisterModule(Class); \</div><div class="line">+ (<span class="built_in">NSString</span> *)moduleName &#123; <span class="keyword">return</span> @<span class="meta">#js_name; &#125; \</span></div><div class="line">+ (<span class="keyword">void</span>)load &#123; RCTRegisterModule(<span class="keyword">self</span>); &#125;</div><div class="line"></div><div class="line"><span class="keyword">void</span> RCTRegisterModule(Class moduleClass)</div><div class="line">&#123;</div><div class="line">  <span class="keyword">static</span> <span class="built_in">dispatch_once_t</span> onceToken;</div><div class="line">  <span class="built_in">dispatch_once</span>(&amp;onceToken, ^&#123;</div><div class="line">    RCTModuleClasses = [<span class="built_in">NSMutableArray</span> new];</div><div class="line">  &#125;);</div><div class="line">  </div><div class="line">  <span class="comment">// Register module</span></div><div class="line">  [RCTModuleClasses addObject:moduleClass];</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这样就生成了两个方法：</p>
+<ol>
+<li>在类 <code>load</code> 的时候，就会调用 <code>RCTRegisterModule</code> 方法，将类自动注册到 <code>RCTModuleClasses</code> 数组中。只要遍历该数组，就能取出所有暴露出的模块。</li>
+<li><code>moduleName</code> 方法，返回 <code>@#js_name</code>。这里的 <code>@#</code> 的一时是把宏参数 <code>js_name</code> 转为字符串，啥也没有，返回的就是空。当然在 <code>RCTBridgeModuleNameForClass()</code> 这个获取模块名的方法里，如果 <code>moduleName</code> 长度为0，那么就会调用 <code>NSStringFromClass()</code> 方法获取类名。</li>
+</ol>
+<h3 id="tag6"><a href="#tag6" class="headerlink" title="tag6"></a>tag6</h3><p>在所有要暴露给 js 的类中，<code>RCTJSCExecutor</code> 是最特殊的一个类。需要率先创建一个实例并作为instance 保存在一个 <code>RCTModuleData</code> 的实例中，以防其他 module 可能需要用到。</p>
+<p>在创建 <code>RCTJSCExecutor</code> 实例的时候，创建了一个 JSThread，所有的 JS 通信，都是通过  <code>RCTJSCExecutor</code> 执行，都是在这个 JSThread 内。</p>
+<h3 id="tag7"><a href="#tag7" class="headerlink" title="tag7"></a>tag7</h3><p>除了 <code>RCTJSCExecutor</code> 的其他模块实例化的过程都是在 <code>prepareModulesWithDispatchGroup:</code> 中完成。实例化每个暴露的模块，并将其设置为 <code>RCTModuleData</code> 的 <code>instance</code> 属性。在 <code>setUpMethodQueue</code> 方法中，为每一个模块都会创建一个自己独有的专属串行队列，保证每个模块内的通信事件都是串行执行的。</p>
+<h3 id="tag8"><a href="#tag8" class="headerlink" title="tag8"></a>tag8</h3><p><code>gatherConstants</code> 方法主要功能：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">RCTExecuteOnMainThread(^&#123;</div><div class="line">  <span class="keyword">self</span>-&gt;_constantsToExport = [<span class="keyword">self</span>-&gt;_instance constantsToExport] ?: @&#123;&#125;;</div><div class="line">&#125;, <span class="literal">YES</span>);</div></pre></td></tr></table></figure>
+<p>将模块(instance)的一些常量设置给各自的 <code>RCTModuleData</code> 实例中。</p>
+<h3 id="tag9"><a href="#tag9" class="headerlink" title="tag9"></a>tag9</h3><p>在 <code>setUp</code> 方法中，JSThread 内创建了一个 <code>JSContext</code>，并且为 Context 设置了不同的 block，如：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">context[<span class="string">@"nativeFlushQueueImmediate"</span>] = ^(<span class="built_in">NSArray</span>&lt;<span class="built_in">NSArray</span> *&gt; *calls)&#123;</div><div class="line">  RCTJSCExecutor *strongSelf = weakSelf;</div><div class="line">  <span class="keyword">if</span> (!strongSelf.valid || !calls) &#123;</div><div class="line">    <span class="keyword">return</span>;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  RCT_PROFILE_BEGIN_EVENT(RCTProfileTagAlways, <span class="string">@"nativeFlushQueueImmediate"</span>, <span class="literal">nil</span>);</div><div class="line">  [strongSelf-&gt;_bridge handleBuffer:calls batchEnded:<span class="literal">NO</span>];</div><div class="line">  RCT_PROFILE_END_EVENT(RCTProfileTagAlways, <span class="string">@"js_call"</span>);</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<p>这些 block 会在特定的场合调用。之后将有介绍。</p>
+<h3 id="tag10"><a href="#tag10" class="headerlink" title="tag10"></a>tag10</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">- (<span class="built_in">NSString</span> *)moduleConfig</div><div class="line">&#123;</div><div class="line">  <span class="built_in">NSMutableArray</span>&lt;<span class="built_in">NSArray</span> *&gt; *config = [<span class="built_in">NSMutableArray</span> new];</div><div class="line">  <span class="keyword">for</span> (RCTModuleData *moduleData <span class="keyword">in</span> _moduleDataByID) &#123;</div><div class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.executorClass == [RCTJSCExecutor <span class="keyword">class</span>]) &#123;</div><div class="line">      [config addObject:@[moduleData.name]];</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">      [config addObject:RCTNullIfNil(moduleData.config)];</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="keyword">return</span> RCTJSONStringify(@&#123;</div><div class="line">    <span class="string">@"remoteModuleConfig"</span>: config,</div><div class="line">  &#125;, <span class="literal">NULL</span>);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>在 <code>moduleConfig</code> 方法中，各个模块名将先被加入 config 数组中，然后被转换为 json 字符串的形式。这里只是写入模块名：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/moduleConfig.png?raw=true" alt="moduleConfig"></p>
+<h3 id="tag11"><a href="#tag11" class="headerlink" title="tag11"></a>tag11</h3><p>这一步将上面的 JSON 字符串通过 <code>JSExecutor</code> 传入 JS 作为全局变量。变量名为 <code>__fbBatchedBridgeConfig</code>:</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)injectJSONConfiguration:(<span class="built_in">NSString</span> *)configJSON</div><div class="line">                     onComplete:(<span class="keyword">void</span> (^)(<span class="built_in">NSError</span> *))onComplete</div><div class="line">&#123;</div><div class="line">	...</div><div class="line">  [_javaScriptExecutor injectJSONText:configJSON</div><div class="line">                  asGlobalObjectNamed:<span class="string">@"__fbBatchedBridgeConfig"</span></div><div class="line">                             callback:onComplete];</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="tag-12"><a href="#tag-12" class="headerlink" title="tag 12"></a>tag 12</h3><p>当上面所有步骤全部做完后，就开始通过 <code>executeSourceCode</code> 执行 js 代码了。</p>
+<h2 id="JS初始化过程"><a href="#JS初始化过程" class="headerlink" title="JS初始化过程"></a>JS初始化过程</h2><p>native 端 <code>injectJSONConfiguration</code> 只把模块的名称组成的 JSON 字符串置入了 <code>__fbBatchedBridgeConfig</code>，那么 JS 端如何拿到模块的方法以及一些常量信息呢？需要我们研究一下 JS 端的初始化过程。</p>
+<h3 id="NativeModule"><a href="#NativeModule" class="headerlink" title="NativeModule"></a>NativeModule</h3><p>js 的打包文件如下所示：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/jsBundle.png?raw=true" alt="jsbundle"></p>
+<p>可以看到，其中导入了 <code>NativeModule</code>。它就是用来接收保存 native 端暴露的模块的。</p>
+<p>先来看一张整体的初始化流程图：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/获取methods.png?raw=true" alt="JS 初始化"></p>
+<h4 id="tag1-1"><a href="#tag1-1" class="headerlink" title="tag1"></a>tag1</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">const</span> bridgeConfig = global.__fbBatchedBridgeConfig;</div><div class="line">invariant(bridgeConfig, <span class="string">'__fbBatchedBridgeConfig is not set, cannot invoke native modules'</span>);</div><div class="line">(bridgeConfig.remoteModuleConfig || []).forEach((config: ModuleConfig, moduleID: number) =&gt; &#123;</div><div class="line">  <span class="comment">// Initially this config will only contain the module name when running in JSC. The actual</span></div><div class="line">  <span class="comment">// configuration of the module will be lazily loaded.</span></div><div class="line">  <span class="keyword">const</span> info = genModule(config, moduleID);</div><div class="line">  <span class="keyword">if</span> (!info) &#123;</div><div class="line">    <span class="keyword">return</span>;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="keyword">if</span> (info.module) &#123;</div><div class="line">    NativeModules[info.name] = info.module;</div><div class="line">  &#125;</div><div class="line">  <span class="comment">// If there's no module config, define a lazy getter</span></div><div class="line">  <span class="keyword">else</span> &#123;</div><div class="line">    defineLazyObjectProperty(NativeModules, info.name, &#123;</div><div class="line">      get: () =&gt; loadModule(info.name, moduleID)</div><div class="line">    &#125;);</div><div class="line">  &#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>这里的 <code>global.__fbBatchedBridgeConfig</code> 就是 native 注入的字符串，通常情况下是各个模块名。这里说一般是因为如果打开了 Remote JS Debugging，那么这里得到的是包括方法名的全部配置信息。如下图：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/bridgeConfig.png?raw=true" alt="bridgeConfig"></p>
+<p>(注：开了 Remote JS Debugging 后 js 代码是可以断点的，但是 Xcode 经常显示 <code>__nw_connection_get_connected_socket_block_invoke xx Connection has no connected handler</code> 然后，Xcode 的断点就失灵了。)</p>
+<p>关闭 Remote JS Debugging，<code>info.module</code> 为 nil，因此一定会运行到 <code>get: () =&gt; loadModule(info.name, moduleID)</code> 方法，该方法是一个懒加载方法，以此来加快 RN 的初始化速度。</p>
+<h4 id="tag2-1"><a href="#tag2-1" class="headerlink" title="tag2"></a>tag2</h4><p>进入 <code>loadModule</code> 方法：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">loadModule</span>(<span class="params">name: string, moduleID: number</span>): ?<span class="title">Object</span> </span>&#123;</div><div class="line">  invariant(global.nativeRequireModuleConfig,</div><div class="line">    <span class="string">'Can\'t lazily create module without nativeRequireModuleConfig'</span>);</div><div class="line">  <span class="keyword">const</span> config = global.nativeRequireModuleConfig(name);</div><div class="line">  <span class="keyword">const</span> info = genModule(config, moduleID);</div><div class="line">  <span class="keyword">return</span> info &amp;&amp; info.module;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>可以看到调用了 <code>global.nativeRequireModuleConfig</code> 方法，以及 <code>genModule</code> 方法。</p>
+<h4 id="tag3-1"><a href="#tag3-1" class="headerlink" title="tag3"></a>tag3</h4><p><code>global.nativeRequireModuleConfig</code> 就是 native 流程图的 tag9，<code>RCTJSCExecutor</code> 的 <code>setUp</code> 方法中，注册的诸多回调中的一个：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">context[<span class="string">@"nativeRequireModuleConfig"</span>] = ^<span class="built_in">NSArray</span> *(<span class="built_in">NSString</span> *moduleName) &#123;</div><div class="line">  RCTJSCExecutor *strongSelf = weakSelf;</div><div class="line">  <span class="keyword">if</span> (!strongSelf.valid) &#123;</div><div class="line">    <span class="keyword">return</span> <span class="literal">nil</span>;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  RCT_PROFILE_BEGIN_EVENT(RCTProfileTagAlways, <span class="string">@"nativeRequireModuleConfig"</span>, @&#123; <span class="string">@"moduleName"</span>: moduleName &#125;);</div><div class="line">  <span class="built_in">NSArray</span> *result = [strongSelf-&gt;_bridge configForModuleName:moduleName];</div><div class="line">  RCT_PROFILE_END_EVENT(RCTProfileTagAlways, <span class="string">@"js_call,config"</span>);</div><div class="line">  <span class="keyword">return</span> RCTNullIfNil(result);</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<p><code>methods</code> 方法会拿到对应 <code>RCTModuleData</code> 的所有方法，然后循环找到以 <code>__rct_export__</code> 开头的方法(为什么是以 <code>__rct_export__</code> 开头后面再讲)。</p>
+<p><code>JSMethodName</code> 方法会拿到方法的字符串，并截取第一个冒号前的字符，作为 JS 简写方法名。</p>
+<p>最后将各个方法常量等组成一个数组，即需要返回的 <code>config</code>:</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">NSArray</span> *config = @[</div><div class="line">  <span class="keyword">self</span>.name,</div><div class="line">  RCTNullIfNil(constants),</div><div class="line">  RCTNullIfNil(methods),</div><div class="line">  RCTNullIfNil(promiseMethods),</div><div class="line">  RCTNullIfNil(syncMethods)</div><div class="line">];</div></pre></td></tr></table></figure>
+<h4 id="tag4-1"><a href="#tag4-1" class="headerlink" title="tag4"></a>tag4</h4><p>来看一下 <code>genModule</code> 方法：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">genModule</span>(<span class="params">config: ?ModuleConfig, moduleID: number</span>): ?</span>&#123;name: string, <span class="built_in">module</span>?: <span class="built_in">Object</span>&#125; &#123;</div><div class="line">  ...</div><div class="line">  methods &amp;&amp; methods.forEach((methodName, methodID) =&gt; &#123;</div><div class="line">    <span class="keyword">const</span> isPromise = promiseMethods &amp;&amp; arrayContains(promiseMethods, methodID);</div><div class="line">    <span class="keyword">const</span> isSync = syncMethods &amp;&amp; arrayContains(syncMethods, methodID);</div><div class="line">    invariant(!isPromise || !isSync, <span class="string">'Cannot have a method that is both async and a sync hook'</span>);</div><div class="line">    <span class="keyword">const</span> methodType = isPromise ? <span class="string">'promise'</span> : isSync ? <span class="string">'sync'</span> : <span class="string">'async'</span>;</div><div class="line">    <span class="built_in">module</span>[methodName] = genMethod(moduleID, methodID, methodType);</div><div class="line">  &#125;);</div><div class="line">  ...</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>拿到了通过 <code>global.nativeRequireModuleConfig</code> 方法获得的完整 <code>config</code> 信息。在该方法中通过一个循环，将所有 <code>method</code> 拿出，存入一个 <code>module</code> 对象中去，键是 method 名，值是通过 <code>genMethod</code> 方法生成的 function。</p>
+<h4 id="tag5-1"><a href="#tag5-1" class="headerlink" title="tag5"></a>tag5</h4><p>再跟进到 <code>genMethod</code> 方法中去：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">genMethod</span>(<span class="params">moduleID: number, methodID: number, type: MethodType</span>) </span>&#123;</div><div class="line">  <span class="keyword">let</span> fn = <span class="literal">null</span>;</div><div class="line">  <span class="keyword">if</span> (type === <span class="string">'promise'</span>) &#123;</div><div class="line">	...</div><div class="line">  &#125; <span class="keyword">else</span> &#123;</div><div class="line">    fn = <span class="function"><span class="keyword">function</span>(<span class="params">...args: Array&lt;any&gt;</span>) </span>&#123;</div><div class="line">      <span class="keyword">const</span> lastArg = args.length &gt; <span class="number">0</span> ? args[args.length - <span class="number">1</span>] : <span class="literal">null</span>;</div><div class="line">      <span class="keyword">const</span> secondLastArg = args.length &gt; <span class="number">1</span> ? args[args.length - <span class="number">2</span>] : <span class="literal">null</span>;</div><div class="line">      <span class="keyword">const</span> hasSuccessCallback = <span class="keyword">typeof</span> lastArg === <span class="string">'function'</span>;</div><div class="line">      <span class="keyword">const</span> hasErrorCallback = <span class="keyword">typeof</span> secondLastArg === <span class="string">'function'</span>;</div><div class="line">      hasErrorCallback &amp;&amp; invariant(</div><div class="line">        hasSuccessCallback,</div><div class="line">        <span class="string">'Cannot have a non-function arg after a function arg.'</span></div><div class="line">      );</div><div class="line">      <span class="keyword">const</span> onSuccess = hasSuccessCallback ? lastArg : <span class="literal">null</span>;</div><div class="line">      <span class="keyword">const</span> onFail = hasErrorCallback ? secondLastArg : <span class="literal">null</span>;</div><div class="line">      <span class="keyword">const</span> callbackCount = hasSuccessCallback + hasErrorCallback;</div><div class="line">      args = args.slice(<span class="number">0</span>, args.length - callbackCount);</div><div class="line">      BatchedBridge.enqueueNativeCall(moduleID, methodID, args, onFail, onSuccess);</div><div class="line">    &#125;;</div><div class="line">  &#125;</div><div class="line">  fn.type = type;</div><div class="line">  <span class="keyword">return</span> fn;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>我们现在只看 else 的情况。主要就是将 <code>moduleID</code>，<code>methodID</code>，参数以及失败和成功的回调函数传入 <code>BatchedBridge</code> 的 <code>enqueuenativeCall</code> 方法。这里的 <code>moduleID</code>，<code>methodID</code>， 也就是一般讨论 RN 原理时经常看到的 “通过模块、方法id找到对应模块和方法”，其实就是<strong>对应数组中的下标</strong>。</p>
+<p>另外，关于取出成功和失败的回调方法，是通过判断最后两个参数是否是方法来得到的，默认情况下，最后一个是成功的回调方法，倒数第二个是失败的回调方法。因此，如果需要设置回调方法，那么必须放在最后，且回调方法不能超过两个。</p>
+<h3 id="BatchedBridge"><a href="#BatchedBridge" class="headerlink" title="BatchedBridge"></a>BatchedBridge</h3><p><code>BatchedBridge</code> 是个啥:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">const</span> MessageQueue = <span class="built_in">require</span>(<span class="string">'MessageQueue'</span>);</div><div class="line"><span class="keyword">const</span> BatchedBridge = <span class="keyword">new</span> MessageQueue();</div><div class="line"></div><div class="line">...</div><div class="line"></div><div class="line">Object.defineProperty(global, <span class="string">'__fbBatchedBridge'</span>, &#123;</div><div class="line">  configurable: <span class="literal">true</span>,</div><div class="line">  value: BatchedBridge,</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p><code>BatchedBridge</code> 是一个 <code>MessageQueue</code> 实例。其将自身写入全局变量 <code>__fbBatchedBridge</code> 上，这样 Native 可以通过 <code>__fbBatchedBridge</code> ，访问 JSBridge对象，比如在 <code>RCTJSCExecutor.mm</code> 的 <code>_executeJSCall:arguments:unwrapResult:callback</code> 方法中。</p>
+<h3 id="MessageQueue"><a href="#MessageQueue" class="headerlink" title="MessageQueue"></a>MessageQueue</h3><p>在前面的 tag5 中我们看到，<code>genModule</code> 方法中生成的 function 调用了 <code>BatchedBridge</code> 的 <code>enqueuenativeCall</code>。这个方法就定义在 <code>MessageQueue.js</code> 中。</p>
+<p>代码太长我就就贴部分吧，大致分为 个部分：</p>
+<p>首先，在 <code>MessageQueue</code> 中定义了一个从0开始的计数的 <code>_callbackID</code>，用来标识 js 端的回调函数。将 <code>callbackID</code> push 进参数数组 <code>params</code> 里。然后，将这个 callback 保存在本地的 <code>_callbacks</code> 数组中的对应 <code>callbackID</code> 位置。这样，当 native 传来回调的 <code>callbackID</code> 的时候，就能在 <code>_callbacks</code> 数组中找到并执行相应方法了。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">onFail &amp;&amp; params.push(this._callbackID);</div><div class="line">this._callbacks[this._callbackID++] = onFail;</div><div class="line">onSucc &amp;&amp; params.push(this._callbackID);</div><div class="line">this._callbacks[this._callbackID++] = onSucc;</div></pre></td></tr></table></figure>
+<p>设置好回调之后，将 <code>moduleID</code>，<code>methodID</code>，<code>params</code> 分别 push 进 <code>_queue</code>这个数组的各个位置。下面的 <code>MODULE_IDS</code>，<code>METHOD_IDS</code>，<code>PARAMS</code>分别代表0，1，2。<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">this</span>._queue[MODULE_IDS].push(moduleID);</div><div class="line"><span class="keyword">this</span>._queue[METHOD_IDS].push(methodID);</div><div class="line"><span class="keyword">this</span>._queue[PARAMS].push(params);</div></pre></td></tr></table></figure></p>
+<p>为什么要把方法参数放进一个 <code>_queue</code> 数组里呢？因为 js 不能主动调用除了上面设置 <code>JSContext</code> 的时候设置的那些回调方法外的 native 方法，所以 js 端想调用 native 端代码的时候，必须将想要调用的模块、方法、参数放在一个数组里，等待 native 来获取这个数组，也就是这个 <code>_queue</code>。什么时候 native 回来要一次这个数组呢？比如在完成 native 调用 js 方法后：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">[_javaScriptExecutor callFunctionOnModule:module</div><div class="line">                                   method:method</div><div class="line">                                arguments:args</div><div class="line">                                 callback:^(<span class="keyword">id</span> json, <span class="built_in">NSError</span> *error) &#123;</div><div class="line">                                   [weakSelf _processResponse:json error:error];</div><div class="line">                                 &#125;];</div></pre></td></tr></table></figure>
+<p>上面的这个方法就是 native 调用 js 的方法，具体的调用流程在后面会说明。可以看到，在 <code>callback</code> 的 block 内，有一个叫做 <code>json</code> 的入参，这个 <code>json</code> 就是上面的 <code>_queue</code>。在 native 调用完 js 的方法后，native 就会来处理 js 是否需要调用 native 的什么方法，并且刷新 <code>_queue</code> 数组。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/json示例.png?raw=true" alt="json示例"></p>
+<p>继续刚才的 <code>enqueueNativeCall</code> 方法往下走执行到下面的代码：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">if</span> (global.nativeFlushQueueImmediate &amp;&amp; now - <span class="keyword">this</span>._lastFlush &gt;= MIN_TIME_BETWEEN_FLUSHES_MS) &#123;</div><div class="line">    global.nativeFlushQueueImmediate(<span class="keyword">this</span>._queue);</div><div class="line">    <span class="keyword">this</span>._queue = [[], [], [], <span class="keyword">this</span>._callID];</div><div class="line">    <span class="keyword">this</span>._lastFlush = now;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这里的 <code>global.nativeFlushQueueImmediate</code> 就是 <code>JSContext</code> 设置的几个回调方法中的一个，供 JS 主动调用。来看一下这个方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">context[<span class="string">@"nativeFlushQueueImmediate"</span>] = ^(<span class="built_in">NSArray</span>&lt;<span class="built_in">NSArray</span> *&gt; *calls)&#123;</div><div class="line">  RCTJSCExecutor *strongSelf = weakSelf;</div><div class="line">  <span class="keyword">if</span> (!strongSelf.valid || !calls) &#123;</div><div class="line">    <span class="keyword">return</span>;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  RCT_PROFILE_BEGIN_EVENT(RCTProfileTagAlways, <span class="string">@"nativeFlushQueueImmediate"</span>, <span class="literal">nil</span>);</div><div class="line">  [strongSelf-&gt;_bridge handleBuffer:calls batchEnded:<span class="literal">NO</span>];</div><div class="line">  RCT_PROFILE_END_EVENT(RCTProfileTagAlways, <span class="string">@"js_call"</span>);</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<p>调用了 <code>nativeFlushQueueImmediate</code> 方法后就会执行 <code>handleBuffer:batcheEnded:</code> 方法来强制 native 来执行 js 需要调用的 native 方法，并且刷新 <code>_queue</code> 数组。</p>
+<p>因此，<code>enqueueNativeCall</code> 方法中的这段代码表示，当上次刷新 <code>_queue</code> 数组的时间和当前时间相比超过了 <code>MIN_TIME_BETWEEN_FLUSHES_MS</code> 即5ms，那么就会主动调用 native 的 <code>nativeFlushQueueImmediate</code> 方法，强制执行，刷新 <code>_queue</code>。</p>
+<p>注意到，这里清空的操作：<code>this._queue = [[], [], [], this._callID];</code>，将 <code>_queue</code> 的第四项设置为 <code>_callID</code>。这个 <code>_callID</code> 每次 <code>enqueueNativeCall</code> 的时候都会自增一次，应该只是一个标记，暂时没看出有什么太特别的用处。</p>
+<h3 id="RCT-EXPORT-METHOD"><a href="#RCT-EXPORT-METHOD" class="headerlink" title="RCT_EXPORT_METHOD()"></a>RCT_EXPORT_METHOD()</h3><p>RN 是如何将方法前加上 <code>__rct_export__</code> 的呢？通过 <code>RCT_EXPORT_METHOD()</code> 方法。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#define RCT_EXPORT_METHOD(method) \</span></div><div class="line">  RCT_REMAP_METHOD(, method)</div><div class="line"></div><div class="line"><span class="meta">#define RCT_REMAP_METHOD(js_name, method) \</span></div><div class="line">  RCT_EXTERN_REMAP_METHOD(js_name, method) \</div><div class="line">  - (<span class="keyword">void</span>)method</div><div class="line"></div><div class="line"><span class="meta">#define RCT_EXTERN_REMAP_METHOD(js_name, method) \</span></div><div class="line">  + (<span class="built_in">NSArray</span>&lt;<span class="built_in">NSString</span> *&gt; *)RCT_CONCAT(__rct_export__, \</div><div class="line">    RCT_CONCAT(js_name, RCT_CONCAT(__LINE__, __COUNTER__))) &#123; \</div><div class="line">    <span class="keyword">return</span> @[@<span class="meta">#js_name, @#method]; \</span></div><div class="line">  &#125;</div></pre></td></tr></table></figure>
+<p>中间的宏为方法补全了 <code>-(void)</code> 恢复了完整 OC 方法的定义。这样才能使得 <code>RCT_EXPORT_METHOD(xxx)</code> 这样的写法编译器不报错。</p>
+<p>下面的宏中 <code>RCT_CONCAT</code> 是一个拼接的宏。大致为每一个 <code>RCT_EXPORT_METHOD</code> 生成了唯一识别的数字 tag 与 js_name 拼接，然后在前面加上一个 <code>__rct_export__</code>，生成了一个返回一个数组的方法。</p>
+<p>套用<a href="http://awhisper.github.io/2016/07/02/ReactNative源码分析2/" target="_blank" rel="external">RN 源码解读（二）</a>中的一个例子：</p>
+<p>假设我们写 <code>RCT_EXPORT_METHOD(nativeAlert:xxx)</code> 的时候，<code>__LINE__</code> 与 <code>__COUNTER__</code> 组合起来的数字 tag 如果是 123456，那么这个内二层宏还会自动生成一个这样的函数：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">+ (<span class="built_in">NSArray</span>&lt;<span class="built_in">NSString</span> *&gt; *)__rct_export__123456&#123; </div><div class="line">    <span class="keyword">return</span> @[<span class="string">@""</span>, <span class="string">@"nativeAlert:xxx"</span>]; </div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>换句话说，一行 <code>RCT_EXPORT_METHOD(xxxx)</code>，等于生成了2个函数的实现:</p>
+<ul>
+<li><code>-(void)nativeAlert:(NSString *)content withButton:(NSString *)name</code></li>
+<li><code>+(NSArray&lt;NSString *&gt; *)__rct_export__123456</code></li>
+</ul>
+<h2 id="Native-与-JS-间的通信"><a href="#Native-与-JS-间的通信" class="headerlink" title="Native 与 JS 间的通信"></a>Native 与 JS 间的通信</h2><p>现在开始讲到 native 和 JS 之间的通信。首先是 native 调用 JS 方法。在 <code>RCTEventDispatcher.m</code> 中，我们可以看到各种各样的调用方法：</p>
+<ul>
+<li><code>sendAppEventWithName:body:</code></li>
+<li><code>sendDeviceEventWithName:body:</code></li>
+<li><code>sendInputEventWithName:body:</code></li>
+</ul>
+<p>这些方法都在内部调动了 <code>RCTBatchedBridge</code> 的 <code>enqueueJSCall:method:args:completion:</code> 方法，下面是参考了<a href="http://i.dotidea.cn/2016/05/react-native-communication-principle-for-ios/" target="_blank" rel="external">React Native通信原理解析(IOS)</a>画的一张完整的调用流程图：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/native_js_通信.png?raw=true" alt="native js 通信"></p>
+<h3 id="tag1-2"><a href="#tag1-2" class="headerlink" title="tag1"></a>tag1</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)_actuallyInvokeAndProcessModule:(<span class="built_in">NSString</span> *)module</div><div class="line">                                 method:(<span class="built_in">NSString</span> *)method</div><div class="line">                              arguments:(<span class="built_in">NSArray</span> *)args</div><div class="line">&#123;</div><div class="line">  RCTAssertJSThread();</div><div class="line"></div><div class="line">  __<span class="keyword">weak</span> __<span class="keyword">typeof</span>(<span class="keyword">self</span>) weakSelf = <span class="keyword">self</span>;</div><div class="line">  [_javaScriptExecutor callFunctionOnModule:module</div><div class="line">                                     method:method</div><div class="line">                                  arguments:args</div><div class="line">                                   callback:^(<span class="keyword">id</span> json, <span class="built_in">NSError</span> *error) &#123;</div><div class="line">                                     [weakSelf _processResponse:json error:error];</div><div class="line">                                   &#125;];</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这个方法其实也没什么特别的，主要看一下 <code>callFunctionOnModule</code> 方法的 callback，在 callback 中调用了 <code>_processResponse</code> 方法，用来处理执行 js 端调用 native 的方法。</p>
+<h3 id="tag2-2"><a href="#tag2-2" class="headerlink" title="tag2"></a>tag2</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)_callFunctionOnModule:(<span class="built_in">NSString</span> *)module</div><div class="line">                       method:(<span class="built_in">NSString</span> *)method</div><div class="line">                    arguments:(<span class="built_in">NSArray</span> *)args</div><div class="line">                  returnValue:(<span class="built_in">BOOL</span>)returnValue</div><div class="line">                 unwrapResult:(<span class="built_in">BOOL</span>)unwrapResult</div><div class="line">                     callback:(RCTJavaScriptCallback)onComplete</div><div class="line">&#123;</div><div class="line">  <span class="comment">// <span class="doctag">TODO:</span> Make this function handle first class instead of dynamically dispatching it. #9317773</span></div><div class="line">  <span class="built_in">NSString</span> *bridgeMethod = returnValue ? <span class="string">@"callFunctionReturnFlushedQueue"</span> : <span class="string">@"callFunctionReturnResultAndFlushedQueue"</span>;</div><div class="line">  [<span class="keyword">self</span> _executeJSCall:bridgeMethod arguments:@[module, method, args] unwrapResult:unwrapResult callback:onComplete];</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>在这个方法中，设置了调用 js 端 batchedBridge 的 <code>callFunctionReturnFlushedQueue</code> 或者 <code>callFunctionReturnResultAndFlushedQueue</code> 方法。并将 <code>module</code>，<code>method</code>，<code>args</code> 作何成一个数组作为 <code>arguments</code> 传入。<strong>由于 native 端需要主动调用的 js 端的方法都是 native 所熟知的模块和方法，所以这里的各个参数都是 string</strong>（只有那些自定义的模块或者方法的调用才会用 id）。</p>
+<h3 id="tag3-2"><a href="#tag3-2" class="headerlink" title="tag3"></a>tag3</h3><p>在执行完 js 端的方法后，回到 <code>RCTJSCExecutor</code> 内执行 <code>onComplete</code> 回调:</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)_executeJSCall:(<span class="built_in">NSString</span> *)method</div><div class="line">             arguments:(<span class="built_in">NSArray</span> *)arguments</div><div class="line">          unwrapResult:(<span class="built_in">BOOL</span>)unwrapResult</div><div class="line">              callback:(RCTJavaScriptCallback)onComplete</div><div class="line">&#123;</div><div class="line">  [<span class="keyword">self</span> executeBlockOnJavaScriptQueue:^&#123;</div><div class="line">		<span class="comment">//执行js方法</span></div><div class="line">		...</div><div class="line">    onComplete(objcValue, error);</div><div class="line">  &#125;];</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这个 <code>onComplete</code> 就是上面 tag1 中的 <code>callback</code>。</p>
+<h3 id="tag4-2"><a href="#tag4-2" class="headerlink" title="tag4"></a>tag4</h3><p>js 调用 oc 可以有很多个方法，但是最后方法一定会走到 <code>handleBuffer:</code> 方法中去。这个方法在上面的 <code>MessageQueue</code> 中也有提到过。入参是一个包含模块、方法、参数的数组。</p>
+<p>现在就用到了之前保存的 <code>_moduleDataByID</code> 数组。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">RCTModuleData *moduleData = <span class="keyword">self</span>-&gt;_moduleDataByID[moduleID.integerValue];</div><div class="line"><span class="built_in">dispatch_queue_t</span> queue = moduleData.methodQueue;</div></pre></td></tr></table></figure>
+<p>通过传入的 <code>moduleID</code> 就可以在数组中找到对应的 <code>RCTModuleData</code> 实例，拿出每个 <code>RCTModuleData</code> 的 gcd 队列。之后就是在各自队列里执行了。由于是串行队列，同一个 <code>RCTModuleData</code> 的方法必须是顺序执行的。</p>
+<h3 id="tag5-2"><a href="#tag5-2" class="headerlink" title="tag5"></a>tag5</h3><p>这个就是正真通过反射的方式执行 native 代码的方法。由于也是 iOS 菜鸟，对于 invocation 也不是很了解，所以这段代码不是很能看得懂，就不细聊了。各位大神可以仔细跟进。</p>
+<p>不过要注意其中的 <code>processMethodSignature</code> 方法。这个方法中，RN 会对反射的 selector 进行分析，分析有几个参数，是什么类型等等。其中就在 <code>addBlockArgument</code> 这个 block 中，设置了一个输入参数为数组的回调方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">RCT_BLOCK_ARGUMENT(^(<span class="built_in">NSArray</span> *args) &#123;</div><div class="line">  [bridge enqueueCallback:json args:args];</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>这个 <code>RCT_BLOCK_ARGUMENT</code> 宏是用来保存这个回调方法的。因为 <code>NSInvocation</code> 不会持有这个 block。其中的 <code>enqueueCallback:args:</code> 就是用来回调前面保存的 <code>_callback</code> 的。</p>
+<p>后面所有的方法调用，大致过程都和 native 调用 js 一样，只不过前者传入的是 <code>callbackID</code>，后者传入的是各个模块方法参数名。所以我也就不再展开了。</p>
+<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><p><a href="http://www.jianshu.com/p/978c4bd3a759" target="_blank" rel="external">React Native 从入门到原理</a> 看完可以对 RN 有一个初步的认识<br><a href="http://awhisper.github.io/2016/06/24/ReactNative流程源码分析/" target="_blank" rel="external">ReactNative iOS源码解析</a> native 端讲解的非常详细，需要仔细地跟着走一遍<br><a href="http://i.dotidea.cn/2016/05/react-native-communication-principle-for-ios/" target="_blank" rel="external">React Native通信原理解析(IOS)</a> native 和 js 都讲解的较为详细，前面那篇看懂了，再来看这篇，可以加深理解。(部分内容有一些区别)</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tag/React-Native/" rel="tag">#React-Native</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/12/28/EventLoop/" rel="next" title="从 setTimeout() 看js的 Event Loop 执行过程">
+                <i class="fa fa-chevron-left"></i> 从 setTimeout() 看js的 Event Loop 执行过程
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/author.png?raw=true"
+               alt="Zachary Zhang" />
+          <p class="site-author-name" itemprop="name">Zachary Zhang</p>
+          <p class="site-description motion-element" itemprop="description">Less is more</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">57</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">9</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">24</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://zhang759740844.github.io/" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://www.jianshu.com/users/d6b98b1c1e64/latest_articles" target="_blank" title="JianShu">
+                  
+                    <i class="fa fa-fw fa-globe"></i>
+                  
+                  JianShu
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Native-初始化过程"><span class="nav-number">1.</span> <span class="nav-text">Native 初始化过程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#tag1"><span class="nav-number">1.1.</span> <span class="nav-text">tag1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tag2"><span class="nav-number">1.2.</span> <span class="nav-text">tag2</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tag3"><span class="nav-number">1.3.</span> <span class="nav-text">tag3</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tag4"><span class="nav-number">1.4.</span> <span class="nav-text">tag4</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tag5"><span class="nav-number">1.5.</span> <span class="nav-text">tag5</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#RCTRegisterModule"><span class="nav-number">1.5.1.</span> <span class="nav-text">RCTRegisterModule</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tag6"><span class="nav-number">1.6.</span> <span class="nav-text">tag6</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tag7"><span class="nav-number">1.7.</span> <span class="nav-text">tag7</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tag8"><span class="nav-number">1.8.</span> <span class="nav-text">tag8</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tag9"><span class="nav-number">1.9.</span> <span class="nav-text">tag9</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tag10"><span class="nav-number">1.10.</span> <span class="nav-text">tag10</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tag11"><span class="nav-number">1.11.</span> <span class="nav-text">tag11</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tag-12"><span class="nav-number">1.12.</span> <span class="nav-text">tag 12</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#JS初始化过程"><span class="nav-number">2.</span> <span class="nav-text">JS初始化过程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#NativeModule"><span class="nav-number">2.1.</span> <span class="nav-text">NativeModule</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#tag1-1"><span class="nav-number">2.1.1.</span> <span class="nav-text">tag1</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#tag2-1"><span class="nav-number">2.1.2.</span> <span class="nav-text">tag2</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#tag3-1"><span class="nav-number">2.1.3.</span> <span class="nav-text">tag3</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#tag4-1"><span class="nav-number">2.1.4.</span> <span class="nav-text">tag4</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#tag5-1"><span class="nav-number">2.1.5.</span> <span class="nav-text">tag5</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#BatchedBridge"><span class="nav-number">2.2.</span> <span class="nav-text">BatchedBridge</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MessageQueue"><span class="nav-number">2.3.</span> <span class="nav-text">MessageQueue</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#RCT-EXPORT-METHOD"><span class="nav-number">2.4.</span> <span class="nav-text">RCT_EXPORT_METHOD()</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Native-与-JS-间的通信"><span class="nav-number">3.</span> <span class="nav-text">Native 与 JS 间的通信</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#tag1-2"><span class="nav-number">3.1.</span> <span class="nav-text">tag1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tag2-2"><span class="nav-number">3.2.</span> <span class="nav-text">tag2</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tag3-2"><span class="nav-number">3.3.</span> <span class="nav-text">tag3</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tag4-2"><span class="nav-number">3.4.</span> <span class="nav-text">tag4</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tag5-2"><span class="nav-number">3.5.</span> <span class="nav-text">tag5</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文章"><span class="nav-number">4.</span> <span class="nav-text">参考文章</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zachary Zhang</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+  
+  
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+       search_path = "search.xml";
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body").append('<div class="popoverlay">').css('overflow', 'hidden');
+      $('.popup').toggle();
+
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+    'use strict';
+    $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+            // get the contents from search data
+            isfetched = true;
+            $('.popup').detach().appendTo('.header-inner');
+            var datas = $( "entry", xmlResponse ).map(function() {
+                return {
+                    title: $( "title", this ).text(),
+                    content: $("content",this).text(),
+                    url: $( "url" , this).text()
+                };
+            }).get();
+            var $input = document.getElementById(search_id);
+            var $resultContent = document.getElementById(content_id);
+            $input.addEventListener('input', function(){
+                var matchcounts = 0;
+                var str='<ul class=\"search-result-list\">';
+                var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                $resultContent.innerHTML = "";
+                if (this.value.trim().length > 1) {
+                // perform local searching
+                datas.forEach(function(data) {
+                    var isMatch = true;
+                    var content_index = [];
+                    var data_title = data.title.trim().toLowerCase();
+                    var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                    var data_url = data.url;
+                    var index_title = -1;
+                    var index_content = -1;
+                    var first_occur = -1;
+                    // only match artiles with not empty titles and contents
+                    if(data_title != '' && data_content != '') {
+                        keywords.forEach(function(keyword, i) {
+                            index_title = data_title.indexOf(keyword);
+                            index_content = data_content.indexOf(keyword);
+                            if( index_title < 0 && index_content < 0 ){
+                                isMatch = false;
+                            } else {
+                                if (index_content < 0) {
+                                    index_content = 0;
+                                }
+                                if (i == 0) {
+                                    first_occur = index_content;
+                                }
+                            }
+                        });
+                    }
+                    // show search results
+                    if (isMatch) {
+                        matchcounts += 1;
+                        str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                        var content = data.content.trim().replace(/<[^>]+>/g,"");
+                        if (first_occur >= 0) {
+                            // cut out 100 characters
+                            var start = first_occur - 20;
+                            var end = first_occur + 80;
+                            if(start < 0){
+                                start = 0;
+                            }
+                            if(start == 0){
+                                end = 50;
+                            }
+                            if(end > content.length){
+                                end = content.length;
+                            }
+                            var match_content = content.substring(start, end);
+                            // highlight all keywords
+                            keywords.forEach(function(keyword){
+                                var regS = new RegExp(keyword, "gi");
+                                match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                            });
+
+                            str += "<p class=\"search-result\">" + match_content +"...</p>"
+                        }
+                        str += "</li>";
+                    }
+                })};
+                str += "</ul>";
+                if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+                if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+                $resultContent.innerHTML = str;
+            });
+            proceedsearch();
+        }
+    });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".popoverlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+
+  
+
+  
+
+  
+
+</body>
+</html>
