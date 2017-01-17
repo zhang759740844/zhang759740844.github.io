@@ -212,7 +212,7 @@ class UselessTextInputMultiline extends Component {
 
 这里为什么要把这个例子贴出来呢？主要有**两个要点**：
 
-首先，`{...this.props}` 的语法。这里`{}` 还是表示使用JS语法的意思。`...` 是es6的语法，叫做**展开运算符**。可以看看下面这个例子：
+首先，`{...this.props}` 的语法。这里`{}` 还是表示使用JS语法的意思。`...` 是es6的语法，叫做**展开运算符**，该功能用来遍历对象。可以看看下面这个例子：
 
 ```javascript
 var array = [1,2,3,4,5,6,7];
@@ -227,15 +227,17 @@ console.log(...array);
 
 其次，`onChangeText={(text) => this.setState({text})}`。一般 `setState()` 中都是对象，为什么这里只是 `text`？这也是es6的语法，在键和值相等的时候可以省略 `{text:text}` 为 `{text}`。也就是本例的 `this.setState({text})`。
 
+和 `onChangeText` 相对应的还有一个 `onEndEditing` 属性。前者是每次 text 变化的时候都会回调；后者只有在结束输入的时候会回调一次。
+
 #### 部分属性
 1. `autoFocus`:在 `componentDidMount` 后是否自动获得焦点。
 2. `defaultValue`:提供文本框的初始值。
 3. `editable`:文本框是否可编辑
 4. `maxLength`:文本框中最长字符数。使用这个属性而不用JS逻辑去实现，可以避免闪烁的现象。
 5. `multiline`:是否可以多行，默认 false
-6. `onFocus`,`onBlur`,`onEndEditing`,`onSubmitEditing`:输入框在各种情况下的回调函数。
+6. `onFocus`,`onBlur`,`onSubmitEditing`:输入框在各种情况下的回调函数。
 7. `onChange`:当输入框内容改变时，回调该函数
-8. `onChangeText`:当输入框内容改变时，回调该函数。改变后的文字内容将作为参数传入。
+8. `onChangeText`,`onEndEditing`:前者当输入框内容改变时，回调该函数。改变后的文字内容将作为参数传入;后者当输入框结束编辑后回调该函数。
 9. `placeholder`:占位符
 10. `placeholderTextColor`:占位符颜色.(注意，貌似没有 placeholderTextSize 这个属性)
 11. `value`:输入框内显示的值 

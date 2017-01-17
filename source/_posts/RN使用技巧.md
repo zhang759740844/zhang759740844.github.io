@@ -11,6 +11,21 @@ tags:
 
 <!--more-->
 
+
+
+### 组件之间的通信
+#### 子组件调用父组件方法
+父组件将方法以属性的方式传入子组件，子组件通过 `this.props.方法名` 拿到这个方法。
+
+#### 父组件调用子组件方法
+父组件调用子组件的条件是拿到子组件的实例。因此可以为子组件加上 `ref` 属性。比如：
+
+```jsx
+<Child ref='child'>haha</Child>
+```
+
+这样父组件就可以通过 `this.ref.child` 来获取 `Child` 组件的实例，并调用其内部方法了。
+
 ### 上拉加载
 RN 中的 ListView 自带了上拉加载的方法：`onEndReached`。使用方法很简单，当下拉到一定阈值 `onEndReachedThreshold` 时，自动回调 `onEndReached` 传入的方法，如果加载的数据不满足一屏，也会自动回调：
 
@@ -188,6 +203,8 @@ Native 中的 `UITextField` 可以通过 `resignFirstResponder` 或者 `endEditi
 
 #### componentWillReceiveProps(object nextProps)
 在组件接收到一个新的 prop 时被执行。这个方法在初始化 `render` 时不会被调用。
+
+这个方法很重要。组件内部属性的初始化设置只有一次，所以当组件初始化完成后，外部传入的属性值的变化不会直接引起组件内部属性值的变化，而是会回调这个方法。
 
 #### boolean shouldComponentUpdate(object nextProps, object nextState)
 返回一个布尔值。在组件的 props 或者 state 改变时被执行。在初始化时或者使用  `forceUpdate` 时不被执行。
@@ -378,33 +395,6 @@ RCTRootView *rootView = [[RCTRootView alloc] initWithBundleURL:jsCodeLocation
                                                       moduleName:@"AwesomeProject"
                                                initialProperties:nil
                                                    launchOptions:launchOptions];
-```
-
-### React Native import 文件的小技巧
-开发中经常需要 import 其他 js 文件，如果需要同时导入一些相关的 js 文件时，可以创建一个索引文件方便引用。  
-
-#### 第一步：创建index.js   
-在 `index.js` 中 import 相关的 js 文件
-
-```
-'use strict';
-
-import Request from './network/RequestManager';
-import AppContext from './network/AppContext';
-import ApiServiceFactory from './network/ApiServiceFactory';
-
-module.exports = {
-    ApiServiceFactory,
-    Request,
-    AppContext
-};
-```
-
-#### 第二步：使用   
-如果需要使用这些类，只需要导入 `index` 文件就可以了~
-
-```
-import {Request, ApiServiceFactory, AppContext} from '../expand/index';
 ```
 
 
