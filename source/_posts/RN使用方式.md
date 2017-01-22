@@ -3,7 +3,6 @@ date: 2016/11/25 10:07:12
 categories: React-Native
 tags:
 	- React-Native
-
 ---
 
 这里基于0.39的官方文档，列举了一些需要知道的点。
@@ -21,7 +20,7 @@ AppRegistry.registerComponent('HelloWorldApp', () => HelloWorldApp);
 #### 简介
 组件在创建的时候传入 `Props` 来完成定制，例如：
 
-```javascript
+```jsx
 <Image source={pic} style={{width: 193, height: 110}} />
 ```
 
@@ -32,7 +31,7 @@ AppRegistry.registerComponent('HelloWorldApp', () => HelloWorldApp);
 #### 自定义组件的 Props
 自定义组件可以提高复用性。使用时在函数中引用 `this.props.属性名`，例如下面的 `name` 属性：
 
-```javascript 
+```javascript
 class Greeting extends Component {
   render() {
     return (
@@ -154,13 +153,13 @@ const styles = StyleSheet.create({
 
 #### 使用
 一般使用方式:
-```JSX
+```jsx
 style={{height:xx,width:xx}}
 ```
 
 如果有多个对象，需要用数组的方式传入：
 
-```JSX
+```jsx
 style={[{height:xx,width:xx,},{height:yy,wudth:yy,}]}
 ```
 
@@ -170,7 +169,7 @@ style={[{height:xx,width:xx,},{height:yy,wudth:yy,}]}
 #### 例子
 文本输入组件，先看一个例子：
 
-```javscript
+```javascript
 class UselessTextInput extends Component {
   render() {
     return (
@@ -396,7 +395,9 @@ ListView设计到各种优化，以及各种方法，掌握的不是很好，需
 
 如果需要使用，可以查看这篇[教程](http://bbs.reactnative.cn/topic/20/新手理解navigator的教程)
 
-###
+
+
+
 
 
 

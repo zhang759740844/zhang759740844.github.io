@@ -115,7 +115,7 @@ MyComponent.propTypes = {
 #### defaultProps
 可以在 `defaultProps` 中注册设置默认属性值。
 
-```javscript
+```javascript
 class Greeting extends React.Component {
   render() {
     return (
@@ -177,7 +177,7 @@ ES6标准发布后，module 成为标准，标准的使用是以 export 指令�
 升级了一下 React-Native 的版本后（3.2=>3.8），Xcode 编译的时候出现了 `RCTHTTPRequestHandler.m not found` 的编译错误。原因应该是 `RCTHTTPRequestHandler.m` 在后面的版本变为了 `RCTHTTPRequestHandler.mm`。
 
 解决方法很简单，在 React-Native 版本升级，即使用 `npm update` 后，需要重新 `pod install` 一遍。因为 React 作为 pod 中的一项，Xcode 是通过 `pod install` 后生成的索引来定位 React 中的各个文件的。只 `npm update` 而不 `pod install`，Xcode 编译的时候通过 3.2 的文件索引，去 3.8 里找文件，就很有可能因为版本变化导致找不到文件。 
- 
+
 
 ### TextInput 隐藏键盘
 Native 中的 `UITextField` 可以通过 `resignFirstResponder` 或者 `endEditing` 的方式取消第一响应者，从而隐藏虚拟键盘。那么，react 中如何做到隐藏键盘呢？
@@ -223,37 +223,37 @@ Native 中的 `UITextField` 可以通过 `resignFirstResponder` 或者 `endEditi
 
 ### 如何判断对象是否有某个属性
 - 使用in关键字 该方法可以判断对象的自有属性和继承来的属性是否存在。
-	
-	```
-	var o={x:1};
-	"x" in o; //true，自有属性存在
-	"y" in o; //false
-	"toString" in o; //true，是一个继承属性
-	```
-	
+
+  ```javascript
+  var o={x:1};
+  "x" in o; //true，自有属性存在
+  "y" in o; //false
+  "toString" in o; //true，是一个继承属性
+  ```
+
 - 使用对象的hasOwnProperty()方法 该方法只能判断自有属性是否存在，对于继承属性会返回false。
-	
-	```
-	var o={x:1};
-	o.hasOwnProperty("x"); 　　 //true，自有属性中有x
-	o.hasOwnProperty("y"); 　　 //false，自有属性中不存在y
-	o.hasOwnProperty("toString"); //false，这是一个继承属性，但不是自有属性
-	```
-	
+
+  ```javascript
+  var o={x:1};
+  o.hasOwnProperty("x"); 　　 //true，自有属性中有x
+  o.hasOwnProperty("y"); 　　 //false，自有属性中不存在y
+  o.hasOwnProperty("toString"); //false，这是一个继承属性，但不是自有属性
+  ```
+
 - 用undefined判断 自有属性和继承属性均可判断。
-	
-	```
-	var o={x:1};
-	o.x!==undefined; //true
-	o.y!==undefined; //false
-	o.toString!==undefined //true
-	```
+
+  ```javascript
+  var o={x:1};
+  o.x!==undefined; //true
+  o.y!==undefined; //false
+  o.toString!==undefined //true
+  ```
 - 在条件语句中直接判断
-	
-	```
-	var o={};
-	if(o.x) o.x+=1; //如果x是undefine,null,false," ",0或NaN,它将保持不变
-	```
+
+  ```javascript
+  var o={};
+  if(o.x) o.x+=1; //如果x是undefine,null,false," ",0或NaN,它将保持不变
+  ```
 
 
 
@@ -322,22 +322,22 @@ Promise后面括号内跟的是要异步执行的操作，`.then()`里跟的是�
 
 使用API `InteractionManager`，它的作用就是可以使本来 JS 的一些操作在动画完成之后执行，这样就可确保动画的流程性。当然这是在延迟执行为代价上来获得帧数的提高。
 ```javascript
-	InteractionManager.runAfterInteractions(()=>{
-		//...耗时较长的同步任务...
-		//更新state也需要时间
-		this.setState({
-			...
-		})
-		//获取某些数据，需要长时间等待
-		this.fetchData(arguements)
+InteractionManager.runAfterInteractions(()=>{
+	//...耗时较长的同步任务...
+	//更新state也需要时间
+	this.setState({
+		...
 	})
+	//获取某些数据，需要长时间等待
+	this.fetchData(arguements)
+})
 ```
 
 ### React-Native 原生模块调用(iOS)
 在项目中遇到地图,拨打电话,清除缓存等iOS与Andiorid机制不同的功能,就需要调用原生的界面或模块。
 
 #### 创建原生模块，实现“RCTBridgeModule”协议
-```
+```objective-c
 #import <UIKit/UIKit.h>
 #import "RCTBridgeModule.h"
 
@@ -347,7 +347,7 @@ Promise后面括号内跟的是要异步执行的操作，`.then()`里跟的是�
 ```
 #### 导出模块，导出方法
 不仅可以让导出 native 的方法，而且还可以在 js 中添加回调函数，供 native 调用，这样 native 就可以将前面的数据回塞给 js 了。
-```
+```objective-c
 @implementation LoginViewController
 //导出模块
 RCT_EXPORT_MODULE()
@@ -364,11 +364,10 @@ RCT_EXPORT_METHOD(showSVProgressHUDErrorWithStatus:(NSString *)state callBack:(R
 }
 
 @end
-
 ```
 
 #### js文件中调用
-```
+```javascript
 //创建原生模块实例
 let LoginViewController = NativeModules.LoginViewController;
 
@@ -386,7 +385,7 @@ LoginViewController.showSVProgressHUDErrorWithStatus('请输入正确的手机�
 #### iOS 真机调试
 首先，**必须** 保证调试用电脑的和你的设备处于相同的 `WiFi` 网络环境中下。然后修改`AppDelegate.m` 文件，设置 `jsLocation` 为本地 ip 即可。
 
-```objc
+```objective-c
 NSURL *jsCodeLocation;
 [RCTBundleURLProvider sharedSettings].jsLocation = @"192.168.31.142";
 jsCodeLocation = [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index.ios" fallbackResource:nil];
