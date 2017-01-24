@@ -99,7 +99,7 @@
 <meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/bridgeConfig.png?raw=true">
 <meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/json示例.png?raw=true">
 <meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/native_js_通信.png?raw=true">
-<meta property="og:updated_time" content="2017-01-17T07:55:16.000Z">
+<meta property="og:updated_time" content="2017-01-23T02:46:17.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="React-Native 初始化与通信原理源码分析">
 <meta name="twitter:description" content="RN 是如何启动的，oc 与 js 是如何通信的将是本文探究的重点。虽然网上已经有不少解释 RN 原理的文章，但是到自己读起源码的时候，还是非常累人的。这里，将较为细致的梳理一下 RN 的方法调用过程，希望能对各位有所帮助。
@@ -408,6 +408,7 @@
 <p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/bridgeConfig.png?raw=true" alt="bridgeConfig"></p>
 <p>(注：开了 Remote JS Debugging 后 js 代码是可以断点的，但是 Xcode 经常显示 <code>__nw_connection_get_connected_socket_block_invoke xx Connection has no connected handler</code> 然后，Xcode 的断点就失灵了。)</p>
 <p>关闭 Remote JS Debugging，<code>info.module</code> 为 nil，因此一定会运行到 <code>get: () =&gt; loadModule(info.name, moduleID)</code> 方法，该方法是一个懒加载方法，以此来加快 RN 的初始化速度。</p>
+<p>经过这个方法，就将所有暴露出来的方法的执行信息保存在 NativeModule 对象（或者说字典，不是数组。键是module名，值是模块内的方法组成的对象）里了。（这里并不是全部 <code>ModuleCinfig</code> 都变成了 <code>NativeModules</code> 里的一项，比如一些关于 view 的manager，它们并没有调用各自的懒加载方法。这些 manager 的方法都在加载 <code>RCTUIManager</code> 的时候，作为 <code>RCTUIManager</code> 的 <code>constants</code> 设置好了。）</p>
 <h4 id="tag2-1"><a href="#tag2-1" class="headerlink" title="tag2"></a>tag2</h4><p>进入 <code>loadModule</code> 方法：</p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">loadModule</span>(<span class="params">name: string, moduleID: number</span>): ?<span class="title">Object</span> </span>&#123;</div><div class="line">  invariant(global.nativeRequireModuleConfig,</div><div class="line">    <span class="string">'Can\'t lazily create module without nativeRequireModuleConfig'</span>);</div><div class="line">  <span class="keyword">const</span> config = global.nativeRequireModuleConfig(name);</div><div class="line">  <span class="keyword">const</span> info = genModule(config, moduleID);</div><div class="line">  <span class="keyword">return</span> info &amp;&amp; info.module;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p>可以看到调用了 <code>global.nativeRequireModuleConfig</code> 方法，以及 <code>genModule</code> 方法。</p>
@@ -519,6 +520,10 @@
 
           <div class="post-nav-prev post-nav-item">
             
+              <a href="/2017/01/24/RN显示原理/" rel="prev" title="React-Native 如何创建原生 View 源码解析">
+                React-Native 如何创建原生 View 源码解析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
           </div>
         </div>
       
@@ -585,7 +590,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">57</span>
+              <span class="site-state-item-count">58</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -593,7 +598,7 @@
           
             <div class="site-state-item site-state-categories">
               <a href="/categories">
-                <span class="site-state-item-count">9</span>
+                <span class="site-state-item-count">8</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -602,7 +607,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">24</span>
+                <span class="site-state-item-count">23</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

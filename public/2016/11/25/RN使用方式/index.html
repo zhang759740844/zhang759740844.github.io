@@ -90,7 +90,7 @@
 <meta property="og:url" content="http://zhang759740844.github.io/2016/11/25/RN使用方式/index.html">
 <meta property="og:site_name" content="Zachary's blog">
 <meta property="og:description" content="这里基于0.39的官方文档，列举了一些需要知道的点。">
-<meta property="og:updated_time" content="2017-01-10T07:44:33.000Z">
+<meta property="og:updated_time" content="2017-01-17T10:25:52.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="React-Native 使用方式">
 <meta name="twitter:description" content="这里基于0.39的官方文档，列举了一些需要知道的点。">
@@ -343,7 +343,7 @@
 <h3 id="AppRegistry"><a href="#AppRegistry" class="headerlink" title="AppRegistry"></a>AppRegistry</h3><p><code>index.ios.js</code> 作为一个组件的注册集合以及入口，在这里，将所有组件像这样注册。</p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">AppRegistry.registerComponent(<span class="string">'HelloApp'</span>, () =&gt; HellodApp);</div><div class="line">AppRegistry.registerComponent(<span class="string">'HelloWorldApp'</span>, () =&gt; HelloWorldApp);</div></pre></td></tr></table></figure>
 <h3 id="Props"><a href="#Props" class="headerlink" title="Props"></a>Props</h3><h4 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h4><p>组件在创建的时候传入 <code>Props</code> 来完成定制，例如：</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">&lt;Image source=&#123;pic&#125; style=&#123;&#123;width: <span class="number">193</span>, height: <span class="number">110</span>&#125;&#125; /&gt;</div></pre></td></tr></table></figure>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">&lt;Image source=&#123;pic&#125; style=&#123;&#123;width: <span class="number">193</span>, height: <span class="number">110</span>&#125;&#125; /&gt;</div></pre></td></tr></table></figure>
 <p>其中 <code>source</code>,<code>style</code> 都是传入 image 的 <code>Props</code>。其中 <code>pic</code> 表示一个js对象，类似后面的 <code>{width: 193, height: 110}</code>。</p>
 <p><code>{pic}</code> 外面有个括号，表示括号内是一个js变量或者表达式，需要执行后取值，以此<strong>在JSX中嵌入js语句</strong>。</p>
 <h4 id="自定义组件的-Props"><a href="#自定义组件的-Props" class="headerlink" title="自定义组件的 Props"></a>自定义组件的 Props</h4><p>自定义组件可以提高复用性。使用时在函数中引用 <code>this.props.属性名</code>，例如下面的 <code>name</code> 属性：</p>
@@ -385,7 +385,7 @@
 <figure class="highlight jsx"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">style=&#123;[&#123;height:xx,width:xx,&#125;,&#123;height:yy,wudth:yy,&#125;]&#125;</div></pre></td></tr></table></figure>
 <p>如果有相同的属性重复赋值，则以后一个覆盖前一个为准。</p>
 <h3 id="TextInput"><a href="#TextInput" class="headerlink" title="TextInput"></a>TextInput</h3><h4 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h4><p>文本输入组件，先看一个例子：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div></pre></td><td class="code"><pre><div class="line">class UselessTextInput extends Component &#123;</div><div class="line">  render() &#123;</div><div class="line">    return (</div><div class="line">      &lt;TextInput</div><div class="line">        &#123;...this.props&#125; // Inherit any props passed to it; e.g., multiline, numberOfLines below</div><div class="line">        editable = &#123;true&#125;</div><div class="line">        maxLength = &#123;40&#125;</div><div class="line">      /&gt;</div><div class="line">    );</div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">class UselessTextInputMultiline extends Component &#123;</div><div class="line">  constructor(props) &#123;</div><div class="line">    super(props);</div><div class="line">    this.state = &#123;</div><div class="line">      text: &apos;Useless Multiline Placeholder&apos;,</div><div class="line">    &#125;;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  render() &#123;</div><div class="line">    return (</div><div class="line">     &lt;View style=&#123;&#123;</div><div class="line">       backgroundColor: this.state.text,</div><div class="line">       borderBottomColor: &apos;#000000&apos;,</div><div class="line">       borderBottomWidth: 1 &#125;&#125;</div><div class="line">     &gt;</div><div class="line">       &lt;UselessTextInput</div><div class="line">         multiline = &#123;true&#125;</div><div class="line">         numberOfLines = &#123;4&#125;</div><div class="line">         onChangeText=&#123;(text) =&gt; this.setState(&#123;text&#125;)&#125;</div><div class="line">         value=&#123;this.state.text&#125;</div><div class="line">       /&gt;</div><div class="line">     &lt;/View&gt;</div><div class="line">    );</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">UselessTextInput</span> <span class="keyword">extends</span> <span class="title">Component</span> </span>&#123;</div><div class="line">  render() &#123;</div><div class="line">    <span class="keyword">return</span> (</div><div class="line">      &lt;TextInput</div><div class="line">        &#123;...this.props&#125; // Inherit any props passed to it; e.g., multiline, numberOfLines below</div><div class="line">        editable = &#123;true&#125;</div><div class="line">        maxLength = &#123;40&#125;</div><div class="line">      /&gt;</div><div class="line">    );</div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">class UselessTextInputMultiline extends Component &#123;</div><div class="line">  constructor(props) &#123;</div><div class="line">    super(props);</div><div class="line">    this.state = &#123;</div><div class="line">      text: 'Useless Multiline Placeholder',</div><div class="line">    &#125;;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  render() &#123;</div><div class="line">    return (</div><div class="line">     &lt;View style=&#123;&#123;</div><div class="line">       backgroundColor: this.state.text,</div><div class="line">       borderBottomColor: '#000000',</div><div class="line">       borderBottomWidth: 1 &#125;&#125;</div><div class="line">     &gt;</div><div class="line">       &lt;UselessTextInput</div><div class="line">         multiline = &#123;true&#125;</div><div class="line">         numberOfLines = &#123;4&#125;</div><div class="line">         onChangeText=&#123;(text) =&gt; this.setState(&#123;text&#125;)&#125;</div><div class="line">         value=&#123;this.state.text&#125;</div><div class="line">       /&gt;</div><div class="line">     &lt;/View&gt;</div><div class="line">    );</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p>这里为什么要把这个例子贴出来呢？主要有<strong>两个要点</strong>：</p>
 <p>首先，<code>{...this.props}</code> 的语法。这里<code>{}</code> 还是表示使用JS语法的意思。<code>...</code> 是es6的语法，叫做<strong>展开运算符</strong>，该功能用来遍历对象。可以看看下面这个例子：</p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> array = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>,<span class="number">6</span>,<span class="number">7</span>];</div><div class="line"><span class="built_in">console</span>.log(array);</div><div class="line"><span class="comment">//输出 [1, 2, 3, 4, 5, 6, 7]</span></div><div class="line"><span class="built_in">console</span>.log(...array);</div><div class="line"><span class="comment">//输出 1 2 3 4 5 6 7</span></div></pre></td></tr></table></figure>
@@ -462,7 +462,6 @@
 <h3 id="网络"><a href="#网络" class="headerlink" title="网络"></a>网络</h3><p>感觉没什么好写的，暂且不表</p>
 <h3 id="navigator"><a href="#navigator" class="headerlink" title="navigator"></a>navigator</h3><p>暂时还是用原生的 navigator，感觉 navigator 不太好用，所以暂且不表。</p>
 <p>如果需要使用，可以查看这篇<a href="http://bbs.reactnative.cn/topic/20/新手理解navigator的教程" target="_blank" rel="external">教程</a></p>
-<p>###</p>
 
       
     </div>
@@ -572,7 +571,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">57</span>
+              <span class="site-state-item-count">58</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -580,7 +579,7 @@
           
             <div class="site-state-item site-state-categories">
               <a href="/categories">
-                <span class="site-state-item-count">9</span>
+                <span class="site-state-item-count">8</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -589,7 +588,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">24</span>
+                <span class="site-state-item-count">23</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

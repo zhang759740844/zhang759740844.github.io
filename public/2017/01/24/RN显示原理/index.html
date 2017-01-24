@@ -1,0 +1,854 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="React-Native," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="前一篇，主要讲了 RN 如何初始化一个 BCTBatchedBridge，这一篇将进一步研究 RN 是如何通过这个 bridge 创建出真正展示出来的 View 的。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="React-Native 如何创建原生 View 源码解析">
+<meta property="og:url" content="http://zhang759740844.github.io/2017/01/24/RN显示原理/index.html">
+<meta property="og:site_name" content="Zachary's blog">
+<meta property="og:description" content="前一篇，主要讲了 RN 如何初始化一个 BCTBatchedBridge，这一篇将进一步研究 RN 是如何通过这个 bridge 创建出真正展示出来的 View 的。">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/RN_nativecalljs.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/RN_jscallnative.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/RN_liaobaole.png?raw=true">
+<meta property="og:updated_time" content="2017-01-24T09:10:00.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="React-Native 如何创建原生 View 源码解析">
+<meta name="twitter:description" content="前一篇，主要讲了 RN 如何初始化一个 BCTBatchedBridge，这一篇将进一步研究 RN 是如何通过这个 bridge 创建出真正展示出来的 View 的。">
+<meta name="twitter:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/RN_nativecalljs.png?raw=true">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://zhang759740844.github.io/2017/01/24/RN显示原理/"/>
+
+  <title> React-Native 如何创建原生 View 源码解析 | Zachary's blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Zachary's blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">记录成长</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup">
+ <span class="search-icon fa fa-search"></span>
+ <input type="text" id="local-search-input">
+ <div id="local-search-result"></div>
+ <span class="popup-btn-close">close</span>
+</div>
+
+
+    </div>
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                React-Native 如何创建原生 View 源码解析
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-01-24T10:07:12+08:00" content="2017-01-24">
+              2017-01-24
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/React-Native/" itemprop="url" rel="index">
+                    <span itemprop="name">React-Native</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>前一篇，主要讲了 RN 如何初始化一个 <code>BCTBatchedBridge</code>，这一篇将进一步研究 RN 是如何通过这个 bridge 创建出真正展示出来的 View 的。</p>
+<a id="more"></a>
+<p>首先抛出结论：每一个 js <code>render()</code> 方法中的 component 都对应于 native 中的一个 <code>RCTView</code>。在渲染前，js 会循环取出各个 component 。然后通过 <code>UIManager</code> （<code>NativeModules</code> 中的一项） 的 <code>createView</code> 方法，通过 <code>BatchedBridge</code> 调用 native 端的 <code>RCTUIManager</code> 的同名方法，创建与 component 相对应的类。对于触摸事件也是类似的。native 端通过 bridge 将触摸事件传给 js，js 在找到对应 component 后，响应各个触摸事件。</p>
+<p>下面将分几个阶段解读 RN 是如何显示出来的，依旧是 0.39 版本。最好在理解了前一篇 RN 通信原理后再看。</p>
+<h2 id="native-调用-js"><a href="#native-调用-js" class="headerlink" title="native 调用 js"></a>native 调用 js</h2><p>这是整个过程的第一步，从 <code>RCTRootView *rootView = [[RCTRootView alloc] initWithBridge:_bridge moduleName:moduleName initialProperties:param];</code> 方法开始。native 告诉 js 我要准备显示 view 了，快点把你这里各个 view 的信息告诉我。先来看一张调用流程图：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/RN_nativecalljs.png?raw=true" alt="RN native调用js"></p>
+<h3 id="tag1"><a href="#tag1" class="headerlink" title="tag1"></a>tag1</h3><p>这个 <code>setBridge</code> 方法是初始化时候执行的方法。还记得前一篇初始化的时候其中的一步设置各个 <code>RCTModuleData</code> 的 <code>instance</code> 么？其中就会调用 <code>setBridge</code> 方法为每个 RCTModuleData 的 <code>instance</code> 设置 bridge。在 <code>RCTUIManager</code> 类的 <code>setBridge</code> 方法中还做了一些其他操作：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">- (void)setBridge:(RCTBridge *)bridge&#123;</div><div class="line">  ...</div><div class="line">      NSMutableDictionary *componentDataByName = [NSMutableDictionary new];</div><div class="line">      for (Class moduleClass in _bridge.moduleClasses) &#123;</div><div class="line">    	if ([moduleClass isSubclassOfClass:[RCTViewManager class]]) &#123;</div><div class="line">          RCTComponentData *componentData = [[RCTComponentData alloc] initWithManagerClass:moduleClass bridge:_bridge];</div><div class="line">          componentDataByName[componentData.name] = componentData;</div><div class="line">        &#125;</div><div class="line">      &#125;</div><div class="line">      _componentDataByName = [componentDataByName copy];</div><div class="line">  ...</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>该方法循环遍历 bridge 中的每一个暴露给 js 的模块名，判断是否是 <code>RCTViewManager</code> 的子类。如果是，则为其创建一个 <code>RCTComponentData</code> 并将其保存在 <code>_componentDataByName</code> 字典中。<code>RCTViewManager</code> 是各个 <code>RCTView</code> 的控制器的父类，所有 <code>RCTView</code> 的方法都在 <code>RCTViewManager</code> 的子类里实现。这样就把所有视图控制器保存在了 <code>RCTUIManager</code> 中。</p>
+<h3 id="tag2"><a href="#tag2" class="headerlink" title="tag2"></a>tag2</h3><p>看到这个方法的名字就知道是在 bundle 加载完成后执行的。 这个方法分为两步。第一步是创建一个 <code>_contentView</code> 用来容纳各个 component。第二步就是通过 <code>BatchedBridge</code> 调用 js 的方法了。部分代码如下：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)bundleFinishedLoading:(RCTBridge *)bridge</div><div class="line">&#123;</div><div class="line">  ...</div><div class="line">  _contentView = [[RCTRootContentView alloc] initWithFrame:<span class="keyword">self</span>.bounds</div><div class="line">                                                    bridge:bridge</div><div class="line">                                                  reactTag:<span class="keyword">self</span>.reactTag</div><div class="line">                                            sizeFlexiblity:_sizeFlexibility];</div><div class="line">  [<span class="keyword">self</span> runApplication:bridge];</div><div class="line">  ...</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>其中有一个地方需要说明，就是这里面的 <code>self.reactTag</code>。类似于 RN 通信的原理，<code>reactTag</code> 是 native 和 js 识别各个 component 的标记。来看一下 <code>reactTag</code> 的 getter 方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">- (<span class="built_in">NSNumber</span> *)reactTag</div><div class="line">&#123;</div><div class="line">  RCTAssertMainQueue();</div><div class="line">  <span class="keyword">if</span> (!<span class="keyword">super</span>.reactTag) &#123;</div><div class="line">    <span class="keyword">self</span>.reactTag = [_bridge.uiManager allocateRootTag];</div><div class="line">  &#125;</div><div class="line">  <span class="keyword">return</span> <span class="keyword">super</span>.reactTag;</div><div class="line">&#125;</div><div class="line"></div><div class="line">- (<span class="built_in">NSNumber</span> *)allocateRootTag</div><div class="line">&#123;</div><div class="line">  <span class="built_in">NSNumber</span> *rootTag = objc_getAssociatedObject(<span class="keyword">self</span>, _cmd) ?: @<span class="number">1</span>;</div><div class="line">  objc_setAssociatedObject(<span class="keyword">self</span>, _cmd, @(rootTag.integerValue + <span class="number">10</span>), OBJC_ASSOCIATION_RETAIN_NONATOMIC);</div><div class="line">  <span class="keyword">return</span> rootTag;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>每一个根视图都必须有一个独一无二的 <code>ractTag</code>。这个 tag 从1开始，每次自增10，也就是 1，11，21，31…的形式，以此类推。</p>
+<p>这里要吐槽一下 facebook 的程序员。没想到外国的程序员也会把单词拼错。上面方法中 <code>sizeFlexiblity</code> 少了个 <code>i</code>。这是要输入法背锅么？</p>
+<h3 id="tag3"><a href="#tag3" class="headerlink" title="tag3"></a>tag3</h3><p>该方法首先为 <code>rootView</code> 新建了 <code>RCTTouchHandler</code> 实例，并设置为其 <code>GestureRecognizer</code>。其次执行了 <code>registerRootView:withSizeFlexibility:</code> 方法。这个方法将 <code>rootView</code> 保存在 <code>RCTUIManager</code> 的 <code>_viewRegistry</code> 字典中，其中键是 <code>rootView</code> 的 <code>reactTag</code>。此时，<code>RCTUIManager</code> 中设置并保存好了两个比较重要的字典：<code>_viewRegistry</code>,<code>_componentDataByName</code>。</p>
+<h3 id="tag4"><a href="#tag4" class="headerlink" title="tag4"></a>tag4</h3><p>这个方法就比较直观了：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)runApplication:(RCTBridge *)bridge</div><div class="line">&#123;</div><div class="line">  <span class="built_in">NSString</span> *moduleName = _moduleName ?: <span class="string">@""</span>;</div><div class="line">  <span class="built_in">NSDictionary</span> *appParameters = @&#123;</div><div class="line">    <span class="string">@"rootTag"</span>: _contentView.reactTag,</div><div class="line">    <span class="string">@"initialProps"</span>: _appProperties ?: @&#123;&#125;,</div><div class="line">  &#125;;</div><div class="line"></div><div class="line">  RCTLogInfo(<span class="string">@"Running application %@ (%@)"</span>, moduleName, appParameters);</div><div class="line">  [bridge enqueueJSCall:<span class="string">@"AppRegistry"</span></div><div class="line">                 method:<span class="string">@"runApplication"</span></div><div class="line">                   args:@[moduleName, appParameters]</div><div class="line">             completion:<span class="literal">NULL</span>];</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>就是调用 <code>enqueueJSCall:method:args:completion:</code> 方法。如果前一篇看懂了的话，就会知道，这个方法调用的是 js 端 <code>AppRegistry.js</code> 的 <code>runApplication</code> 方法，需要创建的 <code>rootView</code> 以 String 的方式通过 <code>moduleName</code> 传入。</p>
+<p>到这一步，Native 调用 JS 就结束了，接下来就是 js 端的执行。</p>
+<h2 id="js-调用-native"><a href="#js-调用-native" class="headerlink" title="js 调用 native"></a>js 调用 native</h2><p>js 端的方法调用过程还是比较清晰的。来看一下下面的流程图：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/RN_jscallnative.png?raw=true" alt="RN native调用js"></p>
+<h3 id="tag1-1"><a href="#tag1-1" class="headerlink" title="tag1"></a>tag1</h3><p>在 native 调用 <code>enqueueJSCall:method:args:completion</code> 后，我们来看看 <code>AppRegistry</code> 的 <code>runApplication</code> 方法。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"> runApplication: <span class="function"><span class="keyword">function</span>(<span class="params">appKey: string, appParameters: any</span>): <span class="title">void</span> </span>&#123;</div><div class="line">...</div><div class="line">   runnables[appKey].run(appParameters);</div><div class="line"> &#125;,</div></pre></td></tr></table></figure>
+<p><code>appKey</code> 就是上面的 <code>moduleName</code>，通过它拿到 <code>runnables</code> 字典中对应的对象，执行其 <code>run</code> 方法。这个字典怎么来的呢？往下看。</p>
+<h3 id="tag2-1"><a href="#tag2-1" class="headerlink" title="tag2"></a>tag2</h3><p>RN 的官方文档中第一篇就说明了，在定义好一个 component 后，需要在 <code>index.ios.js</code> 中使用 <code>AppRegistry.registerComponent()</code> 方法注册:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">import</span> HelloWorldView <span class="keyword">from</span> <span class="string">'./app/view/HelloWorldView'</span>;</div><div class="line">AppRegistry.registerComponent(<span class="string">'HelloWorldView'</span>, () =&gt; HelloWorldView);</div></pre></td></tr></table></figure>
+<p>那么 <code>registerComponent</code> 做了什么呢？</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">registerComponent: <span class="function"><span class="keyword">function</span>(<span class="params">appKey: string, getComponentFunc: ComponentProvider</span>): <span class="title">string</span> </span>&#123;</div><div class="line">  runnables[appKey] = &#123;</div><div class="line">    run: (appParameters) =&gt;</div><div class="line">      renderApplication(getComponentFunc(), appParameters.initialProps, appParameters.rootTag)</div><div class="line">  &#125;;</div><div class="line">  <span class="keyword">return</span> appKey;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这里就设置了前面用到的 <code>runnables</code> 字典，并且为字典内对象创建了 <code>run</code> 方法。前面执行的 <code>run</code> 方法，其实就是执行 <code>renderApplication</code> 方法。<code>renderApplication</code> 在 RootView 外层又嵌套了一层 <code>AppContainer</code>。</p>
+<h3 id="tag3-1"><a href="#tag3-1" class="headerlink" title="tag3"></a>tag3</h3><p>这个方法内部就比较复杂了。其中:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> instance = instantiateReactComponent(nextWrappedElement, <span class="literal">false</span>);</div></pre></td></tr></table></figure>
+<p>通过 <code>instantiateReactComponent</code> 方法将整个 View 的 JSX 转换为 <code>ReactCompositeComponentWrapper</code> 实例。这也就是 Reactjs 的精髓之一。好吧。并没有花时间去细读，臣妾做不到啊。有兴趣的话可以找找类似于 <a href="http://purplebamboo.github.io/2015/09/15/reactjs_source_analyze_part_one/" target="_blank" rel="external">reactjs源码分析-上篇（首次渲染实现原理）</a> 的文章学习一下。之后就是长长的调用栈了，循环递归每一个 component 执行 <code>createView</code>。</p>
+<h3 id="tag4-1"><a href="#tag4-1" class="headerlink" title="tag4"></a>tag4</h3><p>在 <code>ReactNativeBaseComponent.js</code> 中调用了 <code>UIManager.createView()</code>，但是这个方法点不进去，<code>UIManager.js</code> 中没有这个方法。开始我比较迷惑，后来细读了一下发现：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">const</span> &#123; UIManager &#125; = NativeModules;</div></pre></td></tr></table></figure>
+<p>也就是说，这个 <code>UIManager</code> 是 native 中的一个 module，这个 <code>createView()</code> 是 native 中暴露出来的一个方法。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">UIManager.createView(</div><div class="line">  tag,</div><div class="line">  <span class="keyword">this</span>.viewConfig.uiViewClassName,</div><div class="line">  nativeTopRootTag,</div><div class="line">  updatePayload</div><div class="line">);</div></pre></td></tr></table></figure>
+<p>这个方法会将当前 component 的标记，名字，根标记，属性方法等一起传给 native。其中 <code>tag</code> 是 <code>ReactNativeTagHandles.allocateTag()</code> 生成的。每次调用该方法，<code>tag</code> 都会加一（会略过1结尾的，那些是留给根 component 的）。</p>
+<p>至此，js 调用 native 的部分就结束了。回顾一下，主要就是循环每一个 component，为每个 component 分配一个独有的 <code>tag</code> 然后调用 <code>createView</code> 方法。</p>
+<h2 id="Native-createView-的过程"><a href="#Native-createView-的过程" class="headerlink" title="Native createView 的过程"></a>Native createView 的过程</h2><p>来到 native，<code>RCTUIManager</code> 暴露出了许多方法供 js 调用。来看一下刚才 js 调用的 <code>createView</code> 方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line">RCT_EXPORT_METHOD(createView:(<span class="keyword">nonnull</span> <span class="built_in">NSNumber</span> *)reactTag</div><div class="line">                  viewName:(<span class="built_in">NSString</span> *)viewName</div><div class="line">                  rootTag:(__unused <span class="built_in">NSNumber</span> *)rootTag</div><div class="line">                  props:(<span class="built_in">NSDictionary</span> *)props)</div><div class="line">&#123;</div><div class="line">  RCTComponentData *componentData = _componentDataByName[viewName];</div><div class="line">  ...</div><div class="line">  __<span class="keyword">weak</span> RCTUIManager *weakManager = <span class="keyword">self</span>;</div><div class="line">  <span class="built_in">dispatch_async</span>(dispatch_get_main_queue(), ^&#123;</div><div class="line">    RCTUIManager *uiManager = weakManager;</div><div class="line">    <span class="keyword">if</span> (!uiManager) &#123;</div><div class="line">      <span class="keyword">return</span>;</div><div class="line">    &#125;</div><div class="line">    <span class="built_in">UIView</span> *view = [componentData createViewWithTag:reactTag];</div><div class="line">    <span class="keyword">if</span> (view) &#123;</div><div class="line">      [componentData setProps:props forView:view]; <span class="comment">// Must be done before bgColor to prevent wrong default</span></div><div class="line">      ...</div><div class="line">      uiManager-&gt;_viewRegistry[reactTag] = view;</div><div class="line">    &#125;</div><div class="line">  &#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><code>_componentDataByName</code> 上面介绍过了，可以拿到前面保存的 js 将要创建的 view 的 <code>RCTComponentData</code>。然后在主线程中使用 <code>createViewWithTag:</code> 方法创建 View。通过 <code>RCTComponentData</code> 中保存的 <code>_managerClass</code> 可以拿到对应 View 的 <code>manager</code>，然后调用其 <code>view</code> 方法创建 view。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">- (<span class="built_in">UIView</span> *)createViewWithTag:(<span class="built_in">NSNumber</span> *)tag</div><div class="line">&#123;</div><div class="line">  <span class="built_in">UIView</span> *view = [<span class="keyword">self</span>.manager view];</div><div class="line">  view.reactTag = tag;</div><div class="line">	...</div><div class="line">  <span class="keyword">return</span> view;</div><div class="line">&#125;</div><div class="line"></div><div class="line">- (RCTViewManager *)manager</div><div class="line">&#123;</div><div class="line">  <span class="keyword">if</span> (!_manager) &#123;</div><div class="line">    _manager = [_bridge moduleForClass:_managerClass];</div><div class="line">  &#125;</div><div class="line">  <span class="keyword">return</span> _manager;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>通过 <code>setProps:forView:</code> 方法将每个 view 的 props 保存下来。这里又要用到反射的方式，还是比较复杂的。具体就不说了。只要清楚，它会生成一个 block，每次都用这个 block，都会<strong>调用对应属性的 setter 方法</strong>将值赋给该属性即可。</p>
+<p>最后，把设置好的 view 保存到 <code>_viewRegistry</code> 中。js 和 native 端都会保存好这个 <code>tag</code> 和 view 的映射表。这里的 <code>_viewRegistry</code> 就是 native 端保存的字典。</p>
+<p>这里只是介绍了如何通过 js 传来的 <code>tag</code> 和 <code>moduleName</code> 创建出对应的 native 端的 view 的。当然，创建和展示中间还隔着 measure、layout之类的步骤，这也是 React 需要做的，这个我就不聊了，太深入了聊不动，容易聊爆。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/RN_liaobaole.png?raw=true" alt="聊爆啦"></p>
+<h2 id="自建组件"><a href="#自建组件" class="headerlink" title="自建组件"></a>自建组件</h2><p>现在我们知道 view 是如何创建出来的了。facebook 封装的组件和自建的组件原理上是一致的。现在来研究一下自建组件的创建过程。</p>
+<h3 id="基本设置"><a href="#基本设置" class="headerlink" title="基本设置"></a>基本设置</h3><p>前面说到拿到 view 的 <code>manager</code> 调用其 <code>view</code> 方法。那么 <code>manager</code> 是个什么呢？<code>manager</code> 相当于一个 Controller，负责创建和控制 view。文档上关于创建 <code>RCTViewManager</code> 主要有三步：</p>
+<ol>
+<li>创建一个子类</li>
+<li>添加 <code>RCT_EXPORT_MODULE()</code> 标记宏</li>
+<li>实现 <code>-(UIView *)view</code> 方法</li>
+</ol>
+<p>这三步是最基本的三步，作用也挺明显的。继承 <code>RCTViewManager</code> 作为一个标记，这样 <code>RCTUIManager</code> 在设置 <code>bridge</code>  的时候就能够将该 <code>manager</code> 放入 <code>_componentDataByName</code> 数组中了。添加 <code>RCT_EXPORT_MODULE()</code> 标记宏后才能将该类暴露给 js，才能让 js 调用该类方法。实现 <code>-(UIView *)view</code> 方法就是上面 <code>[self.manager view]</code> 调用的方法。</p>
+<h3 id="设置属性"><a href="#设置属性" class="headerlink" title="设置属性"></a>设置属性</h3><p>上面只是创建了一个 view，更复杂一点的情况就是需要控制 view 的属性。RN 提供了两个宏：</p>
+<ul>
+<li><code>RCT_EXPORT_VIEW_PROPERTY(name,type)</code></li>
+<li><code>RCT_CUSTOM_VIEW_PROPERTY(name,type,viewClass){...}</code></li>
+</ul>
+<p>来看一下宏定义的实现：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 常规导出</span></div><div class="line"><span class="meta">#define RCT_EXPORT_VIEW_PROPERTY(name, type) \</span></div><div class="line">+ (<span class="built_in">NSArray</span>&lt;<span class="built_in">NSString</span> *&gt; *)propConfig_<span class="meta">##name &#123; return @[@#type]; &#125;</span></div><div class="line"><span class="comment">// 自定义导出</span></div><div class="line"><span class="meta">#define RCT_CUSTOM_VIEW_PROPERTY(name, type, viewClass) \</span></div><div class="line">RCT_REMAP_VIEW_PROPERTY(name, __custom__, type)         \</div><div class="line">- (<span class="keyword">void</span>)set_<span class="meta">##name:(id)json forView:(viewClass *)view withDefaultView:(viewClass *)defaultView</span></div><div class="line"></div><div class="line"><span class="meta">#define RCT_REMAP_VIEW_PROPERTY(name, keyPath, type) \</span></div><div class="line">+ (<span class="built_in">NSArray</span>&lt;<span class="built_in">NSString</span> *&gt; *)propConfig_<span class="meta">##name &#123; return @[@#type, @#keyPath]; &#125;</span></div></pre></td></tr></table></figure>
+<p>关于 <code>##</code> 和 <code>@#</code> 前一篇也有涉及。操作符 <code>##</code> 用来实现宏中 token 的连接， <code>@#</code> 实现将宏中的参数转化为字符串。比如 <code>RCT_EXPORT_VIEW_PROPERTY(placeholder, NSString)</code> 这样一个属性，将会被转化为下面这个方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">+ (<span class="built_in">NSArray</span>&lt;<span class="built_in">NSString</span> *&gt; *)propConfig_placeholder &#123; <span class="keyword">return</span> @[<span class="string">@"NSString"</span>]; &#125;</div></pre></td></tr></table></figure>
+<p>但如果要对属性进行也谢操作的话，比如：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">RCT_CUSTOM_VIEW_PROPERTY(fontSize, <span class="built_in">NSNumber</span>, RCTTextView)</div><div class="line">&#123;</div><div class="line">  view.font = [RCTFont updateFont:view.font withSize:json ?: @(defaultView.font.pointSize)];</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这样的自定义属性，则会转化为如下方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">+ (<span class="built_in">NSArray</span>&lt;<span class="built_in">NSString</span> *&gt; *)propConfig_fontSize &#123; <span class="keyword">return</span> @[<span class="string">@"NSNumber"</span>, <span class="string">@"__custom__"</span>]; &#125;</div><div class="line">- (<span class="keyword">void</span>)set_fontSize:(<span class="keyword">id</span>)json forView:(RCTTextView *)view withDefaultView:(RCTTextView *)defaultView&#123;</div><div class="line">  view.font = [RCTFont updateFont:view.font withSize:json ?: @(defaultView.font.pointSize)];</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>其中 <code>json</code> 代表了 JS 中传递的尚未解析的原始值。<code>view</code> 代表访问的对应的视图实例。<code>defaultView</code> 在 JS 发送 null 的时候，可以把视图的这个属性重置回默认值。</p>
+<p>这里说一下这个 <code>defaultView</code>，这是 <code>RCTComponentData</code> 中的一个属性，不用在意也不用自己设置它。在 <code>json</code> 为空的时候，就会去自己创建一个当前 view 的实例作为 <code>defaultView</code>：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//RCTComponentData.m propBlockForKey:inDictionary</span></div><div class="line"><span class="keyword">if</span> (!json &amp;&amp; !strongSelf-&gt;_defaultView) &#123;</div><div class="line">  <span class="comment">// Only create default view if json is null</span></div><div class="line">  strongSelf-&gt;_defaultView = [strongSelf createViewWithTag:<span class="literal">nil</span>];</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>宏定义的方法在上面说过的 <code>setProps:forView:</code> 方法里调用，目的是验证从 js 端传递过来的属性是否在 native 里注册过。</p>
+<p>至于还有一些非常规的需要用到 <code>RCTConvert</code> 以及事件的使用方式可以参考文档，不深入了。</p>
+<h3 id="创建-View"><a href="#创建-View" class="headerlink" title="创建 View"></a>创建 View</h3><p>前面说过了如何创建 Controller，现在说一下这个 view。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">- (<span class="built_in">UIView</span> *)view</div><div class="line">&#123;</div><div class="line">  <span class="keyword">return</span> [[<span class="built_in">MKMapView</span> alloc] init];</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这是官方文档里的例子，在 <code>manager</code> 中的 <code>view</code> 方法里创建了一个 <code>MKMapView</code> 的视图。那么 RN 是如何设置 <code>MKMapView</code> 的 frame 的呢？不用担心，RN 实现了 <code>UIView</code> 的范畴 <code>UIView(React)</code>，其中就实现了 <code>reactSetFrame</code> 方法，会自己将计算好的大小设置给 view，如果你想在 view 设置好大小后做什么事，你就可以通过重写这个方法。另外，当 js 端的一些属性变化时，就会触发 native 相应 view 的相应属性的 setter 方法，可以自己实现这些 setter 方法，来做一些别的处理，比如在 <code>RCTImageView</code> 里，只要任意属性发生变化，都会触发 <code>reloadImage</code> 方法。</p>
+<h2 id="终"><a href="#终" class="headerlink" title="终"></a>终</h2><p>总算通过这两篇将 RN 稍微梳理了一下，跟进起来不容易啊，都是泪。本来想研究一下，写一篇 “RN view 显示原理” 的。但是读着读着发现 Reactjs 并不能看懂，那还写个蛋的显示原理啊喂。最终就忽略了 view 的层次关系以及大小位置等等的转换原理，写了这么一篇。虽然写的水平不高，但是我相信如果你想更深入的了解一下 react native，读一下本篇还是能有些许帮助的。毕竟为了看懂，我也读了好久好久<del>~</del>~~</p>
+<p>也许会有下一篇，也许会挑一个 RN 封装的组件具体看看它是如何实现的~</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tag/React-Native/" rel="tag">#React-Native</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/01/17/RN Native初始化过程/" rel="next" title="React-Native 初始化与通信原理源码分析">
+                <i class="fa fa-chevron-left"></i> React-Native 初始化与通信原理源码分析
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/author.png?raw=true"
+               alt="Zachary Zhang" />
+          <p class="site-author-name" itemprop="name">Zachary Zhang</p>
+          <p class="site-description motion-element" itemprop="description">Less is more</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">58</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">8</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">23</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://zhang759740844.github.io/" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://www.jianshu.com/users/d6b98b1c1e64/latest_articles" target="_blank" title="JianShu">
+                  
+                    <i class="fa fa-fw fa-globe"></i>
+                  
+                  JianShu
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#native-调用-js"><span class="nav-number">1.</span> <span class="nav-text">native 调用 js</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#tag1"><span class="nav-number">1.1.</span> <span class="nav-text">tag1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tag2"><span class="nav-number">1.2.</span> <span class="nav-text">tag2</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tag3"><span class="nav-number">1.3.</span> <span class="nav-text">tag3</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tag4"><span class="nav-number">1.4.</span> <span class="nav-text">tag4</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#js-调用-native"><span class="nav-number">2.</span> <span class="nav-text">js 调用 native</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#tag1-1"><span class="nav-number">2.1.</span> <span class="nav-text">tag1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tag2-1"><span class="nav-number">2.2.</span> <span class="nav-text">tag2</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tag3-1"><span class="nav-number">2.3.</span> <span class="nav-text">tag3</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tag4-1"><span class="nav-number">2.4.</span> <span class="nav-text">tag4</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Native-createView-的过程"><span class="nav-number">3.</span> <span class="nav-text">Native createView 的过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#自建组件"><span class="nav-number">4.</span> <span class="nav-text">自建组件</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#基本设置"><span class="nav-number">4.1.</span> <span class="nav-text">基本设置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#设置属性"><span class="nav-number">4.2.</span> <span class="nav-text">设置属性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创建-View"><span class="nav-number">4.3.</span> <span class="nav-text">创建 View</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#终"><span class="nav-number">5.</span> <span class="nav-text">终</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zachary Zhang</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+  
+  
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+       search_path = "search.xml";
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body").append('<div class="popoverlay">').css('overflow', 'hidden');
+      $('.popup').toggle();
+
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+    'use strict';
+    $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+            // get the contents from search data
+            isfetched = true;
+            $('.popup').detach().appendTo('.header-inner');
+            var datas = $( "entry", xmlResponse ).map(function() {
+                return {
+                    title: $( "title", this ).text(),
+                    content: $("content",this).text(),
+                    url: $( "url" , this).text()
+                };
+            }).get();
+            var $input = document.getElementById(search_id);
+            var $resultContent = document.getElementById(content_id);
+            $input.addEventListener('input', function(){
+                var matchcounts = 0;
+                var str='<ul class=\"search-result-list\">';
+                var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                $resultContent.innerHTML = "";
+                if (this.value.trim().length > 1) {
+                // perform local searching
+                datas.forEach(function(data) {
+                    var isMatch = true;
+                    var content_index = [];
+                    var data_title = data.title.trim().toLowerCase();
+                    var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                    var data_url = data.url;
+                    var index_title = -1;
+                    var index_content = -1;
+                    var first_occur = -1;
+                    // only match artiles with not empty titles and contents
+                    if(data_title != '' && data_content != '') {
+                        keywords.forEach(function(keyword, i) {
+                            index_title = data_title.indexOf(keyword);
+                            index_content = data_content.indexOf(keyword);
+                            if( index_title < 0 && index_content < 0 ){
+                                isMatch = false;
+                            } else {
+                                if (index_content < 0) {
+                                    index_content = 0;
+                                }
+                                if (i == 0) {
+                                    first_occur = index_content;
+                                }
+                            }
+                        });
+                    }
+                    // show search results
+                    if (isMatch) {
+                        matchcounts += 1;
+                        str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                        var content = data.content.trim().replace(/<[^>]+>/g,"");
+                        if (first_occur >= 0) {
+                            // cut out 100 characters
+                            var start = first_occur - 20;
+                            var end = first_occur + 80;
+                            if(start < 0){
+                                start = 0;
+                            }
+                            if(start == 0){
+                                end = 50;
+                            }
+                            if(end > content.length){
+                                end = content.length;
+                            }
+                            var match_content = content.substring(start, end);
+                            // highlight all keywords
+                            keywords.forEach(function(keyword){
+                                var regS = new RegExp(keyword, "gi");
+                                match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                            });
+
+                            str += "<p class=\"search-result\">" + match_content +"...</p>"
+                        }
+                        str += "</li>";
+                    }
+                })};
+                str += "</ul>";
+                if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+                if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+                $resultContent.innerHTML = str;
+            });
+            proceedsearch();
+        }
+    });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".popoverlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+
+  
+
+  
+
+  
+
+</body>
+</html>
