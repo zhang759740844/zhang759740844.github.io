@@ -243,7 +243,7 @@ js 的打包文件如下所示：
 
 关闭 Remote JS Debugging，`info.module` 为 nil，因此一定会运行到 `get: () => loadModule(info.name, moduleID)` 方法，该方法是一个懒加载方法，以此来加快 RN 的初始化速度。
 
-经过这个方法，就将所有暴露出来的方法的执行信息保存在 NativeModule 对象（或者说字典，不是数组。键是module名，值是模块内的方法组成的对象）里了。
+经过这个方法，就将所有暴露出来的方法的执行信息保存在 NativeModule 对象（或者说字典，不是数组。键是module名，值是模块内的方法组成的对象）里了。（这里并不是全部 `ModuleCinfig` 都变成了 `NativeModules` 里的一项，比如一些关于 view 的manager，它们并没有调用各自的懒加载方法。这些 manager 的方法都在加载 `RCTUIManager` 的时候，作为 `RCTUIManager` 的 `constants` 设置好了。）
 
 #### tag2
 进入 `loadModule` 方法：
