@@ -2,8 +2,7 @@ title: NSLayoutConstraint 学习笔记
 date: 2016/9/8 10:07:12  
 categories: iOS
 tags:
-	- AutoLayout
-
+	- UI
 ---
 
 `AutoLayout`是一种基于约束的，描述性的布局系统。参考了网上的许多文章，进行总结。基本还是以ios6为主，ios8的一些特性并没有仔细研究。以后需要用到再说。

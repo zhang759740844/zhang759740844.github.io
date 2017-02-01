@@ -2,8 +2,7 @@ title: Block 的使用
 date: 2016/9/1 10:07:12  
 categories: iOS
 tags:
-	- Block
-
+	- Objective-C
 ---
 
 类似于匿名函数，oc中提供`block`,可以将一段代码块像对象一样作为参数传递、执行。
