@@ -11,9 +11,56 @@ tags:
 
 <!--more-->
 
+### `keyboardShouldPersistTaps` 的使用
 
+`keyboardShouldPersistTaps` 这是 `scrollview` 中的一个属性。
+
+那么场景会用到这个属性呢？就是在一个 `scrollview` 中有两个 `textinput` a,b，当 a 输入完之后点击 b，这个时候如果你不设置 `keyboardShouldPersistTaps` 属性，那么点击 b 后，虚拟键盘消失，你需要再点一次 b 才能将虚拟键盘再打开，也就是说 `scrollview` 并没有相应 b 控件的点击事件。正常的需求应该是，点击 b 后，键盘仍然代开状态，只不过输入框变为 b。所以要用该属性控制。
+
+该属性有三个枚举值：
+
+- `never`: 默认情况，点击 `TextInput` 以外的子组件会使当前的软键盘收起。此时子元素不会收到点击事件。
+- `always`: 键盘不会自动收起，`ScrollView` 也不会捕捉点击事件，但子组件可以捕获。
+- `handled`:当点击事件被子组件捕获时，键盘不会自动收起。这样切换 `TextInput` 时键盘可以保持状态。多数带有TextInput的情况下你应该选择此项。
+
+
+
+### `cloneWithRows` 使用的注意事项
+
+我们知道 `cloneWithRows` 是在 `listview` 中保存列表数组时使用的方法。使用的时候要注意一点：数组在 `cloneWithRows` 之后会变成一个特殊的数据结构，数据数组只是这个数据结构中的一个属性。
+
+那么什么时候需要注意呢？一个父控件内的子控件里有一个 `listview`，那么要么传入数据在里面 `cloneWithRows`，要么在外面 `cloneWithRows` 好后直接传入，不能外部 `cloneWithRows` 一次后再在里面 `cloneWithRows` 一次。推荐是在外面 `cloneWithRows` 好后传入，这样更符合封装性。
+
+### View 设置宽高
+
+在 `view` 中的子控件必须要根据主轴方向，分别设置高度或者宽度大小，比如主轴是竖的，那就必须设定 `height`，如果是横的，那就必须设定 `width`，或者直接设置 `flex`，否则要么不显示，要么显示了也有问题。而次轴则不用主动设置,如果有子 `view`，则等于子 `view` 的次轴大小，没有子 `view`，则默认扩展整条长度（如果父控件设置了 `alignItems` 则不会扩展，默认子控件的最小次轴大小）。
+
+如果 `view` 中有子 `view`，可以先不显式地设定主轴，而是通过子 `view` 来隐式地计算出主轴的大小,不过实践下来做好还是在外部就设置好。次轴同理。需要注意，如果没有必要，不要同时既设置父 `view` 又设置子 `view` ，设置了其中一个，其他的都设置成 `flex`，不然可能造成不易察觉的布局错误。
+
+关于 `view` 的计算，有一个情况要特别说明，就是 `text`。`text` 一般情况下不传大小，但是其本身是有大小的，大小默认是包含内容的最小范围。所以再用 `touchableOpacity` 之类的组件包裹 `text` 的时候，如果本身没有设置大小，那么结合上面的结论可知，`touchableOpacity` 的大小就是 `text` 的大小，这就是按钮的点击响应点只有一小条的原因。因此，对于 `touchOpacity`，一定要设置它的长和宽。
+
+### 设置 Image
+
+`Image` 图片一定要设置宽高，因为如果图片默认大小是0，加载完图片后，会有个闪烁，可以设置主题的图片模式是 `resizeMode = ‘contain’`  这样图片就能在指定大小内适应缩放。
+
+### JSX 中的一点小注意事项
+
+在 JSX 中调用外部的 js方法，如果要用到 `this`， 则必须 `bind(this)` 否则无法识别。
+
+`render` 里可以写方法，用 `{}`括起来即可，但是` <View   >` 标签里一定不能有 `{}`，就比如你要把 `View` 里的 `style` 注释掉， 一定不能直接用 `cmd+/` 这样会在 ` <>`里加入 `{}`，产生 `SyntaxError xxx.js Unexpected token,expected ...`的错误
+
+### 如何隐藏一个组件
+
+如果让一个组件隐藏。只需要在必要的时候通过 `state` 的变化，将原来 `return` 的 `view` 变成 `return null` 就可以了
+
+### padding 和 margin 使用区别
+
+这两者 android 程序员使用起来恐怕没有任何问题。iOS 程序员如果使用惯了 `autoLayout` 可能一时反应不过来。
+
+style 究竟是在父控件里用 `padding` 还是在子控件里用 `margin`。其实基本没有太大差别，一般用 `margin`，能让子控件的布局更灵活一些。当然，如果父控件的样式需要复用多次，而子控件各不相同时，直接在父控件设置 `padding`，可以减少每次设置子控件 `margin` 的次数。
 
 ### 组件之间的通信
+
 #### 子组件调用父组件方法
 父组件将方法以属性的方式传入子组件，子组件通过 `this.props.方法名` 拿到这个方法。
 
