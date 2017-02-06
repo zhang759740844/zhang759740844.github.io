@@ -90,7 +90,7 @@
 <meta property="og:url" content="http://zhang759740844.github.io/2017/02/06/FDFullScreenPopGesture_源码解析/index.html">
 <meta property="og:site_name" content="Zachary's blog">
 <meta property="og:description" content="FDFullScreenPopGesture 是一个非常小巧精悍，却又功能强大的开源项目。主要的功能有：全局的手势回退；部分界面的 NavigationBar 的隐藏。今天花了半天的时间搞明白了其中的原理。">
-<meta property="og:updated_time" content="2017-02-06T09:30:11.000Z">
+<meta property="og:updated_time" content="2017-02-06T10:17:46.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="FDFullScreenPopGesture 源码解析">
 <meta name="twitter:description" content="FDFullScreenPopGesture 是一个非常小巧精悍，却又功能强大的开源项目。主要的功能有：全局的手势回退；部分界面的 NavigationBar 的隐藏。今天花了半天的时间搞明白了其中的原理。">
@@ -370,6 +370,7 @@
 <p>第三步将原来的手势禁用。</p>
 <p>第四步设置上面说过的 <code>_FDViewControllerWillAppearInjectBlock</code> 。也就是通过 <code>fd_prefersNavigationBarHidden</code> 来显示和隐藏 <code>NavigationBar</code>。</p>
 <h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>主要复习了一下 <code>method swizzling</code> 的使用，可以很优雅地修改特定的方法。</p>
+<p>另外，虽然苹果没开源，但还是通过获取到了系统类中的私有方法。这给我们提供了一个思路。我们也可以通过调试，来查看各个隐藏的变量。不过有一点要小心：系统类内定义的一些 property 只是定义同名的 get set 方法，但是实际存储的变量名并不和 property 名相同，变量存储的位置也不能完全确定。比如上面 <code>UINavigationController</code> 的 <code>interactivePopGestureRecognizer</code> 属性，被保存在 <code>UINavigationController</code> 中的 <code>__cachedInteractionController</code> 之下，名为 <code>_edgePanRecognizer</code>，如果自己找起来的话，真的困难。</p>
 
       
     </div>
