@@ -1,0 +1,804 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="学习笔记," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="FDFullScreenPopGesture 是一个非常小巧精悍，却又功能强大的开源项目。主要的功能有：全局的手势回退；部分界面的 NavigationBar 的隐藏。今天花了半天的时间搞明白了其中的原理。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="FDFullScreenPopGesture 源码解析">
+<meta property="og:url" content="http://zhang759740844.github.io/2017/02/06/FDFullScreenPopGesture_源码解析/index.html">
+<meta property="og:site_name" content="Zachary's blog">
+<meta property="og:description" content="FDFullScreenPopGesture 是一个非常小巧精悍，却又功能强大的开源项目。主要的功能有：全局的手势回退；部分界面的 NavigationBar 的隐藏。今天花了半天的时间搞明白了其中的原理。">
+<meta property="og:updated_time" content="2017-02-06T09:30:11.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="FDFullScreenPopGesture 源码解析">
+<meta name="twitter:description" content="FDFullScreenPopGesture 是一个非常小巧精悍，却又功能强大的开源项目。主要的功能有：全局的手势回退；部分界面的 NavigationBar 的隐藏。今天花了半天的时间搞明白了其中的原理。">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://zhang759740844.github.io/2017/02/06/FDFullScreenPopGesture_源码解析/"/>
+
+  <title> FDFullScreenPopGesture 源码解析 | Zachary's blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Zachary's blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">记录成长</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup">
+ <span class="search-icon fa fa-search"></span>
+ <input type="text" id="local-search-input">
+ <div id="local-search-result"></div>
+ <span class="popup-btn-close">close</span>
+</div>
+
+
+    </div>
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                FDFullScreenPopGesture 源码解析
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-02-06T14:07:12+08:00" content="2017-02-06">
+              2017-02-06
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/iOS/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><code>FDFullScreenPopGesture</code> 是一个非常小巧精悍，却又功能强大的开源项目。主要的功能有：全局的手势回退；部分界面的 <code>NavigationBar</code> 的隐藏。今天花了半天的时间搞明白了其中的原理。</p>
+<a id="more"></a>
+<p>iOS 原生的返回手势的起始滑动点必须靠近屏幕的左方，无法实现全屏返回。我们可以给控制器的 view 添加手势来控制它的 frame。但是那样需要自己控制动画，自己控制 <code>NavigationBar</code> ，非常麻烦。<code>FDFullScreenPopGesture</code> 通过一种优雅的方式解决了这个问题。并且顺带实现了部分控制器隐藏 <code>NavigationBar</code> 的功能。</p>
+<h3 id="总体解构"><a href="#总体解构" class="headerlink" title="总体解构"></a>总体解构</h3><p>整个 <code>FDFullScreenPopGesture</code> 总共分为四个部分：</p>
+<ul>
+<li><code>_FDFullscreenPopGestureRecognizerDelegate</code></li>
+<li><code>UIViewController (FDFullscreenPopGesturePrivate)</code></li>
+<li><code>UIViewController (FDFullscreenPopGesture)</code></li>
+<li><code>UINavigationController (FDFullscreenPopGesture)</code></li>
+</ul>
+<h3 id="FDFullscreenPopGestureRecognizerDelegate"><a href="#FDFullscreenPopGestureRecognizerDelegate" class="headerlink" title="_FDFullscreenPopGestureRecognizerDelegate"></a>_FDFullscreenPopGestureRecognizerDelegate</h3><p>这个类只有一个方法，就是实现了 <code>UIGestureRecognizerDelegate</code> 的代理方法 <code>gestureRecognizerShouldBegin:</code>。用来控制是否开始手势操作。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div></pre></td><td class="code"><pre><div class="line">- (<span class="built_in">BOOL</span>)gestureRecognizerShouldBegin:(<span class="built_in">UIPanGestureRecognizer</span> *)gestureRecognizer</div><div class="line">&#123;</div><div class="line">    <span class="comment">// Ignore when no view controller is pushed into the navigation stack.</span></div><div class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.navigationController.viewControllers.count &lt;= <span class="number">1</span>) &#123;</div><div class="line">        <span class="keyword">return</span> <span class="literal">NO</span>;</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="comment">// Ignore when the active view controller doesn't allow interactive pop.</span></div><div class="line">    <span class="built_in">UIViewController</span> *topViewController = <span class="keyword">self</span>.navigationController.viewControllers.lastObject;</div><div class="line">    <span class="keyword">if</span> (topViewController.fd_interactivePopDisabled) &#123;</div><div class="line">        <span class="keyword">return</span> <span class="literal">NO</span>;</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="comment">// Ignore when the beginning location is beyond max allowed initial distance to left edge.</span></div><div class="line">    <span class="built_in">CGPoint</span> beginningLocation = [gestureRecognizer locationInView:gestureRecognizer.view];</div><div class="line">    <span class="built_in">CGFloat</span> maxAllowedInitialDistance = topViewController.fd_interactivePopMaxAllowedInitialDistanceToLeftEdge;</div><div class="line">    <span class="keyword">if</span> (maxAllowedInitialDistance &gt; <span class="number">0</span> &amp;&amp; beginningLocation.x &gt; maxAllowedInitialDistance) &#123;</div><div class="line">        <span class="keyword">return</span> <span class="literal">NO</span>;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">// Ignore pan gesture when the navigation controller is currently in transition.</span></div><div class="line">    <span class="keyword">if</span> ([[<span class="keyword">self</span>.navigationController valueForKey:<span class="string">@"_isTransitioning"</span>] boolValue]) &#123;</div><div class="line">        <span class="keyword">return</span> <span class="literal">NO</span>;</div><div class="line">    &#125;</div><div class="line">   </div><div class="line">    <span class="comment">// Prevent calling the handler when the gesture begins in an opposite direction.</span></div><div class="line">    <span class="built_in">CGPoint</span> translation = [gestureRecognizer translationInView:gestureRecognizer.view];</div><div class="line">    <span class="keyword">if</span> (translation.x &lt;= <span class="number">0</span>) &#123;</div><div class="line">        <span class="keyword">return</span> <span class="literal">NO</span>;</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="keyword">return</span> <span class="literal">YES</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>总共在5中情况下，不能全屏幕返回：</p>
+<ol>
+<li>整儿 <code>NavigationController</code> 中只有一个 <code>ViewController</code> 的时候</li>
+<li>当前的 <code>ViewController</code> 禁用了 <code>fd_interactivePopDisabled</code>（这个在 <code>UINavigationController (FDFullscreenPopGesture)</code> 中设置的）</li>
+<li>当前手势的启动点距离左边缘远过了 <code>fd_interactivePopMaxAllowedInitialDistanceToLeftEdge</code>（同上，也是自己设置的）</li>
+<li>当前是否在转场过程中。这里通过 KVC 拿到了 <code>NavigationController</code> 中的 <code>_isTransitioning</code> 属性</li>
+<li>手势运动方向是否是从右往左</li>
+</ol>
+<h3 id="UIViewController-FDFullscreenPopGesturePrivate"><a href="#UIViewController-FDFullscreenPopGesturePrivate" class="headerlink" title="UIViewController (FDFullscreenPopGesturePrivate)"></a><strong>UIViewController (FDFullscreenPopGesturePrivate)</strong></h3><p>如果你对 <code>runtime</code> 比较熟悉，那么看到这个类一定非常亲切。这个方法在 <code>load</code> 方法的时候，通过 <code>Method Swizzling</code> 用 <code>fd_viewWillAppear:</code> 方法，替换了原来的 <code>viewWillAppear:</code> 方法。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)fd_viewWillAppear:(<span class="built_in">BOOL</span>)animated</div><div class="line">&#123;</div><div class="line">    <span class="comment">// Forward to primary implementation.</span></div><div class="line">    [<span class="keyword">self</span> fd_viewWillAppear:animated];</div><div class="line">    </div><div class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.fd_willAppearInjectBlock) &#123;</div><div class="line">        <span class="keyword">self</span>.fd_willAppearInjectBlock(<span class="keyword">self</span>, animated);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这个替换的方法没什么特别的，就是在其中插入了自己的回调块 <code>fd_willAppearInjectBlock</code> ，该块在 <code>UINavigationController (FDFullscreenPopGesture)</code> 中定义并设置。该块用来设置 <code>NavigationBar</code> 的显示与隐藏。</p>
+<h3 id="UIViewController-FDFullscreenPopGesture"><a href="#UIViewController-FDFullscreenPopGesture" class="headerlink" title="UIViewController (FDFullscreenPopGesture)"></a>UIViewController (FDFullscreenPopGesture)</h3><p>这个类中定义了3个属性，上面用到了两个 <code>fd_interactivePopDisabled</code>，<code>fd_interactivePopMaxAllowedInitialDistanceToLeftEdge</code> 还有一个 <code>fd_prefersNavigationBarHidden</code> 属性用于判断是否隐藏 <code>NavigationBar</code> 上面的 <code>fd_willAppearInjectBlock</code> 中用到。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">UIViewController</span> (<span class="title">FDFullscreenPopGesture</span>)</span></div><div class="line"></div><div class="line"><span class="comment">/// Whether the interactive pop gesture is disabled when contained in a navigation</span></div><div class="line"><span class="comment">/// stack.</span></div><div class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">assign</span>) <span class="built_in">BOOL</span> fd_interactivePopDisabled;</div><div class="line"></div><div class="line"><span class="comment">/// Indicate this view controller prefers its navigation bar hidden or not,</span></div><div class="line"><span class="comment">/// checked when view controller based navigation bar's appearance is enabled.</span></div><div class="line"><span class="comment">/// Default to NO, bars are more likely to show.</span></div><div class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">assign</span>) <span class="built_in">BOOL</span> fd_prefersNavigationBarHidden;</div><div class="line"></div><div class="line"><span class="comment">/// Max allowed initial distance to left edge when you begin the interactive pop</span></div><div class="line"><span class="comment">/// gesture. 0 by default, which means it will ignore this limit.</span></div><div class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">assign</span>) <span class="built_in">CGFloat</span> fd_interactivePopMaxAllowedInitialDistanceToLeftEdge;</div><div class="line"></div><div class="line"><span class="keyword">@end</span></div></pre></td></tr></table></figure>
+<h3 id="UINavigationController-FDFullscreenPopGesture"><a href="#UINavigationController-FDFullscreenPopGesture" class="headerlink" title="UINavigationController (FDFullscreenPopGesture)"></a>UINavigationController (FDFullscreenPopGesture)</h3><p>这个方法是整个项目的逻辑的核心，首先还是在 <code>load</code> 方法中用 <code>fd_pushViewController:animated:</code> 方法替换了系统自身的 <code>pushViewController:animated:</code> 方法。该方法如下：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)fd_pushViewController:(<span class="built_in">UIViewController</span> *)viewController animated:(<span class="built_in">BOOL</span>)animated</div><div class="line">&#123;</div><div class="line">    <span class="keyword">if</span> (![<span class="keyword">self</span>.interactivePopGestureRecognizer.view.gestureRecognizers containsObject:<span class="keyword">self</span>.fd_fullscreenPopGestureRecognizer]) &#123;</div><div class="line"></div><div class="line">        <span class="comment">// 1.</span></div><div class="line">        [<span class="keyword">self</span>.interactivePopGestureRecognizer.view addGestureRecognizer:<span class="keyword">self</span>.fd_fullscreenPopGestureRecognizer];</div><div class="line"></div><div class="line">        <span class="comment">// 2.</span></div><div class="line">        <span class="built_in">NSArray</span> *internalTargets = [<span class="keyword">self</span>.interactivePopGestureRecognizer valueForKey:<span class="string">@"targets"</span>];</div><div class="line">        <span class="keyword">id</span> internalTarget = [internalTargets.firstObject valueForKey:<span class="string">@"target"</span>];</div><div class="line">        SEL internalAction = <span class="built_in">NSSelectorFromString</span>(<span class="string">@"handleNavigationTransition:"</span>);</div><div class="line">        <span class="keyword">self</span>.fd_fullscreenPopGestureRecognizer.delegate = <span class="keyword">self</span>.fd_popGestureRecognizerDelegate;</div><div class="line">        [<span class="keyword">self</span>.fd_fullscreenPopGestureRecognizer addTarget:internalTarget action:internalAction];</div><div class="line"></div><div class="line">        <span class="comment">// 3.</span></div><div class="line">        <span class="keyword">self</span>.interactivePopGestureRecognizer.enabled = <span class="literal">NO</span>;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">// 4.</span></div><div class="line">    [<span class="keyword">self</span> fd_setupViewControllerBasedNavigationBarAppearanceIfNeeded:viewController];</div><div class="line"></div><div class="line">    <span class="comment">// Forward to primary implementation.</span></div><div class="line">    <span class="keyword">if</span> (![<span class="keyword">self</span>.viewControllers containsObject:viewController]) &#123;</div><div class="line">        [<span class="keyword">self</span> fd_pushViewController:viewController animated:animated];</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>先看第一步，在 <code>interactivePopGestureRecognizer</code> 的 view 上添加一个 <code>UIPanGestureRecognizer</code>。这个 <code>interactivePopGestureRecognizer</code> 是什么呢？ 这是控制界面在边缘处滑动返回的手势。这是一个只读的属性，我们当然不能直接设置它，拿到它是为了通过它拿到该手势所在的 view，在 view 中保存了一个 <code>_gestureRecognizers</code> 的数组。试想一下，如何判断是否需要 pop 呢？就是通过拿到 view 中的  <code>_gestureRecognizers</code> ，再调用每个手势的 <code>UIGestureRecognizerDelegate</code> 中的 gestureRecognizerShouldBegin<code>方法是否返回</code>yes<code>。这里苹果之所以把</code>_gestureRecognizers` 设置为数组，可能是为了以后更易拓展吧。当然，这也方便了我们的拓展。</p>
+<p>第二步将自己添加的手势设置成与原生手势相同，包括一个 <code>target</code> 和一个 <code>action</code>，这样两个手势的动画以及触发方法就一模一样了。</p>
+<p>第三步将原来的手势禁用。</p>
+<p>第四步设置上面说过的 <code>_FDViewControllerWillAppearInjectBlock</code> 。也就是通过 <code>fd_prefersNavigationBarHidden</code> 来显示和隐藏 <code>NavigationBar</code>。</p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>主要复习了一下 <code>method swizzling</code> 的使用，可以很优雅地修改特定的方法。</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tag/学习笔记/" rel="tag">#学习笔记</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/02/03/iOS持久化/" rel="next" title="iOS 持久化方式">
+                <i class="fa fa-chevron-left"></i> iOS 持久化方式
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/author.png?raw=true"
+               alt="Zachary Zhang" />
+          <p class="site-author-name" itemprop="name">Zachary Zhang</p>
+          <p class="site-description motion-element" itemprop="description">Less is more</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">61</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">8</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">20</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://zhang759740844.github.io/" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://www.jianshu.com/users/d6b98b1c1e64/latest_articles" target="_blank" title="JianShu">
+                  
+                    <i class="fa fa-fw fa-globe"></i>
+                  
+                  JianShu
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#总体解构"><span class="nav-number">1.</span> <span class="nav-text">总体解构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#FDFullscreenPopGestureRecognizerDelegate"><span class="nav-number">2.</span> <span class="nav-text">_FDFullscreenPopGestureRecognizerDelegate</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#UIViewController-FDFullscreenPopGesturePrivate"><span class="nav-number">3.</span> <span class="nav-text">UIViewController (FDFullscreenPopGesturePrivate)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#UIViewController-FDFullscreenPopGesture"><span class="nav-number">4.</span> <span class="nav-text">UIViewController (FDFullscreenPopGesture)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#UINavigationController-FDFullscreenPopGesture"><span class="nav-number">5.</span> <span class="nav-text">UINavigationController (FDFullscreenPopGesture)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-number">6.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zachary Zhang</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+  
+  
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+       search_path = "search.xml";
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body").append('<div class="popoverlay">').css('overflow', 'hidden');
+      $('.popup').toggle();
+
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+    'use strict';
+    $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+            // get the contents from search data
+            isfetched = true;
+            $('.popup').detach().appendTo('.header-inner');
+            var datas = $( "entry", xmlResponse ).map(function() {
+                return {
+                    title: $( "title", this ).text(),
+                    content: $("content",this).text(),
+                    url: $( "url" , this).text()
+                };
+            }).get();
+            var $input = document.getElementById(search_id);
+            var $resultContent = document.getElementById(content_id);
+            $input.addEventListener('input', function(){
+                var matchcounts = 0;
+                var str='<ul class=\"search-result-list\">';
+                var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                $resultContent.innerHTML = "";
+                if (this.value.trim().length > 1) {
+                // perform local searching
+                datas.forEach(function(data) {
+                    var isMatch = true;
+                    var content_index = [];
+                    var data_title = data.title.trim().toLowerCase();
+                    var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                    var data_url = data.url;
+                    var index_title = -1;
+                    var index_content = -1;
+                    var first_occur = -1;
+                    // only match artiles with not empty titles and contents
+                    if(data_title != '' && data_content != '') {
+                        keywords.forEach(function(keyword, i) {
+                            index_title = data_title.indexOf(keyword);
+                            index_content = data_content.indexOf(keyword);
+                            if( index_title < 0 && index_content < 0 ){
+                                isMatch = false;
+                            } else {
+                                if (index_content < 0) {
+                                    index_content = 0;
+                                }
+                                if (i == 0) {
+                                    first_occur = index_content;
+                                }
+                            }
+                        });
+                    }
+                    // show search results
+                    if (isMatch) {
+                        matchcounts += 1;
+                        str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                        var content = data.content.trim().replace(/<[^>]+>/g,"");
+                        if (first_occur >= 0) {
+                            // cut out 100 characters
+                            var start = first_occur - 20;
+                            var end = first_occur + 80;
+                            if(start < 0){
+                                start = 0;
+                            }
+                            if(start == 0){
+                                end = 50;
+                            }
+                            if(end > content.length){
+                                end = content.length;
+                            }
+                            var match_content = content.substring(start, end);
+                            // highlight all keywords
+                            keywords.forEach(function(keyword){
+                                var regS = new RegExp(keyword, "gi");
+                                match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                            });
+
+                            str += "<p class=\"search-result\">" + match_content +"...</p>"
+                        }
+                        str += "</li>";
+                    }
+                })};
+                str += "</ul>";
+                if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+                if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+                $resultContent.innerHTML = str;
+            });
+            proceedsearch();
+        }
+    });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".popoverlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+
+  
+
+  
+
+  
+
+</body>
+</html>
