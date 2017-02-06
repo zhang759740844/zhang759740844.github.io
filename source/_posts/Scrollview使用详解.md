@@ -3,7 +3,6 @@ date: 2016/9/18 14:07:12
 categories: iOS
 tags: 
 	- 基本控件
-	
 ---
 
 本次将参考[iOS 性能优化之 UIScrollView 实践经验](https://my.oschina.net/zhxx/blog/620969#OSC_h3_11)对UIScrollView的使用方式进行详细介绍
@@ -15,11 +14,11 @@ tags:
 所以，一般的做法是在`UIScrollVIew`和它的`subViews`之间增加一个`content view`。这样可以方便地给 `subview` 提供 `leading/trailing/top/bottom`，方便 `subview` 的布局，并且可以 通过调整`content view` 的 `size`（调整`constraint` 的 `IBOutlet`）来调整 `contentSize`。
 
 ### 添加ContentView的注意点
-`scrollview`中添加的`contentview`和添加一般的视图不同，一般的视图只要只要提供`leading/trailing/top/bottom space`就能唯一确定长宽，位置。
+`scrollview`中添加的`contentview`和添加一般的视图不同，一般的视图只要提供`leading/trailing/top/bottom space`就能唯一确定长宽，位置。
 而`ScrollView`的`contentView`除了上述四个约束，还需要设置长宽，作为滚动的范围的一部分。
 
 所以整个`scrollview`的`contentSize`的等式应该是：
-```
+```objc
 scrollView.contentSize.width = (scrollview与contentview之间leading的constant)+（contentView的width）+（scrollview与contentview之间trailing的constant）
 ```
 
@@ -32,11 +31,11 @@ scrollView.contentSize.width = (scrollview与contentview之间leading的constant
 ## UIScrollView部分属性
 ### **contentSize**、**contentInset**和**contentOffset**
 - contentSize: 就是scrollview可以滚动的区域.
-比如frame = (0 ,0 ,320 ,480) contentSize = (320 ,960)，代表你的scrollview可以上下滚动，滚动区域为frame大小的两倍。
+  比如frame = (0 ,0 ,320 ,480) contentSize = (320 ,960)，代表你的scrollview可以上下滚动，滚动区域为frame大小的两倍。
 - contentOffset:就是scrollview当前显示区域顶点相对于frame顶点的偏移量。
-比如上个例子你拉到最下面，contentoffset就是(0 ,480)，也就是y偏移了480 
+  比如上个例子你拉到最下面，contentoffset就是(0 ,480)，也就是y偏移了480 
 - contentInset:就是scrollview的contentview的顶点相对于scrollview的位置。
-例如你的contentInset = (0 ,100)，那么你的contentview就是从scrollview的(0 ,100)开始显示 
+  例如你的contentInset = (0 ,100)，那么你的contentview就是从scrollview的(0 ,100)开始显示 
 
 /* 上拉刷新一般实现代码如下 */
 ```objc
@@ -110,7 +109,7 @@ Sample 中 Pagination 有简单实现 bleeding 和 padding 效果的代码，主
 适用场景：上述局限性同时也是这种实现方式的优点，比如一般 App 的引导页（教程），Calendar 里的月视图，都可以用这种方法实现。
 
 #### Snap
-核心算法是通过当前 contentOffset 计算最近的整数页及其对应的 contentOffset，通过动画 snap 到该页。这个方法实现的效果都有个通病，就是最后的 snap 会在 decelerate 结束以后才发生，总感觉很突兀。使用体验不如下面的方法。
+核心算法是在 `didEndDragging` 方法中，通过当前 contentOffset 计算最近的整数页及其对应的 contentOffset，通过动画 snap 到该页。这个方法实现的效果都有个通病，就是最后的 snap 会在 decelerate 结束以后才发生，总感觉很突兀。使用体验不如下面的方法。
 
 #### 修改targetContentOffset
 通过修改 `scrollViewWillEndDragging: withVelocity: targetContentOffset:` 方法中的 `targetContentOffset` 直接修改目标 `offset` 为整数页位置。其中核心代码：
@@ -129,6 +128,33 @@ Sample 中 Pagination 有简单实现 bleeding 和 padding 效果的代码，主
 适用场景：方法 2 和 方法 3 的原理近似，效果也相近，适用场景也基本相同，但方法 3 的体验会好很多，snap 到整数页的过程很自然，或者说用户完全感知不到 snap 过程的存在。这两种方法的减速过程流畅，适用于一屏有多页，但需要按整数页滑动的场景；也适用于如图表中自动 snap 到整数天的场景；还适用于每页大小不同的情况下 snap 到整数页的场景（不做举例，自行发挥，其实只需要修改计算目标 offset 的方法）。
 
 > Demo详见Pagination
+
+#### UIPageControl
+
+首先声明这个和 ScrollView 如何设置分页没有关系。这个组件是 iOS 在分页中经常用的表示页数的小白点。简单记录一下怎么使用。
+
+使用起来其实蛮简单的，就当一个 View 来使用就行了：
+
+```objc
+    _pageControl = [[UIPageControl alloc]initWithFrame:CGRectMake(SCREEN_WIDTH/2-75, SCREEN_HEIGHT-30-20, 150, 20)];
+    _pageControl.numberOfPages = 3;
+    _pageControl.currentPage = 0;
+    _pageControl.pageIndicatorTintColor = [UIColor colorWithHexString:@"E1E1E1"];
+    _pageControl.currentPageIndicatorTintColor = COLOR_MAINRED;
+    [self.view addSubview:_pageControl];
+```
+
+几个属性也比较易懂，基本上就设置好了，当然这里还没有设置和 Scrollview 的联动：
+
+```objc
+//监听scrollView滚动事件
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+    int page = scrollView.contentOffset.x / SCREEN_WIDTH;
+    _pageControl.currentPage = page;
+}
+```
+
+监听 Scrollview 的滚动事件就可以了。
 
 ### 重用
 大部分的 iOS 开发应该都清楚 `UITableView` 的 cell 重用机制，这种重用机制减少了内存开销也提高了 performance，`UIScrollView` 作为 `UITableView` 的父类，在很多场景中也很适合应用重用机制。

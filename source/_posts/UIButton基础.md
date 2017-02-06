@@ -3,7 +3,6 @@ date: 2016/8/29 14:07:12
 categories: iOS
 tags: 
 	- 基本控件
-	
 ---
 
 从最基础的控件开始一点点学习。先来总结下UIButton。
@@ -39,6 +38,60 @@ btn1.frame = btn1Frame;
 ```
 为`btn1`添加和删除一个`btn1Pressed`的点击事件。
 
+上面添加点击事件的方式需要先定义一个点击方法 `btn1Pressed`，点击方法和 button 添加事件是分离的。那么如何直接通过 block 的形式一步到位呢？可以封装点击方法，在点击方法执行是调用传入的 block：
+
+```objc
+//设置点击事件
+[button handleClickBlock:^(UIButton *button) {
+	...
+}];
+
+//UIButton的范畴
+typedef void (^ButtonActionBlock)(UIButton *button);
+@implementation UIButton (Block)
+
+- (void)handleClickBlock:(ButtonActionBlock)action {
+    [self handleControlEvents:UIControlEventTouchUpInside withBlock:action];
+}
+
+- (void)handleControlEvents:(UIControlEvents)events withBlock:(ButtonActionBlock)action {
+    [self setAssociateCopyValue:action withKey:@selector(handleControlEvents:withBlock:)];
+    [self addTarget:self action:@selector(buttonAction:) forControlEvents:events];
+}
+
+- (void)buttonAction:(id)sender {
+    ButtonActionBlock block = (ButtonActionBlock)[self associatedValueForKey:@selector(handleControlEvents:withBlock:)];
+    if (block) {
+      	// 设置enabled 为的是让 button 在执行完 block 前只能相应一次点击事件
+        self.enabled = NO;		
+        block(sender);
+        self.enabled = YES;
+    }
+}
+
+//封装了给category添加属性的方法
+@implementation NSObject (Associate)
+
+- (void)setAssociateValue:(id)value withKey:(void *)key{
+    objc_setAssociatedObject(self, key, value, OBJC_ASSOCIATION_RETAIN);
+}
+
+- (void)setAssociateWeakValue:(id)value withKey:(void *)key{
+    objc_setAssociatedObject(self, key, value, OBJC_ASSOCIATION_ASSIGN);
+}
+
+- (void)setAssociateCopyValue:(id)value withKey:(void *)key {
+    objc_setAssociatedObject(self, key, value, OBJC_ASSOCIATION_COPY_NONATOMIC);
+}
+
+- (id)associatedValueForKey:(void *)key{
+    return objc_getAssociatedObject(self, key);
+}
+@end
+```
+
+
+
 ## 设置title和image
 button有`imageView`和`titleLabel`两个属性，默认image在左，label在右。
 
@@ -49,9 +102,9 @@ button有`imageView`和`titleLabel`两个属性，默认image在左，label在�
 ```
 这里`forState`常用的有一下几种：
 - UIControlStateNormal  		常态
-- UIControlStateHighlighted 	高亮
-- UIControlStateDisabled		禁用
-- UIControlStateSelected		选中
+  - UIControlStateHighlighted 高亮
+    - UIControlStateDisabled禁用
+    - UIControlStateSelected选中
 
 其中需要说明的是，高亮就是点击时的状态。其实还有一种`UIControlStateSelected | UIControlStateHighlighted`这个组合是选中时候的高亮状态，也是比较有用的。
 

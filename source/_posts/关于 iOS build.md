@@ -1,5 +1,14 @@
-# 关于 iOS build
+title: 关于 iOS build
+date: 2017/2/3 10:07:12  
+categories: iOS
+tags:
+	- Xcode
 
+---
+
+关于 Xcode 是如何编译的，下面是一些较为浅显的讨论。
+
+<!--more-->
 
 ## 点击run后发生了什么
 点击 Run 之后 App 进行**编译、汇编、链接、代码签名以及启动执行**等操作
