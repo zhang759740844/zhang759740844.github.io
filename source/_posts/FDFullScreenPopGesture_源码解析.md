@@ -161,5 +161,7 @@ iOS 原生的返回手势的起始滑动点必须靠近屏幕的左方，无法�
 
 主要复习了一下 `method swizzling` 的使用，可以很优雅地修改特定的方法。
 
+另外，虽然苹果没开源，但还是通过获取到了系统类中的私有方法。这给我们提供了一个思路。我们也可以通过调试，来查看各个隐藏的变量。不过有一点要小心：系统类内定义的一些 property 只是定义同名的 get set 方法，但是实际存储的变量名并不和 property 名相同，变量存储的位置也不能完全确定。比如上面 `UINavigationController` 的 `interactivePopGestureRecognizer` 属性，被保存在 `UINavigationController` 中的 `__cachedInteractionController` 之下，名为 `_edgePanRecognizer`，如果自己找起来的话，真的困难。
+
 
 
