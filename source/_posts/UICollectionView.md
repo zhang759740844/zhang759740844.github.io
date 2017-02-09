@@ -777,5 +777,5 @@ CGFloat angle = (float)(indexPath.row+angleOffset-1)/itemCounts*M_PI*2;
 
 这样一个无限滚轮就做出来了。
 
-
+[参考文章:iOS流布局UICollectionView系列](https://my.oschina.net/u/2340880/blog/523341)
 
