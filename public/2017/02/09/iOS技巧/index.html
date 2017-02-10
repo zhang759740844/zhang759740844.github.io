@@ -68,7 +68,7 @@
 <link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="Xcode," />
+  <meta name="keywords" content="学习笔记," />
 
 
 
@@ -84,19 +84,16 @@
 
 
 
-<meta name="description" content="写ios小demo的时候，真机调试出现View不能满屏显示的情况。屏幕上下都有一条粗粗的黑条。">
+<meta name="description" content="这篇中将收集一些关于 iOS 开发中的一些小技巧以及注意事项，可能比较零散。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="IPhone6全屏黑边处理">
-<meta property="og:url" content="http://zhang759740844.github.io/2016/09/05/IPhone6全屏黑边处理/index.html">
+<meta property="og:title" content="一些 iOS 小技巧与注意点(持续更新)">
+<meta property="og:url" content="http://zhang759740844.github.io/2017/02/09/iOS技巧/index.html">
 <meta property="og:site_name" content="Zachary's blog">
-<meta property="og:description" content="写ios小demo的时候，真机调试出现View不能满屏显示的情况。屏幕上下都有一条粗粗的黑条。">
-<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/SetLaunchImage2.png?raw=true">
-<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/SetLaunchImage1.png?raw=true">
-<meta property="og:updated_time" content="2017-01-07T07:08:39.000Z">
+<meta property="og:description" content="这篇中将收集一些关于 iOS 开发中的一些小技巧以及注意事项，可能比较零散。">
+<meta property="og:updated_time" content="2017-02-10T13:19:42.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="IPhone6全屏黑边处理">
-<meta name="twitter:description" content="写ios小demo的时候，真机调试出现View不能满屏显示的情况。屏幕上下都有一条粗粗的黑条。">
-<meta name="twitter:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/SetLaunchImage2.png?raw=true">
+<meta name="twitter:title" content="一些 iOS 小技巧与注意点(持续更新)">
+<meta name="twitter:description" content="这篇中将收集一些关于 iOS 开发中的一些小技巧以及注意事项，可能比较零散。">
 
 
 
@@ -117,9 +114,9 @@
 
 
 
-  <link rel="canonical" href="http://zhang759740844.github.io/2016/09/05/IPhone6全屏黑边处理/"/>
+  <link rel="canonical" href="http://zhang759740844.github.io/2017/02/09/iOS技巧/"/>
 
-  <title> IPhone6全屏黑边处理 | Zachary's blog </title>
+  <title> 一些 iOS 小技巧与注意点(持续更新) | Zachary's blog </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -282,7 +279,7 @@
             
             
               
-                IPhone6全屏黑边处理
+                一些 iOS 小技巧与注意点(持续更新)
               
             
           </h1>
@@ -294,8 +291,8 @@
               <i class="fa fa-calendar-o"></i>
             </span>
             <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-09-05T14:07:12+08:00" content="2016-09-05">
-              2016-09-05
+            <time itemprop="dateCreated" datetime="2017-02-09T10:07:12+08:00" content="2017-02-09">
+              2017-02-09
             </time>
           </span>
 
@@ -341,14 +338,17 @@
       
 
       
-        <p>写ios小demo的时候，真机调试出现View不能满屏显示的情况。屏幕上下都有一条粗粗的黑条。</p>
+        <p>这篇中将收集一些关于 iOS 开发中的一些小技巧以及注意事项，可能比较零散。</p>
 <a id="more"></a>
-<p>检查了许久，代码里都是直接设置的<code>UIScreen</code>的<code>bounds</code>。因此，不可能是代码的问题。那么需要在设置中找原因。</p>
-<p>通过和正确的demo进行对比，发现了差异所在。</p>
-<p>这是有黑边情况下的设置：</p>
-<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/SetLaunchImage2.png?raw=true" alt="错误设置"></p>
-<p>这是没有黑边情况下的设置：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/SetLaunchImage1.png?raw=true" alt="正确设置"></p>
-<p>通过比较可以发现：<br>出现黑边的原因是在设置里设置了<code>Launch Images Source</code>为<code>LaunchImage</code>,但是在Images.xcassets中并没有<code>LaunchImage</code>资源。所以，需要给<code>LaunchImage</code>设置图片资源。<br>也可以像上面的那样设置<code>Launch Images Source</code>为<code>Use Asset Catalog</code>,并且将<code>Launch Screen File</code>设置为<code>LaunchImage</code>即可解决。</p>
+<h3 id="如何在二级页面隐藏-tabbar"><a href="#如何在二级页面隐藏-tabbar" class="headerlink" title="如何在二级页面隐藏 tabbar"></a>如何在二级页面隐藏 <code>tabbar</code></h3><p>一般会在 <code>TabBarController</code> 中设置多个 <code>NavigationController</code> 作为各个 <code>tab</code> 的 <code>ViewController</code>。我们只要写一个 <code>BaseViewController</code>，在其中重写 <code>pushViewController:animated</code> 方法，在其中判断是否需要隐藏就行。设置 <code>hidesBottomBarWhenPushed</code> 属性来控制在跳转的时候隐藏。<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)pushViewController:(<span class="built_in">UIViewController</span> *)viewController animated:(<span class="built_in">BOOL</span>)animated &#123;</div><div class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.viewControllers.count) &#123;</div><div class="line">        viewController.hidesBottomBarWhenPushed = <span class="literal">YES</span>;</div><div class="line">    &#125;</div><div class="line">    [<span class="keyword">super</span> pushViewController:viewController animated:animated];</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h3 id="如何在-pop-的时候清理资源"><a href="#如何在-pop-的时候清理资源" class="headerlink" title="如何在 pop 的时候清理资源"></a>如何在 <code>pop</code> 的时候清理资源</h3><p>仍然是在 <code>BaseViewController</code> 中重写 <code>popViewControllerAnimated:</code> 方法。在其中调用特定方法，来做一些清理资源的善后工作。<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">- (<span class="built_in">UIViewController</span> *)popViewControllerAnimated:(<span class="built_in">BOOL</span>)animated&#123;</div><div class="line">    <span class="keyword">if</span> ([[<span class="keyword">self</span>.viewControllers lastObject] isKindOfClass:[BaseViewController <span class="keyword">class</span>]]) &#123;</div><div class="line">        BaseViewController *viewController=[<span class="keyword">self</span>.viewControllers lastObject];</div><div class="line">        [viewController willPopViewController];</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> [<span class="keyword">super</span> popViewControllerAnimated:animated];</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h3 id="UIImage-的渲染模式-imageWithRenderingMode"><a href="#UIImage-的渲染模式-imageWithRenderingMode" class="headerlink" title="UIImage 的渲染模式 imageWithRenderingMode:"></a><code>UIImage</code> 的渲染模式 <code>imageWithRenderingMode:</code></h3><p>该方法用来设置属性 <code>renderingMode</code>。它使用 <code>UIImageRenderingMode</code> 枚举值来设置图片的 <code>renderingMode</code> 属性。该枚举中包含下列值：<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">UIImageRenderingModeAutomatic</span>  <span class="comment">// 根据图片的使用环境和所处的绘图上下文自动调整渲染模式。</span></div><div class="line"><span class="built_in">UIImageRenderingModeAlwaysOriginal</span>   <span class="comment">// 始终绘制图片原始状态，不使用Tint Color。  </span></div><div class="line"><span class="built_in">UIImageRenderingModeAlwaysTemplate</span>   <span class="comment">// 始终根据Tint Color绘制图片，忽略图片的颜色信息。</span></div></pre></td></tr></table></figure></p>
+<p>应用场景是什么呢？比如设置一个 <code>tabbar</code> 的 <code>UIImage</code> 如果不将其设置为 <code>UIImageRenderingModeAlwaysOriginal</code>。那么图片的选中状态的颜色就会跟随系统的 <code>tintColor</code>。</p>
+<h3 id="封装一个没有数据时显示空白页"><a href="#封装一个没有数据时显示空白页" class="headerlink" title="封装一个没有数据时显示空白页"></a>封装一个没有数据时显示空白页</h3><p>没有数据的时候通常需要显示一个空白页。空白页长得都差不多，基本上都是一段话加上一张图。我们当然不要每次都写一遍这个视图，因此就需要将这些操作放到 base 中去。</p>
+<p>在 <code>BaseViewController</code> 中添加一个 <code>reloadDataWithBlank</code> 方法：<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)reloadDataWithBlank&#123;</div><div class="line">		<span class="comment">//多段就看每个数组，一段就直接看元素个数</span></div><div class="line">    <span class="keyword">if</span> (_isMultiSection) &#123;</div><div class="line">        <span class="built_in">BOOL</span> isCountZero=<span class="literal">YES</span>;</div><div class="line">        <span class="keyword">for</span> (<span class="built_in">NSArray</span> *array <span class="keyword">in</span> <span class="keyword">self</span>.dataSource) &#123;</div><div class="line">            <span class="keyword">if</span> (array.count!=<span class="number">0</span>) &#123;</div><div class="line">                isCountZero=<span class="literal">NO</span>;</div><div class="line">                <span class="keyword">break</span>;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">if</span> (isCountZero) &#123;</div><div class="line">            [_tableView addSubview:<span class="keyword">self</span>.blankHintView];</div><div class="line">        &#125;<span class="keyword">else</span>&#123;</div><div class="line">            [<span class="keyword">self</span>.blankHintView removeFromSuperview];</div><div class="line">        &#125;</div><div class="line">    &#125;<span class="keyword">else</span>&#123;</div><div class="line">        <span class="keyword">if</span> (<span class="keyword">self</span>.dataSource.count==<span class="number">0</span>) &#123;</div><div class="line">            [_tableView addSubview:<span class="keyword">self</span>.blankHintView];</div><div class="line">        &#125;<span class="keyword">else</span>&#123;</div><div class="line">            [<span class="keyword">self</span>.blankHintView removeFromSuperview];</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    [_tableView reloadData];</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>其中 <code>blankHintView</code> 就是空白提示视图。每次在 <code>viewDidLoad</code> 中，或者在这个方法内再创建一个功能更明确的 <code>loadDefaultDataSource</code> 方法，在其中中添加默认的 <code>title</code> 和 <code>image</code> 即可。</p>
+<h3 id="设置手势事件"><a href="#设置手势事件" class="headerlink" title="设置手势事件"></a>设置手势事件</h3><p>关于手势，通常需要写一个事件的方法。这样设置事件和方法本身就会分隔开来。回顾代码的时候找起来会很麻烦。可以通过 block 回调的方式将方法保存起来：<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)addTapActionWithBlock:(GestureActionBlock)block&#123;</div><div class="line">    <span class="built_in">UITapGestureRecognizer</span> *gesture = [<span class="keyword">self</span> associatedValueForKey:_cmd];</div><div class="line">    <span class="keyword">if</span> (!gesture)&#123;</div><div class="line">        gesture = [[<span class="built_in">UITapGestureRecognizer</span> alloc] initWithTarget:<span class="keyword">self</span> action:<span class="keyword">@selector</span>(handleActionForTapGesture:)];</div><div class="line">        [<span class="keyword">self</span> addGestureRecognizer:gesture];</div><div class="line">        [<span class="keyword">self</span> setAssociateValue:gesture withKey:_cmd];</div><div class="line">    &#125;</div><div class="line">    [<span class="keyword">self</span> setAssociateCopyValue:block withKey:&amp;kActionHandlerTapBlockKey];</div><div class="line">    <span class="keyword">self</span>.userInteractionEnabled = <span class="literal">YES</span>;</div><div class="line">&#125;</div><div class="line"></div><div class="line">- (<span class="keyword">void</span>)handleActionForTapGesture:(<span class="built_in">UITapGestureRecognizer</span>*)gesture&#123;</div><div class="line">    <span class="keyword">if</span> (gesture.state == <span class="built_in">UIGestureRecognizerStateRecognized</span>)&#123;</div><div class="line">        GestureActionBlock block = [<span class="keyword">self</span> associatedValueForKey:&amp;kActionHandlerTapBlockKey];</div><div class="line">        <span class="keyword">if</span> (block)&#123;</div><div class="line">            block(gesture);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>先把 <code>gesture</code> 保存起来，再把手势对应的 <code>block</code> 保存起来。使用的时候调用即可：<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">[label addTapActionWithBlock:^(<span class="built_in">UIGestureRecognizer</span> *gestureRecoginzer) &#123;</div><div class="line">	...</div><div class="line">&#125;];</div></pre></td></tr></table></figure></p>
 
       
     </div>
@@ -371,7 +371,7 @@
       
         <div class="post-tags">
           
-            <a href="/tag/Xcode/" rel="tag">#Xcode</a>
+            <a href="/tag/学习笔记/" rel="tag">#学习笔记</a>
           
         </div>
       
@@ -380,17 +380,13 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2016/09/03/ios响应事件/" rel="next" title="ios响应机制">
-                <i class="fa fa-chevron-left"></i> ios响应机制
+              <a href="/2017/02/07/AlertController/" rel="next" title="UIAlertController 使用简介">
+                <i class="fa fa-chevron-left"></i> UIAlertController 使用简介
               </a>
             
           </div>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2016/09/05/UIGestureRecognizer/" rel="prev" title="UIGestureRecognizer">
-                UIGestureRecognizer <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -524,7 +520,7 @@
               
             
             
-              <p class="post-toc-empty">此文章未包含目录</p>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#如何在二级页面隐藏-tabbar"><span class="nav-number">1.</span> <span class="nav-text">如何在二级页面隐藏 tabbar</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#如何在-pop-的时候清理资源"><span class="nav-number">2.</span> <span class="nav-text">如何在 pop 的时候清理资源</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#UIImage-的渲染模式-imageWithRenderingMode"><span class="nav-number">3.</span> <span class="nav-text">UIImage 的渲染模式 imageWithRenderingMode:</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#封装一个没有数据时显示空白页"><span class="nav-number">4.</span> <span class="nav-text">封装一个没有数据时显示空白页</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#设置手势事件"><span class="nav-number">5.</span> <span class="nav-text">设置手势事件</span></a></li></ol></div>
             
           </div>
         </section>

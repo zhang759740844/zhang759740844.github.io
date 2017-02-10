@@ -68,7 +68,7 @@
 <link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="Xcode," />
+  <meta name="keywords" content="keep moving" />
 
 
 
@@ -84,19 +84,15 @@
 
 
 
-<meta name="description" content="写ios小demo的时候，真机调试出现View不能满屏显示的情况。屏幕上下都有一条粗粗的黑条。">
-<meta property="og:type" content="article">
-<meta property="og:title" content="IPhone6全屏黑边处理">
-<meta property="og:url" content="http://zhang759740844.github.io/2016/09/05/IPhone6全屏黑边处理/index.html">
+<meta name="description" content="Less is more">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Zachary's blog">
+<meta property="og:url" content="http://zhang759740844.github.io/tag/源码解析/index.html">
 <meta property="og:site_name" content="Zachary's blog">
-<meta property="og:description" content="写ios小demo的时候，真机调试出现View不能满屏显示的情况。屏幕上下都有一条粗粗的黑条。">
-<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/SetLaunchImage2.png?raw=true">
-<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/SetLaunchImage1.png?raw=true">
-<meta property="og:updated_time" content="2017-01-07T07:08:39.000Z">
+<meta property="og:description" content="Less is more">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="IPhone6全屏黑边处理">
-<meta name="twitter:description" content="写ios小demo的时候，真机调试出现View不能满屏显示的情况。屏幕上下都有一条粗粗的黑条。">
-<meta name="twitter:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/SetLaunchImage2.png?raw=true">
+<meta name="twitter:title" content="Zachary's blog">
+<meta name="twitter:description" content="Less is more">
 
 
 
@@ -117,9 +113,9 @@
 
 
 
-  <link rel="canonical" href="http://zhang759740844.github.io/2016/09/05/IPhone6全屏黑边处理/"/>
+  <link rel="canonical" href="http://zhang759740844.github.io/tag/源码解析/"/>
 
-  <title> IPhone6全屏黑边处理 | Zachary's blog </title>
+  <title> 标签: 源码解析 | Zachary's blog </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -140,7 +136,7 @@
     
   
 
-  <div class="container one-collumn sidebar-position-left page-post-detail ">
+  <div class="container one-collumn sidebar-position-left  ">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -261,152 +257,102 @@
           <div id="content" class="content">
             
 
-  <div id="posts" class="posts-expand">
-    
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                IPhone6全屏黑边处理
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-09-05T14:07:12+08:00" content="2016-09-05">
-              2016-09-05
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/iOS/" itemprop="url" rel="index">
-                    <span itemprop="name">iOS</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        <p>写ios小demo的时候，真机调试出现View不能满屏显示的情况。屏幕上下都有一条粗粗的黑条。</p>
-<a id="more"></a>
-<p>检查了许久，代码里都是直接设置的<code>UIScreen</code>的<code>bounds</code>。因此，不可能是代码的问题。那么需要在设置中找原因。</p>
-<p>通过和正确的demo进行对比，发现了差异所在。</p>
-<p>这是有黑边情况下的设置：</p>
-<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/SetLaunchImage2.png?raw=true" alt="错误设置"></p>
-<p>这是没有黑边情况下的设置：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/SetLaunchImage1.png?raw=true" alt="正确设置"></p>
-<p>通过比较可以发现：<br>出现黑边的原因是在设置里设置了<code>Launch Images Source</code>为<code>LaunchImage</code>,但是在Images.xcassets中并没有<code>LaunchImage</code>资源。所以，需要给<code>LaunchImage</code>设置图片资源。<br>也可以像上面的那样设置<code>Launch Images Source</code>为<code>Use Asset Catalog</code>,并且将<code>Launch Screen File</code>设置为<code>LaunchImage</code>即可解决。</p>
-
-      
+  <div id="posts" class="posts-collapse">
+    <div class="collection-title">
+      <h2 >
+        源码解析
+        <small>标签</small>
+      </h2>
     </div>
 
-    <div>
+    
       
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+    <header class="post-header">
+
+      <h1 class="post-title">
         
-
-      
-    </div>
-
-    <div>
-      
+            <a class="post-title-link" href="/2017/02/06/FDFullScreenPopGesture_源码解析/" itemprop="url">
+              
+                <span itemprop="name">FDFullScreenPopGesture 源码解析</span>
+              
+            </a>
         
+      </h1>
 
-      
-    </div>
+      <div class="post-meta">
+        <time class="post-time" itemprop="dateCreated"
+              datetime="2017-02-06T14:07:12+08:00"
+              content="2017-02-06" >
+          02-06
+        </time>
+      </div>
 
-    <footer class="post-footer">
-      
-        <div class="post-tags">
-          
-            <a href="/tag/Xcode/" rel="tag">#Xcode</a>
-          
-        </div>
-      
-
-      
-        <div class="post-nav">
-          <div class="post-nav-next post-nav-item">
-            
-              <a href="/2016/09/03/ios响应事件/" rel="next" title="ios响应机制">
-                <i class="fa fa-chevron-left"></i> ios响应机制
-              </a>
-            
-          </div>
-
-          <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2016/09/05/UIGestureRecognizer/" rel="prev" title="UIGestureRecognizer">
-                UIGestureRecognizer <i class="fa fa-chevron-right"></i>
-              </a>
-            
-          </div>
-        </div>
-      
-
-      
-      
-    </footer>
+    </header>
   </article>
 
 
-
-    <div class="post-spread">
+    
       
-    </div>
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+    <header class="post-header">
+
+      <h1 class="post-title">
+        
+            <a class="post-title-link" href="/2017/01/24/RN显示原理/" itemprop="url">
+              
+                <span itemprop="name">React-Native 如何创建原生 View 源码解析</span>
+              
+            </a>
+        
+      </h1>
+
+      <div class="post-meta">
+        <time class="post-time" itemprop="dateCreated"
+              datetime="2017-01-24T10:07:12+08:00"
+              content="2017-01-24" >
+          01-24
+        </time>
+      </div>
+
+    </header>
+  </article>
+
+
+    
+      
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+    <header class="post-header">
+
+      <h1 class="post-title">
+        
+            <a class="post-title-link" href="/2017/01/17/RN Native初始化过程/" itemprop="url">
+              
+                <span itemprop="name">React-Native 初始化与通信原理源码分析</span>
+              
+            </a>
+        
+      </h1>
+
+      <div class="post-meta">
+        <time class="post-time" itemprop="dateCreated"
+              datetime="2017-01-17T10:07:12+08:00"
+              content="2017-01-17" >
+          01-17
+        </time>
+      </div>
+
+    </header>
+  </article>
+
+
+    
   </div>
+
+  
 
 
           </div>
@@ -414,10 +360,6 @@
 
 
           
-  <div class="comments" id="comments">
-    
-  </div>
-
 
         </div>
         
@@ -437,17 +379,8 @@
       
 
       
-        <ul class="sidebar-nav motion-element">
-          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
-            文章目录
-          </li>
-          <li class="sidebar-nav-overview" data-target="site-overview">
-            站点概览
-          </li>
-        </ul>
-      
 
-      <section class="site-overview sidebar-panel ">
+      <section class="site-overview sidebar-panel  sidebar-panel-active ">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           <img class="site-author-image" itemprop="image"
                src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/author.png?raw=true"
@@ -517,17 +450,6 @@
 
       </section>
 
-      
-        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
-          <div class="post-toc">
-            
-              
-            
-            
-              <p class="post-toc-empty">此文章未包含目录</p>
-            
-          </div>
-        </section>
       
 
     </div>
@@ -624,10 +546,6 @@
   
 
   
-  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
-<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
-
-
 
   
 

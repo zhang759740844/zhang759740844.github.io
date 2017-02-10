@@ -68,7 +68,7 @@
 <link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="Xcode," />
+  <meta name="keywords" content="学习笔记," />
 
 
 
@@ -84,19 +84,16 @@
 
 
 
-<meta name="description" content="写ios小demo的时候，真机调试出现View不能满屏显示的情况。屏幕上下都有一条粗粗的黑条。">
+<meta name="description" content="暂时没有需要深入应用就不细写了">
 <meta property="og:type" content="article">
-<meta property="og:title" content="IPhone6全屏黑边处理">
-<meta property="og:url" content="http://zhang759740844.github.io/2016/09/05/IPhone6全屏黑边处理/index.html">
+<meta property="og:title" content="富文本AttributedString 使用小结">
+<meta property="og:url" content="http://zhang759740844.github.io/2017/02/07/富文本/index.html">
 <meta property="og:site_name" content="Zachary's blog">
-<meta property="og:description" content="写ios小demo的时候，真机调试出现View不能满屏显示的情况。屏幕上下都有一条粗粗的黑条。">
-<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/SetLaunchImage2.png?raw=true">
-<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/SetLaunchImage1.png?raw=true">
-<meta property="og:updated_time" content="2017-01-07T07:08:39.000Z">
+<meta property="og:description" content="暂时没有需要深入应用就不细写了">
+<meta property="og:updated_time" content="2017-02-10T13:21:29.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="IPhone6全屏黑边处理">
-<meta name="twitter:description" content="写ios小demo的时候，真机调试出现View不能满屏显示的情况。屏幕上下都有一条粗粗的黑条。">
-<meta name="twitter:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/SetLaunchImage2.png?raw=true">
+<meta name="twitter:title" content="富文本AttributedString 使用小结">
+<meta name="twitter:description" content="暂时没有需要深入应用就不细写了">
 
 
 
@@ -117,9 +114,9 @@
 
 
 
-  <link rel="canonical" href="http://zhang759740844.github.io/2016/09/05/IPhone6全屏黑边处理/"/>
+  <link rel="canonical" href="http://zhang759740844.github.io/2017/02/07/富文本/"/>
 
-  <title> IPhone6全屏黑边处理 | Zachary's blog </title>
+  <title> 富文本AttributedString 使用小结 | Zachary's blog </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -282,7 +279,7 @@
             
             
               
-                IPhone6全屏黑边处理
+                富文本AttributedString 使用小结
               
             
           </h1>
@@ -294,8 +291,8 @@
               <i class="fa fa-calendar-o"></i>
             </span>
             <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-09-05T14:07:12+08:00" content="2016-09-05">
-              2016-09-05
+            <time itemprop="dateCreated" datetime="2017-02-07T14:07:12+08:00" content="2017-02-07">
+              2017-02-07
             </time>
           </span>
 
@@ -341,14 +338,16 @@
       
 
       
-        <p>写ios小demo的时候，真机调试出现View不能满屏显示的情况。屏幕上下都有一条粗粗的黑条。</p>
+        <p>暂时没有需要深入应用就不细写了</p>
 <a id="more"></a>
-<p>检查了许久，代码里都是直接设置的<code>UIScreen</code>的<code>bounds</code>。因此，不可能是代码的问题。那么需要在设置中找原因。</p>
-<p>通过和正确的demo进行对比，发现了差异所在。</p>
-<p>这是有黑边情况下的设置：</p>
-<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/SetLaunchImage2.png?raw=true" alt="错误设置"></p>
-<p>这是没有黑边情况下的设置：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/SetLaunchImage1.png?raw=true" alt="正确设置"></p>
-<p>通过比较可以发现：<br>出现黑边的原因是在设置里设置了<code>Launch Images Source</code>为<code>LaunchImage</code>,但是在Images.xcassets中并没有<code>LaunchImage</code>资源。所以，需要给<code>LaunchImage</code>设置图片资源。<br>也可以像上面的那样设置<code>Launch Images Source</code>为<code>Use Asset Catalog</code>,并且将<code>Launch Screen File</code>设置为<code>LaunchImage</code>即可解决。</p>
+<p><code>AttributedString</code>可以分为 <code>NSAttributedString</code> 和 <code>NSMutableAttributedString</code> 两种。在使用中通过将 <code>AttributedString</code> 赋值给控件的 <code>attributedText</code>  属性来添加文字样式。有属性的控件有 <code>UILabel</code>、<code>UITextField</code> 和 <code>UITextView</code>。</p>
+<h2 id="使用方式"><a href="#使用方式" class="headerlink" title="使用方式"></a>使用方式</h2><h3 id="方式一"><a href="#方式一" class="headerlink" title="方式一"></a>方式一</h3><p>初始化一个 <code>NSMutableAttributedString</code>，然后向里面添加文字样式，将其赋给控件的 <code>attributedText</code> 属性。</p>
+<p>例子：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">NSString</span> *str = <span class="string">@"人生若只如初见，何事悲风秋画扇。\n等闲变却故人心，却道故人心易变。\n骊山语罢清宵半，泪雨霖铃终不怨。\n何如薄幸锦衣郎，比翼连枝当日愿。"</span>;</div><div class="line"><span class="comment">//创建NSMutableAttributedString</span></div><div class="line"><span class="built_in">NSMutableAttributedString</span> *attrStr = [[<span class="built_in">NSMutableAttributedString</span> alloc]initWithString:str];</div><div class="line"></div><div class="line"><span class="comment">//设置字体和设置字体的范围</span></div><div class="line">[attrStr addAttribute:<span class="built_in">NSFontAttributeName</span> value:[<span class="built_in">UIFont</span> systemFontOfSize:<span class="number">30.0</span>f] range:<span class="built_in">NSMakeRange</span>(<span class="number">0</span>, <span class="number">3</span>)];</div><div class="line"><span class="comment">//添加文字颜色</span></div><div class="line">[attrStr addAttribute:<span class="built_in">NSForegroundColorAttributeName</span> value:[<span class="built_in">UIColor</span> redColor] range:<span class="built_in">NSMakeRange</span>(<span class="number">17</span>, <span class="number">7</span>)];</div><div class="line"><span class="comment">//添加文字背景颜色</span></div><div class="line">[attrStr addAttribute:<span class="built_in">NSBackgroundColorAttributeName</span> value:[<span class="built_in">UIColor</span> orangeColor] range:<span class="built_in">NSMakeRange</span>(<span class="number">17</span>, <span class="number">7</span>)];</div><div class="line"><span class="comment">//添加下划线</span></div><div class="line">[attrStr addAttribute:<span class="built_in">NSUnderlineStyleAttributeName</span> value:[<span class="built_in">NSNumber</span> numberWithInteger:<span class="built_in">NSUnderlineStyleSingle</span>] range:<span class="built_in">NSMakeRange</span>(<span class="number">8</span>, <span class="number">7</span>)];</div><div class="line"></div><div class="line"><span class="built_in">UILabel</span> *label = [[<span class="built_in">UILabel</span> alloc]initWithFrame:<span class="built_in">CGRectMake</span>(<span class="number">60</span>, <span class="number">100</span>, <span class="number">200</span>, <span class="number">0</span>)];</div><div class="line">label.backgroundColor = [<span class="built_in">UIColor</span> greenColor];</div><div class="line"><span class="comment">//自动换行</span></div><div class="line">label.numberOfLines = <span class="number">0</span>;</div><div class="line"><span class="comment">//设置label的富文本</span></div><div class="line">label.attributedText = attrStr;</div><div class="line"><span class="comment">//label高度自适应</span></div><div class="line">[label sizeToFit];</div><div class="line">[<span class="keyword">self</span>.view addSubview:label];</div></pre></td></tr></table></figure>
+<h3 id="方式二"><a href="#方式二" class="headerlink" title="方式二"></a>方式二</h3><p>创建属性字典，并将各种属性初始化。赋值，并利用方法 <code>appendAttributedString:</code> 添加入 <code>NSMutableAttributedString</code>，将其赋给控件的 <code>attributedText</code> 属性。</p>
+<p>例子：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">NSString</span> *str51 = <span class="string">@"\n设置删除线为细单实线,颜色为红色"</span>;</div><div class="line"><span class="built_in">NSDictionary</span> *dictAttr51 = @&#123;<span class="built_in">NSStrikethroughStyleAttributeName</span>:@(<span class="built_in">NSUnderlineStyleSingle</span>),<span class="built_in">NSStrikethroughColorAttributeName</span>:[<span class="built_in">UIColor</span> redColor]&#125;;</div><div class="line"><span class="built_in">NSAttributedString</span> *attr51 = [[<span class="built_in">NSAttributedString</span> alloc]initWithString:str51 attributes:dictAttr51];</div><div class="line">[attributedString appendAttributedString:attr51];</div></pre></td></tr></table></figure>
+<p>富文本有许多可以设置的属性，我就不一一列举了。如果用到再 google 就可以了。至于图文混排之类的也是用到再说吧。</p>
 
       
     </div>
@@ -371,7 +370,7 @@
       
         <div class="post-tags">
           
-            <a href="/tag/Xcode/" rel="tag">#Xcode</a>
+            <a href="/tag/学习笔记/" rel="tag">#学习笔记</a>
           
         </div>
       
@@ -380,16 +379,16 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2016/09/03/ios响应事件/" rel="next" title="ios响应机制">
-                <i class="fa fa-chevron-left"></i> ios响应机制
+              <a href="/2017/02/06/FDFullScreenPopGesture_源码解析/" rel="next" title="FDFullScreenPopGesture 源码解析">
+                <i class="fa fa-chevron-left"></i> FDFullScreenPopGesture 源码解析
               </a>
             
           </div>
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2016/09/05/UIGestureRecognizer/" rel="prev" title="UIGestureRecognizer">
-                UIGestureRecognizer <i class="fa fa-chevron-right"></i>
+              <a href="/2017/02/07/AlertController/" rel="prev" title="UIAlertController 使用简介">
+                UIAlertController 使用简介 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -524,7 +523,7 @@
               
             
             
-              <p class="post-toc-empty">此文章未包含目录</p>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#使用方式"><span class="nav-number">1.</span> <span class="nav-text">使用方式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#方式一"><span class="nav-number">1.1.</span> <span class="nav-text">方式一</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#方式二"><span class="nav-number">1.2.</span> <span class="nav-text">方式二</span></a></li></ol></li></ol></div>
             
           </div>
         </section>
