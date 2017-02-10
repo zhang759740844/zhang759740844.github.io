@@ -3,6 +3,7 @@ date: 2017/1/24 10:07:12
 categories: React-Native
 tags:
 	- React-Native
+	- 源码解析
 ---
 
 前一篇，主要讲了 RN 如何初始化一个 `BCTBatchedBridge`，这一篇将进一步研究 RN 是如何通过这个 bridge 创建出真正展示出来的 View 的。

@@ -3,7 +3,7 @@ date: 2017/2/6 14:07:12
 categories: iOS
 tags: 
 
-	- 学习笔记
+	- 源码解析
 ---
 
 `FDFullScreenPopGesture` 是一个非常小巧精悍，却又功能强大的开源项目。主要的功能有：全局的手势回退；部分界面的 `NavigationBar` 的隐藏。今天花了半天的时间搞明白了其中的原理。
