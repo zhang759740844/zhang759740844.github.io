@@ -109,3 +109,44 @@ UIImageRenderingModeAlwaysTemplate   // 始终根据Tint Color绘制图片，忽
 }];
 ```
 
+
+
+### 图像显示过程与一些注意事项
+
+#### 显示过程
+
+自动布局将视图显示到屏幕上的步骤总共分为三步：
+
+1. 更新约束。它为布局准备好必要的信息，而这些布局将在实际设置视图的 frame 时被传递过去并被使用。你可以通过调用  `setNeedsUpdateConstraints` 来触发这个操作。谈到自定义视图，**可以重写 `updateConstraints` 来为你的视图的本地约束进行修改**，但要确保在你的实现中修改了任何你需要布局子视图的约束条件**之后**，调用一下 `[super updateConstraints]`。
+2. 布局。将约束条件应用到视图上。可以**通过重写 `layoutSubViews` 实现**，也就是在调用 `[super layoutSubviews]` 前修改一些约束信息。可以通过调用 `setNeedsLayout` 来触发一个操作请求，这并不会立刻应用布局，而是在稍后再进行处理。因为所有的布局请求将会被合并到一个布局操作中去。可以调用  `layoutIfNeeded` 来强制系统立即更新视图树的布局。
+3. 显示。可以通过调用 `setNeedsDisplay` 来触发，这将会导致所有的调用都被合并到一起推迟重绘。重写熟悉的 `drawRect:` 能够让我们获得自定义视图中显示过程的所有权。
+
+![图像显示流程](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/display流程.png?raw=true)
+
+
+
+#### `updateConstraints` 的使用时机
+
+其实任何地方都能够设置约束条件。只有在调用了 `layoutsubviews` 方法之后才会更新视图（调用了 `updateConstraints` 不会更新视图）。所以更新视图的动画方法一般设置为：
+
+```objc
+[UIView animateWithDuration:1.0f delay:0.0f usingSpringWithDamping:0.5f initialSpringVelocity:1 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+        [self.view layoutIfNeeded];
+} completion:NULL];
+```
+
+**`updateConstraints` 在什么时候使用呢？**关于 `setNeedsUpdateConstraints` 文档上是这么说的：
+
+> When a property of your custom view changes in a way that would impact constraints, you can call this method to indicate that the constraints need to be updated at some point in the future. The system will then call updateConstraints as part of its normal layout pass. Updating constraints all at once just before they are needed ensures that you don’t needlessly recalculate constraints when multiple changes are made to your view in between layout passes.
+
+不要将 `updateConstraints` 用于视图的初始化设置。**当你需要在单个布局流程（single layout pass）中添加、修改或删除大量约束的时候，用它来获得最佳性能。如果没有性能问题，直接更新约束更简单。如果你不會在程式運行途中去新增或移除 constraints，那就把建立 constraints 的工作放在 `init` 或 `viewDidLoad` 階段。中途會新增或移除的動作才放到 `updateConstraints`。你可以建立 constraint 之後再修改它的 constant 屬性，這不算是新增或移除 constraint。** 修改约束的时候可能需要移除之前的约束，然后调用 `setNeedsUpdateConstraints` 方法。移除约束的方法是：` [self removeConstraints:self.constraints];`。
+
+### 设置 view 的一些注意事项
+
+- 当在代码中设置视图和它们的约束条件时候，一定要记得将 `translatesAutoResizingMaskIntoConstraints` 设置为 NO。如果忘记设置这个属性几乎肯定会导致不可满足的约束条件错误。
+- 在 `initWithFrame:` 方法中将子控件加到 view 而不是设置尺寸。因为 view 有可能是通过 `init` 方法创建的，这个时候 view 的 frame 可能是 不确定的。这种情况下各个子控件的尺寸都会是0，因为这个 view 的 frame 还没有设置。
+- `allowsGroupOpacity` 属性允许子控件的不透明度继承于其父控件，默认是开启的 `yes`。不过这会影响性能，自定义控件的时候最好设置为 `self.layer.allowsGroupOpacity = NO;`
+- `clipsToBounds` 是 `UIView` 的属性，如果设置为 `yes`，则不显示超出父 View 的部分；`masksToBounds` 是 `CALayer` 的属性，如果设置为 `yes`，则不显示超出父 View layer 的部分。
+
+
+
