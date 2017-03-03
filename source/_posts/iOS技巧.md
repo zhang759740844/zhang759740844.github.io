@@ -3,7 +3,7 @@ date: 2017/2/9 10:07:12
 categories: iOS
 tags:
 	- 学习笔记
-
+	- 持续更新
 
 ------
 
@@ -146,7 +146,63 @@ UIImageRenderingModeAlwaysTemplate   // 始终根据Tint Color绘制图片，忽
 - 当在代码中设置视图和它们的约束条件时候，一定要记得将 `translatesAutoResizingMaskIntoConstraints` 设置为 NO。如果忘记设置这个属性几乎肯定会导致不可满足的约束条件错误。
 - 在 `initWithFrame:` 方法中将子控件加到 view 而不是设置尺寸。因为 view 有可能是通过 `init` 方法创建的，这个时候 view 的 frame 可能是 不确定的。这种情况下各个子控件的尺寸都会是0，因为这个 view 的 frame 还没有设置。
 - `allowsGroupOpacity` 属性允许子控件的不透明度继承于其父控件，默认是开启的 `yes`。不过这会影响性能，自定义控件的时候最好设置为 `self.layer.allowsGroupOpacity = NO;`
-- `clipsToBounds` 是 `UIView` 的属性，如果设置为 `yes`，则不显示超出父 View 的部分；`masksToBounds` 是 `CALayer` 的属性，如果设置为 `yes`，则不显示超出父 View layer 的部分。
+- `clipsToBounds` 是 `UIView` 的属性，如果设置为 `yes`，则不显示超出父 View 的部分；`masksToBounds` 是 `CALayer` 的属性，如果设置为 `yes`，则不显示超出父 View layer 的部分.
+
+
+### 用 UIImageView 播放动图
+
+app 中的加载等候经常需要播放一个动图，那么怎么让图片动起来呢？`UIImageView` 就能解决。
+
+把所需要的 GIF 打包到一个叫做 Loading 的 Bundle 中去，加载 Bundle 中的图片：
+
+```objc
+- (NSArray *)animationImages
+{
+  	// 拿到所有文件的文件名的数组
+    NSFileManager *fielM = [NSFileManager defaultManager];
+    NSString *path = [[NSBundle mainBundle] pathForResource:@"Loading" ofType:@"bundle"];
+    NSArray *arrays = [fielM contentsOfDirectoryAtPath:path error:nil];
+	
+  	// 遍历文件名，拿到文件名对应的 UIImage 加入到 UIImage 的数组中
+    NSMutableArray *imagesArr = [NSMutableArray array];
+    for (NSString *name in arrays) {
+        UIImage *image = [UIImage imageNamed:[(@"Loading.bundle") stringByAppendingPathComponent:name]];
+        if (image) {
+            [imagesArr addObject:image];
+        }
+    }
+    return imagesArr;
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+
+    UIImageView *gifImageView = [[UIImageView alloc] initWithFrame:frame];
+  	// 将 UIImage 数组设置给 UIImageView
+    gifImageView.animationImages = [self animationImages]; //获取Gif图片列表
+    gifImageView.animationDuration = 5;     //执行一次完整动画所需的时长
+    gifImageView.animationRepeatCount = 1;  //动画重复次数
+    [gifImageView startAnimating];
+    [self.view addSubview:gifImageView];
+}
+```
 
 
 
+### 获取一个指定的 View
+
+想要获取一个指定的 view 的方法是遍历一个 view 的所有 subview，然后判断 view 的类型是否是指定的。在 `MBProgressHUD` 中的方式是：
+
+```objc
++ (MBProgressHUD *)HUDForView:(UIView *)view {
+    NSEnumerator *subviewsEnum = [view.subviews reverseObjectEnumerator];
+    for (UIView *subview in subviewsEnum) {
+        if ([subview isKindOfClass:self]) {
+            return (MBProgressHUD *)subview;
+        }
+    }
+    return nil;
+}
+```
+
+这个方法是找到并隐藏相应 hud。这里面使用了 `NSEnumerator` 这个枚举类，通过 `reverseObjectEnumerator` 反向浏览集合。

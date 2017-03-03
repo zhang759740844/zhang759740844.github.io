@@ -4,6 +4,7 @@ categories: React-Native
 tags:
 	- React-Native
 	- 爬坑
+	- 持续更新
 
 ---
 
@@ -412,10 +413,6 @@ let LoginViewController = NativeModules.LoginViewController;
 //方法调用
 LoginViewController.showSVProgressHUDErrorWithStatus('请输入正确的手机号',(callbackString) => {console.log(callbackString);});     
 ```
-
-
-
-
 
 ### React Native 真机调试 
 开发中真机调试是必不可少的,有些功能和问题模拟器是无法重现的,所以就需要配合真机测试

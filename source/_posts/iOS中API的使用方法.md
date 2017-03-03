@@ -4,11 +4,12 @@ categories: iOS
 tags: 
 
 	- 学习笔记
+	- 持续更新
 
 
 ------
 
-很多不常用的简单的 API 的使用方式。分开写的话太短小，就合在一起吧。
+很多不常用的简单的 API 的使用方式。分开写的话太短小，就合在一起吧。（这里都是学到的时候，东找一点西找一点拼凑起来的，一开始没有记录出处在哪，如果哪里有侵权的地方，还请尽快告知呀。我会第一时间注明出处的。谢谢啦~）
 
 <!--more-->
 
@@ -76,7 +77,9 @@ group.motionEffects = @[effectX, effectY];
 
 
 
-## UIBezierPath 的使用
+## 绘制图形
+
+### UIBezierPath 的使用
 
 #### 绘制矩形
 
@@ -215,11 +218,9 @@ UIBezierPath* aPath = [UIBezierPath bezierPathWithOvalInRect:CGRectMake(20, 20, 
 }
 ```
 
+### CoreGraphics 的使用
 
-
-## Core Graphics 的使用
-
-`UIBezierPath` 是 `CoreGraphics` 的封装，使用它可以完成大部分的绘图操作，不过更底层的 `CoreGraphics` 更加强大。
+使用中，`UIBezierPath` 是 `CoreGraphics` 的封装，使用它可以完成大部分的绘图操作，不过更底层的 `CoreGraphics` 更加强大。
 
 由于像素是依赖于目标的，所以2D绘图并不能操作单独的像素，我们可以从上下文（Context）读取它。所以我们在绘制之前需要通过:
 
@@ -384,9 +385,40 @@ CGContextSetShadowWithColor(CGContextRef context, CGSize offset, CGFloat blur, C
 }
 ```
 
-#### 渐变
 
-不写了，用到几率很小。用到再说。
+
+## CADisplayLink 方式的定时器
+
+`CADisplayLink` 是一个能让我们**以和屏幕刷新率同步的频率将特定的内容画到屏幕上的定时器类**。` CADisplayLink` 以特定模式注册到 runloop 后， 每当屏幕显示内容刷新结束的时候， runloop 就会向 `CADisplayLink` 指定的 target 发送一次指定的 selector 消息，  `CADisplayLink` 类对应的 selector 就会被调用一次。 
+
+使用方式：
+
+```objc
+- (void)startDisplayLink
+{
+    self.displayLink = [CADisplayLink displayLinkWithTarget:self
+                                                   selector:@selector(handleDisplayLink:)];
+    [self.displayLink addToRunLoop:[NSRunLoop currentRunLoop]
+                           forMode:NSDefaultRunLoopMode];
+}
+
+- (void)handleDisplayLink:(CADisplayLink *)displayLink
+{
+    //do something
+}
+
+- (void)stopDisplayLink
+{
+    [self.displayLink invalidate];
+    self.displayLink = nil;
+}
+```
+
+当把 `CADisplayLink` 对象 add 到 runloop 中后，selector就能被周期性调用，类似于 `NSTimer` 被启动了；执行 invalidate 操作时， `CADisplayLink` 对象就会从 runloop 中移除，selector 调用也随即停止，类似于 `NSTimer` 的 invalidate 方法。
+
+iOS 设备的 FPS 是60Hz，因此 `CADisplayLink` 的 selector 默认调用周期是每秒60次，这个周期可以通过 `frameInterval` 属性设置， `CADisplayLink`的 selector 每秒调用次数为 `60/ frameInterval`。比如当 `frameInterval` 设为2，每秒调用就变成30次。因此， `CADisplayLink` 周期的设置方式略显不便。不过 `CADisplayLink` 适合于需要精度较高的定时。
+
+
 
 
 
