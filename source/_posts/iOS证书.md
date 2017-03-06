@@ -56,4 +56,123 @@ Are you sure you want to continue connecting (yes/no)? yes
 
 https 和 SSH 都接受用户名密码登录，即客户端通过服务器下发的公钥加密后传输给远程主机。SSH 还接受公钥登录，就是本机生成一对公钥和私钥（保存在根目录的 .ssh 文件夹下），将公钥保存在服务器上，有点类似于上面说的 A 和 B 各自保存自己的公钥和对方的私钥。登录的时候，远程主机会向用户发送一段随机字符串，用户用自己的私钥加密后，再发回来。远程主机用事先储存的公钥进行解密，如果成功，就证明用户是可信的，直接允许登录shell，不再要求密码。
 
+**在 Apple 开发网站上传包含公钥的 CSR 文件作为换取证书的凭证（Upload CSR file to generate your certificate），有点类似为github账号添加SSH公钥到服务器上进行授权。** 
+
 ## iOS 相关
+
+### App IDs
+
+app id 和 bundle identifier 是一致（Explicit）的或匹配（Wildcard）的。
+
+在 name 中输入 app id 显示的名字：
+
+![app id name](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/ios_certificate_appid.png?raw=true)
+
+可以选择 explicit app id 或者 wildcard app id。前者用于表示标识唯一的应用程序，后者为含有通配符的 app id，用于标识一组应用程序。一般推荐用前者。
+
+![app id bundleid](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/ios_certificate_bundleid.png?raw=true)
+
+最后勾选需要用到的 app service，比如 push notification:
+
+![app id app service](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/ios_certificate_pushnotification.png?raw=true)
+
+继续点击 continue->submit->done，完成 app id 的创建。可以点击刚申请的 id，对其进行编辑：
+
+![app id app edit](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/ios_certificate_edit.png?raw=true)
+
+比如如果用到推送功能，就要为其添加推送证书：
+
+![app id app edit](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/ios_certificate_push.png?raw=true)
+
+总结：app id 主要设置了 bundle id 的 app 特有标识，另外为该 app 设置了所需的服务。
+
+
+
+### Certificates
+
+iOS证书是用来证明iOS App内容（executable code）的合法性和完整性的数字证书。对于想安装到真机或发布到AppStore的应用程序（App），只有经过签名验证（Signature Validated）才能确保来源可信，并且保证App内容是完整、未经篡改的。上面讲了许多关于证书的原理，这里主要讲讲 iOS 中证书的配置。
+
+iOS证书分两种：**开发证书（Development）** 和**生产证书（Production）**。
+
+- 开发证书用于开发和调试应用程序，可用于联机调试。无论是 debug 还是 release 用的都是开发证书
+- 生产证书用来发布应用程序。
+
+#### 生成证书请求文件 （CSR）
+
+CSR 用来生成公钥和私钥，是制作 iOS 证书必须的一样东西。通过如下方式申请：
+
+![app id app csr](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/ios_certificate_csr.png?raw=true)
+
+选择 “从证书颁发机构请求证书” 后出现下面情况，填写开发账号右键和常用名称，CA 电子右键地址可不填，勾选 “存储到磁盘”，然后继续：
+
+![app id app info](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/ios_certificate_info.png?raw=true)
+
+最后得到一个 csr 文件
+
+![app id csr](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/ios_certificate_csrcomplete.png?raw=true)
+
+#### 申请证书
+
+现在进入申请证书的流程：
+
+![apply certificate](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/ios_certificate_apply.png?raw=true)
+
+由于 apple 规定一个账号只能申请3个开发证书，2个发布证书，所以现在图片上的部分不能被勾选。除了开发证书和发布证书，还可以勾选 `Apple Push Notification service SSL (Sandbox)` 和 `Apple Push Notification service SSL (Sandbox & Production)` 来制作开发和发布推送证书。
+
+如果是制作推送证书，需要绑定 App id：
+
+![notification_certificate](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/certificate_push.png?raw=true)
+
+如果不是推送证书跳过上一步，直接往下走，上传 CSR 文件：
+
+![csr_certificate](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/certificate_csr.png?raw=true)
+
+点击生成，就完成了证书的创建。将生成的证书下载后双击导入钥匙串。在钥匙串的我的证书中就能看到相应证书，这个证书是包含公钥和私钥的。
+
+#### 导出证书
+
+对于团队合作，别人需要你创建的证书，你就要将证书（包括公钥和私钥）导出为 .p12 格式的文件，发给别人使用。注意，在苹果开发者网站上的证书只有公钥没有私钥。别人即使下载下来，没有私钥也是没用的。
+
+### Devices
+
+Device是指运行iOS系统用于开发调试App的设备（即苹果设备）。每台Apple设备使用UDID来唯一标识。
+
+设备的UDID可通过iTunes->Summary或者Xcode->Window->Devices获取。
+
+添加设备比较简单，就是输入设备的 UUID，并且给设备取一个别名即可。
+
+### Provisioning Profiles
+
+Provisioning Profile 包含了上述的所有内容：证书，app id，设备。用来将证书和 app id 绑定。
+
+Provisioning Profile 也分为 Development 和 Distribution 两类，有效期同 Certificate 一样。**Development 版本的 ProvisioningProfile 用于开发调试，包括 debug 和 release 版本**，Distribution 版本的 ProvisioningProfile 只用于提交 App Store 审核，其不指定开发测试的 Devices。
+
+在 XcodeTarget->Build Settings->Code Signing->Provisioning Profile 可选择“Automatic”，xcode 会根据该 Target 的“Bundle identifier”选择默认的配置文件及证书：
+
+![provision profile](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/ios_certificate_profile.png?raw=true)
+
+自动签名的情况下，不需要自己设置 Provisioning Profiles。不过你也可以选择手动设置签名：
+
+![provision profile](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/ios_certificate_manual.png?raw=true)
+
+debug 和 release 用的都是开发的配置文件。
+
+### 常遇的一些问题
+
+#### 证书过期
+
+有时候编译通过，但是要装进测试机里时就会报如下的错误：
+
+![证书过期](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/ios_certificate_revoke.png?raw=true)
+
+如果你确信不是你证书真的过期了的话，可以通过 Xcode->preferences->account->ViewDetails->reset 来重置你 Xcode 中的证书信息：
+
+![证书过期](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/ios_certificate_reset.png?raw=true)
+
+重置好后一般就可以正常安装了。
+
+在这个界面下，你还可以管理你的 Provisioning Profiles，可以手动下载所需文件，以及删除多余文件。不用从官网下载好后导入，更不用到文件夹里一个个比对删除了。
+
+
+
+更多这方面的信息可以[参考](http://blog.csdn.net/smaller_coder/article/details/52755853) 文章写得很详细。
