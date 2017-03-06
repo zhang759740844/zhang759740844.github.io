@@ -90,7 +90,7 @@
 <meta property="og:url" content="http://zhang759740844.github.io/2016/12/03/hexo爬过的坑/index.html">
 <meta property="og:site_name" content="Zachary's blog">
 <meta property="og:description" content="配置个人博客有时候是一件很蛋疼的事情，经常会出现一些奇奇怪怪的问题。这里我就将把我填上的一些坑总结一下。">
-<meta property="og:updated_time" content="2017-01-07T07:17:55.000Z">
+<meta property="og:updated_time" content="2017-03-05T14:50:10.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="hexo 配置遇到的一些坑">
 <meta name="twitter:description" content="配置个人博客有时候是一件很蛋疼的事情，经常会出现一些奇奇怪怪的问题。这里我就将把我填上的一些坑总结一下。">
@@ -349,6 +349,12 @@
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">&#123; [Error: Cannot find module &apos;./build/Release/DTraceProviderBindings&apos;] code: &apos;MODULE_NOT_FOUND&apos; &#125;</div><div class="line">&#123; [Error: Cannot find module &apos;./build/default/DTraceProviderBindings&apos;] code: &apos;MODULE_NOT_FOUND&apos; &#125;</div><div class="line">&#123; [Error: Cannot find module &apos;./build/Debug/DTraceProviderBindings&apos;] code: &apos;MODULE_NOT_FOUND&apos; &#125;</div></pre></td></tr></table></figure>
 <p>虽然结果上来说并不影响 hexo 的执行，但是每次都提示还是很让人不爽的。于是，搜索了一下，网上确实有很多讨论这个问题的解决方法的。一般比较多的方式是使用 <code>npm install hexo --no-optional</code> 安装 hexo（一般安装还是将 hexo 安装成全局的吧，使用 <code>-g</code> 选项）。</p>
 <p>但是我用了这个方式后，并没有效果，然后又查了几种方式都不行，就很气。然后就看 hexo 的安装文档，突然灵光一闪。因为现在安装 hexo 的方式变成了 <code>npm install hexo-cli -g</code>，那么是不是说原本的  <code>npm install hexo</code> 方式已经被废弃了呢？ 于是我就尝试在终端输入 <code>npm install hexo-cli -g --no-optional</code>。果然就没有这个 Error 了。</p>
+<h3 id="搜索功能打不开"><a href="#搜索功能打不开" class="headerlink" title="搜索功能打不开"></a>搜索功能打不开</h3><p>hexo 可以安装插件来实现搜索功能，但是有特殊情况会使搜索点击后不响应。</p>
+<p>原因是我的一篇文章写了 10000+ 个字，可能超出搜索上限了，然后就打不来了。</p>
+<p>所以最好将长文章分为几篇短文章发布</p>
+<h3 id="还是搜索功能打不开"><a href="#还是搜索功能打不开" class="headerlink" title="还是搜索功能打不开"></a>还是搜索功能打不开</h3><p>还是写了一片文章后点击搜索无响应了。</p>
+<p>这回的原因是在文章中的某一处多了一个空白字符，就是那种什么位置也不占，但是按一次 delete 才能删除的那种东西。把这个空白字符删掉就可以正常搜索了。</p>
+<p>产生这种字符的原因不太清楚，排查起来也很麻烦。本来都是每次修改后，都要 <code>hexo g</code> 再 <code>hexo s</code> 的，很费力。不过，后来我发现如果启用本地服务器，即 <code>hexo s</code>，那么直接修改后，刷新 localhost 的网页，就可以直接查看修改是否有效了。所以说本地服务器的搜索应该不走 <code>search.xml</code> ，而是直接拿取本地文件。这样调试起来方便许多。</p>
 
       
     </div>
@@ -382,8 +388,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2016/11/25/RN使用技巧/" rel="next" title="React-Native 技巧与坑总结">
-                <i class="fa fa-chevron-left"></i> React-Native 技巧与坑总结
+              <a href="/2016/11/25/RN使用方式/" rel="next" title="React-Native 使用方式">
+                <i class="fa fa-chevron-left"></i> React-Native 使用方式
               </a>
             
           </div>
@@ -460,7 +466,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">64</span>
+              <span class="site-state-item-count">74</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -477,7 +483,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">21</span>
+                <span class="site-state-item-count">23</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
@@ -526,7 +532,7 @@
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#各种部署的内容和本地不一致"><span class="nav-number">1.</span> <span class="nav-text">各种部署的内容和本地不一致</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#next主题空白"><span class="nav-number">2.</span> <span class="nav-text">next主题空白</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#缺少-DTraceProviderBindings-模块"><span class="nav-number">3.</span> <span class="nav-text">缺少 DTraceProviderBindings 模块</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#各种部署的内容和本地不一致"><span class="nav-number">1.</span> <span class="nav-text">各种部署的内容和本地不一致</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#next主题空白"><span class="nav-number">2.</span> <span class="nav-text">next主题空白</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#缺少-DTraceProviderBindings-模块"><span class="nav-number">3.</span> <span class="nav-text">缺少 DTraceProviderBindings 模块</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#搜索功能打不开"><span class="nav-number">4.</span> <span class="nav-text">搜索功能打不开</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#还是搜索功能打不开"><span class="nav-number">5.</span> <span class="nav-text">还是搜索功能打不开</span></a></li></ol></div>
             
           </div>
         </section>
