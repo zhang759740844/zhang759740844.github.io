@@ -1,6 +1,6 @@
 title: 从 setTimeout() 看js的 Event Loop 执行过程 
 date: 2016/12/28 10:07:12 
-categories: Javascript
+categories: JavaScript
 tags:
 	- NodeJs
 ---

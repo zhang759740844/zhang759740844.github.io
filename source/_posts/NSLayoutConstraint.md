@@ -136,13 +136,22 @@ Masonry框架是目前最流行的Autolayout第三方框架，用优雅的代码
 这里先介绍下ios的包管理工具cocoaPods，如何下载安装就不说了，介绍下如何使用。
 #### 创建Podfile
 在工程的目录下新建Podfile文件，写入我们需要的第三方库：
-```objc
+```ruby
 target 'NSLayoutConstraintDemo' do
 pod 'Masonry'
 end
 ```
 
+当然，这其实不用自己设置，通过终端进入工程目录，输入：
+
+```ruby
+pod init
+```
+
+即可初始化完成一个 Podfile
+
 #### 导入第三方库
+
 进入终端，运行命令`pod install`,导入第三方库。
 
 ### Masonry基本使用
