@@ -440,6 +440,8 @@ server.listen(8080);
 console.log('Server is running at http://127.0.0.1:8080/');
 ```
 
+> process是一个全局变量，可通过process.argv获得命令行参数。由于argv[0]固定等于NodeJS执行程序的绝对路径，argv[1]固定等于主模块的绝对路径，因此第一个命令行参数从argv[2]这个位置开始。
+
 没有必要手动读取文件内容。由于`response`对象本身是一个`Writable Stream`，直接用`pipe()`方法就实现了自动读取文件内容并输出到HTTP响应。
 
 在命令行运行`node file_server.js /path/to/dir`，把`/path/to/dir`改成你本地的一个有效的目录，然后在浏览器中输入`http://localhost:8080/index.html`。只要当前目录下存在文件`index.html`，服务器就可以把文件内容发送给浏览器。
