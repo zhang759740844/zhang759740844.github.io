@@ -200,7 +200,7 @@ UIImageRenderingModeAlwaysTemplate   // 始终根据Tint Color绘制图片，忽
 
 对于手撸一个 view 来说，一般不用重写 `updateConstraints`，只有在某些情况要增删约束的时候才用到，约束信息放在 `init` 方法里添加就可以了。
 
-view 中子视图的约束可以放在 `init` 中，但是设置子视图的 `bounds` 不能还放在该方法中。因为当外部创建该 view 时，如果外部调用 `init` 方法而不是调用 `initWithFrame` (即没有给这个 view 设置大小），那么 view 中子视图就无法正确初始化出大小。因此，子视图的 `bounds` 等属性（例如 `center` 等）的设置必须放在 `layoutSubviews` 中，即外部 view 大小已经确定，就要显示的时候。当然显示出来后，子视图的 `bounds` 再变化就和 `layoutSubviews` 方法没有任何关系了，在代码的任意位置修改都可以。
+view 中子视图的约束可以放在 `init` 中，但是设置子视图的 `bounds` 不能还放在该方法中。因为当外部创建该 view 时，如果外部调用 `init` 方法而不是调用 `initWithFrame` (即没有给这个 view 设置大小），那么 view 中子视图就无法正确初始化出大小。因此，子视图的 `bounds` 等属性（例如 `center` 等）的设置必须放在 `layoutSubviews` 中，即外部 view 大小已经确定，就要显示的时候。当然显示出来后，子视图的 `bounds` 再变化就和 `layoutSubviews` 方法没有任何关系了，在代码的任意位置修改都可以。
 
 `drawRect` 方法通过 `CGContextRef context = UIGraphicsGetCurrentContext();` 拿到上下文句柄，然后将自己要画的图形添加到这个上下文上。
 
