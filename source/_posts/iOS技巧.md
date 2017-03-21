@@ -50,7 +50,7 @@ UIImageRenderingModeAlwaysTemplate   // 始终根据Tint Color绘制图片，忽
 ### 封装一个没有数据时显示空白页
 没有数据的时候通常需要显示一个空白页。空白页长得都差不多，基本上都是一段话加上一张图。我们当然不要每次都写一遍这个视图，因此就需要将这些操作放到 base 中去。
 
-在 `BaseViewController` 中添加一个 `reloadDataWithBlank` 方法：
+在 `BaseViewController` 中添加一个 `reloadDataWithBlank` 方法，每次从网络获取完数据后，调用即可（省去了每次都要判断数据是否为空的麻烦）：
 ```objc
 - (void)reloadDataWithBlank{
 		//多段就看每个数组，一段就直接看元素个数
@@ -77,11 +77,60 @@ UIImageRenderingModeAlwaysTemplate   // 始终根据Tint Color绘制图片，忽
     [_tableView reloadData];
 }
 ```
-其中 `blankHintView` 就是空白提示视图。每次在 `viewDidLoad` 中，或者在这个方法内再创建一个功能更明确的 `loadDefaultDataSource` 方法，在其中中添加默认的 `title` 和 `image` 即可。
+其中 `blankHintView` 就是空白提示视图：
+
+```objective-c
+-(UIView *)blankHintView{
+    if (!_blankHintView) {
+        [self initBlankHintView];
+    }
+    return _blankHintView;
+}
+
+-(void)initBlankHintView{
+    _blankHintView=[[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height)];
+    UIImageView *imageView=[[UIImageView alloc]initWithFrame:CGRectMake(self.tableView.width/2-40,self.tableView.height/2-40-30,80,80)];
+    if (_blankHintImage) {
+        imageView.image = _blankHintImage;
+    }else{
+        imageView.image = [UIImage imageNamed:@"nonetworkdefault"];
+    }
+    imageView.contentMode=UIViewContentModeScaleAspectFit;
+    UILabel *hintLabel = [[UILabel alloc]initWithFrame:CGRectMake(imageView.x-10, imageView.y+imageView.height, 200, 30)];
+    hintLabel.numberOfLines = 0;
+    hintLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    hintLabel.textColor=[UIColor colorWithHexString:@"9e9e9e"];
+    hintLabel.backgroundColor = [UIColor clearColor];
+    hintLabel.textAlignment=NSTextAlignmentLeft;
+    hintLabel.font=FONT(15);
+    hintLabel.text=_blankHintString;
+    [_blankHintView addSubview:hintLabel];
+    [_blankHintView addSubview:imageView];
+    [hintLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(imageView.mas_bottom).offset(0);
+        make.centerX.equalTo(imageView.mas_centerX).offset(0);
+        make.height.equalTo(@30);
+    }];
+}
+```
+
+
+
+每次在 `viewDidLoad` 中，或者在这个方法内再创建一个功能更明确的 `loadDefaultDataSource` 方法，在其中中添加默认的 `title` 和 `image` 即可。
+
+```objective-c
+-(void)loadDefaultDataSource{
+    [super loadDefaultDataSource];
+    self.blankHintImage = [UIImage imageNamed:@"default_nomessage"];
+    self.blankHintString=@"暂无通知消息";
+}
+```
 
 ### 设置手势事件
-关于手势，通常需要写一个事件的方法。这样设置事件和方法本身就会分隔开来。回顾代码的时候找起来会很麻烦。可以通过 block 回调的方式将方法保存起来：
+关于手势，通常需要先声明一个手势，再在另一处添加这个手势的处理方法，这样设置事件和方法本身就会分隔开来，回顾代码的时候找起来会很麻烦。可以为 `UIView` 设置添加一个处理手势的范畴(category)，在其中通过 block 回调的方式将方法保存起来：
 ```objc
+@implementation UIView (BlockGesture)
+  
 - (void)addTapActionWithBlock:(GestureActionBlock)block{
     UITapGestureRecognizer *gesture = [self associatedValueForKey:_cmd];
     if (!gesture){
@@ -119,15 +168,21 @@ UIImageRenderingModeAlwaysTemplate   // 始终根据Tint Color绘制图片，忽
 
 1. 更新约束。它为布局准备好必要的信息，而这些布局将在实际设置视图的 frame 时被传递过去并被使用。你可以通过调用  `setNeedsUpdateConstraints` 来触发这个操作。谈到自定义视图，**可以重写 `updateConstraints` 来为你的视图的本地约束进行修改**，但要确保在你的实现中修改了任何你需要布局子视图的约束条件**之后**，调用一下 `[super updateConstraints]`。
 2. 布局。将约束条件应用到视图上。可以**通过重写 `layoutSubViews` 实现**，也就是在调用 `[super layoutSubviews]` 前修改一些约束信息。可以通过调用 `setNeedsLayout` 来触发一个操作请求，这并不会立刻应用布局，而是在稍后再进行处理。因为所有的布局请求将会被合并到一个布局操作中去。可以调用  `layoutIfNeeded` 来强制系统立即更新视图树的布局。
-3. 显示。可以通过调用 `setNeedsDisplay` 来触发，这将会导致所有的调用都被合并到一起推迟重绘。重写熟悉的 `drawRect:` 能够让我们获得自定义视图中显示过程的所有权。
+3. 显示。可以通过调用 `setNeedsDisplay` 来触发，这将会导致所有的调用都被合并到一起推迟重绘。重写熟悉的 `drawRect:` ，通过这个方法我们可以在 `UIView` 中绘制图形，比如绘制个角标之类的。
 
 ![图像显示流程](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/display流程.png?raw=true)
 
+#### `layoutSubViews` 的使用时机
 
+任何地方都能够设置约束条件，那么我们为什么还要重写这个方法呢？
+
+> 在苹果的官方文档中强调: You should override this method only if the autoresizing behaviors of the subviews do not offer the behavior you want.layoutSubviews
+
+当我们在某个类的内部调整子视图位置时，需要调用。反过来的意思就是说：如果你想要在外部设置subviews的位置，就不要重写。
 
 #### `updateConstraints` 的使用时机
 
-其实任何地方都能够设置约束条件。只有在调用了 `layoutsubviews` 方法之后才会更新视图（调用了 `updateConstraints` 不会更新视图）。所以更新视图的动画方法一般设置为：
+任何地方都能够设置约束条件，只有在调用了 `layoutsubviews` 方法之后才会更新视图（调用了 `updateConstraints` 不会更新视图）。所以更新视图的动画方法一般设置为：
 
 ```objc
 [UIView animateWithDuration:1.0f delay:0.0f usingSpringWithDamping:0.5f initialSpringVelocity:1 options:UIViewAnimationOptionCurveEaseInOut animations:^{
@@ -139,12 +194,20 @@ UIImageRenderingModeAlwaysTemplate   // 始终根据Tint Color绘制图片，忽
 
 > When a property of your custom view changes in a way that would impact constraints, you can call this method to indicate that the constraints need to be updated at some point in the future. The system will then call updateConstraints as part of its normal layout pass. Updating constraints all at once just before they are needed ensures that you don’t needlessly recalculate constraints when multiple changes are made to your view in between layout passes.
 
-不要将 `updateConstraints` 用于视图的初始化设置。**当你需要在单个布局流程（single layout pass）中添加、修改或删除大量约束的时候，用它来获得最佳性能。如果没有性能问题，直接更新约束更简单。如果你不會在程式運行途中去新增或移除 constraints，那就把建立 constraints 的工作放在 `init` 或 `viewDidLoad` 階段。中途會新增或移除的動作才放到 `updateConstraints`。你可以建立 constraint 之後再修改它的 constant 屬性，這不算是新增或移除 constraint。** 修改约束的时候可能需要移除之前的约束，然后调用 `setNeedsUpdateConstraints` 方法。移除约束的方法是：` [self removeConstraints:self.constraints];`。
+不要将 `updateConstraints` 用于视图的初始化设置。**当你需要在单个布局流程（single layout pass）中添加、修改或删除大量约束的时候，用它来获得最佳性能。如果没有性能问题，直接更新约束更简单。如果你不會在程式運行途中去新增或移除 constraints，那就把建立 constraints 的工作放在 `init` 或 `viewDidLoad` 階段。中途會新增或移除的動作才放到 `updateConstraints`。你可以建立 constraint 之後再修改它的 constant 屬性，這不算是新增或移除 constraint。** 移除约束的方法是：` [self removeConstraints:self.constraints];`。
+
+#### 总结
+
+对于手撸一个 view 来说，一般不用重写 `updateConstraints`，只有在某些情况要增删约束的时候才用到，约束信息放在 `init` 方法里添加就可以了。
+
+view 中子视图的约束可以放在 `init` 中，但是设置子视图的 `bounds` 不能还放在该方法中。因为当外部创建该 view 时，如果外部调用 `init` 方法而不是调用 `initWithFrame` (即没有给这个 view 设置大小），那么 view 中子视图就无法正确初始化出大小。因此，子视图的 `bounds` 等属性（例如 `center` 等）的设置必须放在 `layoutSubviews` 中，即外部 view 大小已经确定，就要显示的时候。当然显示出来后，子视图的 `bounds` 再变化就和 `layoutSubviews` 方法没有任何关系了，在代码的任意位置修改都可以。
+
+`drawRect` 方法通过 `CGContextRef context = UIGraphicsGetCurrentContext();` 拿到上下文句柄，然后将自己要画的图形添加到这个上下文上。
 
 ### 设置 view 的一些注意事项
 
-- 当在代码中设置视图和它们的约束条件时候，一定要记得将 `translatesAutoResizingMaskIntoConstraints` 设置为 NO。如果忘记设置这个属性几乎肯定会导致不可满足的约束条件错误。
-- 在 `initWithFrame:` 方法中将子控件加到 view 而不是设置尺寸。因为 view 有可能是通过 `init` 方法创建的，这个时候 view 的 frame 可能是 不确定的。这种情况下各个子控件的尺寸都会是0，因为这个 view 的 frame 还没有设置。
+- 当在代码中设置视图和它们的约束条件时候，一定要记得将该视图的 `translatesAutoResizingMaskIntoConstraints` 属性设置为 NO。如果忘记设置这个属性几乎肯定会导致不可满足的约束条件错误。
+- 在 `initWithFrame:` 方法中将子控件加到 view 而不是设置尺寸。因为 view 有可能是通过 `init` 方法创建的，这个时候 view 的 frame 可能是 不确定的。这种情况下各个子控件的尺寸都会是0，因为这个 view 的 frame 还没有设置。设置尺寸的工作放在 `layoutSubviews` 中去做。
 - `allowsGroupOpacity` 属性允许子控件的不透明度继承于其父控件，默认是开启的 `yes`。不过这会影响性能，自定义控件的时候最好设置为 `self.layer.allowsGroupOpacity = NO;`
 - `clipsToBounds` 是 `UIView` 的属性，如果设置为 `yes`，则不显示超出父 View 的部分；`masksToBounds` 是 `CALayer` 的属性，如果设置为 `yes`，则不显示超出父 View layer 的部分.
 
