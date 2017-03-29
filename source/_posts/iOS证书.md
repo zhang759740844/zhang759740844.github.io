@@ -176,3 +176,93 @@ debug 和 release 用的都是开发的配置文件。
 
 
 更多这方面的信息可以[参考](http://blog.csdn.net/smaller_coder/article/details/52755853) 文章写得很详细。
+
+
+
+## iOS app 签名相关
+
+上面 `Certificates` 一节说到
+
+> 对于想安装到真机或发布到AppStore的应用程序（App），只有经过签名验证（Signature Validated）才能确保来源可信，并且保证App内容是完整、未经篡改的。
+
+那么苹果是怎么进行数字签名的验证的呢？我们一步步看，先看一个简单的。
+
+### 简单的签名方式
+
+下面图中有说明：
+
+![签名验证](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/verify-certificate.png?raw=true)
+
+这种简单的签名方式是苹果自己生成了私钥和公钥，公钥保存在每一个生产出来的 iOS 设备中。通过苹果的私钥和公钥直接对 app 进行签名和验证。
+
+### 新的问题 
+
+ 这种方式面临的问题是所有的 app 都要经过苹果的 app store。但是，比如企业发布啊，开发时的直接调试啊，都不经过 app store。我们面临两个需求：
+
+1. 安装包不需要传到苹果服务器，可以直接安装到手机上。如果你编译一个 APP 到手机前要先传到苹果服务器签名，这显然是不能接受的。**即不能直接用苹果的私钥对 app 进行签名，因为这样必然要将 app 上传**
+2. 苹果必须对这里的安装有控制权，包括经过苹果允许才可以这样安装，不能被滥用导致非开发app也能被安装。**即要保证 app 经过了苹果的私钥和公钥的签名和验证过程**
+
+
+
+### 两步签名
+
+明白了需求就容易找到思路了。
+
+首先不能用苹果的私钥签名 app，那么很容易想到，我们可以自己创建一对钥匙，用我们自己的私钥对 app 签名，公钥对 app 验证。
+
+为了满足需求二，我们将我们自己创建的公钥上传到苹果的服务器让苹果用其自己的私钥签名，然后再把签名的证书传回来，这样就避免了传 app 进行签名的麻烦。当装到手机中后，通过设备中的苹果公钥就能解析出我们自己创建的公钥了。
+
+具体流程如下图：
+
+
+
+![两步签名](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/2step-verify-certificate.png?raw=true)
+
+1. 在你的 Mac 开发机器生成一对公私钥，这里称为**公钥L**，**私钥L**。L:Local
+2. 苹果自己有固定的一对公私钥，跟上面 AppStore 例子一样，私钥在苹果后台，公钥在每个 iOS 设备上。这里称为**公钥A**，**私钥A**。A:Apple
+3. 把公钥 L 传到苹果后台，用苹果后台里的私钥 A 去签名公钥 L。得到一份数据包含了公钥 L 以及其签名，把这份数据称为证书。
+4. 在开发时，编译完一个 APP 后，用本地的私钥 L 对这个 APP 进行签名，同时把第三步得到的证书一起打包进 APP 里，安装到手机上。
+5. 在安装时，iOS 系统取得证书，通过系统内置的公钥 A，去验证证书的数字签名是否正确。
+6. 验证证书后**确保了公钥 L 是苹果认证过的**，再用公钥 L 去验证 APP 的签名，这里就间接验证了这个 APP 安装行为是否经过苹果官方允许。
+
+### 更多细节
+
+上面已经是基本的流程了。不过苹果再加了两个限制，一是限制在苹果后台注册过的设备才可以安装，二是限制签名只能针对某一个具体的 APP。除了 设备 ID / AppID，还有其他信息也需要在这里用苹果签名，像这个 APP 里 iCloud / push / 后台运行 等权限苹果都想控制，苹果把这些权限开关统一称为 Entitlements，它也需要通过签名去授权。于是苹果另外搞了个东西，叫 Provisioning Profile，一个 Provisioning Profile 里就包含了证书以及上述提到的所有额外信息，以及所有信息的签名。
+
+流程就变成了下面的样子：
+
+![完整签名流程](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/certificate-all.png?raw=true)
+
+1. 第 1 步对应的是 keychain 里的 “从证书颁发机构请求证书”，这里就本地生成了一对公私钥，保存的 CertificateSigningRequest 就是公钥，私钥保存在本地电脑里。
+2. 第 2 步苹果处理，不用管。
+3. 第 3 步对应把 CertificateSigningRequest 传到苹果后台生成证书，并下载到本地。这时本地有两个证书，一个是第 1 步生成的，一个是这里下载回来的，keychain 会把这两个证书关联起来，因为他们公私钥是对应的，在XCode选择下载回来的证书时，实际上会找到 keychain 里对应的私钥去签名。这里私钥只有生成它的这台 Mac 有，如果别的 Mac 也要编译签名这个 App 怎么办？答案是把私钥导出给其他 Mac 用，在 keychain 里导出私钥，就会存成 .p12 文件，其他 Mac 打开后就导入了这个私钥。
+4. 第 4 步都是在苹果网站上操作，配置 AppID / 权限 / 设备等，最后下载 Provisioning Profile 文件。
+5. 第 5 步 XCode 会通过第 3 步下载回来的证书（存着公钥），在本地找到对应的私钥（第一步生成的），用本地私钥去签名 App，并把 Provisioning Profile 文件命名为 embedded.mobileprovision 一起打包进去。这里对 App 的签名数据保存分两部分，Mach-O 可执行文件会把签名直接写入这个文件里，其他资源文件则会保存在 _CodeSignature 目录下。
+6. 第 6 步的打包和验证都是 Xcode 和 iOS 系统自动做的事。
+
+### 总结
+
+所以对于上面的各个概念应该有了更深的理解：
+
+1. **证书**：内容是公钥或私钥，由其他机构对其签名组成的数据包。
+2. **Entitlements**：包含了 App 权限开关列表。
+3. **CertificateSigningRequest**：本地公钥。
+4. **p12**：本地私钥，可以导入到其他电脑。
+5. **Provisioning Profile**：包含了 证书 / Entitlements 等数据，并由苹果后台私钥签名的数据包。
+
+上面说的是开发时或者是企业的签名验证流程。AppStore 的签名验证方式有些不一样，前面我们说到最简单的签名方式，苹果在后台直接用私钥签名 App 就可以了，实际上苹果确实是这样做的，如果去下载一个 AppStore 的安装包，会发现它里面是没有 embedded.mobileprovision 文件的，也就是它安装和启动的流程是不依赖这个文件，验证流程也就跟上述几种类型不一样了。
+
+那为什么发布 AppStore 的包还是要跟开发版一样搞各种证书和 Provisioning Profile？猜测因为苹果想做统一管理，Provisioning Profile 里包含一些权限控制，AppID 的检验等，苹果不想在上传 AppStore 包时重新用另一种协议做一遍这些验证，就不如统一把这部分放在 Provisioning Profile 里，上传 AppStore 时只要用同样的流程验证这个 Provisioning Profile 是否合法就可以了。
+
+所以 App 上传到 AppStore 后，就跟你的 证书 / Provisioning Profile 都没有关系了，无论他们是否过期或被废除，都不会影响 AppStore 上的安装包。
+
+
+
+更多这方面的信息可以[参考bang的文章](http://blog.cnbang.net/tech/3386/) 文章写得很详细。
+
+
+
+
+
+
+
