@@ -1,6 +1,6 @@
 title: iOS 证书相关
 date: 2017/3/4 16:07:12  
-categories: 计算机
+categories: iOS
 tags:
 
 	- Xcode
