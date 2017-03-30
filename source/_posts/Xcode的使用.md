@@ -6,7 +6,7 @@ tags:
 	- Vim 
 	- Cocoapods
 	- 爬坑
-	
+
 ---
 
 这里主要总结一下开发 iOS 使用工具上遇到的一些问题。
@@ -167,3 +167,58 @@ Podfile.lock 是在第一次运行 `pod install` 时候自动生成的。Podfile
 查了一些资料[Inconsistent Podfile.lock files between Ruby versions](https://github.com/CocoaPods/CocoaPods/issues/3452),[Strange quotes in Podfile.lock?!](https://github.com/CocoaPods/CocoaPods/issues/6255) 发现大致是因为 gem 的一个 YAML 解析工具 psych 版本不同导致的。所以，解决问题的关键不是更新 cocoapods 而是更新 psych (更新 psych 前，先把 ruby，gem也先更新了，以防有什么差错).
 
 ![安装psych](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/安装psych.png?raw=true)
+
+
+
+## 注释
+
+### 方法和属性的快捷注释
+
+在 Xcode8 之前，想要一键为属性和方法注释都需要通过插件完成。现在 Xcode8 中有了内置的注释方式： `alt+command+/`，只要将光标移动到想要注释的方法上，就会自动识别方法的参数和返回值，提供注释模板，非常方便。
+
+
+
+### #pragma mark
+
+好的习惯从`#pragma mark`开始。就像这样：
+
+```objc
+@implementation ViewController
+
+- (id)init {
+  ...
+}
+
+#pragma mark - UIViewController
+
+- (void)viewDidLoad {
+  ...
+}
+
+#pragma mark - IBAction
+
+- (IBAction)cancel:(id)sender {
+  ...
+}
+
+#pragma mark - UITableViewDataSource
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+  ...
+}
+
+#pragma mark - UITableViewDelegate
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+  ...
+}
+```
+
+
+
+在你的 `@implementation` 中使用 `#pragma mark` 来将代码分割成逻辑区块。这些逻辑区块不仅仅使得阅读代码本身容易许多，也为Xcode源导航增加了视觉线索（`#pragma mark` 声明前有一个水平分割并由破折号（`－`）开始）。
+
+![pragma](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/pragma.png?raw=true)
+
+
+

@@ -4,7 +4,6 @@ categories: iOS
 tags:
 
 	- 学习笔记
-
 ---
 
 开发的时候总是要保存一些东西在磁盘上的，那么有哪些方式来完成持久化呢？
@@ -76,4 +75,6 @@ NSInteger age = [defaults integerForKey:@"Age"];
 NSData *imageData = [defaults dataForKey:@"image"];
 UIImage *image = [UIImage imageWithData:imageData];
 ```
+
+## plist 的使用
 
