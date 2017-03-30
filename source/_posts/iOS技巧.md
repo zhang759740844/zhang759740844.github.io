@@ -164,25 +164,27 @@ UIImageRenderingModeAlwaysTemplate   // 始终根据Tint Color绘制图片，忽
 
 #### 显示过程
 
-自动布局将视图显示到屏幕上的步骤总共分为三步：
+**这里首先强调，这里说的所有都是针对 View 而不是 Controller。** 自动布局将视图显示到屏幕上的步骤总共分为三步：
 
-1. 更新约束。它为布局准备好必要的信息，而这些布局将在实际设置视图的 frame 时被传递过去并被使用。你可以通过调用  `setNeedsUpdateConstraints` 来触发这个操作。谈到自定义视图，**可以重写 `updateConstraints` 来为你的视图的本地约束进行修改**，但要确保在你的实现中修改了任何你需要布局子视图的约束条件**之后**，调用一下 `[super updateConstraints]`。
+1. 更新约束。它为布局准备好必要的信息，而这些布局将在实际设置视图的 frame 时被传递过去并被使用。你可以通过调用  `setNeedsUpdateConstraints` 来触发这个操作。谈到自定义视图，**可以重写 `updateConstraints` 来为你的视图的本地约束进行修改（一般不会用啦）**，但要确保在你的实现中修改了任何你需要布局子视图的约束条件**之后**，调用一下 `[super updateConstraints]`。
 2. 布局。将约束条件应用到视图上。可以**通过重写 `layoutSubViews` 实现**，也就是在调用 `[super layoutSubviews]` 前修改一些约束信息。可以通过调用 `setNeedsLayout` 来触发一个操作请求，这并不会立刻应用布局，而是在稍后再进行处理。因为所有的布局请求将会被合并到一个布局操作中去。可以调用  `layoutIfNeeded` 来强制系统立即更新视图树的布局。
 3. 显示。可以通过调用 `setNeedsDisplay` 来触发，这将会导致所有的调用都被合并到一起推迟重绘。重写熟悉的 `drawRect:` ，通过这个方法我们可以在 `UIView` 中绘制图形，比如绘制个角标之类的。
 
 ![图像显示流程](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/display流程.png?raw=true)
 
-#### `layoutSubViews` 的使用时机
 
-任何地方都能够设置约束条件，那么我们为什么还要重写这个方法呢？
 
-> 在苹果的官方文档中强调: You should override this method only if the autoresizing behaviors of the subviews do not offer the behavior you want.layoutSubviews
+#### `layoutSubViews` 的注意事项
 
-当我们在某个类的内部调整子视图位置时，需要调用。反过来的意思就是说：如果你想要在外部设置subviews的位置，就不要重写。
+`layoutSubViews` 方法给 View 提供了一个统一设置子视图大小布局的地方，不能在 `init` 方法中。因为当外部创建该 view 时，如果外部调用 `init` 方法而不是调用 `initWithFrame` (即没有给这个 view 设置大小），那么 view 中子视图就无法正确初始化出大小。因此，**子视图的 `bounds` 等属性（例如 `center` 等）的设置必须放在 `layoutSubviews` 中，即外部 view 大小已经确定，就要显示的时候。**
 
-#### `updateConstraints` 的使用时机
+**注意，不是添加子视图。子视图在 `init` 方法中添加。一定不要在 `layoutSubviews` 方法中添加子视图。因为 `layoutSubviews` 方法会被多次调用，不可能每次调用都添加一遍子视图吧。**
 
-任何地方都能够设置约束条件，只有在调用了 `layoutsubviews` 方法之后才会更新视图（调用了 `updateConstraints` 不会更新视图）。所以更新视图的动画方法一般设置为：
+**另外最好不要孤立地改动在 `layoutSubviews` 中设置过的子视图（比如大小，位置等）。因为 `layoutSubviews` 会被多次调用。在被调用后，改动又会变回去了。要改动也是要先将要改动的属性保存起来，让 `layoutSuibviews` 调用的时候通过这个属性设置 View。**
+
+#### 改变约束的注意事项
+
+**任何地方都能够添加修改约束**（包括 init 方法）。但是修改过约束后，并不能触发视图的更新，所以一般要调用 `layoutIfNeeded` 方法查看更新约束后的视图。更新视图的动画方法一般设置为：
 
 ```objc
 [UIView animateWithDuration:1.0f delay:0.0f usingSpringWithDamping:0.5f initialSpringVelocity:1 options:UIViewAnimationOptionCurveEaseInOut animations:^{
@@ -190,19 +192,17 @@ UIImageRenderingModeAlwaysTemplate   // 始终根据Tint Color绘制图片，忽
 } completion:NULL];
 ```
 
-**`updateConstraints` 在什么时候使用呢？**关于 `setNeedsUpdateConstraints` 文档上是这么说的：
+#### `updateConstraints` 的使用时机
 
-> When a property of your custom view changes in a way that would impact constraints, you can call this method to indicate that the constraints need to be updated at some point in the future. The system will then call updateConstraints as part of its normal layout pass. Updating constraints all at once just before they are needed ensures that you don’t needlessly recalculate constraints when multiple changes are made to your view in between layout passes.
+不要将 `updateConstraints` 用于视图的初始化设置。**当你需要在单个布局流程（single layout pass）中添加、修改或删除大量约束的时候，用它来获得最佳性能。如果没有性能问题，直接更新约束更简单。**
 
-不要将 `updateConstraints` 用于视图的初始化设置。**当你需要在单个布局流程（single layout pass）中添加、修改或删除大量约束的时候，用它来获得最佳性能。如果没有性能问题，直接更新约束更简单。如果你不會在程式運行途中去新增或移除 constraints，那就把建立 constraints 的工作放在 `init` 或 `viewDidLoad` 階段。中途會新增或移除的動作才放到 `updateConstraints`。你可以建立 constraint 之後再修改它的 constant 屬性，這不算是新增或移除 constraint。** 移除约束的方法是：` [self removeConstraints:self.constraints];`。
+如果一定要用这个方法，那么在更新约束之前，请先移除之前设置的约束，否则约束重复了会编译不过的。 移除约束的方法是：` [self removeConstraints:self.constraints];`。
 
-#### 总结
+**对于手撸一个 view 来说，一般不用重写 `updateConstraints`，只有在某些情况要大量修改约束的时候才用到，请把建立 constraints 的工作放在 `init` 或 `viewDidLoad` 階段。**
 
-对于手撸一个 view 来说，一般不用重写 `updateConstraints`，只有在某些情况要增删约束的时候才用到，约束信息放在 `init` 方法里添加就可以了。
+#### 关于 `drawRect`
 
-view 中子视图的约束可以放在 `init` 中，但是设置子视图的 `bounds` 不能还放在该方法中。因为当外部创建该 view 时，如果外部调用 `init` 方法而不是调用 `initWithFrame` (即没有给这个 view 设置大小），那么 view 中子视图就无法正确初始化出大小。因此，子视图的 `bounds` 等属性（例如 `center` 等）的设置必须放在 `layoutSubviews` 中，即外部 view 大小已经确定，就要显示的时候。当然显示出来后，子视图的 `bounds` 再变化就和 `layoutSubviews` 方法没有任何关系了，在代码的任意位置修改都可以。
-
-`drawRect` 方法通过 `CGContextRef context = UIGraphicsGetCurrentContext();` 拿到上下文句柄，然后将自己要画的图形添加到这个上下文上。
+`drawRect` 方法通过 `CGContextRef context = UIGraphicsGetCurrentContext();` 拿到上下文句柄，然后将自己要画的图形添加到这个上下文上。具体可以在要用的时候看看例子。
 
 ### 设置 view 的一些注意事项
 
