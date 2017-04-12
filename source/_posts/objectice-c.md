@@ -122,7 +122,7 @@ collection不能保存nil。如果要保存nil则要保存NSNull类的实例。
 可以通过两种途径定义常量，#define和全局变量。  
 1. #define A B 告诉编译器看到A用B替换
 2. extern NSString const *NSLocaleCurrencyCode；  
-const表示指针的不会变化,extern表示指针是存在的，但是会在另一个文件里定义。提示编译器遇到此变量和函数时在其他模块中寻找其定义
+   const表示指针的不会变化,至于 `extern` 和 `static` 的用法，参见 “IOS 技巧”
 
 ### #include和#import
 import会确保预处理器只导入特定的文件一次，include允许多次导入同一个文件。最好使用import。

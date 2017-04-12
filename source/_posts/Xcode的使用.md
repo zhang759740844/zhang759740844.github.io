@@ -20,6 +20,10 @@ tags:
 
 Xcode8 的用户要按照他的方法设置个人证书。主要是因为在 Xcode8 中，出于安全原因，官方已经不支持第三方插件了。想要使用第三方插件，就得开个后门，回到 Xcode7 的安全配置。操作没有歧义，按照教程就可以完成。
 
+> 注意，创建自签名证书的时候要选对证书类型，要选为"代码签名"
+
+![codesign](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/codesign.png?raw=true)
+
 Xcode7不能用最新的版本，需要使用`commit`在`809527b`之前的版本。(MD，就不能加个tag!)需要自己创建一个本地branch。
 
 之后有一步在下载下来的 XVim 文件夹下编译的操作，需要 `cd XVim/`：
@@ -176,7 +180,11 @@ Podfile.lock 是在第一次运行 `pod install` 时候自动生成的。Podfile
 
 在 Xcode8 之前，想要一键为属性和方法注释都需要通过插件完成。现在 Xcode8 中有了内置的注释方式： `alt+command+/`，只要将光标移动到想要注释的方法上，就会自动识别方法的参数和返回值，提供注释模板，非常方便。
 
+### Xcode断点调试值都为nil的问题  
 
+在Build Settings中 Optimization Level 设置成 None：
+
+![debug](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/xcode调试.png?raw=true)
 
 ### #pragma mark
 

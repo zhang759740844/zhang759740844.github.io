@@ -78,3 +78,131 @@ UIImage *image = [UIImage imageWithData:imageData];
 
 ## plist 的使用
 
+上面的 `NSUserDefaults` 是基于 `plist` 的。可以用来存储城市列表等类似数据。那么如何直接操作 `plist` 呢？
+
+### 写入
+
+通过 `writeToFile:atomically:` 上面提到的 `plist` 能够存储的类型都有这个方法。
+
+```objc
+    //获取应用程序沙盒的Documents目录  
+    NSArray *paths=NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,NSUserDomainMask,YES);  
+    NSString *plistPath1 = [paths objectAtIndex:0];  
+
+    //得到完整的文件名  
+    NSString *filename=[plistPath1 stringByAppendingPathComponent:@"test.plist"];  
+
+    //输入写入  data 是个 dictionary
+    [data writeToFile:filename atomically:YES];  
+```
+
+### 读取
+
+通过 `initWithContentsOfFile:` 方法初始化读取，上面提到的类型都有该方法：
+
+```objc
+//那怎么证明我的数据写入了呢？读出来看看  
+//这里的 filename 是完整的路径和文件名
+NSMutableDictionary *data1 = [[NSMutableDictionary alloc] initWithContentsOfFile:filename]; 
+```
+
+## 归档
+
+### 协议
+
+归档可以实现对非上述类型对象的存储。但是必须遵守 `NSCoding` 协议。该协议有两个方法：
+
+```objc
+@protocol NSCoding
+
+- (void)encodeWithCoder:(NSCoder *)aCoder;
+- (id)initWithCoder:(NSCoder *)aDecoder;
+
+@end
+```
+
+实现实例：
+
+```objc
+//.h文件
+#import <Foundation/Foundation.h>
+
+// 给自定义类归档，首先要遵守NSCoding协议。
+@interface Person : NSObject<NSCoding>
+
+@property (nonatomic,strong) NSString *name;
+@property (nonatomic,assign) NSInteger age;
+@property (nonatomic,strong) NSString *gender;
+
+@end
+  
+  
+//.m文件
+#import "Person.h"
+
+@implementation Person
+
+// 归档方法
+- (void)encodeWithCoder:(NSCoder *)aCoder
+{
+    [aCoder encodeObject:self.name forKey:@"name"];
+    [aCoder encodeInteger:self.age forKey:@"age"];
+    [aCoder encodeObject:self.gender forKey:@"gender"];
+}
+// 反归档方法
+- (instancetype)initWithCoder:(NSCoder *)aDecoder
+{
+    self = [super init];
+
+    if (self != nil) {
+        self.name = [aDecoder decodeObjectForKey:@"name"];
+        self.age = [aDecoder decodeIntegerForKey:@"age"];
+        self.gender = [aDecoder decodeObjectForKey:@"gender"];
+    }
+    return self;
+}
+
+@end
+```
+
+这里可以在使用的时候，通过代码提示选取合适的 `encode` 和 `decode` 方法。
+
+如此就能对 `Person` 对象进行归档了。当然这种归档方法非常傻瓜。因为每一个属性都要设置一次 `encode` 和 ` decode`。我们可以通过 runtime，实现自动归档。具体的实现方法在 “runtime 应用” 一篇有说明。
+
+### 使用
+
+对于所有系统类型（**NSString、NSDictionary、NSArray、NSNumber等**）以及所有实现了上面协议的类型，通过下面两个方法编码（NSKeyedArchiver）和解码（NSKeyedUnarchiver）
+
+```objc
+BOOL success = [NSKeyedArchiver archiveRootObject:data toFile:filePath];
+id data = [NSKeyedUnarchiver unarchiveObjectWithFile:filePath];
+```
+
+实现实例：
+
+```objc
+- (void)viewDidLoad {
+    [super viewDidLoad];
+
+    Person *person = [[Person alloc]init];
+
+    person.name = @"BigBaby";
+    person.age = 16;
+    person.gender = @"男";
+
+    // 归档，调用归档方法
+    NSString *filePath = [NSHomeDirectory() stringByAppendingString:@"person.plist"];
+    BOOL success = [NSKeyedArchiver archiveRootObject:person toFile:filePath];
+    NSLog(@"%d",success);
+
+    // 反归档，调用反归档方法
+    Person *per = [NSKeyedUnarchiver unarchiveObjectWithFile:filePath];
+    NSLog(@"%@",per);
+
+    // Do any additional setup after loading the view, typically from a nib.
+}
+```
+
+## Realm
+
+最强大的跨平台移动端数据库，但是暂时用不到，用到再说。

@@ -269,3 +269,155 @@ app 中的加载等候经常需要播放一个动图，那么怎么让图片动�
 ```
 
 这个方法是找到并隐藏相应 hud。这里面使用了 `NSEnumerator` 这个枚举类，通过 `reverseObjectEnumerator` 反向浏览集合。
+
+### 通过 View 获取 ViewController
+
+为了做到数据与视图的分离，我们一般会将一个页面的局部视图以自定义 `UIView` 的方式独立出来，如果在该视图中有触发事件(事件处理不需要父视图的上下文)，就会遇到在 `UIView` 中获取 `UIViewController` 的情况，可以写一个 `UIView` 的范畴 `UIView(UIViewController)`：
+
+```objc
+#pragma mark - 获取当前view的viewcontroller
++ (UIViewController *)getCurrentViewController:(UIView *) currentView
+ {
+       for (UIView* next = [currentView superview]; next; next = next.superview)
+      {
+             UIResponder *nextResponder = [next nextResponder];
+             if ([nextResponder isKindOfClass:[UIViewController class]])
+             {
+                  return (UIViewController *)nextResponder;
+             }
+      }
+     return nil;
+}
+```
+
+
+
+### pop 到指定 ViewController
+
+`UINavigationController` 有个 Property，是一个存储所有 push 进 navigationcontroller 的视图的集合，是一个栈结构，当我们要 POP 到某个  ViewController 的时候，直接用 `for in` 去遍历 viewControllers 即可:
+
+```objc
+    for (UIViewController viewController in self.navigationController.viewControllers){
+        if ([viewController isKindOfClass:[AccountManageViewController class]]){
+            [self.navigationController popToViewController:viewController animated:YES];
+        }
+    }
+```
+
+
+
+### 一个规范的 ViewController 的代码结构
+
+一个 ViewController 中的代码如果不分类，那么查看起来就会非常混乱，经常需要到处跳转。因此写代码的时候按照顺序来分配代码块的位置。先是 `life cycle`，然后是`Delegate方法实现`，然后是`event response`，然后才是`getters and setters`，用 `#pragma mark - ` 分隔开。这样后来者阅读代码时就能省力很多。
+
+> getter和setter全部都放在最后
+
+因为一个ViewController很有可能会有非常多的view，如果getter和setter写在前面，就会把主要逻辑扯到后面去，其他人看的时候就要先划过一长串getter和setter，这样不太好。
+
+> 每一个delegate都把对应的protocol名字带上，delegate方法不要到处乱写，写到一块区域里面去
+
+比如UITableViewDelegate的方法集就老老实实写上`#pragma mark - UITableViewDelegate`。这样有个好处就是，当其他人阅读一个他并不熟悉的Delegate实现方法时，他只要按住command然后去点这个protocol名字，Xcode就能够立刻跳转到对应这个Delegate的protocol定义的那部分代码去，就省得他到处找了。
+
+> event response专门开一个代码区域
+
+所有button、gestureRecognizer的响应事件都放在这个区域里面，不要到处乱放。
+
+> 关于private methods，正常情况下ViewController里面不应该写
+
+不是delegate方法的，不是event response方法的，不是life cycle方法的，就是private method了。对的，正常情况下ViewController里面一般是不会存在private methods的，这个private methods一般是用于日期换算、图片裁剪啥的这种小功能。这种小功能要么把它写成一个category，要么把他做成一个模块，哪怕这个模块只有一个函数也行。
+
+ViewController基本上是大部分业务的载体，本身代码已经相当复杂，所以跟业务关联不大的东西能不放在ViewController里面就不要放。另外一点，这个private method的功能这时候只是你用得到，但是将来说不定别的地方也会用到，一开始就独立出来，有利于将来的代码复用。
+
+### 一些宏
+
+#### #define
+
+为一段代码设置一个缩写，这段代码可以是一个数字，也可以是一个函数。
+
+```objc
+#define SERVER_ONLINE_DEVELOPMENT
+```
+
+#### #if DEBUG
+
+通过 `Build Configuration` 设置调试版本，分为 `debug` 和 `release`。正式发行的版本和 `release` 一致（但是真机调试的时候还是用develop证书）。可以使用预设宏来为开发环境添加一些额外的操作：
+
+```objc
+    #if DEBUG
+    #define HttpDefaultURL HttpFormal
+    #else
+    #define HttpDefaultURL HttpSimulation
+    #endif
+```
+
+这样就不用自己设置环境了。
+
+如果要设置非 `debug`，那么使用 `#if !DEBUG`
+
+#### #ifdef
+
+该宏判断后面的宏是否被定义过：
+
+```objc
+#ifdef SERVER_ONLINE_DEVELOPMENT
+	...
+#endif
+```
+
+
+
+### extern和static
+
+`static` 是用来定义静态变量的都知道。但是它和 `extern` 各用在什么情况下呢？
+
+#### static
+
+用static声明局部变量（在`{}` 之内的），使其变为静态存储方式(静态数据区)，作用域不变（**也就是最常用的那种情况**）
+
+用static声明外部变量（在 `{}` 之外的，一般写在 `@interface` 上面），其本身就是静态变量，这只会改变其连接方式，使其**只在本文件内部有效**，而其他文件不可连接或引用该变量。
+
+#### extern
+
+`extern` 的作用域是整个源程序。**只要引用了该变量所在的头文件**，任何文件都可以访问。
+
+如果全局变量和局部变量重名，则在局部变量作用域内，全局变量被屏蔽，不起作用。编程时候尽量不使用全局变量。
+
+#### 使用方式
+
+`extern` 和 `static` 都必须引入头文件才能用，并且声明在头文件 `@interface` 外面,不用实例对象来调用就能使用。
+
+```objc
+extern int  b;  //在.h文件中声明，不能在.h文件中初始化，须在.m文件中初始化并写在@implementation之外
+static int a =789;//必须在.h文件中声明和初始化
+```
+
+综上所述：`extern` 和 `static` 就相当于全局变量，当然static也可以用在局部程序中。
+
+`extern`，`static` 和 `const` 的结合使用，通常用来定义全局静态常量：
+
+```objc
+//.h文件中
+static NSString *const kIFURL = @"abc";
+
+//.h文件中
+extern NSString *const kZDURLMenuUnit;
+//.m文件中
+NSString *constkZDURLMenuUnit
+ = @"就是这个样子";
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+​	

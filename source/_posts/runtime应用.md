@@ -264,6 +264,19 @@ outCount使用了**指向指针的指针**的方式，使没有返回outCount的
 
 ### 示例：
 ```objc
+// TestModel 头文件
+@interface TestModel : NSObject<NSCoding>
+@property (nonatomic, copy) NSString *name;
+@property (nonatomic, strong) NSNumber *age;
+@property (nonatomic, copy) NSNumber *phoneNumber;
+@property (nonatomic, copy) NSNumber *height;
+@property (nonatomic, strong) NSDictionary *info;
+@property (nonatomic, strong) TestModel *son;
+@end
+
+
+
+
 #import "TestModel.h"
 #import <objc/runtime.h>
 #import <objc/message.h>
@@ -304,7 +317,10 @@ outCount使用了**指向指针的指针**的方式，使没有返回outCount的
 @end
 ```
 
+注意自动归档由于用到的都是与 object 有关的 `encode` ,`decode`  方法。因此 model 中就不能存在非 object 类型，比如 int 就要变为 `NSNumber` （注意，`NSNumber` 类型不能直接做加减运算）。
+
 使用：
+
 ```objc
 -(void)keyedArchiverTest{
     
