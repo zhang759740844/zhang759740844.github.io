@@ -408,6 +408,14 @@ NSString *constkZDURLMenuUnit
 
 
 
+### 添加 UIGestureRecognizer 点击事件不响应
+
+1. 设置 `UIView` 的 `userInteractionEnabled` 属性值为 `YES`，否则 `UIView` 会忽略那些原本应该发生在其自身的诸如 touch 和 keyboard 等用户事件，并将这些事件从消息队列中移除出去。
+2. 循环创建对象的时候，不能只创建一个 `UIGestrueRecognizer`，而要在每个循环里为每个 `UIView` 创建并添加 `UITapGestureRecognizer` 。
+3. 父view 太小，子view 通过 `addSubView` 的方式添加到父view 外部，导致响应链无法传递到子 view 中，无法响应 `UIGestureRecognizer`（被这个坑过很久）
+
+
+
 
 
 
