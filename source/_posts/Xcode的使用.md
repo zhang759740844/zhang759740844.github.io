@@ -24,21 +24,27 @@ Xcode8 的用户要按照他的方法设置个人证书。主要是因为在 Xco
 
 ![codesign](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/codesign.png?raw=true)
 
-Xcode7不能用最新的版本，需要使用`commit`在`809527b`之前的版本。(MD，就不能加个tag!)需要自己创建一个本地branch。
+创建好自签名证书后，要对 Xcode 进行重新签名：
 
-之后有一步在下载下来的 XVim 文件夹下编译的操作，需要 `cd XVim/`：
+```
+ $ sudo codesign -f -s zachary /Applications/Xcode.app
+```
+
+这个要等一段蛮长一段时间，这段时间可以先把代码码起来。
+
+重新签名后，就可以在 clone 下来的 XVim 文件夹下编译了，需要 `cd XVim/`：
 
 ```
 $ make
 ```
 
-至于下面这个指令，其实不用太在意:
+至于安装指南上的这个指令，其实不用太在意:
 
 ```
 $ xcode-select -p
 ```
 
-这个指令主要是看看 Xcode 的版本是否指定在 `/Applications/Xcode.app/Contents/Developer` 目录下，不是的话要手动指定。具体这样是为了什么，我也没认真去搞明白。
+这个指令主要是看看 Xcode 的版本是否指定在 `/Applications/Xcode.app/Contents/Developer` 目录下，不是的话要手动指定。
 
 重启xcode，会提示是否使用Xvim，选择`load`就OK了。
 

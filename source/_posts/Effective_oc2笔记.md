@@ -424,9 +424,10 @@ OC 中仅在及其严重的错误情况下抛出异常。比如一个抽象基�
 
 这里面的 `NSZone *zone` 对象不用在意是什么，现在已经没用了。其实也就是新建一个 `EOCPerson` 对象，然后调用它的构造函数把东西全都塞进去。这里的 `->` 用箭头是因为定义的时候这个 `_friends` 不是一个属性(代码没有贴出来，详见书)，而只是在实现文件中定义的一个实例变量，没有 get/set 方法，所以不能用 `.` 
 
-这里的 `mutableCopy` 方法也可以自定义，就是下面方法的实现 
+这里的 `mutableCopy` 方法也可以自定义，就是下面方法的实现：
+
 ```objc
-- (id)mutableCopyWithZone:(NSZone*)zone；
+-(id)mutableCopyWithZone:(NSZone*)zone；
 ```
 
 #### 浅拷贝与深拷贝
