@@ -3,11 +3,11 @@ date: 2016/8/26 14:07:12
 categories: iOS 
 tags: 
 	- UI
-	
+​	
 
 ---
 
-由于tableview的cell的高度会随着内部label以及textview字符长度的变化而变化，因此不能一味的设置heightForRowAtIndexPath为定值。
+由于tableview的cell的高度会随着内部label以及textview字符长度的变化而变化，因此不能一味的设置 `heightForRowAtIndexPath` 为定值。（这里是 label 和 textview 的高度设置，其他的视图还是要通过 `heightForRowAtIndexPath:` 完成的
 
 <!--more-->
 

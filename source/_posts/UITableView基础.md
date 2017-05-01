@@ -4,7 +4,7 @@ categories: iOS
 tags: 
 	- 基本控件
 
-	
+​	
 ---
 
 UITableView是最常用的基本控件。此处对其一般用法进行总结。
@@ -15,7 +15,7 @@ UITableView是最常用的基本控件。此处对其一般用法进行总结。
 ## UITableView基础
 ### UITableView 的样式
 1. UITableViewStylePlain		将会保持在顶部直到被顶掉
-2. UITableViewStyleGrouped		将会随着cell一起滚动
+ 2. UITableViewStyleGrouped将会随着cell一起滚动
 
 ```objc
 UITableView *tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStyle];
@@ -50,7 +50,7 @@ UITableViewDataSource设置了两个必须方法：
 	    return [self.tasks count];
 }
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
-        UITableViewCell *c = [self.taskTable dequeueReusableCellWithIdentifier:@“cell”];
+        UITableViewCell *c = [self.taskTable dequeueReusableCellWithIdentifier:@“cell” forIndexPath:indexPath];
 	    //重用cell
 	    NSString *item = [self.tasks objectAtIndex:indexPath.row];
 	    c.textLabel.text = item;
@@ -59,6 +59,10 @@ UITableViewDataSource设置了两个必须方法：
 ```
 
 刷新表格：`[self.taskTable reloadData];`
+
+> 使用 `dequeueReuseableCellWithIdentifier:forIndexPath:` 必须要注册 `registerClass` ，但是不用判断是否非空以及手动创建。
+>
+> 使用 `dequeueReuseableCellWithIdentifier:` 可以免去注册，但是需要手动判断是否为空，为空的话还要手动创建
 
 ### 重用UITableViewCell对象
 需要将自定义的cell类和identifier进行关联。  
@@ -75,7 +79,14 @@ UITableViewDataSource设置了两个必须方法：
 [self.tableView registerNib:[UINib nibWithNibName:@"MineUserInfoCell" bundle:nil]  forCellReuseIdentifier:@"MineUserInfoCellIdentifier"];
 ```
 
+> 纯代码用 `registerClass`，有 xib 用 `registerNib`.
+>
+> 代码创建，使用  `registerClass:` 注册, dequeue时会调用 cell 的 `- (id)initWithStyle:withReuseableCellIdentifier:`
+>
+> 若使用nib，使用  `registerNib:` 注册，dequeue时会调用 cell 的`-(void)awakeFromNib`
+
 ### 使用UIViewController创建tabeView
+
 需要自己创建tableview属性：
 ```objc
 @property (nonatomic, strong) UITableView *tableView;
@@ -112,7 +123,7 @@ UIView *headerView = [[[NSBundle mainBundle] loadNibNamed:@"HotelReviewsHeaderVi
 先介绍下xib文件中的`File's Owner`:
 `File's Owner` 表示视图控制器。UIViewController(或其子类)在生成的时候，首先会寻找相应的`.xib`去生成，于是controller的实例(instance)就把`.xib`载入内存，并成为`FIle's Owner`（也就是说明了为什么叫做占位符）。**所以我们定义的controller是这个`.xib`的`custom class`。**并且需要把这个`FIle Owner`上的`outlet`连到某个控件上去。（Action也同样道理）换个角度，如果我们看`.xib`文件，发现它有个`File
  Owner`,其实就是我们用来设定，究竟是那个Object来读取并载入这个`.xib`文件，也就是说，谁own这个文件。
- 
+
 那么，也就是说，对于`initWithNibName`方法而言，它加载的必须是设置了`File's Owner`为自身的xib，**设置了`File's Owner`就说明，这个xib被这个Controller承包了，别的Controller用不了。**`File's Owner`会和文件中需要加载的view关联(也就是连线，`File's Owner`的view属性会联结要显示的view)，从而从众多view中确定要显示的view是哪一个。这就说明了两点：第一，一个Controller可以有多个xib，只要xib的`File's Owner`都指向那个Controller就行。第二，不用担心一个xib中有多个并列的view导致机器不知道要加载哪个的情况，因为`File's Owner`的`view`只会联结这些view中的一个。
 
 对于自定义的view，任何Controller都能获得该view，因此，不能设置其xib文件的`File's Owner`。上面也说了，通过`loadNibNamed`方法会返回各个view的数组，需要自己手动选择要加载哪个。
@@ -194,6 +205,8 @@ button点击事件中有一个event对象，记录了当前点击坐标，然后
 
 通过设置delegate，将button的点击事件交给viewController完成。
 
+[iOS高级开发——CollectionView的动态增删cell及使用模型重构](http://doc.okbase.net/CHENYUFENG1991/archive/193953.html)
+
 ## 编辑UITableView
 ### 编辑模式下的UITableView
 #### 进入编辑模式
@@ -271,8 +284,8 @@ delete操作可以不在编辑模式的情况下，通过左滑cell直接触发�
 #### 刷新方式
 简单总结一些UITableView的刷新方法：
 - reloadData									刷新整个表格
-- reloadRowsAtIndexPaths:withRowAnimation:		刷新indexPath指向的cell
-- reloadSections:withRowAnimation:				刷新NSIndexSet内包含的Section
+ - reloadRowsAtIndexPaths:withRowAnimation:刷新indexPath指向的cell
+ - reloadSections:withRowAnimation:                刷新NSIndexSet内包含的Section
 
 这三个分别刷新tableview的各个部分
 第一个没有动画效果。
@@ -298,6 +311,32 @@ delete操作可以不在编辑模式的情况下，通过左滑cell直接触发�
 当 tableview 太大，cell 太少，以至于不能填满tableview的时候，那么空白部分的点击事件该怎么设置呢？只要给 tableview 添加一个 footerview，这个 footerview 的大小是整个 tableview 的大小，然后设置这个 footerview 的点击事件即可。
 
 为什么能这样呢？因为 cell 没有填充满的部分都用 footerview 填充了。
+
+### UITableView 取消点击cell的选中背景颜色
+
+#### 方法一
+
+在选中的回调方法中取消选中：
+
+```objc
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    [tableView deselectRowAtIndexPath:indexPath animated:NO];
+}
+```
+
+#### 方法二
+
+设置 cell 的选中属性：
+
+```objc
+-(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+  ...
+  cell.selectionStyle = UITableViewCellSelectionStyleNone;
+  ...
+}
+```
+
+
 
 
 

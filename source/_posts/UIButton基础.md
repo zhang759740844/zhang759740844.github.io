@@ -146,7 +146,20 @@ button选中与否是由`UIControlStateSelected`控制的。
 [btn1 setImage:[UIImage imageNamed:@"Image2"] forState:UIControlStateSelected | UIControlStateHighlighted];
 ```
 
-好的，这样就完成了切换状态的过程。
+好的，这样就完成了切换状态的过程。（上面说的是两种高亮状态下的设置。完整的代码应该是这样的：
+
+```objc
+// 未选中状态
+[button setImage:[UIImage imageNamed:@"like"] forState:UIControlStateNormal];
+// 选中状态
+[button setImage:[UIImage imageNamed:@"like"] forState: UIControlStateHighlighted];
+// 从未选中到选中的高亮状态
+[button setImage:[UIImage imageNamed:@"like_selected"] forState:UIControlStateSelected];
+// 从选中到未选中的高亮状态
+[button setImage:[UIImage imageNamed:@"like_selected"] forState:UIControlStateSelected | UIControlStateHighlighted];
+```
+
+
 
 ### 设置image和title位置
 image和title默认image在左，title紧贴在其右边。不过这个位置其实是可以改变的。
@@ -250,6 +263,34 @@ Target-action 是一种设计模式，直译过来就是”目标-行为”。�
 如果想获取控件对象所有相关的 `target` 对象，则可以调用 `allTargets` 方法，该方法返回一个集合。集合中可能包含 `NSNull` 对象，表示至少有一个 `nil` 目标对象。
 
 而如果想获取某个 `target` 对象及事件相关的所有 `action`，则可以调用 `actionsForTarget:forControlEvent:` 方法。返回一个可变数组。
+
+## 一些点
+
+### UIButton 无法修改文字和文字颜色
+
+设置的错误示例：
+
+```objc
+//第一种错误
+[customButton.titleLabel setTextColor:[UIColor blackColor]];
+//第二种错误
+customButton.titleLabel.textColor = [UIColor blackColor];
+```
+
+这种方式修改文字和颜色是无效的。因为 `titleLabel` 是 `readonly` 的。如果要修改，需要设置不同 `state` 下的状况：
+
+```objc
+// title 同理
+[button setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+```
+
+### [button setImage:] 不显示图片
+
+当我们在代码中设置 `button` 的图片的时候，这个这个 `button` 是系统默认的类型(system)，那么这个时候 `setImage:` 方法是锁住的，这时候使用该方法设置图片,你见到的可能是蓝色底色的一片或者没有任何效果。
+
+如果想要正常显示图片，需要将 `button` 的类型设置为 `custom`。可以在 storyboard 中设置，也可以在代码中设置。
+
+
 
 
 

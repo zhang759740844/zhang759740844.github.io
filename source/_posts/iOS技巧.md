@@ -182,6 +182,10 @@ UIImageRenderingModeAlwaysTemplate   // 始终根据Tint Color绘制图片，忽
 
 **另外最好不要孤立地改动在 `layoutSubviews` 中设置过的子视图（比如大小，位置等）。因为 `layoutSubviews` 会被多次调用。在被调用后，改动又会变回去了。要改动也是要先将要改动的属性保存起来，让 `layoutSuibviews` 调用的时候通过这个属性设置 View。**
 
+> 这个方法只是在要设置子视图大小位置的时候调用，如果子视图使用的 autolayout，则直接在 `init` 中设置 constraints 就可以了，不需要再重写这个方法，否则会重复添加约束。
+>
+> 什么时候用 autolayout 什么时候用 frame 就见仁见智了。一般来说只与父视图有关的话，那么就用 frame 设置位置，如果与兄弟视图有关的话，还是用 autolayout 教好一些。
+
 #### 改变约束的注意事项
 
 **任何地方都能够添加修改约束**（包括 init 方法）。但是修改过约束后，并不能触发视图的更新，所以一般要调用 `layoutIfNeeded` 方法查看更新约束后的视图。更新视图的动画方法一般设置为：
@@ -206,10 +210,16 @@ UIImageRenderingModeAlwaysTemplate   // 始终根据Tint Color绘制图片，忽
 
 ### 设置 view 的一些注意事项
 
+- 重写 `UIView` 的 `initWithFrame:` 而不是 `init` 方法。 因为当外部调用 `init` 的方法的时候，其内部也会默默地调用 `initWithFrame：`方法。
+- 不要在构造方法里面直接取自身(self,或者说本视图)的宽高,这时候取到的宽高是不准的.
+
+
 - 当在代码中设置视图和它们的约束条件时候，一定要记得将该视图的 `translatesAutoResizingMaskIntoConstraints` 属性设置为 NO。如果忘记设置这个属性几乎肯定会导致不可满足的约束条件错误。
 - 在 `initWithFrame:` 方法中将子控件加到 view 而不是设置尺寸。因为 view 有可能是通过 `init` 方法创建的，这个时候 view 的 frame 可能是 不确定的。这种情况下各个子控件的尺寸都会是0，因为这个 view 的 frame 还没有设置。设置尺寸的工作放在 `layoutSubviews` 中去做。
 - `allowsGroupOpacity` 属性允许子控件的不透明度继承于其父控件，默认是开启的 `yes`。不过这会影响性能，自定义控件的时候最好设置为 `self.layer.allowsGroupOpacity = NO;`
 - `clipsToBounds` 是 `UIView` 的属性，如果设置为 `yes`，则不显示超出父 View 的部分；`masksToBounds` 是 `CALayer` 的属性，如果设置为 `yes`，则不显示超出父 View layer 的部分.
+- 设置视图的时候一定要先设置大小再设置 center ，center 是为了确定 CGRect 的，如果当时CGRect为0，那么此时设置 center，就像当于给 CGRect 设置了 origin。
+- ​
 
 
 ### 用 UIImageView 播放动图
@@ -413,6 +423,69 @@ NSString *constkZDURLMenuUnit
 1. 设置 `UIView` 的 `userInteractionEnabled` 属性值为 `YES`，否则 `UIView` 会忽略那些原本应该发生在其自身的诸如 touch 和 keyboard 等用户事件，并将这些事件从消息队列中移除出去。
 2. 循环创建对象的时候，不能只创建一个 `UIGestrueRecognizer`，而要在每个循环里为每个 `UIView` 创建并添加 `UITapGestureRecognizer` 。
 3. 父view 太小，子view 通过 `addSubView` 的方式添加到父view 外部，导致响应链无法传递到子 view 中，无法响应 `UIGestureRecognizer`（被这个坑过很久）
+
+
+
+
+### 倒计时按钮（每秒触发）
+
+通过 gcd 设置一个每秒都会触发执行的队列，然后自己控制时间，何时退出。
+
+```objc
+// 开启倒计时效果
+-(void)openCountdown{
+
+    __block NSInteger time = 59; //倒计时时间
+
+    dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+    dispatch_source_t _timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, queue);
+
+    dispatch_source_set_timer(_timer,dispatch_walltime(NULL, 0),1.0*NSEC_PER_SEC, 0); //每秒执行
+
+    dispatch_source_set_event_handler(_timer, ^{
+
+        if(time <= 0){ //倒计时结束，关闭
+
+            dispatch_source_cancel(_timer);
+            dispatch_async(dispatch_get_main_queue(), ^{
+
+                //设置按钮的样式
+                [self.authCodeBtn setTitle:@"重新发送" forState:UIControlStateNormal];
+                [self.authCodeBtn setTitleColor:[UIColor colorFromHexCode:@"FB8557"] forState:UIControlStateNormal];
+                self.authCodeBtn.userInteractionEnabled = YES;
+            });
+
+        }else{
+
+            int seconds = time % 60;
+            dispatch_async(dispatch_get_main_queue(), ^{
+
+                //设置按钮显示读秒效果
+                [self.authCodeBtn setTitle:[NSString stringWithFormat:@"重新发送(%.2d)", seconds] forState:UIControlStateNormal];
+                [self.authCodeBtn setTitleColor:[UIColor colorFromHexCode:@"979797"] forState:UIControlStateNormal];
+                self.authCodeBtn.userInteractionEnabled = NO;
+            });
+            time--;
+        }
+    });
+    dispatch_resume(_timer);
+}
+```
+
+注意：
+
+> 我们在创建Button时, 要设置Button的样式:
+> 当type为: UIButtonTypeCustom时 , 是读秒的效果.
+> 当type为: 其他时, 是一闪一闪的效果.
+
+### 获取float的前两位小数
+
+当我们直接把 `float` 转为 `NSString`  会发现小数点后有很多小数，可以按照需求截取几位小数：
+
+```objc
+NSString *strDistance=[NSString stringWithFormat:@"%.xf", kilometers]; //x表示具体显示多少位
+```
+
 
 
 
