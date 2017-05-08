@@ -19,3 +19,6 @@ defaults write com.apple.finder AppleShowAllFiles -bool TRUE
 停止显示隐藏文件：
 defaults write com.apple.finder AppleShowAllFiles -bool FALSE
 ```
+### handoff 无法使用
+
+handoff 是一个能在电脑和手机间共享信息的东西，但是有的时候就是识别不到。如果已经明确自己开启了 handoff 但是任然无法使用，那么可以先关闭电脑的蓝牙功能，然后再打开。这样就可以使用了。

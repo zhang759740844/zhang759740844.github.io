@@ -3,8 +3,6 @@ date: 2016/8/30 14:07:12
 categories: iOS 
 tags: 
 	- 基本控件
-
-​	
 ---
 
 UITableView是最常用的基本控件。此处对其一般用法进行总结。
@@ -15,7 +13,7 @@ UITableView是最常用的基本控件。此处对其一般用法进行总结。
 ## UITableView基础
 ### UITableView 的样式
 1. UITableViewStylePlain		将会保持在顶部直到被顶掉
- 2. UITableViewStyleGrouped将会随着cell一起滚动
+2. UITableViewStyleGrouped将会随着cell一起滚动
 
 ```objc
 UITableView *tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStyle];
@@ -205,6 +203,8 @@ button点击事件中有一个event对象，记录了当前点击坐标，然后
 
 通过设置delegate，将button的点击事件交给viewController完成。
 
+> 注意，如果是那种点击 button 后删除的需求，在调用 `deleteItemsAtIndexPaths:` 之前，一定要先删除数据源里的数据，因为`deleteItemsAtIndexPaths:` 调用后，会刷新部分数据。
+
 [iOS高级开发——CollectionView的动态增删cell及使用模型重构](http://doc.okbase.net/CHENYUFENG1991/archive/193953.html)
 
 ## 编辑UITableView
@@ -284,8 +284,8 @@ delete操作可以不在编辑模式的情况下，通过左滑cell直接触发�
 #### 刷新方式
 简单总结一些UITableView的刷新方法：
 - reloadData									刷新整个表格
- - reloadRowsAtIndexPaths:withRowAnimation:刷新indexPath指向的cell
- - reloadSections:withRowAnimation:                刷新NSIndexSet内包含的Section
+- reloadRowsAtIndexPaths:withRowAnimation:刷新indexPath指向的cell
+- reloadSections:withRowAnimation:                刷新NSIndexSet内包含的Section
 
 这三个分别刷新tableview的各个部分
 第一个没有动画效果。
@@ -336,9 +336,11 @@ delete操作可以不在编辑模式的情况下，通过左滑cell直接触发�
 }
 ```
 
+####  cell 的点击事件不响应
 
+有可能是在 cell 里设置了 `UIButton`，由于响应机制，先响应 `UIButton` 的点击事件。所以就忽略了 cell 的 `didSelect` 方法。
 
-
+所以要做的就是将 `UIButton` 的 `UserInteractionEnabled ` 设置为 No。
 
 
 

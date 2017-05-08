@@ -239,7 +239,7 @@ UIReturnKeyEmergencyCall, 紧急呼叫按钮
 
 出现情况：在 xib 创建的 `UITextField` 中输入中文的时候，`Border Style` 这个属性设置为第一种 `UITextBorderStyleNone`，同时 `Clear Button` 设置为 `Never appears` 时会出现这种情况
 
-解决方法：可以设置 `Clear Button` 的出现时机，或者设置 `Border Style` 为其他类型 。如果一定要是这种 `Border Style` 和 `Clear Button`，那么可以将 xib 中的 `UITextField` 拖出来，通过代码设置 `Border Style` 的方式设置其为`UITextBorderStyleNone` 。
+解决方法：可以设置 `Clear Button` 的出现时机，或者设置 `Border Style` 为其他类型 。如果一定要是这种 `Border Style` 和 `Clear Button`，那么可以将 xib 中的 `UITextField` 拖出来，通过代码设置 `Border Style` 的方式设置其为`UITextBorderStyleNone` (在 xib 中要先设置为其他的再在代码里这样设置才能成功)。
 
 #### 多个 UITextField 点击换行按钮，切换 FirstResponder
 
