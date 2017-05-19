@@ -113,6 +113,8 @@ defaults delete com.torusknot.SourceTreeNotMAS "NSSplitView Subview Frames repow
 
 避免注释不清晰。比如只有「修正 BUG」、「改错」、「升级」、「添加某文件」等，没有其他内容，等于没说。 6.「提交」的概念是具有独立的功能、修正等作用。小可以小到只修改一行，大可以到改动很多文件，但划分的标准不变，一个提交就是解决一个问题的。
 
+> 注意，每次提交之后一定是要能正常运行的。不能把不能通过编译的代码提交上去。
+
 #### 主要前缀
 
 - Add 新加入的需求
@@ -121,4 +123,9 @@ defaults delete com.torusknot.SourceTreeNotMAS "NSSplitView Subview Frames repow
 - Update 完成任务或者模块后的更新
 - Remove 移除功能
 - Refactor 重构功能
+
+
+#### 思路
+
+有些时候发现不知道该如何写。那么遵循 `what-why-how` 的形式。写第一行的时候问自己这个 commit 是做了什么事，后面详细写清楚为什么这么做和怎么做到的。
 

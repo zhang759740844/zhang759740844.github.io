@@ -82,6 +82,8 @@ static const void *associatedKey = "associatedKey";
 @end
 ```
 
+> Category中的属性，只会生成setter和getter方法的声明，不会生成成员变量，而且需要自己实现方法。
+
 其中，在set方法中使用`addTarget:action:forControlEvents:`给button设置了点击事件。
 
 `self.click()`表示使用`self.click`获得block，再通过`block()`执行块。
@@ -412,7 +414,7 @@ outCount使用了**指向指针的指针**的方式，使没有返回outCount的
 @end
 ```
 
-其中 `"v@:"` 表示返回值和参数,这个符号涉及[Type Encoding](https://developer.apple.com/library/content/documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Articles/ocrtPropertyIntrospection.html)以及[关于type encodings的理解--runtime programming guide](http://www.jianshu.com/p/f4129b5194c0)。
+其中 `"v@:"` 表示返回值和参数,这个符号涉及[Type Encoding](https://developer.apple.com/library/content/documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Articles/ocrtPropertyIntrospection.html)以及[关于type encodings的理解--runtime programming guide](http://www.jianshu.com/p/f4129b5194c0)。其中 `class_addMethod` 具体的使用方式可以参见下面一节。
 
 ---
 其中**v**表示返回`void`类型，**@**表示参数`id(self)`，**：**表示`SEL(_cmd)`这几个是必须要有的，后面可以接入参类型。

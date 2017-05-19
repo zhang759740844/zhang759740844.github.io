@@ -12,9 +12,11 @@ tags:
 ## 熟悉OC
 ### 第1条：了解Objective-C的起源
 
-对于消息结构的语言，运行时所执行的代码由运行环境来决定；在运行时才回去查找索要执行的方法。其实现原理是由**运行期组件（runtime component）**完成，使用 Objective-C 的面向对象特性所需的全部数据结构以及函数都在运行期组件里面。
+对于消息结构的语言，运行时所执行的代码由运行环境来决定,在运行时才回去查找索要执行的方法;而使用函数调用的语言，则由编译器决定，只有函数是多态的，才会在运行的时候按照“虚方法表”查出到底应该执行哪个函数。
 
-运行期组件本质上是一种与开发者所编写的代码相链接的**动态库（dynamic library）**，其代码能把开发者所编写的所有程序粘合起来。
+oc 的工作的实现原理是由**运行期组件（runtime component）**完成，而不是编译器。使用 Objective-C 的面向对象特性所需的全部数据结构以及函数都在运行期组件里面。
+
+运行期组件本质上是一种与开发者所编写的代码相链接的**动态库（dynamic library）**，其代码能把开发者所编写的所有程序粘合起来。这样的话，只要更新运行期组件，就可以提升程序性能。而那种工作都在 “编译期” 完成的语言，若想获得类似的性能提升，就要重新编译应用程序代码。
 
 ### 第2条： 在类的头文件中尽量少引用其他头文件
 
@@ -95,6 +97,8 @@ NSString *const  NotificationString = @"Finish Download";
 
 注意这里的 `const`, 如果在 `*` 前面，表示指针指向的堆上的内容不能改变，如果在 `*` 后面，表示指针指向的地址是不能改变的。（这里有个助记方法，以 `*` 为分解，`const` 在左边就是修饰 `NSString`，表示不能修改值，在右边就表示修饰指针对象，表示不能修改指针指向的地址。）
 
+> 不要用预处理指令定义**常量**。这样定义出来的常量不含类型信息，编译器只会在百年以前执行查找和替换操作。即使有人重新定义了常量值，编译器也不会产生警告信息，这回导致应用程序中的常量值不一致。
+
 ### 第5条：用枚举表示状态，选项，状态码
 我们经常需要给类定义几个状态，这些状态码可以用枚举来管理：
 
@@ -115,6 +119,8 @@ typedef NS_OPTION(NSUInteger, EOCPermittedDirection) {
 
 `NS_ENUM` 和 `NS_OPTION` 是 Foundation 框架中定义的辅助宏。需要注意这两者使用场景的不同。
 
+> 这两者的差别在于一个位移枚举即是在你需要的地方可以同时存在多个枚举值。而NS_ENUM定义的枚举不能几个枚举项同时存在，只能选择其中一项。
+
 在枚举类型的 switch 语句中不要实现 default 分支。它的好处是，当我们给枚举增加成员时，编译器就会提示开发者：switch 语句并未处理所有的枚举。否则添加了枚举却没有实现 switch 将可能导致严重的崩溃。
 
 ## 对象、消息、运行期
@@ -122,10 +128,14 @@ typedef NS_OPTION(NSUInteger, EOCPermittedDirection) {
 #### 属性
 在 Java 以及 C++ 中，对象布局在编译期就已经固定了。只要访问变量的代码，编译器就会把其替换成为“偏移量”。这个偏移量是**硬编码（hardcode）**，表示该对象距离存放对象的内存区域的起始地址有多远。这样做的问题是，如果再添加一个实例变量，那么其他实例变量的就要变化了，那么就要重新编译，否则就会出错。
 
-Objective-C 的做法是，把实例变量当做一种存储偏移量所用的**“特殊变量”（special variable）**，交由**“类对象”（class object）**保管。偏移量会在运行期查找，那么类的定义变了，存储的偏移量也就变了，这样的话，无论何时访问实例变量，总能使用正确的偏移量。甚至可以在运行期向类中新增实例变量。
+Objective-C 的做法是，把实例变量当做一种存储偏移量所用的**“特殊变量”（special variable）**，交由**“类对象”（class object）**保管。偏移量会在运行期查找，那么类的定义变了，存储的偏移量也就变了，这样的话，无论何时访问实例变量，总能使用正确的偏移量。甚至可以在运行期向类中新增实例变量，这就是稳固的 "应用程序二进制接口(ABI)"。ABI 定义了许多内容，其中一项就是生成代码时所应遵循的规范(这也就是 swift 所没有的东西)。
 
 #### 存取方法
-在设置完属性后，编译器会自动向类中添加适当类型的实例变量，并且为其写出一套存取方法。访问属性，可以使用点语法，编译器会把点语法转换为对存取方法的调用；也可直接使用实例变量，使用实例变量的方式更快。
+**在设置完属性后，编译器会自动向类中添加适当类型的实例变量，并且为其写出一套存取方法。**一般会在属性名前加一个下划线作为实例变量名。
+
+如果不想令编辑器自动合成存取方法，可以自己实现，也可以使用 `@dynamic` 关键字。它会告诉编译器不要自动创建实现属性所用的实例变量，也不要为其创建存取方法，**需要自己实现存取方法**。而且，在编译访问属性的代码时，即使编译器发现没有定义存取方法，也不会报错，它相信这些方法能在运行期找到。
+
+访问属性，可以使用点语法，编译器会把点语法转换为对存取方法的调用；也可直接使用实例变量，使用实例变量的方式更快。
 
 ```objc
 //存取方法设置属性
@@ -134,8 +144,36 @@ self.firstName = @"Zachary";
 _firstName = @"Zachary";
 ```
 
+#### @synthesize 与 @dynamic
+
+`@dynamic` 是相对于 `@synthesize` 的，它们用样用于修饰 `@property`：
+
+```objc
+//.h
+@interface CYLPerson : NSObject 
+@property NSString *firstName; 
+@property NSString *lastName; 
+@end
+  
+//.m
+@implementation CYLPerson 
+@synthesize firstName = _myFirstName; 
+@synthesize lastName = _myLastName; 
+@end 
+```
+
+上述语法会将生成的实例变量（ivar）命名为 `_myFirstName` 与 `_myLastName`，并自动合成 `setFirstName:` 和 `firstName`,`setLastName`,`lastName` 这几个方法。
+
+如果是 `@synthesize foo;`，等效于 `@synthesize foo = foo`，省略了下划线，后面使用该实例变量的时候就用 `foo` 就行了。如果已经存在一个名为 `_foo` 的实例变量，就不会自动合成新的变量了：
+
+![foo](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/effectiveoc_foo.png?raw=true)
+
+`@dynamic` 类似，告诉编译器，不自动生成getter/setter方法，避免编译期间产生警告，然后由自己实现存取方法或在运行时动态绑定。
+
+> `@synthesize` (Xcode6以后省略这个了, 默认在 `@implementation .m` 中添加这个 `@synthesize xxx = _xxx;` )
 
 #### 属相特质
+
 原子性：
 - nonatomic：不使用同步锁
 - atomic：加同步锁，确保其原子性
@@ -150,6 +188,16 @@ _firstName = @"Zachary";
 - weak:非拥有关系(nonowning relationship)，属性所指的对象遭到摧毁时，属性也会清空
 - copy：当赋给其可变对象，返回不可变对象；当赋给其不可变对象，返回原对象。
 
+> 块要用 copy 最好不要用 strong。
+>
+> 可能出现的 retain 关键字一般情况下等同于 strong 
+
+#### weak的实现
+
+这里插一条 `weak` 是如何实现的。一般内存是通过 ARC 管理的。使用 `weak` 不增加对象的引用次数。当栈中的变量不指向堆中的对象时，堆中对象销毁。这个时候要把 `weak` 指向的地址置为 nil，因为如果不这么做，那么就会产生野指针。那么这是如何做到的？
+
+runtime 对注册的类， 会进行布局，对于 weak 对象会放入一个 hash 表中。 用 weak 指向的对象内存地址作为 key，当此对象的引用计数为0的时候会 dealloc，假如 weak 指向的对象内存地址是a，那么就会以a为键， 在这个 weak 表中搜索，找到所有以a为键的 weak 对象，从而设置为 nil。
+
 ### 第7条： 在对象内部尽量直接访问实例变量
 关于实例变量的访问，可以直接访问 `_firstName`，也可以通过属性的方式(点语法) `self.firstName` 来访问。书中作者建议在读取实例变量时采用直接访问的形式，而在设置实例变量的时候通过属性来做。（这部分比较重要）
 
@@ -158,7 +206,7 @@ _firstName = @"Zachary";
 
 通过属性访问实例变量的特点：
 - 不会绕过属性定义的**内存管理语义**。其实也就是说，编译期在设置 set 方法的时候，会根据属性特质做一些操作。比如一个声明为 `copy` 的属性，如果直接访问实例变量，那么这个实例变量就会直接指向堆中的对象；而如果通过属性来操作，就会先将堆中的对象 copy 一份，然后将实例变量指向 copy 出来的对象。
-- 可以触发KVO
+- 可以触发KVO( KVO 是通过 aop 在设置方法中加的通知 )
 
 不过有两个特例：
 1. `init` 方法和 `dealloc` 方法中，需要直接访问实例变量来进行设置属性操作。因为如果在这里没有绕过set方法，就有可能触发其他不必要的操作(比如上面说的**内存管理语义**所要进行的操作)。
@@ -213,8 +261,11 @@ _firstName = @"Zachary";
 }
 ```
 
+
+
 ### 第9条 以“类族模式“隐藏实现细节
-其实就是通过抽象类完成工厂模式。
+
+**其实就是通过抽象类完成工厂模式。**
 
 例如,对于“员工”这个类，可以有各种不同的“子类型”：开发员工，设计员工和财政员工。这些“实体类”可以由“员工”这个抽象基类来获得：
 
@@ -316,6 +367,18 @@ id objc_getAssociatedObject(id object, void *key)
 void objc_removeAssociatedObjects(id object)
 ```
 
+对象关联类型 `objec_AssociationPolicy` 包括：
+
+```objc
+OBJC_ASSOCIATION_ASSIGN				//assign
+OBJC_ASSOCIATION_RETAIN_NONATOMIC	//nonatomic,retain
+OBJC_ASSOCIATION_COPY_NONATOMIC		//nonatomic,copy
+OBJC_ASSOCIATION_RETAIN				//retain	
+OBJC_ASSOCIATION_COPY				//copy
+```
+
+
+
 这里要强调的是，要拿到设置的属性，键必须要完全相等。因此，需要设置成静态全局变量：
 
 ```objc
@@ -324,20 +387,16 @@ static void *EOCMyAlertViewKey = "EOCMyAlertViewKey";
 
 
 ### 第11条：理解objc_msgSend的作用
-这部分在[runtime](https://zhang759740844.github.io/2016/08/22/runtime原理/)中已经写得很详细了，参见就行了。
+这部分包括下面几个在[runtime](https://zhang759740844.github.io/2016/08/22/runtime原理/)中已经写得很详细了。
 
 ### 第12条：理解消息转发机制
-这部分在[runtime](https://zhang759740844.github.io/2016/08/23/runtime应用/)中已经写得很详细了，参见就行了。
-
 ### 第13条：用“方法调配技术”调试“黑盒方法”
-这部分在[runtime](https://zhang759740844.github.io/2016/08/23/runtime应用/)中也介绍了。
-
 ### 第14条：理解“类对象”的用意
-这部分在[runtime](https://zhang759740844.github.io/2016/08/22/runtime原理/)中也介绍了。
-
 ## 接口与API设计
 ### 第15条：用前缀 避免命名空间冲突
 Apple 宣称其保留使用所有"两字母前缀"的权利，所以我们选用的前缀应该是三个字母的。而且，如果自己开发的程序使用到了第三方库，也应该加上前缀。
+
+自己开发的程序库用到了第三方库，则应为其中的名称加上前缀。(用 cocoapods 可以自动加上前缀，自己开发的库的话要手动改名。)
 
 ### 第16条：提供"全能初始化方法"
 所谓全能初始化方法，就是所有初始化方法都要调用的初始化方法。这个初始化方法初始化方法是初始化方法里参数最多的一个，因为它使用了尽可能多的初始化所需要的参数，以便其他的方法来调用自己。
@@ -387,7 +446,7 @@ Apple 宣称其保留使用所有"两字母前缀"的权利，所以我们选用
 @end
 ```
 
-很有用的建议，注意不要用下划线来区分私有方法和公共方法，因为会和苹果公司的API重复。
+很有用的建议，就像上面一样在私有方法前面加上 `p_` 挺好的。注意不要**单用**下划线来区分私有方法和公共方法，因为会和苹果公司的API重复。
 
 ### 第21条：理解Objective-C错误类型
 OC 中仅在及其严重的错误情况下抛出异常。比如一个抽象基类。由于 OC 中没办法将某个类标识为抽象类。如果想要实现抽象类的功能，那么就要在必须要覆写的方法里抛出异常：
@@ -401,7 +460,7 @@ OC 中仅在及其严重的错误情况下抛出异常。比如一个抽象基�
 }
 ```
 
-对于不严重的异常，可以使用返回 `nil` 或者 `NSError` 的方式(其实也没啥用，这些都是手动设置的，我都知道哪里会出现问题了，还要新建 `NSError` 对象干嘛(可能我的理解有偏差))。
+对于不严重的异常，可以使用回调块的方式返回 `nil` 或者 `NSError` 抛给方法的调用者处理，比如各种网络库都是这么做的，输入一个成功回调，和一个失败回调。
 
 ### 第22条：理解NSCopying协议
 #### 自定义拷贝
@@ -423,7 +482,7 @@ OC 中仅在及其严重的错误情况下抛出异常。比如一个抽象基�
 
 
 
-这里面的 `NSZone *zone` 对象不用在意是什么，现在已经没用了。其实也就是新建一个 `EOCPerson` 对象，然后调用它的构造函数把东西全都塞进去。这里的 `->` 用箭头是因为定义的时候这个 `_friends` 不是一个属性(代码没有贴出来，详见书)，而只是在实现文件中定义的一个实例变量，没有 get/set 方法，所以不能用 `.`，一般情况用点语法就行了。
+这里面的 `NSZone *zone` 对象是以前开发程序时，会根据此吧内存分成不同的区(zone)，对象会被创建在某个区里面。现在不用了，每个程序都只有一个区："默认区"，所以现在不必在意这个对象。这个方法就是新建一个 `EOCPerson` 对象，然后调用它的构造函数把东西全都塞进去。这里的 `->` 用箭头是因为定义的时候这个 `_friends` 不是一个属性(代码没有贴出来，详见书)，而只是在实现文件中定义的一个实例变量，没有 get/set 方法，所以不能用 `.`，一般情况用点语法就行了。
 
 这里的 `mutableCopy` 方法也可以自定义，就是下面方法的实现：
 
@@ -475,7 +534,7 @@ OC 中仅在及其严重的错误情况下抛出异常。比如一个抽象基�
 ```
 
 基本所有的 Delegate 都在 `.m` 文件中的类拓展中声明，之前一直没有留意，看了书后才问自己，为什么不在 `.h` 中声明？两者有什么差别吗？其实也没什么差别，在实现文件中声明的好处是能隐藏细节。如果只是自己用可能没什么区别，但是如果打包给别人用，那么就不应该让别人看到你的实现细节了，因此，就把这个 Delegate 的声明放到了实现文件中。
-好吧。一个简单的道理。只是我一开始没想明白。
+
 
 ### 第24条：将类的实现代码分散到便于管理的数个分类中
 当一个类越来越大时，就变得不利于管理，因此需要将类代码按照逻辑划分入几个分区中，可以通过范畴的方式实现。书中有一个例子：
@@ -598,7 +657,9 @@ andLastName:(NSString*)lastName;
 
 不过要注意，在新建分类文件时，一定要引入被分类的类文件。
 
-这个技巧说有用也有用，说没用，也没用，看具体实际情况吧。另外，还有一个技巧是将所有"私有"方法都归入名叫 Private 的分类中，以隐藏实现细节，好像是个挺有意思的想法。
+**这是一个很有用的将大文件拆分的技巧啊**。另外，还有一个技巧是将所有"私有"方法都归入名叫 Private 的分类中，以隐藏实现细节，好像是个挺有意思的想法。
+
+> 分类里不能定义属性的切记，只能提供方法。
 
 ### 第25条：总是为第三方类的分类名称加前缀
 如果我们想给第三方库或者iOS框架里的类添加分类时，最好将分类名和方法名加上前缀。否则可能会替换掉系统的方法。
@@ -611,8 +672,34 @@ andLastName:(NSString*)lastName;
 ### 第27条：使用class-continuation分类 隐藏实现细节
 通常，我们需要减少在公共接口中向外暴露的部分(包括属性和方法)，而因此带给我们的局限性可以利用 class-continuation 分类的特性来补偿：
 - 可以在 class-continuation 分类中增加实例变量。
-- 可以在 class-continuation 分类中将公共接口的只读属性设置为读写。
+- 可以在 class-continuation 分类中将公共接口的只读属性设置为读写。(这个看起来也挺有用的，外部无法修改，内部却能更改)
 - 可以在 class-continuation 分类中遵循协议，使其不为人知。
+
+例子一：
+
+```objc
+@interface EOCPerson()<EOCPersonDelegate>
+// method
+@end
+```
+
+例子二：
+
+```objc
+//.h
+@interface EOCPerson:NSObject
+@property (nonatomic,copy,readonly) NSString *firstName;
+@property (nonatomic,copy,readonly) NSString *lastName;
+
+- (id)initWithFirstName:(NSString *)firstName lastName:(NSString *)lastName;
+
+//.m
+@interface EOCPerson()
+@property (nonatomic,copy,readwrite) NSString *firstName;
+@property (nonatomic,copy,readwrite) NSString *lastName;
+```
+
+
 
 ### 第28条:通过协议提供匿名对象
 OC 里的**匿名对象**和 Java 里的匿名对象不同，这里的匿名对象没有类型。有时我们用协议来提供匿名对象，目的在于说明它仅仅表示“遵从某个协议的对象”，而不是“属于某个类的对象”。它的表示方法为：`id<protocol>`。
@@ -646,12 +733,44 @@ OC 里的**匿名对象**和 Java 里的匿名对象不同，这里的匿名对�
 
 ## 内存管理
 ### 第29条：理解引用计数
-将对象放入自动释放池之后，不会马上使其引用计数 -1，而是在当前线程的下一次事件循环时递减。
+`NSObject` 协议声明了下面三个方法用于操作计数器，以递增或递减其值：
 
-其他没什么好说的。
+- retain: 递增保留计数
+- release： 递减保留计数
+- autorelease： 待稍后清理“自动释放池”时，再递减保留计数。
+
+对象创建出来时，其保留计数至少为1。若想令其继续存活，则调用 `retaion` 方法。要是某部分代码不在使用该对象，则调用 `release` 或 `autorelease`。最终当保留计数归零时，对象就回收了(dealloced)。
+
+如果按照引用树回溯，那么最终会发现一个根对象。在 iOS 中是 `UIApplication` 。两者都是应用程序启动时创建的单例。
+
+调用 `autorelease` 会在稍后递减计数，通常是下一个事件循环。这个特性可以在方法返回对象时用到：
+
+```objc
+- (NSString *)stringValue{
+  NSString *str = [[NSString alloc] initWithFormat:@"I am this: %@",self];
+  return [str autorelease];
+}
+```
+
+在 `alloc` 的时候，引用计数加一，返回的时候要将这次引用抵消，所以使用 `autorelease`。修改后，`stringValue` 方法把 `NSString` 对象返回给调用者的时候，此对象必然存活。所以我们能用下面这样使用：
+
+```objc
+NSString *str = [self stringValue];
+NSLog(@"The string is: %@",str);
+```
+
+由于返回的 `str` 将于稍后自动释放，所以多出来的那一次保留操作到时候会自然抵消，无须执行任何内存管理操作。因为自动释放池中的释放操作要等到下一个事件循环才能执行，所以 `NSLog` 语句在使用 `str` 对象前不需要手动执行保留操作。但是如果要持有此对象的话，那就需要保留，然后手动释放了：
+
+```objc
+_instanceVariable = [[self stringValue] retain];
+//...
+[_instanceVariable release];
+```
+
+由此可见，`autorelease` 可以延长对象生命期，使其在跨越方法调用边界后依然可以存活一段时间。
 
 ### 第30条：以ARC简化引用计数
-使用ARC，可以省略对于引用计数的操作，没太多好说的。
+引用计数还是要执行的，只不过保留和释放操作现在由 ARC 自动添加，可以省略对于引用计数的操作。由于 ARC 会执行 `retain` `release` `autorelease` `dealloc`，所以直接调用这些方法是非法的。
 
 需要了解一个修饰符 `__weak`。块内引用外部变量时，会自动保留其所捕获的全部对象，如果这其中有某个对象保留了块本身（如将 ViewController 传入），将会形成“保留环”。所以要用 `__weak` 局部变量来打破这种保留环。
 
@@ -696,7 +815,7 @@ EOCNetwork * __weak weakFetcher = fetcher;
 }
 ```
 
-但是在 ARC 状态下，我们不能手动释放对象，解决办法是使用：`-fobjc-arc-exceptions` 标志来让系统自动加入清理代码，不过会导致应用程序变大，而且会降低运行效率。
+所以一定要注意将 `try` 块内所创建的对象处理干净。
 
 ### 第33条：以弱引用避免保留环
 对象之间都用强指针引用对方的话会造成保留环。如果保留环连接了多个对象，而这里其中一个对象被外界引用，那么当这个引用被移除后，整个保留环就泄漏了。不像 Java 那种处理方式，OC 中孤立的保留环不能被自动释放。
@@ -755,7 +874,7 @@ for (NSDictionary *record in databaseRecords) {
 
 Cocoa 提供了“僵尸对象”的功能。如果开启了这个功能，运行期系统会把所有已经回收的实例转化成特殊的“僵尸对象”（通过修改 isa 指针，令其指向特殊的僵尸类），而不会真正回收它们，而且它们所占据的核心内存将无法被重用，这样也就避免了覆写的情况。在僵尸对象收到消息后，会抛出异常，它会说明发送过来的消息，也会描述回收之前的那个对象。
 
-(感觉好像没什么用的样子，不知道这和让程序直接 crash 比，有什么优势)
+(感觉好像用处不太大的样子。)
 ### 第36条：不要使用retainCount
 ARC 后，这个 `retainCount` 方法就废弃了。反正从来没用过，也就没啥好看的了。
 
@@ -813,7 +932,7 @@ if ( /* some condition */ ) {
 block();
 ```
 
-至于 `copy` 怎么让栈上的东西保存到堆上就不得而知了，反正就是保存过去了。然后 `block` 就能指向堆上的地址了。
+然后 `block` 就能指向堆上的地址了。
 
 平时我们用属性方式保存块的时候都是这样声明的：
 
@@ -822,6 +941,8 @@ block();
 ```
 
 这个属性里暗含了 `copy` 操作了。
+
+> block 会捕获外部的变量的值，然后将其复制为自己私有的 const 变量。所以一般不让在 block 内部改变外部变量的值。但是可以在外部变量前加上 `__block` 修饰，这样就会将外部变量的内存捕获，进而不管在 block 内部还是外部都可以修改变量的值。
 
 #### 全局块
 在全局内存里声明的就是全局块，没用过。不知道有什么好处。
@@ -852,12 +973,14 @@ EOCSomeBlock block = ^(BOOL flag, int value){
 ```
 
 ### 第39条：用handler块降低代码分散程度
-可以通过块的方式代替代理模式。
+可以通过**块的方式代替代理模式**。
 
 代理模式主要是为了让其他类在必要时候调用自己类的方法。而使用块的方式可以直接将方法内容作为参数或者属性传入调用块。这样设计业务逻辑更加直观清晰。
 
 ### 第40条：用块引用其所属对象时不要出现保留环
 注意使用块的时候不要产生保留环，要在块执行完成后，将块置为 `nil`。
+
+一种是传入 weak 对象，一种是执行完置 nil。我觉得还是传入 weak 对象比较好。因为我不知道这个块会不会执行。如果不执行，那不是一直释放不了了？
 
 ### 第41条：多用派发队列，少用同步锁
 多个线程执行同一份代码时，很可能会造成数据不同步。作者建议使用 GCD 来为代码加锁的方式解决这个问题。
@@ -933,7 +1056,7 @@ dispatch_after(time, dispatch_get_main_queue(), ^(void){
 ```
 
 #### 将任务放在主线程执行
-```
+```objc
 // 使用 performSelectorOnMainThread:withObject:waitUntilDone:
 [self performSelectorOnMainThread:@selector(doSomething) withObject:nil waitUntilDone:NO];
 
@@ -1002,7 +1125,7 @@ dispatch_group_notify(dispatchGroup,notifyQueue,^{
      static EOCClass *sharedInstance = nil;
      static dispatch_once_t onceToken;
      dispatch_once(&onceToken, ^{
-﻿            sharedInstance = [[self alloc] init];
+             sharedInstance = [[self alloc] init];
     });
      return sharedInstance;
 }
@@ -1081,79 +1204,20 @@ for (id object in aSet) {
 这种快速遍历的方法要比传统的遍历方法更加简洁易懂，但是缺点是无法方便获取元素的下标。
 
 #### 利用基于块（block）的遍历
-其实我觉得没啥用，不看也罢。
-
-### 第49条：对自定义其内存管理语义的collection使用无缝桥接
-通过无缝桥接技术，可以在 Foundation 框架中的 OC 对象和 CoreFoundation 框架中的 C 语言数据结构之间来回转换。
-
-为什么要使用无缝桥接技术呢？因为有些OC对象的特性是其对应的CF数据结构不具备的，反之亦然。因此我们需要通过无缝桥接技术来让这两者进行功能上的“互补”。
-
-具体怎么用，用在什么场景呢？ 没看懂。呵呵
-
-### 第50条：构建缓存时选用 NSCache 而非 NSDictionary
-不知道有啥用，用到时候再说。
-
-### 第51条: 精简initialize 与 load的实现代码
-每个类和分类在**加入运行期系统时**，都会调用 `load` 方法，而且仅仅调用一次。`load` 方法不遵循继承规则，某个类本身没有重写 `load`，那也不会调用超类的 `load` 方法。可能有些小伙伴习惯在这里调用一些方法，但是作者建议尽量不要在这个方法里调用其他方法，尤其是使用其他的类。原因是每个类载入程序库的时机是不同的，如果该类调用了还未载入程序库的类，就会很危险。
-
-`initialize` 方法与 `load` 方法类似，区别是这个方法会在程序首次调用这个类的时候调用（**惰性调用**），而且只调用一次（绝对不能主动使用代码调用）。如果子类没有实现它，它的超类却实现了，那么就会运行超类的代码。如果在 `initialize` 方法里执行过多的操作的话，会使得程序难以维护，也可能引起其他的bug。因此，在 `initialize` 方法里，最好只是设置内部的数据，不要调用其他的方法，因为将来可能会给这些方法添加其它的功能，那么会可能会引起难以排查的 bug。
-
-### 第52条: 别忘了NSTimer会保留其目标对象
-在使用 `NSTimer` 的时候，`NSTimer` 会生成指向其使用者的引用，而其使用者如果也引用了 `NSTimer`，那么就会生成保留环。
+oc 提供了新的遍历方式，与 for 循环相比，能够优雅的获得元素的下标：
 
 ```objc
-#import <Foundation/Foundation.h>
-
-@interface EOCClass : NSObject
-- (void)startPolling;
-- (void)stopPolling;
-@end
-
-
-@implementation EOCClass {
-     NSTimer *_pollTimer;
-}
-
-
-- (id)init {
-     return [super init];
-}
-
-
-- (void)dealloc {
-    [_pollTimer invalidate];
-}
-
-
-- (void)stopPolling {
-
-    [_pollTimer invalidate];
-    _pollTimer = nil;
-}
-
-
-- (void)startPolling {
-   _pollTimer = [NSTimer scheduledTimerWithTimeInterval:5.0
-                                                 target:self
-                                               selector:@selector(p_doPoll)
-                                               userInfo:nil
-                                                repeats:YES];
-}
-
-- (void)p_doPoll {
-    // Poll the resource
-}
-
-@end
+// array
+- (void)enumerateObjectsUsingBlock:(void(^)(id object,NSUInteger idx,BOOL *stop))block
+// set
+- (void)enumerateObjectsUsingBlock:(void(^)(id object,BOOL *stop))block
+// dic
+- (void)enumerateObjectsUsingBlock:(void(^)(id key,id object,BOOL *stop))block
 ```
 
-这里可以看到 `EOCClass` 和 `_pollTimer` 之间由于 `target:self` 的存在，相互形成了保留环，如果不主动调用 `stopPolling` 方法将 `_pollTimer`取消并清空就无法打破这个保留环。像这种通过主动调用方法来打破保留环的设计显然是不好的。这可能是一个极其危险的情况，因为 NSTimer 没有消失，它还有可能持续执行一些任务，不断消耗系统资源。而且，如果任务涉及到下载，那么可能会更糟。。
+其中可以通过 `*stop = YES` 来中途终止遍历。注意一定要带 `*`。
 
-那么如何解决呢？
-
-我觉得文章里举的方法简直脱裤子放屁，所以就不列出来了。直接将 `target:self` 设置成 `target:weakSelf` 不就行了？
-
-
+后面几个没啥意思。用的不多，不写了。
 
 
 

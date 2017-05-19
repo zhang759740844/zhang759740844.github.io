@@ -11,40 +11,40 @@ Grand Central Dispatch或者GCD，是一套低层API，提供了一种新的方�
 
 ### 基本概念
 - **Serial vs. Concurrent 串行 vs. 并发**
-这些术语描述当任务相对于其它任务被执行，任务串行执行就是每次只有一个任务被执行，任务并发执行就是在同一时间可以有多个任务被执行。
+  这些术语描述当任务相对于其它任务被执行，任务串行执行就是每次只有一个任务被执行，任务并发执行就是在同一时间可以有多个任务被执行。
 - **Synchronous vs. Asynchronous 同步 vs. 异步**
-在 GCD 中，这些术语描述当一个函数相对于另一个任务完成，此任务是该函数要求 GCD 执行的。一个同步函数只在完成了它预定的任务后才返回。一个异步函数，刚好相反，会立即返回，预定的任务会完成但不会等它完成。因此，一个异步函数不会阻塞当前线程去执行下一个函数。
+  在 GCD 中，这些术语描述当一个函数相对于另一个任务完成，此任务是该函数要求 GCD 执行的。一个同步函数只在完成了它预定的任务后才返回。一个异步函数，刚好相反，会立即返回，预定的任务会完成但不会等它完成。因此，一个异步函数不会阻塞当前线程去执行下一个函数。
 
 ### 队列分类
 1. **Serial Queues 串行队列**
-这些任务的执行时机受到 GCD 的控制；唯一能确保的事情是 GCD 一次只执行一个任务，并且按照我们添加到队列的顺序来执行。
-由于在串行队列中不会有两个任务并发运行，因此不会出现同时访问临界区的风险；相对于这些任务来说，这就从竞态条件下保护了临界区，实现了锁的功能。
+   这些任务的执行时机受到 GCD 的控制；唯一能确保的事情是 GCD 一次只执行一个任务，并且按照我们添加到队列的顺序来执行。
+   由于在串行队列中不会有两个任务并发运行，因此不会出现同时访问临界区的风险；相对于这些任务来说，这就从竞态条件下保护了临界区，实现了锁的功能。
 2. **Concurrent Queues 并发队列**
-在并发队列中的任务能得到的保证是它们会按照被添加的顺序开始执行，但这就是全部的保证了。任务可能以任意顺序完成，你不会知道何时开始运行下一个任务，或者任意时刻有多少 Block 在运行。再说一遍，这完全取决于 GCD 。
+   在并发队列中的任务能得到的保证是它们会按照被添加的顺序开始执行，但这就是全部的保证了。任务可能以任意顺序完成，你不会知道何时开始运行下一个任务，或者任意时刻有多少 Block 在运行。再说一遍，这完全取决于 GCD 。
 
 ### 队列类型
 1. **The main queue**
-与主线程功能相同。实际上，提交至main queue的任务会在主线程中执行。因为main queue是与主线程相关的，所以这是一个串行队列。由于是系统默认生成的，所以无法调用dispatch_resume()和dispatch_suspend()来控制执行继续或中断。这是在一个并发队列上完成任务后更新 UI 的共同选择。
+   与主线程功能相同。实际上，提交至main queue的任务会在主线程中执行。因为main queue是与主线程相关的，所以这是一个串行队列。由于是系统默认生成的，所以无法调用dispatch_resume()和dispatch_suspend()来控制执行继续或中断。这是在一个并发队列上完成任务后更新 UI 的共同选择。
 2. **Global queues**
-全局队列是并发队列，并由整个进程共享。进程中存在三个全局队列：高、中（默认）、低三个优先级队列。同样无法控制主线程dispatch队列的执行继续或中断。需要注意的是，三个队列不代表三个线程，可能会有更多的线程。并发队列可以根据实际情况来自动产生合理的线程数。
+   全局队列是并发队列，并由整个进程共享。进程中存在三个全局队列：高、中（默认）、低三个优先级队列。同样无法控制主线程dispatch队列的执行继续或中断。需要注意的是，三个队列不代表三个线程，可能会有更多的线程。并发队列可以根据实际情况来自动产生合理的线程数。
 3. **用户队列**
-用户自己创建的队列。可以创建单线程的串行队列，也可以创建多线程的并行队列。
+   用户自己创建的队列。可以创建单线程的串行队列，也可以创建多线程的并行队列。
 
 ### 队列创建方式
 1. **dispatch_queue_t queue = dispatch_queue_create("com.dispatch.serial", DISPATCH_QUEUE_SERIAL);**
-生成一个串行队列。第一个参数是队列的名称，在调试程序时会非常有用，所有尽量不要重名。第二个参数表示生成的队列是串行的，如果传入 null 默认是串行的。
+   生成一个串行队列。第一个参数是队列的名称，在调试程序时会非常有用，所有尽量不要重名。第二个参数表示生成的队列是串行的，如果传入 null 默认是串行的。
 2. **dispatch_queue_t queue = dispatch_queue_create("com.dispatch.concurrent", DISPATCH_QUEUE_CONCURRENT);**
-生成一个并发执行队列。
+   生成一个并发执行队列。
 3. **dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);**
-获得全局队列。
+   获得全局队列(系统的队列，与并行队列类似，可以直接使用，不能指定名字)。
 4. **dispatch_queue_t queue = dispatch_get_main_queue()**
-获得主线程队列。
+   获得主线程队列。
 
 ### 提交 Job
 向一个队列提交Job很简单：调用dispatch_async或dispatch_sync函数，传入一个队列和一个block。队列会在轮到这个block执行时执行这个block的代码。
 
 1. **dispatch_async**
-dispatch_async 函数会立即返回, block会在后台异步执行。
+   dispatch_async 函数会立即返回, block会在后台异步执行。
 ```objc
 dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         [self goDoSomethingLongAndInvolved];
@@ -61,7 +61,7 @@ dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
 });
 ```
 2. **dispatch_sync**
-dispatch_sync 同步执行 block，函数不返回，一直等到 block 执行完毕。一般情况下是在当前线程中完成，因为派发同步任务，本身就要等到任务完成才能继续执行，那么就没有必要再开一个线程去专门执行这个同步任务，执行完后，再返回该线程了。但是如果在其他线程里往主队列里派发同步任务，那么这个同步任务还是会在主线程里执行，当前线程阻塞。
+   dispatch_sync 同步执行 block，函数不返回，一直等到 block 执行完毕。一般情况下是在当前线程中完成，因为派发同步任务，本身就要等到任务完成才能继续执行，那么就没有必要再开一个线程去专门执行这个同步任务，执行完后，再返回该线程了。但是如果在其他线程里往主队列里派发同步任务，那么这个同步任务还是会在主线程里执行，当前线程阻塞。
 
 实际编程经验告诉我们，尽可能避免使用 dispatch_sync，嵌套使用同一个队列时极易产生程序死锁，比如嵌套调用主线程：
 
@@ -197,6 +197,41 @@ dispatch_group_notify(group, queue, ^{
     [self doSomethingWith:array];
 });
 ```
+
+#### dispatch_barrier_async
+
+在访问数据库文件时，使用 Serial Dispatch Queue 可避免数据竞争的问题，但是效率较低。比如写入处理不能喝其他写入处理以及读取处理等并行执行。但是如果读取处理只和读取处理并行执行，那么多个并行执行不会发生问题。
+
+为了高效率的进行访问，读取处理追加到 Concurrent Dispatch Queue 中，写入处理在任一个读取处理没有执行的情况下，追加到 Serial Dispatch Queue 中即可(写入处理结束前，读取处理不可执行）。
+
+GCD 提供了 `dispatch_barrier_async` 函数。该函数同 Concurrent Dispatch Queue 一起使用。`dispatch_barrier_async` 函数会等待追加到 Concurrent Dispatch Queue 上的并行执行的处理全部结束之后，再将指定的处理追加到该 Concurrent Dispatch Queue中。然后在由 `dispatch_barrier_async` 函数追加的处理执行完毕后，Concurrent Dispatch Queue 才恢复为一般的动作，追加到该 Concurrent Dispatch Queue 的处理又开始并行执行。
+
+```objc
+dispatch_async(queue, blk0_for_reading);
+dispatch_async(queue, blk1_for_reading);
+dispatch_async(queue, blk2_for_reading);
+dispatch_async(queue, blk3_for_reading);
+dispatch_barrier_async(queue, blk_for_writing);
+dispatch_async(queue, blk4_for_reading);
+dispatch_async(queue, blk5_for_reading);
+dispatch_async(queue, blk6_for_reading);
+dispatch_async(queue, blk7_for_reading);
+```
+
+处理流程如图：
+
+![dispatch_barrier_async](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/dispatch_barrier_async.jpg?raw=true)
+
+使用 `dispatch_barrier_async` 可提高数据库访问和文件访问的效率。
+
+
+
+
+
+
+
+
+
 
 
 还有一个参考文章：

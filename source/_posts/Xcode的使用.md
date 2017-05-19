@@ -236,3 +236,9 @@ Podfile.lock 是在第一次运行 `pod install` 时候自动生成的。Podfile
 
 
 
+## Xcode 并排查看代码
+
+如果想要单纯分为左右两屏，按住 `alt` 再点击文件，即可在辅助窗口查看。
+
+如果想要新建标签页可以使用 `command + T`，切换使用 `shift+command+[或]` 来左右切换。 
+

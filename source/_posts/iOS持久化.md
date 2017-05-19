@@ -43,9 +43,28 @@ NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
 - setInteger:forKey:
 - setDouble:forKey:
 - setURL:forKey:
+- setObject:forKey:
 ```
 
-这里只列举了几个 set 方法，get 方法类似。
+这里只列举了几个 set 方法。诸如 `NSString`,`NSData`,`NSArray`,`NSDictionary` 等都使用 `setObject:forKey:` 方法设置。
+
+```objc
+- boolForKey:
+- floatForKey:
+- integerForKey:
+- doubleForKey:
+- urlForKey:
+- stringForKey:
+- dataForKey:
+- arrayForKey:
+- dictionaryForKey:
+```
+
+需要注意，这里方法不是一一对应的，上面使用 `setObject:forKey:` 的，在获取的时候，都使用了具体的类型，读取的时候最好使用明确类型的方法，而不是 `objectForKey:`.
+
+> 使用获取方法的时候一定要用明确类型的方法，否则会产生不已排查的意想不到的错误！！！
+
+
 
 ### 举例
 
