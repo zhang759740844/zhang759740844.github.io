@@ -3,7 +3,6 @@ date: 2016/9/3 10:07:12
 categories: iOS
 tags:
 	- UIResponder
-
 ---
 
 从点击屏幕到系统做出响应，经历了哪些过程？需要详细探究下ios的响应机制。本文参考自[史上最详细的iOS之事件的传递和响应机制
@@ -46,14 +45,18 @@ UIResponder内部提供了以下方法来处理事件触摸事件
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 // 一根或者多根手指在view上移动，系统会自动调用view的下面方法（随着手指的移动，会持续调用该方法）
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
-// 一根或者多根手指离开view，系统会自动调用view的下面方法- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
+// 一根或者多根手指离开view，系统会自动调用view的下面方法
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 // 触摸结束前，某个系统事件(例如电话呼入)会打断触摸过程，系统会自动调用view的下面方法
 - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event
 // 提示：touches中存放的都是UITouch对象
 ```
 需要注意的是：
 - 以上四个方法是由系统自动调用的，所以可以通过重写该方法来处理一些事件。很重要的一点：**如果想处理UIView的触摸事件，那么就在UIView中重写；如果想处理UIViewController的触摸事件，那么就在UIViewController中重写。**
+- 只要手指没有离开屏幕，相应的 **UITouch** 对象就会一直存在
+- 在触摸事件持续过程中，无论发生什么，最初产生触摸事件的那个视图都会在各个阶段收到相应的触摸事件消息。即使手指在移动时离开了这个视图的 frame 区域，系统还是会向该视图发送 `touchesMoved:withEvent:` 和 `touchedEnded:withEvent:` 消息。也就是说，当某个视图发生触摸事件后，该视图将永远拥有当时创建的所有 **UITouch** 对象
 - 如果两根手指同时触摸一个view，那么view只会调用一次`touchesBegan:withEvent:`方法，`touches`参数中装着2个`UITouch`对象.
+- 当时图收到 `touchesMoved:withEvent:` 消息时，touches 中只会包含正在移动的 **UITouch** 对象，如果使用三个手指同时触摸视图，但是只移动其中一个手指，其他两个手指不懂，那么 touches 中只会包含一个 **UITouch** 对象。
 - 如果这两根手指一前一后分开触摸同一个view，那么view会分别调用2次`touchesBegan:withEvent:`方法，并且每次调用时的`touches`参数中只包含一个`UITouch`对象.
 
 ### UITouch
@@ -124,11 +127,11 @@ UIResponder内部提供了以下方法来处理事件触摸事件
 1. 发生触摸事件后，系统会将该事件加入到一个由UIApplication管理的事件队列中。
 2. UIApplication会从事件队列中取出最前面的事件，并将事件分发下去以便处理，通常，先发送事件给应用程序的主窗口（keyWindow）。
 3. 主窗口会在视图层次结构中找到一个最合适的视图来处理触摸事件，这也是整个事件处理过程的第一步。
-	1. 首先判断主窗口（keyWindow）自己是否能接受触摸事件。
-	2. 判断触摸点是否在自己身上。
-	3. 子控件数组中从后往前遍历子控件(后添加的view在上面，降低循环次数)，重复前面的两个步骤。
-	4. 如果触摸点在子控件上，那么重复3
-	5. 如果没有符合条件的子控件，那么就认为自己最合适处理这个事件，也就是自己是最合适的view。
+ 1. 首先判断主窗口（keyWindow）自己是否能接受触摸事件。
+ 2. 判断触摸点是否在自己身上。
+ 3. 子控件数组中从后往前遍历子控件(后添加的view在上面，降低循环次数)，重复前面的两个步骤。
+ 4. 如果触摸点在子控件上，那么重复3
+ 5. 如果没有符合条件的子控件，那么就认为自己最合适处理这个事件，也就是自己是最合适的view。
 4. 找到最合适的view后，**将这个view层层返回给viewController,viewcontroller就会自动调用该view的touches方法处理具体的事件**。
 
 触摸事件的传递是从父控件传递到子控件,也就是UIApplication->window->寻找处理事件最合适的view。注意: 如果父控件不能接受触摸事件，那么子控件就不可能接收到触摸事件。

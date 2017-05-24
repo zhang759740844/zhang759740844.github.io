@@ -3,7 +3,6 @@ date: 2016/9/5 14:07:12
 categories: iOS
 tags: 
 	- UIGesture
-	
 ---
 
 在iOS系统中，手势是进行用户交互的重要方式，通过`UIGestureRecognizer`类，我们可以轻松的创建出各种手势应用于app中。关于`UIGestureRecognizer`类，是对iOS中的事件传递机制面向应用的封装，将手势消息的传递抽象为了对象。有关消息传递的讨论，在上一篇中已经讨论过了。
@@ -58,11 +57,11 @@ UIgestureRecognizer类中有如下一个属性，里面枚举了一些手势的�
 typedef NS_ENUM(NSInteger, UIGestureRecognizerState) {
     UIGestureRecognizerStatePossible,   // 默认的状态，这个时候的手势并没有具体的情形状态
     UIGestureRecognizerStateBegan,      // 手势开始被识别的状态
-    UIGestureRecognizerStateChanged,    // 手势识别发生改变的状态
+    UIGestureRecognizerStateChanged,    // 手势识别发生改变的状态(手势正在移动的状态)
     UIGestureRecognizerStateEnded,      // 手势识别结束，将会执行触发的方法
     UIGestureRecognizerStateCancelled,  // 手势识别取消
     UIGestureRecognizerStateFailed,     // 识别失败，方法将不会被调用
-    UIGestureRecognizerStateRecognized = UIGestureRecognizerStateEnded 
+    UIGestureRecognizerStateRecognized
 };
 ```
 可以在手势的处理方法中，判断手势的状态，区分不同的处理方式。
@@ -107,6 +106,8 @@ doubleTap.numberOfTapsRequired = 2; //点击的次数 ＝2 双击
 默认是NO，这种情况下当发生一个touch时，手势识别器先捕捉到到touch，然后发给`UIResponder`，两者各自做出响应。
 如果设置为YES，手势识别器在识别的过程中（注意是识别过程），不会将touch发给`UIResponder`，即`UIResponder`不会有任何触摸事件。只有在识别失败之后才会将touch发给`UIResponder`，这种情况下`UIResponder`的响应会延迟约0.15ms。
 
+> 比如一个双击事件，如果不像 `doubleTapRecongizer.delaysTouchesBegan = YES`  这样设置，那么在第一次点击的时候机会响应 `UPResponder` 的 `touchedBegan:withEvent:` 方法。
+
 **delaysTouchesEnded**
 在前面`cancelsTouchesInView`属性为NO的基础上.
 默认为YES。这种情况下发生一个touch时，在手势识别成功后,发送给`touchesCancelled:withEvent:`消息给`UIResponder`，手势识别失败时，会延迟大概0.15ms,期间没有接收到别的touch才会发送`touchesEnded:withEvent:`。
@@ -144,6 +145,8 @@ doubleTap.numberOfTapsRequired = 2; //点击的次数 ＝2 双击
 [ges requireGestureRecognizerToFail:ges2];
 ```
 表示如果`ges2`匹配，那么不会执行`ges`。只有当`ges2`不匹配的时候，才会执行`ges`。
+
+> 这个方法还适用于识别双击手势时屏蔽单击手势。只有确定不是双击手势后再识别为单击手势
 
 ### UIGestureRecognizerDelegate
 前面我们提到过关于手势对象的协议代理，通过代理的回调，我们可以进行自定义手势，也可以处理一些复杂的手势关系，其中方法如下：
@@ -202,9 +205,9 @@ doubleTap.numberOfTapsRequired = 2; //点击的次数 ＝2 双击
 @property (nonatomic)          NSUInteger minimumNumberOfTouches; 
 //设置触发拖拽的最多触摸点
 @property (nonatomic)          NSUInteger maximumNumberOfTouches;  
-//获取当前位置
+//获取手势的当前位置
 - (CGPoint)translationInView:(nullable UIView *)view;            
-//设置当前位置
+//设置手势的当前位置
 - (void)setTranslation:(CGPoint)translation inView:(nullable UIView *)view;
 //设置拖拽速度
 - (CGPoint)velocityInView:(nullable UIView *)view;
@@ -214,13 +217,16 @@ doubleTap.numberOfTapsRequired = 2; //点击的次数 ＝2 双击
 -(void)handlePan:(UIPanGestureRecognizer*)recognizer{
     NSLog(@"拖动操作");
     //处理拖动操作,拖动是基于imageview，如果经过旋转，拖动方向也是相对imageview上下左右移动，而不是屏幕对上下左右
-    CGPoint translation = [recognizer translationInView:_imageView];
-    recognizer.view.center = CGPointMake(recognizer.view.center.x + translation.x,
-                                         recognizer.view.center.y + translation.y);
-    [recognizer setTranslation:CGPointZero inView:_imageView];
+    // 拖动过程中可以判断是否为 UIGestureRecognizerStateChanged
+    if (recognizer.state == UIGestureRecognizerStateChanged){
+          CGPoint translation = [recognizer translationInView:_imageView];
+    	  recognizer.view.center = CGPointMake(recognizer.view.center.x + translation.x, recognizer.view.center.y + translation.y);
+          [recognizer setTranslation:CGPointZero inView:_imageView];
+    }
+
 }
 ```
-必须使用`setTranslation`设置为`CGPointZero`,不知道为什么
+拖动过程中 `handlePan:` 方法会被多次调用，但是在一次拖拽结束前，`translationInView:` 方法参照的点都是最开始按下的点。这就导致增量的拖动，越拖越快。所以我们必须使用`setTranslation`设置为`CGPointZero`，就能将手指的当前位置设置为拖移手势的起始位置。
 
 ### 滑动手势——UISwipeGestureRecognizer
 滑动手势和拖拽手势的不同之处在于滑动手势更快，拖拽比较慢
@@ -257,6 +263,7 @@ typedef NS_OPTIONS(NSUInteger, UISwipeGestureRecognizerDirection) {
 ```
 
 ### 长按手势——UILongPressGestureRecognizer
+
 进行长按的时候触发的手势方法
 ```objc
 //设置触发前的点击次数
@@ -269,7 +276,24 @@ typedef NS_OPTIONS(NSUInteger, UISwipeGestureRecognizerDirection) {
 @property (nonatomic) CGFloat allowableMovement;
 ```
 
+当某个长手势开始和结束的时候，相应的 **UILongPressGestureRecognizer** 对象都会向其目标发送同一个消息。该消息匹配的方法可以通过 **UIGestureRecognizer** 对象的 state 属性判断当前的事件类型，然后根据不同类型执行不同代码：
+
+```objc
+- (void)longPress:(UIGestureRecognizer *)gr{
+  if (gr.state == UIGestureRecognizerStateBegan){
+    ...
+  }else if (gr.state == UIGestureRecognizerStateEnd){
+    ...
+  }
+}
+```
+
+
+
+
+
 ### 手势组合的问题
+
 这么多手势可以组合使用。但是使用的时候会产生如图所示的问题：
 ![手势组合](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/UIGestureRecognizer.gif?raw=true)
 当图片正常大小时，拖动正常。当图片变小或者变大时，拖动距离变大以及变小。比如缩小图片后，相当于背景也缩小了，在手指滑动相同的距离下，相对来说移动的距离就变大了。

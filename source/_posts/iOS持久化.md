@@ -78,9 +78,11 @@ NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
 [defaults setInteger:10 forKey:@"Age"];
 //图片
 UIImage *image =[UIImage imageNamed:@"somename"];
-NSData *imageData = UIImageJPEGRepresentation(image, 100);//把image归档为NSData
+NSData *imageData = UIImageJPEGRepresentation(image, 1);//把image归档为NSData
 [defaults setObject:imageData forKey:@"image"];
 ```
+
+**UIImageJPEGRepresentation** 有两个实参，一个是 **UIImage**，另一个是浮点数变量，代表压缩质量。压缩质量的值必须在0到1之间，1代表最高质量即不压缩。
 
 对应的读取方法：
 

@@ -15,9 +15,10 @@ tags:
 `AutoLayout`旨在替代`Autoresizing`，所以在同一个项目中，`AutoLayout`和`Autoresizing`是不能共存的。要实现自动布局，必须关掉view的`AutoresizeingMask`
 
 ```objc
-view.translatesAutoresizingMaskIntoConstraints = NO;
+// 告诉自动布局系统不要将自动缩放掩码转换为约束
+view.translatesAutoresizingMaskIntoConstraints = NO; //这里的view指的是需要添加约束的view。
 ```
-这里的view指的是需要添加约束的view。
+在苹果引入自动布局系统之前，iOS 一直根据自动缩放掩码缩放视图，以适应不同屏幕大小。每一个视图对象都有自动缩放掩码，默认情况下，视图将会自动缩放掩码转换为对应的约束，这类约束经常会与手动添加的约束产生冲突。因此，必须手动禁用这类自动转换。
 
 ### NSLayoutConstraint相关
 #### 约束方法
@@ -73,7 +74,12 @@ typedef NS_ENUM(NSInteger, NSLayoutRelation) {
 };
 ```
 
+#### NSLayoutRelation 优先级
+
+每个约束都具有优先级(priority level)，如果多个约束之间有冲突，自动布局系统会根据优先级决定使用哪些约束。优先级的取值范围是1到1000，默认值是1000，表示约束是必须的。如果两个约束优先级都是1000，且发生冲突，那么需要手动检查。
+
 ### 创建view
+
 ```objc
 //创建view
 UIView *view = [[UIView alloc] init]; //这里不需要设置frame
@@ -121,7 +127,42 @@ view.translatesAutoresizingMaskIntoConstraints = NO; //要实现自动布局，�
 - 对于两个不同层级view之间的约束关系，添加到他们最近的共同父view上
 - 对于有层次关系的两个view之间的约束关系，添加到层次较高的父view上
 
+### 调试约束
+
+**UIWindow** 有一个名为 **_autolayoutTrace** 的私有实例方法，该方法返回一个表示 **UIWindow** 中整个视图层次结构的字符串。对于有歧义布局的视图， **_autolayoutTrace** 会使用 AMBIGUOUS LAOYOUT 标记出来。
+
+使用该方法最好方式是在显示视图的代码(如ViewController的 **viewWillAppear:** 方法)中设置一个断点，当程序在断点出停下来之后，在控制台中输入以下代码，然后按下 Enter 键:
+
+```objc
+po [[UIWindow keyWindow] _autolayoutTrace]
+```
+
+
+
+### 为约束添加插座变量
+
+如果视图是通过 xib 方式设置的约束，在运行中需要动态的修改约束的值，我们可以为约束添加插座变量。jic
+
+```objc
+// 声明：
+@property (nonatomic, weak) IBOutlet NSLayoutConstraint *layoutConstraint;
+
+// 使用：
+self.layoutConstraint.constant = 100;
+```
+
+
+
+
+
+### 占位符约束
+
+如果一部分简单约束是通过 xib 拉的，另外一部分复杂一些的约束是通过代码控制。我们不能将用代码设置的约束直接在 xib 中空着。因为那样 xib 根本不能通过编译。但是如果在 xib 中设置了约束，又会产生两个约束。这时，我们可以在 xib 中将约束设置为**占位符约束**。自动布局系统会在构建时移除占位符约束，占位符约束不会对视图正真起作用。
+
+![占位符约束](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/layoutConstraint_placeholder.png?raw=true)
+
 ### Autolayout来实现动画功能
+
 在执行动画时记得调用一下方法：
 ```objc
 //在修改了约束之后，只要执行下面代码，就能做动画效果

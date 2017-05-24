@@ -289,21 +289,37 @@ int main(int argc, char * argv[]) {
 
 应用启动运行循环并开始接收事件前， **UIApplication** 对象会像其委托发送一个特定的消息，使应用完成相应的初始化工作。这个消息的名称是 **application:didFinishLaunchingWithOptions:**
 
-### UITextField 的使用
-
-详见[UITextField 学习笔记](https://zhang759740844.github.io/2017/04/23/UITextField学习笔记/)
 
 
+## UIMenuController
 
-## UITableView
+iOS SDK 提供一个名为 **UIMenuController** 的类，可以用来显示菜单。例如在单击手势的实现方法中弹出一个菜单：
 
-详见[UITableView 基础](https://zhang759740844.github.io/2016/08/30/UITableView基础/)
+```objc
+- (void)tap:(UIGestureRecognizer *)gr{
+  // 获取手势的坐标
+  CGPoint point = [gr locationInView:self];
+  // 让视图变成 UIMenuItem 动作消息的目标
+  [self becomeFirstResponder];
+  // 获取 UIMenuController 对象
+  UIMenuController *menu = [UIMenuController sharedMenuController];
+  // 创建一个新的标题为"delete"的UIMenuItem对象
+  UIMenuItem *deleteItem = [[UIMenuItem alloc] initWithTitle:@"Delete" action:@selector(deleteLine:)];
+  menu.menuItems = @[deleteItem];
+  
+  // 先为 UIMenuController 对象设置显示区域，然后将其设置为可见
+  [menu setTargetRect:CGRectMake(point.x,point.y,2,2) inView:self];
+  [menu setMenuVisible:YES animated:YES];
+} 
+```
 
+要显示 **UIMenuController** 对象，还要满足一个条件：显示 **UIMenuController** 对象的 **UIView** 对象必须是当前 **UIWindow** 对象的第一响应对象。如果要将某个自定义的 **UIView** 子类对象设置为第一响应对象，就必须覆盖该对象的 **canBecomeFirstResponder** 方法：
 
-
-## UINavigationController
-
-详见 [UINavigationController 的使用](https://zhang759740844.github.io/2017/05/04/UINavigationController使用/)
+```objc
+- (BOOL)canBecomeFirstResponder{
+  return YES;
+}
+```
 
 
 
