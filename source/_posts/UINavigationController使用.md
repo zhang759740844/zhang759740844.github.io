@@ -224,6 +224,14 @@ self.navigationItem.leftBarButtonItems = @[fixedItem, leftItem];
 
 事实上，UINavigationController 并没有`navigationItem`这样一个直接的属性，由于 UINavigationController 继承于 UIViewController ,而 UIViewController 是有`navigationItem`这个属性的是，所以对 navigationController 使用点语法获取 `navigationItem` 是编译得过的，但是这样操作是没有效果的。
 
+> NavigationItem 是一个 NSObject 对象，里面保存了导航栏上的各个 view；
+>
+> NavigationBar 是一个 UIView 对象，NavigationItem 中的各个 view 都被添加到其上
+
+
+
+
+
 ### UINavigationController 返回手势失效
 
 系统为 UINavigationController 提供了一个 `interactivePopGestureRecognizer` 用于右滑返回(pop),但是，如果自定了 back button 或者隐藏了 navigationBar ，该手势就失效了。我们需要自己实现一下 delegate 方法;
