@@ -1,7 +1,10 @@
+
+
 title: UITableView 基础
 date: 2016/8/30 14:07:12  
 categories: iOS 
 tags: 
+
 	- 基本控件
 ---
 
@@ -318,6 +321,61 @@ delete操作可以不在编辑模式的情况下，通过左滑cell直接触发�
 所以要做的就是将 `UIButton` 的 `UserInteractionEnabled ` 设置为 No。
 
 
+
+## 示例：两级tableView联动效果
+
+
+
+两级tableview，左边是一个缩略的索引，右边是索引的详细部分。点击左边的索引cell，右边会滚动到相应cell所对应的详细位置。滑动右边的tableview，左边的tableview也会根据当前显示的区域，选择相应的cell。
+
+### 基本原理
+
+当左边点击 cell 的时候（即调用 `(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath`)，右边获取这个 `indexPath` 信息，并让其滚动到第 `indexPath.row` 分区，第0行即可:
+
+```objc
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+    // 如果点击的是右边的tableView，不做任何处理
+    if (tableView == self.rightTableView) return;
+    // 点击左边的tableView，设置选中右边的tableView某一行。左边的tableView的每一行对应右边tableView的每个分区
+    [self.rightTableView selectRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:indexPath.row] animated:YES scrollPosition:UITableViewScrollPositionTop];
+  
+ 	self.currentSelectIndexPath = indexPath;
+}
+```
+
+
+
+当拖动右边的时候，左边的 cell 也要相应被选中。tableview 中有一个方法叫做 `indexPathsForVisibleRows`，该方法的官方解释是：
+
+> The value of this property is an array of NSIndexPath objects each representing a row index and section index that together identify a visible row in the table view. If no rows are visible, the value is nil.
+
+拿到这个集合，就能拿到屏幕顶端的 cell 的 indexpath 了。代码如下：
+
+```objc
+-(void)scrollViewDidScroll:(UIScrollView *)scrollView{ // 监听tableView滑动
+    if (self.currentSelectIndexPath) return;
+    // 如果现在滑动的是左边的tableView，不做任何处理
+    if ((UITableView *)scrollView == self.leftTableView) return;
+    // 滚动右边tableView，设置选中左边的tableView某一行。indexPathsForVisibleRows属性返回屏幕上可见的cell的indexPath数组，利用这个属性就可以找到目前所在的分区
+    [self.leftTableView selectRowAtIndexPath:[NSIndexPath indexPathForRow:self.rightTableView.indexPathsForVisibleRows.firstObject.section inSection:0] animated:YES scrollPosition:UITableViewScrollPositionMiddle];
+}
+```
+
+
+
+注意到，上面的代码中还有关于 `currentSelectIndexPath` 这个自建属性的设置，这个属性相当于一个标识位，用来解决一个bug。这个 bug 表现在：点击左边的 tableView，右边的 tableView 是从当前位置**动画**滚动到相应位置的，既然有滚动，就会调`- (void)scrollViewDidScroll:(UIScrollView *)scrollView`这个代理方法，说白了就是拖动了右边 tableView，拖动右边的过程中会陆续选中左边。所以如果没有这个标识位，选中左边的某个 cell，那么左边的当前被选中和将要被选中的 cell 中间项，将依次被选中。
+
+解决这个bug就需要这个标志位，当我们是通过点击左侧 cell 致使右边 tableview 滚动的时候，就使其在 `scrollViewDidScroll:` 方法总直接返回，不触发左侧选中的操作。
+
+那么什么时候将这个标志位置为空呢？就是当右边 tableview 不再滚动的时候，即触发了 `scrollViewDidEndScrollingAnimation:` 回调的时候：
+
+```objc
+- (void)scrollViewDidEndScrollingAnimation:(UIScrollView *)scrollView {
+    if (self.currentSelectIndexPath) self.currentSelectIndexPath = nil;
+}
+```
+
+至此，一个二级联动的 tableview 就实现了参考代码：[两级联动 demo](https://github.com/zhang759740844/MyOCDemo/tree/develop/两级联动%20tableview)
 
 
 

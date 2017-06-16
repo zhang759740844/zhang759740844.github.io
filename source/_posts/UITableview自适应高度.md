@@ -37,7 +37,10 @@ self.tableView.estimatedRowHeight = 44.0; // 设置为一个接近于行高“�
 
 一般来说，行高的估算值不需要太精确——它只是用来修正tableView中滚动条的尺寸的，当你在屏幕上滑动cell的时候，即使估算值不准确，tableView还是能很好地调节滚动条。将tableView的`estimatedRowHeight`属性设置成（在`viewDidLoad`或类似的方法中）一个接近于行高“平均值”的常量值即可。仅在行高极端变化的时候（比如相差一个数量级），滚动过程中才会产生滚动条的“跳跃”现象。这个时候，你才需要考虑实现`tableView:estimatedHeightForRowAtIndexPath:`方法，为每一行返回一个更精确的估算值。
 
-### label的ios7实现
+### label的iOS7实现
+
+> 虽然现在基本都不支持 iOS7 了，但是大概的思想还是要知道的
+
 首先，实例化一个离屏(offscreen)的cell实例，为每个重用标示符实例化一个与之对应的cell实例，这些cell实例严格的仅用于高度计算。（离屏表示cell的引用被存储在view controller的一个属性或实例变量之中，并且这个cell绝对不会被用作`tableView:cellForRowAtIndexPath:`方法的返回值显示在屏幕上。）接下来，这个cell的内容（例如，文本、图片等等）还必须被配置为与显示在table view中的内容完全一样。
 **因为要在`heightForRowAtIndexPath`中计算高度，需要一个cell实例，这个离屏cell就是为了这个用的。**
 

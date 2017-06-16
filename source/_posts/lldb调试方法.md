@@ -3,7 +3,6 @@ date: 2016/9/21 14:07:12
 categories: iOS
 tags:
 	- Debug
-
 ---
 
 偶然看到使用 lldb 里的 watchpoint 调试，感觉很神奇，就详细了解了下 lldb 调试的使用方法。 查阅了许多文章[与调试器共舞 - LLDB 的华尔兹](https://objccn.io/issue-19-2/)这篇文章帮助最大。
@@ -127,16 +126,16 @@ lunar
 
 它比普通断点的自定义设置界面多出了两个内容
 - **Symbol**：用来设置当前断点作用域所能识别的方法，这里面既可以是自定义的方法，也可以是系统的API方法。（注意必须表明是类方法还是成员方法）例如:
-	```objc
-	-[MyViewController viewDidAppear:]
-	+[MyViewController sharedInstance]
-	```
+ ```objc
+ -[MyViewController viewDidAppear:]
+ +[MyViewController sharedInstance]
+ ```
 - **Module**：模组的意思，用来限制满足符号的方法，编译器将只会在断点满足这个模组的符号的时候才回暂停。
 
 需要注意的是，如果一个子类没有重写父类的方法，那么设置子类这个方法的符号断点是不会被触发的。
 
 ### watchpoint
-有时候，由于不涉及到方法，无法使用断点，但是我们仍要监视某一个值是否变化，这个时候就可以用`watchpoin`t来监视一个指针的指向。
+一般情况下可以在属性的 set 方法中添加断点，这样就能监控属性的设置。但是有时候，由于不涉及到方法，而是直接操作内存，无法使用断点，但是我们仍要监视某一个值是否变化，这个时候就可以用`watchpoin`t来监视。
 
 当指针指向变化时，`watchpoint`会触发:
 ![watchpoint](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/lldb_11.png?raw=true)
@@ -145,13 +144,10 @@ lunar
 ```objc
 (lldb) watchpoint set variable xxx
 ```
-这里要说明一下，watchpoint要监听的对象必须是**当前类的对象**：
+注意，貌似不能用 `self->xxx` 的形式，而要直接用 `_xxx` 的形式，否则一直都是下面的错误：
 ![watchpoint2](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/lldb_12.png?raw=true)
-由于`self.view`是从`UIViewController`中继承过来的，因此无法监听。
 
-另外，上面的`addr = 0x1556747f0`**不是指`_myView`在栈中的索引**，而是指这个Watchpoint在堆中的地址。
-
-Watchpoint的**原理**应该是在这个地址中写入了原来`_myView`指向的地址，然后对新`_myView`指向的地址和Watchpoint指向的地址是否相同来做出判断的。
+> watchpoint 不只是监听指针变化，还能监听变量变化。只要该指针或变量进行了赋值，无论是否改变了值，都会使 watchpoint 命中。
 
 #### disable/delete/enable
 watchpoint资源也是比较有限的，对于不需要监听的对象要及时释放。每个watchpoint都有一个序号，操作对应的需要即可：
@@ -162,13 +158,6 @@ watchpoint资源也是比较有限的，对于不需要监听的对象要及时�
 这是我比较喜欢的方法，所以单独列出来。
 
 调试的时候经常需要重新启动程序。但是如果重新Run程序，需要重新编译，非常浪费时间。可以在 lldb 中输入`run`就能直接让程序重新加载了。
-
-### 通过地址操作
-比如expression,print都可以通过地址来访问对象，但是实验下来，感觉没有太大用处。
-
-本来想要监控`self.view.backgroundColor`的改变情况，但是不能通过变量名，就尝试能否通过地址，结果发现也不行。
-
-因此，可以大体上认为，能通过地址访问的，那也能通过变量名访问，并且通过变量名访问更清晰迅速，通过地址访问没有优势，故不推荐使用。
 
 ### 代替NSLog
 看`NSLog`的文档，第一句话就说：`Logs an error message to the Apple System Log facility.`，所以首先，`NSLog`就不是设计作为普通的`debug log`的，而是`error log`；每次`NSLog`都会进行很多耗时工作，因此，非重要参数尽量不要用，使用调试代替。
