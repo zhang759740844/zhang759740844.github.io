@@ -3,7 +3,6 @@ date: 2017/2/3 10:07:12
 categories: iOS
 tags:
 	- Xcode
-
 ---
 
 关于 Xcode 是如何编译的，下面是一些较为浅显的讨论。
@@ -70,7 +69,7 @@ Build Phases 代表着将代码转变为可执行文件的最高级别规则。�
 
 当编译结束之后，接下来就是将编译所生成的目标文件链接到一块。注意观察，Xcode 中的 build phase 之后是："Link Binary with Libraries." 这里面列出了所有的静态库和动态库，这些库会参与上面编译阶段生成的目标文件进行链接。
 
-当链接完成之后，build phase 中最后需要处理的就是将静态资源（例如图片和字体）拷贝到 app bundle 中。需要注意的是，如果图片资源是PNG格式，那么不仅仅对其进行拷贝，还会做一些优化。
+当链接完成之后，build phase 中最后需要处理的就是将静态资源（例如图片和字体）拷贝到 app bundle 中。需要注意的是，如果图片资源是PNG格式，那么不仅仅对其进行拷贝，还会做一些优化（内部已经集成了第三方png优化工具pngcrush,它可以在编译时对png格式文件进行优化和压缩）。
 
 虽然静态资源的拷贝是 build phase 中的最后一步，但 build 还没有完成。例如，还没有进行 code signing （这并不是 build phase 考虑的范畴），code signing 属于 build 步骤中的最后一步 "Packaging"。
 

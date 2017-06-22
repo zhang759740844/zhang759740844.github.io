@@ -4,7 +4,7 @@ categories: iOS
 tags: 
 	- Animation
 	- UI
-	
+
 ---
 
 这两天想大致学习下animation的使用方法。看了[文顶顶的ios开发UI篇](http://www.cnblogs.com/wendingding/tag/UI高级/)专题，写的很好，学习了很多。再摘录部分，以作备忘。
@@ -173,5 +173,72 @@ self.iconView.layer.transform=CATransform3DMakeRotation(M_PI_4, 1, 1, 0.5);
 ### 补充
 1. 无论采取哪种方法来自定义层，都必须调用CALayer的setNeedsDisplay方法才能正常绘图。
 2. **当UIView需要显示时**，它内部的层会准备好一个CGContextRef(图形上下文)，然后**调用delegate(这里就是UIView)**的drawLayer:inContext:方法，并且传入已经准备好的CGContextRef对象。而UIView在drawLayer:inContext:方法中又会调用自己的drawRect:方法。平时在drawRect:中通过UIGraphicsGetCurrentContext()获取的就是由层传入的CGContextRef对象，在drawRect:中完成的所有绘图都会填入层的CGContextRef中，然后被拷贝至屏幕。
+
+
+
+## Mask属性
+
+layer的大小和形状是受到mask遮罩层的影响的，可以通过赋给mask层一个新layer，来实现改变layer形状的效果。mask图层的 Color 属性是无关紧要的（**mask不是透明的部分，layer能显示出原来的颜色**），真正重要的是图层的轮廓。
+
+下面的例子中，为一个图片设置了圆形的蒙版。蒙版外的部分是透明的，该部分图片不予显示。
+
+```objc
+- (CALayer *)maskRadiusCorner:(UIImageView *)imageView{
+    //CAShapeLayer 是 CALayer 的子类，通过UIBezierPath来绘制它的形状
+    CAShapeLayer *masklayer = [CAShapeLayer layer];
+    //获取宽度
+    masklayer.frame = imageView.bounds;
+    //注意bezierPathWithArcCenter的设置
+    masklayer.path = [UIBezierPath bezierPathWithArcCenter:CGPointMake(imageView.frame.size.width/2, imageView.frame.size.height/2) radius:imageView.frame.size.width/2 startAngle:0 endAngle:2*M_PI clockwise:YES].CGPath;
+    return masklayer;
+}
+```
+
+效果图如下：
+
+![sample](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/mask_sample.jpeg?raw=true)
+
+再举一个例子，观察下图的实现方式：
+
+![sample](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/mask_sample2.gif?raw=true)
+
+原理是将彩色的图片添加在灰色的图片上，对彩色的图片添加一个圆形的蒙版。圆形蒙版外的部分由于是透明的所以就不予显示，也就是下面的灰色图片。圆形蒙版内的部分由于设置了颜色，就能够显示彩色图片。
+
+```objc
+/**
+ 添加一个圆形蒙版
+ */
+- (void)addMaskLayer{
+    //创建蒙版的layer
+    self.maskLayer = [CALayer layer];
+    //蒙版大小
+    self.maskLayer.frame = CGRectMake(0, 0, 100, 100);
+    
+    //随便取个颜色，只要不是透明的就行
+    self.maskLayer.backgroundColor = [UIColor whiteColor].CGColor;
+    //圆形蒙版
+    self.maskLayer.cornerRadius = 50;
+    //将蒙版赋给View
+    self.colorImageView.layer.mask = self.maskLayer;
+}
+
+- (void)viewDidLoad{
+    [super viewDidLoad];
+    
+    //添加两个image
+    self.colorImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"pic"]];
+    self.grayImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"gray"]];
+    //设置frame
+    self.colorImageView.frame = CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height);
+    self.grayImageView.frame = CGRectMake(0, 0, 300, 300);
+    
+    [self.view addSubview:self.colorImageView];
+    [self.view addSubview:self.grayImageView];
+    
+    [self addMaskLayer];
+}
+```
+
+
 
 >Demo 详见 CALayer-transform

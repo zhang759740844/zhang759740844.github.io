@@ -471,16 +471,27 @@ UIView封装的动画，改变`view`或者`layer`执行完毕之后不会反弹�
 ### block动画
 #### 方法：
 - **+(void)animateWithDuration:delay:options:animations:completion:**
+
 - **+(void)transitionWithView:duration:options:animations:completion:**
-- **+(void)transitionFromView:toView:duration:options:completion:**
-属性简介：
+
+- **+(void)transitionFromView:toView:duration:options:completion:** 
+
+- **+(void)animateWithDuration:delay:usingSpringWithDamping:initialSpringVelocity:options:animations:completion:**
+
+  ​
+
+  属性简介：
 1. duration：动画的持续时间
 2. delay：动画延迟delay秒后开始
 3. options：动画的节奏控制/转场动画的类型(重复，转场等)
 4. animations：将改变视图属性的代码放在这个block中
 5. completion：动画结束后，会自动调用这个block
+6. usingSpringWithDamping: 表示弹性属性
+7. initialSpringVelocity: 初速度
 
-前两个方法用起来好像没什么区别。
+第二个方法主要负责 UIView 进入或者离开视图，不过感觉上前两个方法用起来好像没什么区别。
+
+第四个方法是带阻尼的动画效果。
 
 #### 示例：
 ```objc

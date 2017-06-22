@@ -12,6 +12,44 @@ tags:
 
 <!--more-->
 
+## UIView 中的坐标转换
+
+一个 View 的 `frame` 的起点是相当于其所在的 View，即调用 `addSubView:` 方法的 View。如果要判断两个 View 是否是包含关系，由于两者的起点不同，那么肯定是无法进行比较的。
+
+```objc
+// rect1和rect2是否有重叠
+CGRectContainsRect(<#CGRect rect1#>, <#CGRect rect2#>)
+// point是不是在rect上
+CGRectContainsPoint(<#CGRect rect#>, <#CGPoint point#>)
+// rect1是否包含了rect2
+CGRectIntersectsRect(<#CGRect rect1#>, <#CGRect rect2#>)
+```
+
+为了统一原点，我们可以使用以下代码：
+
+```objc
+- (CGPoint)convertPoint:(CGPoint)point toView:(nullable UIView *)view;
+- (CGPoint)convertPoint:(CGPoint)point fromView:(nullable UIView *)view;
+
+- (CGRect)convertRect:(CGRect)rect toView:(nullable UIView *)view;
+- (CGRect)convertRect:(CGRect)rect fromView:(nullable UIView *)view;
+```
+
+来举两个例子，注意不同情况下 `compareView` 和 `outerView` 的参数位置：
+
+```objc
+CGRect newRect = [self.compareView convertRect:self.innerFrame fromView:self.outerView];
+CGRect newRect = [self.outerView convertRect:self.innerFrame toView:self.compareView];
+```
+
+得到的就是 `innerFrame` 在 `compareView` 中的位置。
+
+
+
+
+
+
+
 ## UIVisualEffectView 实现高斯模糊
 
 如果想要给一个 view  添加一个高斯模糊的效果，只要在那个 view 上添加一个 `UIVisualEffectView` 即可。
