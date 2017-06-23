@@ -121,6 +121,57 @@ vc3.view.backgroundColor = [UIColor greenColor];
 
 自定义中间视图比较简单，直接设置 `navigationItem` 的 `titleView`，一般直接设置 `title` 即可。
 
+
+
+### 给系统的 leftBarButtonItem 添加 Badge
+
+上面提到了如何自定义左侧按钮，我们可以在自定义的 Button 上添加 Badge 实现效果。如果是系统的呢？由于 leftBarButtonItem 是 `UIBarButtonItem` 的实例，而 `UIBarButtonItem` 并非继承于 `UIView`，可以推测出，`UIBarButtonItem` 上显示的 image 和 label 是隐藏的属性。
+
+我们需要使用 runtime 查找 `UIBarButtonItem` 中视图的属性名，并且通过 KVC，拿到这个视图属性：
+
+```objc
+// UIBarButtonItem+Badge.m
+#pragma mark - 获取Badge的父视图
+- (UIView *)bottomView
+{
+    // 通过Xcode视图调试工具找到UIBarButtonItem的Badge所在父视图为:UIImageView
+    UIView *navigationButton = [self valueForKey:@"_view"];
+    for (UIView *subView in navigationButton.subviews) {
+        if ([subView isKindOfClass:NSClassFromString(@"UIImageView")]) {
+            subView.layer.masksToBounds = NO;
+            return subView;
+        }
+    }
+    return navigationButton;
+}
+```
+
+经过比对，发现视图属性名为 `_view`，拿到这个属性后，对其内部视图进行遍历，找到 UIImageView 的对象，我们就可以在 UIImageView 上添加 Badge 了。
+
+> 同样的，我们还可以通过这种方法，自定义 UITabBarItem 的 Badge
+
+```objc
+#pragma mark - 获取Badge的父视图
+- (UIView *)bottomView{
+    // 通过Xcode视图调试工具找到UITabBarItem原生Badge所在父视图为:UITabBarSwappableImageView
+    UIView *tabBarButton = [self valueForKey:@"_view"];
+    for (UIView *subView in tabBarButton.subviews) {
+        if ([subView isKindOfClass:NSClassFromString(@"UITabBarSwappableImageView")]) {
+            return subView;
+        }
+    }
+    return tabBarButton;
+}
+```
+
+
+
+[Demo](https://github.com/jkpang/PPBadgeView)
+
+[参考自:iOS: 教你给 UI 控件添加 Badge(消息提醒小圆点)](http://www.jianshu.com/p/89fa23d53400)
+
+
+
 ### 控制左边返回按钮的距离
 
 如果我们要指定左边返回按钮距离左边框的距离，可以在在返回按钮前再插入一个 `UIBarButtonItem`：

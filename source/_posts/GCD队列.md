@@ -216,6 +216,42 @@ dispatch_group_notify(group, queue, ^{
 });
 ```
 
+除了 `dispatch_group_async` 直接发起一个异步队列，我们还可以配合使用下面两个方法：
+
+- dispatch_group_enter(group);
+- dispatch_group_leave(group);
+
+这两个方法最好配合异步请求使用：
+
+```objc
+    // 创建 dispatch 组
+    dispatch_group_t group = dispatch_group_create();
+
+    // 第一个请求：
+    dispatch_group_enter(group);
+    [self sendGetAddressByPinWithURLs:REQUEST(@"getAddressByPin.json") completionHandler:^(NSDictionary * _Nullable data, NSError * _Nullable error) {
+        NSArray *addressList = [TXAddressModel mj_objectArrayWithKeyValuesArray:data[@"addressList"]];
+        self.addressList = addressList;
+        dispatch_group_leave(group);
+    }];
+
+    // 第二个请求
+    dispatch_group_enter(group);
+    [self sendCurrentOrderWithURLs:REQUEST(@"currentOrder.json") completionHandler:^(NSDictionary * _Nullable data, NSError * _Nullable error) {
+        TXCurrentOrderModel *currentOrderModel = [TXCurrentOrderModel mj_objectWithKeyValues:data];
+        self.currentOrderModel = currentOrderModel;
+        dispatch_group_leave(group);
+    }];
+
+    // 当上面两个请求都结束后，回调此 Block
+    dispatch_group_notify(group, dispatch_get_main_queue(), ^{
+        NSLog(@"OVER:%@", [NSThread currentThread]);
+        [self setupOrderDataSource];
+    });
+```
+
+这个例子的使用场景是，在两个请求都返回完毕后，才回调一个 block。因为两个请求本生就是异步的，所以不能使用 `dispatch_group_async`。
+
 #### dispatch_barrier_async
 
 在访问数据库文件时，使用 Serial Dispatch Queue 可避免数据竞争的问题，但是效率较低。比如写入处理不能喝其他写入处理以及读取处理等并行执行。但是如果读取处理只和读取处理并行执行，那么多个并行执行不会发生问题。
@@ -241,6 +277,62 @@ dispatch_async(queue, blk7_for_reading);
 ![dispatch_barrier_async](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/dispatch_barrier_async.jpg?raw=true)
 
 使用 `dispatch_barrier_async` 可提高数据库访问和文件访问的效率。
+
+#### dispatch_semaphore
+
+dispatch_semaphore 主要用来实现锁的操作。可用于请求同步等处理。
+
+- dispatch_semaphore_t semaphore = dispatch_semaphore_create(value);
+- dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
+- dispatch_semaphore_signal(semaphore);
+
+value 可以理解为资源数量，以 value = 0 为例，调用 `dispatch_semaphore_wait` 操作成功后，当资源数量 value 等于 0 时，就会阻塞当前线程（反之，value 就会减 1），直到有 `dispatch_semaphore_signal` 通知信号发出，当 value 大于 0 时，当前线程就会被唤醒继续执行其他操作。
+
+##### 例子:模拟同步请求，阻塞当前线程：
+
+```objc
+    // 1.创建信号量
+    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+    NSLog(@"0");
+    // 开始异步请求操作（部分代码略）
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        NSLog(@"1");
+        // This function returns non-zero if a thread is woken. Otherwise, zero is returned.
+        // 2.在网络请求结束后发送通知信号
+        dispatch_semaphore_signal(semaphore);
+    });
+    // Returns zero on success, or non-zero if the timeout occurred.
+    // 3.发送等待信号
+    dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
+    NSLog(@"2");
+
+    // print 0、1、2
+```
+
+由于 `dispatch_semaphore_wait`，线程阻塞。只有等待异步请求返回后执行 `dispatch_semaphore_signal` 后，才会继续执行下面的代码。所以先打印 1，后打印 2.
+
+##### 例子：加锁，阻塞其他线程：
+
+```objc
+dispatch_queue_t queue = dispatch_get_global_queue(0, 0);
+dispatch_semaphore_t semaphore = dispatch_semaphore_create(1);
+
+for (int i = 0; i < 100; i++) {
+     dispatch_async(queue, ^{
+          // 相当于加锁
+          dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
+          NSLog(@"i = %zd semaphore = %@", i, semaphore);
+          // 相当于解锁
+          dispatch_semaphore_signal(semaphore);
+      });
+}
+```
+
+
+
+
+
+
 
 
 
