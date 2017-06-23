@@ -141,7 +141,12 @@ Gem 是一个管理 Ruby 库和程序的标准包，我们使用的 cocoapods �
 解决方法是
 ![更新成功](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/pod_update.png?raw=true)
 
+可以不用 `--pre`
+
+
+
 ## Xcode报错 code signing is required for product type 'Unit Test Bundle' in SDK 'iOS 10.1'
+
 在网上下载别人项目后，运不起来，总是报这个错。虽然不知道这个错误最根本的解决办法是什么。但是临时性的解决方法还是有的。做法就是不要 build 项目里面的测试工程。
 
 Edit scheme -> build -> remove xxxtest
@@ -240,5 +245,9 @@ Podfile.lock 是在第一次运行 `pod install` 时候自动生成的。Podfile
 
 如果想要单纯分为左右两屏，按住 `alt` 再点击文件，即可在辅助窗口查看。
 
-如果想要新建标签页可以使用 `command + T`，切换使用 `shift+command+[或]` 来左右切换。 
+可以点击副主窗口右上角的 “+”，添加更多辅助窗口，此时按住 `alt` 就会让你选择在哪个辅助窗口查看文件代码。
+
+
+
+
 
