@@ -169,7 +169,7 @@ scrollView.contentSize = bigRect.size;
 
 ---
 
-除了 File's Owner 可以设置 custom class，xib 中的 view 也可以设置 custom class。但是前者可以使任意对象即 **NSObject** 而后者只能是 **UIView** 的子类。我们在对 ViewController 设置 xib 的时候使用前者，并通过 **initWithNibName:bundle:** 初始化，而不能使用后者。
+除了 File's Owner 可以设置 custom class，xib 中的 view 也可以设置 custom class。但是前者可以是任意对象即 **NSObject** 而后者只能是 **UIView** 的子类。我们在对 ViewController 设置 xib 的时候只可以设置 File's Owner 的 custom class，并通过 **initWithNibName:bundle:** 初始化，而不能设置 xib 中 view 的 custom class （由于 UIViewController 继承于 NSObject，本质上是一个控制器，而不是一个 View，所以这里只能把它设置为占位符的 custom class，而不能设置为 view 的 custom class ） 。
 
 那对于一个自定义的 View，我们是该设置哪个的 custom class 呢？答案是：两者都可以，但是使用场景和方式都略有区别。设置 File's Owner 一般表示这个 custom class 是其中的一部分，设置 View 则表示 custom class 就是这个 view。
 
@@ -320,17 +320,6 @@ iOS SDK 提供一个名为 **UIMenuController** 的类，可以用来显示菜�
   return YES;
 }
 ```
-
-
-
-
-
-
-
-
-
-
-
 
 
 
