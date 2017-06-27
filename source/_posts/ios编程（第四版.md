@@ -169,17 +169,19 @@ scrollView.contentSize = bigRect.size;
 
 ---
 
+**插播一：File‘s Owner 和 View 的 custom class 的区别**
+
 除了 File's Owner 可以设置 custom class，xib 中的 view 也可以设置 custom class。但是前者可以是任意对象即 **NSObject** 而后者只能是 **UIView** 的子类。我们在对 ViewController 设置 xib 的时候只可以设置 File's Owner 的 custom class，并通过 **initWithNibName:bundle:** 初始化，而不能设置 xib 中 view 的 custom class （由于 UIViewController 继承于 NSObject，本质上是一个控制器，而不是一个 View，所以这里只能把它设置为占位符的 custom class，而不能设置为 view 的 custom class ） 。
 
 那对于一个自定义的 View，我们是该设置哪个的 custom class 呢？答案是：两者都可以，但是使用场景和方式都略有区别。设置 File's Owner 一般表示这个 custom class 是其中的一部分，设置 View 则表示 custom class 就是这个 view。
 
-对于自定义 view，两者都可以使用下面的方法表示。前者需要将 `owner` 设置为正在的 owner，一般是 self；后者将其置为 nil 即可。
+对于自定义 view，两者都可以使用下面的方法表示。前者需要将 `owner` 设置为现在的 owner，一般是 self；后者将其置为 nil 即可。
 
 ```objc
 NSArray *nibViews = [[NSBundle mainBundle] loadNibNamed:@"NibName" owner:owner options:nil];
 ```
 
-设置 View 的 custom class 这种方式在初始化的时候会执行 **awakeFromNib** 方法，可以将 view 的设置放在这个方法内进行，例如一个 TestView 视图，直接就将这个 View 赋给了 TestView 对象：
+如果是设置 view 的 custom class。例如一个 TestView 视图，直接就可以将这个 View 赋给了 TestView 对象：
 
 ```objc
 // 在某个 ViewController 中添加 TestView 视图
@@ -188,7 +190,7 @@ TestView *testView = [nibView firstObject];
 [self.view addSubview:testView];
 ```
 
-设置 Files's Owner 的 custom class 的方式则不会执行该方法，需要通过 `addSubView:` 方法手动添加到其 owner 类中：
+设置 Files's Owner 的 custom class 的方式则需要通过 `addSubView:` 方法手动添加到其 owner 类中：
 
 ```objc
 // 自定义的 TestView 的某个实例化方法
@@ -214,6 +216,55 @@ UIView *headerView = [[[NSBundle mainBundle] loadNibNamed:@"HotelReviewsHeaderVi
 ```
 
 参考：[通过 XIB 加载 UIView](http://honglu.me/2016/02/22/通过XIB加载UIView/)
+
+
+
+**插播二：在 xib 中使用自定义的view**
+
+上面演示了如何用代码的方式对设置了 File's owner 或 View 的 custom view 的自定义视图进行实例化。那么一直有一个疑惑，如何在 xib 中直接添加自定义view 的 xib？
+
+在 ViewController 的 xib 中，我们拖入一个 UIView 的控件，然后将这个 UIView 的 Custom Class 设置为自定义的 view 的类名。此刻你觉得大功告成了么？非也，如果运行就会发现，刚刚拖入并设置了 Custom Class 的控件并没有显示出来，只是一片空白。那么我们要如何修改呢？
+
+我们要明白，ViewController 只是显示了一个自定义的 View，但是 View 内的视图还需要自己手动将其和 xib 或者纯代码关联起来。
+
+当自定义的 View 随着 **ViewController 的 xib** 被加载的时候，会调用 `initWithCoder:` 以及 `awakeFromeNib` 方法（注意，平时所说的使用 xib 载入用上述两个方法，不仅是指自定义 View 使用了 xib 作为其自身布局，而且也指，自定义 View 在 ViewController 的 xib 中被用到了）。我们可以重写 `initWithCoder:` 方法来对其进行设置。
+
+这里就不能像前面一样可以设置 File's Owner 和 View 的 custom class 都可以加载自定义视图对象了。这里只能设置 File's Owner 的 custom class，然后在 `initWithCoder:` 方法中添加 subView（因为如果你要设置 View 的 custom class，那么你就要在里面这样写: `self = [[[NSBundle mainBundle] loadNibNamed:@"TestView" owner:nil options:nil] firstObject];` ，但是这回产生无限递归，理由下面总结 `initWithCoder:` 使用时机时会说）。最后注意由于是添加的 subView，那么需要设置 frame。
+
+```objc
+- (instancetype)initWithCoder:(NSCoder *)aDecoder
+{
+    self = [super initWithCoder:aDecoder];
+    if (self) {
+        NSString *className = NSStringFromClass([self class]);
+        UIView *view = [[[NSBundle mainBundle] loadNibNamed:className owner:self options:nil] firstObject];
+        view.frame = self.bounds;
+        [self addSubview:view];
+        return self;
+    }
+    return nil;
+}
+```
+
+
+
+**最后总结下 `initWithCoder:` 何时会被调用：**
+
+首先说明使用 xib 的时候会调用，有两种情况：
+
+如果你在 xib 中将 View 的 custom class 设置为自定义view 的类，那么在你调用 下面的代码时，会触发 `initWithCoder:`
+
+```objc
+self = [[[NSBundle mainBundle] loadNibNamed:@"TestView" owner:nil options:nil] firstObject];
+```
+
+这就解释了上面为什么不能再 `initWithCoder:` 中调用该段代码的原因，即产生无限递归。
+
+如果你在 xib 中将 File's Owner 的 custom class 设置为自定义view 的类，那么当你在 ViewController 中拖拽一个 UIView 将其设置为自定义 view 的类并且展示的时候，会触发 `initWithCoder:` 
+
+[参考：Nested Xib Views - 使用XIB实现嵌套自定义视图](http://blog.wtlucky.com/blog/2014/08/10/nested-xib-views/)
+
+
 
 ---
 
