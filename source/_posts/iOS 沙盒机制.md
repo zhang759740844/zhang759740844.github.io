@@ -97,10 +97,10 @@ NSString *filePath = NSTemporaryDirectory();
 ####  获取 Bundle 文件路径
 
 ```objc
-NSString *bundle = [NSBundle mainBundle];
+NSString *bundle = [[NSBundle mainBundle] resourcePath];
 ```
 
-
+这个 Bundle 路径就是工程的主路径，可以通过拼接路径的方式，获取工程下的各种资源文件。需要注意，路径是文件夹的绝对路径，而不是 xcode 中显示的 group 路径。
 
 ## 文件下载
 
