@@ -13,6 +13,64 @@ tags:
 
 <!--more-->
 
+## 如何为一个 workspace 中的多个 project 使用 cocoapods
+
+一般一个 app 只有一个 project（也可以有多个，**其实 project 不是关键，它只是包含了一些配置信息，真正起作用的是 target，project 只是 target 的容器，有相互依赖关系的是 target**），在这个 project 中可以有多个 target 比如 `Myapp`、`Myapptest` 等，如下图：
+
+![原理1](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/cocoapods_xcode_1.png?raw=true)
+
+这些 target 可以相互依赖，也可以依赖许多子 target，需要在 `Target Dependencied` 中注册：
+
+![原理1](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/cocoapods_xcode_2.png?raw=true)
+
+那么如何为多个 project 中的各个 target 集成 pod 呢？就像上面说的 project 不重要，我们只要在设置target 的时候，引入 project 的路径即可：
+
+```ruby
+# 指定  workspace 
+# 指定后不会生成默认的 workspace 文件
+workspace 'TheApp.xcworkspace'
+
+#  指定 xcodeproj
+xcodeproj 'TheApp.xcodeproj'
+
+# cocoapods 会用在 swift 项目
+use_frameworks!
+
+# 指定 target
+target 'aProject' do
+    # 由于 Podfile 和  .xcodeproj 不在同一文件夹下
+    # 需要指定路径
+    #  xcode 项目可以存在任何的子路路径中，只需要指定正确的路径就可以
+    project ‘aProject/aProject.xcodeproj’
+
+    #  在每一个 project 下都导入 SnapKit 进行测试
+    pod "SnapKit"
+end
+
+target 'bProject' do
+    project 'bProject/bProject.xcodeproj’
+    pod "SnapKit"
+end
+
+target 'aFramework' do
+    project ‘aFramework/aFramework.xcodeproj’
+    pod "SnapKit"
+end
+
+target 'bFramework' do
+    project ‘bFramework/bFramework.xcodeproj’
+    pod "SnapKit"
+end
+```
+
+可以看到，对于不同 project 中的 target，只要指定其与 `Podfile` 的相对位置就可以了。
+
+假如 target `aProject` 下还有其他子 target，这些子 target 是可以直接引用父 target 引入的 SnapKit 组件的。
+
+[CocoaPods 使用](http://www.jianshu.com/p/5a74c0842cf2)
+
+[iOS 如何在一个存在多个project的workspace中引入cocoapods管理第三方类库](https://yq.aliyun.com/articles/8315)
+
 ## Group 和 Folder 的区别
 
 Group 其实是 Xcode 中用来组织文件的一种方式, **它对文件系统没有任何影响**, 无论你创建或者删除一个 Group, 都不会导致 folder 的增加或者移除。
