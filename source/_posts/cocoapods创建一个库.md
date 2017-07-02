@@ -342,7 +342,7 @@ pod trunk add-owner '项目名' '邮箱'
 
 至于删除废弃等操作可以详见`pod trunk` 的 help中：
 
-![help](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/cocoapods_public_1.png?raw=true)
+![help](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/cocoapods_public_.png?raw=true)
 
 [CocoaPods公有仓库的创建]()
 

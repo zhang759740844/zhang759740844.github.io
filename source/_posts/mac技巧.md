@@ -2,7 +2,7 @@ title: Mac 使用技巧
 date: 2016/7/31 10:07:12  
 categories: iOS
 tags:
-	- 持续跟新
+	- 持续更新
 ---
 
 使用 Mac 用到的一些方法
