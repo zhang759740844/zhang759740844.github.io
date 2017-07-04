@@ -207,6 +207,8 @@ let convertedNumber = Int(possibleNumber)
 
 这里面将 `possibleNumber` 强转为 Int 型，可能成功，但如果是 `"hello,world"` 就肯定失败了。所以这里 `convertedNumber` 就是一个可选类型，不一定是 Int。可选的 Int 类型用 `Int?` 表示。问号暗示包含的值是可选，也就是说可能是 Int 也可能不包含值。
 
+直接赋值的都能通过赋给的值进行类型推断，而不是可选类型。除非将 `possibleNumber` 写成 `let possibleNumber: String? = "123"`，否则都相当于 `let possibleNumber: String! = "123"`.
+
 #### nil
 
 如果一个类型是可选类型，那么你可以将其值设为 `nil`:
@@ -277,7 +279,7 @@ if let actualNumber = Int(possibleNumber) {
 >
 > }
 
-这里的 `let` 或者 `var` 是必须的，并且作用域为整个 if 判断。
+**这里的 `let` 或者 `var` 是必须的，并且作用域为整个 if 判断如果 `Int(possibleNumber)` 存在，就声明了 `actualNumber`，如果不存在就相当于没有声明这个变量。**
 
 一条 if 可以写多个可选绑定，用逗号隔开就行，表示 & 的关系，一个是 false 则整个判断条件是 false。
 
@@ -296,6 +298,8 @@ if let firstNumber = Int("4") {
 }
 // Prints "4 < 42 < 100"
 ```
+
+可以都用逗号，但是有可选绑定就不能用 `&&`
 
 #### 隐式解析可选
 
@@ -321,7 +325,7 @@ let assumedString: String! = "An implicitly unwrapped optional string."
 let implicitString: String = assumedString  // 不需要感叹号
 ```
 
-> 其实就是说一个变量本身是可选类型，在初始化的时候可以被设置为 nil，但是如果要读取该变量的值的时候就必须是有值的。
+> 定义变量的时候不能直接 `let assumedString! = "xxx"`，或者 `let assumedString? = "xxx"`
 
 你可以把隐式解析可选当做一个可以自动解析的可选。你要做的只是声明的时候把感叹号放到类型的结尾，而不是每次取值的可选名字的结尾。
 
@@ -341,7 +345,7 @@ let implicitString: String = assumedString  // 不需要感叹号
 let (x, y) = (1, 2) // 现在 x 等于 1, y 等于 2 
 ```
 
-补充：这里的 x 和 y 相当于被声明成立 let 类型。
+补充：这里的 x 和 y 相当于被声明成为 let 类型。
 
 另外，由于 Swift 中的 if 判断需要明确的布尔值，所以下面的代码在 Swift 中是不合法的：
 
@@ -424,6 +428,10 @@ var userDefinedColorName: String?   // defaults to nil
 var colorNameToUse = userDefinedColorName ?? defaultColorName
 // userDefinedColorName is nil, so colorNameToUse is set to the default of "red"
 ```
+
+### 三元选择操作符
+
+和其他语言的三元操作符没有任何区别
 
 ### 区间操作符
 
