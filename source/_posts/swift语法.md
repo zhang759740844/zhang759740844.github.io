@@ -325,7 +325,7 @@ let assumedString: String! = "An implicitly unwrapped optional string."
 let implicitString: String = assumedString  // 不需要感叹号
 ```
 
-> 定义变量的时候不能直接 `let assumedString! = "xxx"`，或者 `let assumedString? = "xxx"`
+> 使用变量的时候可以 `assumedString?.method()` 或者 `assumedString!.method()`。但是定义变量的时候不能直接 `let assumedString!`， `let assumedString? `，或者 `assumedString! = "xxx"`，`assumedString? = "xxx"`。
 
 你可以把隐式解析可选当做一个可以自动解析的可选。你要做的只是声明的时候把感叹号放到类型的结尾，而不是每次取值的可选名字的结尾。
 

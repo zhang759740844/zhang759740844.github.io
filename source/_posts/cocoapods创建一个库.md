@@ -183,7 +183,7 @@ pod lib create StaticWithCocoapods
 
 在项目目录下有一个 `xxx.podspec` 配置文件，需要进行修改，摘录如下：
 
-```
+```ruby
 Pod::Spec.new do |s|
   s.name             = 'StaticWithCocoapods'
   s.version          = '0.1.0'
@@ -215,7 +215,10 @@ TODO: Add long description of the pod here.
   s.public_header_files = 'StaticWithCocoapods/Classes/**/*.h'
   s.frameworks = 'UIKit', 'MapKit'
   s.dependency 'AFNetworking', '~> 2.3'
-  s.denpendency 'SVProgressHUD'
+  s.dependency 'SVProgressHUD'		
+  s.subspec 'Aswift' do |a|
+    a.source_files = 'A_swift/A_swift/**/*'
+  end
 end
 ```
 
@@ -224,7 +227,8 @@ end
 - s.sources_files 表示类库的源文件存放目录
 - s.resource_bundles 表示资源文件存放目录
 - s.frameworks 表示类库依赖的framework
-- s.dependency 表示依赖的第三方类库
+- s.dependency 表示依赖的第三方类库，如果有多个要写多个 s.dependency
+- s.subspec 表示依赖的子 podspec
 
 其中要说明的是： 
 
@@ -232,6 +236,10 @@ end
 2. 依赖项不仅要包含你自己类库的依赖，还要包括所有第三方类库的依赖，只有这样当你的类库打包成 .a 或 .framework 时才能让其他项目正常使用。
 3. source_file 路径中出现的通配符 `*` 表示匹配任意字符， `**` 表示匹配所有当前文件夹和子文件夹。
 4. source_bundles 中花括号内的 `'StaticWithCocoapods'` 就表示一个 `StaticWithCocoapods` bundle。
+5. 这里的 dependency 一般情况下是指 cocoapods 的官方库。当然你也可以给自己创建的库添加自己的私有库，依赖同样是直接写在 dependency 里。由于 **dependency 中无法指定地址**。因此，如果添加私有库的时候要在使用这个库的工程的 Podfile 要添加你私有库的地址。这样的话，在下载 s.dependency 时，官方库找不到的情况下，就会到私有库中查找。
+6. 有了 s.dependency 为什么还要用 s.subspec 呢？说明5中说到，dependency 无法指定地址。会有两种情况：1.别人用你的库的时候要在工程的 Podfile 文件中添加你的私有库的地址。2.如果你想用 cocoapods-packager 将你的库打包，你只能将你的私有库手动添加到项目的项目中。所以综上，你的私有库最好不要使用 s.dependency 的形式添加，使用 s.subspec 添加你的私有库信息，你的子私有库中的文件将直接回被添加到父库中编译。比如我在一个 `test_oc` 的库中添加了 `Aswift` 的 subspec，在 pod install 后得到如下文件结构：
+
+![subspec](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_cocoapods_sub.png?raw=true)
 
 #### 添加文件
 
@@ -239,12 +247,14 @@ end
 ![文件结构](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_cocoapods_1.png?raw=true)
 
 > 现在工程里是带有 demo application 的，不过不用担心，在.podspec 中已经设置了源文件的目录，不会把 demo 中的各种测试文件也打包进去的。
+>
+> 不要在意上面图片上的图片路径 和 .podspec 中设置的 s.resource_bundles 路径不一致。这里的 Resources 看似是个文件夹，其实是一个 group，不是实际文件路径的地址。本例中实际的地址就是  `['StaticWithCocoapods/Assets/*.png']` 这个路径。
 
-到这里一切正常，也可以使用 `SVProgressHUD` ，但是当我想用 `[UIImage imageNamed:[[[NSBundle mainBundle] pathForResource:@"StaticWithCocoapods" ofType:@"bundle"] stringByAppendingString:@"/author.png"]]` 加载图片资源文件时，一直返回 `nil` 。
+##### 加载图片资源的问题
 
-好吧。虽然网上cocoapods打包教程不少，但是真正试过添加图片的人应该不多，最后在 Stackoverflow 的一个评论里总算找到了解决方法[[Cocoapods]:Resource Bundle not accessbile](http://stackoverflow.com/questions/25402782/cocoapodsresource-bundle-not-accessbile)
+到这里一切正常，也可以使用 `SVProgressHUD` ，但是当我想用 `[UIImage imageNamed:[[[NSBundle mainBundle] pathForResource:@"StaticWithCocoapods" ofType:@"bundle"] stringByAppendingString:@"/author.png"]]` 加载图片资源文件时，一直返回 `nil` 。最后在 Stackoverflow 的一个评论里总算找到了解决方法[[Cocoapods]:Resource Bundle not accessbile](http://stackoverflow.com/questions/25402782/cocoapodsresource-bundle-not-accessbile)
 
-原先 demo 中 profile 的内容如下：
+原先 demo 中 prdfile 的内容如下：
 
 ```ruby
 use_frameworks!
@@ -268,9 +278,43 @@ target 'StaticWithCocoapods_Example' do
 end
 ```
 
-再次尝试加载图片，可以得到正确结果. ^_^
+再次尝试加载图片，可以得到正确结果. ^_^。但是为什么会这样？
 
-> 不要在意上面图片上的 Resources 和 .podspec 路径不一致。Resources 是一个 group，不是实际文件路径的地址。本例中实际的地址就是  `['StaticWithCocoapods/Assets/*.png']` 这个路径。
+`use_frameworks!` 的添加与否，表示将 pod 中的库打包成静态库.a 还是动态库.framework。其实就是图片在盗宝成静态库或者动态库的时候所处的 bundle 不同。
+
+如果打包成了 .a，那么编译的时候库里的所有文件其实是被打包在主工程下的，即 mainBundle 中，即可像通常那样在 mainBundle 中获取 StaticWithCocoapods.bundle 中的图片。
+
+如果打包成了 .framework ，动态库里的文件不再被打包在主工程下了，而是在动态库自己的 bundle 中，比如本例中的动态库 bundle 路径如下：
+
+![.a](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_bundle_1.png?raw=true)
+
+此时就不能再在 mainBundle 中，而需要在动态库中找到 StaticWithCocoapods.bundle 下的文件了。通过的做法肯定不能直接获取 mainBundle，而是可以通过`[NSBundle bundleForClass:self.class]` 获取当前类所在的动态库的bundle，所以获取 `UIImage` 的通用方式为：
+
+```objc
+UIImage *image = [UIImage imageNamed:[[[NSBundle bundleForClass:self.class] pathForResource:@"StaticWithCocoapods" ofType:@"bundle" ] stringByAppendingString:@"/author.png"]];
+```
+
+##### 测试类库
+
+在 demo application 中，如果把自己的库使用 pod 引入，注意要修改 Podfile 中库的路径为本地 `podspec` 所在的路径，不然每次都要从远端拉了。另外还有一个问题是这样每次更新库里的内容，运行的时候都要先 pod install 一下，这样非常的麻烦。
+
+因此，我们可以直接将库里的文件添加到 demo application 中，同时要修改 Podfile，使其不要 pod 自身，而是 pod 其依赖的其他类库。这样做就是把类库的文件放到主工程下，就不用每次都 pod install 更新修改了。比如：
+
+```ruby
+# 原来可能是这样的
+target 'StaticWithCocoapods_Example' do
+  pod 'StaticWithCocoapods', :path => ‘../‘
+end
+
+# 现在要把依赖 StaticWithCocoapods 的类库加上，删除自己：
+target 'StaticWithCocoapods_Example' do
+  pod 'SVProgressHUD'
+end
+```
+
+不用担心这样做不会产生任何问题。demo 中的文件依赖的改动并不影响 `.podspec` 中的设置，只要文件还是放在 `.podspec` 的指定路径下就行。发布类库的时候还是按照 `.podspec` 进行的，所以没有任何影响。
+
+但是要注意一点，虽然你把文件放在主工程下编译，但是代码中获取资源文件的时候绝对不能偷懒使用 mainBundle 加载。因为别人可能将你发布的库打成动态库放到自身的工程中，这就会造成上面加载图片资源一样的问题。所以加载资源文件的时候一定要用上面说的通用的方法。
 
 #### 提交代码
 
@@ -410,3 +454,5 @@ end
 [CocoaPods私有仓库的创建](http://qiubaiying.top/2017/03/10/CocoaPods私有仓库的创建/)
 
 [Cocoapods系列教程(三)——私有库管理和模块化管理](http://www.pluto-y.com/cocoapod-private-pods-and-module-manager/)
+
+[使用Cocoapods创建私有podspec](http://blog.wtlucky.com/blog/2015/02/26/create-private-podspec/)推荐
