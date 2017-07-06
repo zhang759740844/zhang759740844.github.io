@@ -71,6 +71,8 @@ print("My name is \(myName),and my age is \(myAge)")
 // 打印结果:"My name is Zachary,and my age is 18"
 ```
 
+> 这里反斜杠类似于转义，所以还是要在字符串里出现的，不能是直接 print(\\(myName))
+
 ### 分号
 
 Swift 中不需要写分号，一句一行。但是如果一句要有多个表达式，还是要用分号隔开的：
@@ -271,6 +273,8 @@ if let actualNumber = Int(possibleNumber) {
 
 这个表示，如果 `Int(possibleNumber)` 转换后有值，那么赋值给 `actualNumber`，走成功的分支，否则走失败的分支。注意，这里的 `actualNumber` 就不需要加 `!` 了，因为由于可选绑定，它已经不是一个可选类型了。
 
+> 这其实就是判断非空操作的语法糖
+
 注意可选绑定的格式：
 
 > if let constantName = someOptional {	
@@ -309,7 +313,7 @@ if let firstNumber = Int("4") {
 let possibleString: String? = "An optional string."
 let forcedString: String = possibleString! // requires an exclamation mark
  
-let assumedString: String! = "An implicitly unwrapped optional string."
+let assumedString: String = "An implicitly unwrapped optional string."
 let implicitString: String = assumedString // no need for an exclamation mark
 ```
 
