@@ -593,12 +593,18 @@ func printHelloWorld() {
 var mathFunction: (Int, Int) -> Int = addTwoInts
 ```
 
+> 可以直接写成 `mathFunction = addTwoInts` 通过类型推断决定类型
+
 现在就可以像使用 `addTwoInts` 方法一样使用 `mathFunction` 了：
 
 ```swift
 print("Result: \(mathFunction(2, 3))")
 // Prints "Result: 5"
 ```
+
+> 就算 addTwoInts 的两个入参是有 argument label 的，这里调用 mathFunction 的时候也要省略：
+
+![添加桥接文件](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/swift_example.png?raw=true) 
 
 注意，只有函数类型匹配才能够将 `addTwoInts` 赋给 `mathFunction`。由于 `mathFunction` 和 `multiplyTwoInts` 类型也相同，所以可以继续对 `mathFunction` 赋值：
 
