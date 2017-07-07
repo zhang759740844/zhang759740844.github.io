@@ -95,11 +95,13 @@ Xcode8 的用户要按照他的方法设置个人证书。主要是因为在 Xco
 
 ![codesign](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/codesign.png?raw=true)
 
-创建好自签名证书后，要对 Xcode 进行重新签名：
+创建好自签名证书后，**要对 Xcode 进行重新签名**：
 
 ```
  $ sudo codesign -f -s zachary /Applications/Xcode.app
 ```
+
+> 每次更新 Xcode 后，都要先对 Xcode 进行重新签名！
 
 这个要等一段蛮长一段时间，这段时间可以先把代码码起来。
 
@@ -216,12 +218,7 @@ Gem 是一个管理 Ruby 库和程序的标准包，我们使用的 cocoapods �
 
 
 
-## Xcode报错 code signing is required for product type 'Unit Test Bundle' in SDK 'iOS 10.1'
 
-在网上下载别人项目后，运不起来，总是报这个错。虽然不知道这个错误最根本的解决办法是什么。但是临时性的解决方法还是有的。做法就是不要 build 项目里面的测试工程。
-
-Edit scheme -> build -> remove xxxtest
-![Xcode报错解决](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/xcode_debug.png?raw=true)
 
 ## Podfile.lock
 在协同开发时，经常会遇到，Podfile.lock 不一致，导致编译失败，需要重新 `pod install` 的情况。这里将简单介绍下 Podfile.lock
