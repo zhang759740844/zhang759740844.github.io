@@ -91,6 +91,8 @@ let age1 = 18	// 默认是 Int 类型
 let age2 = 18.0	// 默认是 Double 类型(Swift 默认用 Double 而不是 Float)
 ```
 
+> 这里类型推断是指没有在后面写上类型的，比如  `let age1: Int` 就已经表示是非空的 Int 型了，就不可能再推断了
+
 ### 数字的表现方式
 
 (省略了不同进制，科学计数等内容)
@@ -237,7 +239,7 @@ oc 中的 nil 是一个指向不存在对象的指针。在 Swift 中 nil 不是
 
 #### 强制解析
 
-如果你确信你的可选类型一定是有值的，那么可以在可选的变量名后面加上 `!`，表示这个可选值必然有值：
+ 如果你确信你的**可选类型**一定是有值的，那么可以在可选的变量名后面加上 `!`，表示这个可选值必然有值：
 
 ```swift
 if convertedNumber != nil {
@@ -311,25 +313,16 @@ if let firstNumber = Int("4") {
 
 ```swift
 let possibleString: String? = "An optional string."
+// 不能直接 let forcedString：String = possibleString 因为，一个是可选类型，一个是非可选类型
 let forcedString: String = possibleString! // requires an exclamation mark
  
-let assumedString: String = "An implicitly unwrapped optional string."
+let assumedString: String! = "An implicitly unwrapped optional string."
 let implicitString: String = assumedString // no need for an exclamation mark
 ```
 
 当可选被第一次赋值之后就可以确定之后一直有值的时候，隐式解析可选非常有用。隐式解析可选主要被用在 Swift 中类的构造过程中(参考无主解析)
 
-**一个隐式解析可选类型其实就是一个普通的可选类型，但是可以被当做非可选类型来使用，**并不需要每次都使用解析来获取可选值。下面的例子展示了可选类型 `String` 和隐式解析可选类型 `String` 之间的区别：
-
-```swift
-let possibleString: String? = "An optional string."
-let forcedString: String = possibleString! // 需要惊叹号来获取值
-
-let assumedString: String! = "An implicitly unwrapped optional string."
-let implicitString: String = assumedString  // 不需要感叹号
-```
-
-> 使用变量的时候可以 `assumedString?.method()` 或者 `assumedString!.method()`。但是定义变量的时候不能直接 `let assumedString!`， `let assumedString? `，或者 `assumedString! = "xxx"`，`assumedString? = "xxx"`。
+**一个隐式解析可选类型其实就是一个普通的可选类型，但是可以被当做非可选类型来使用，**并不需要每次都使用解析来获取可选值。
 
 你可以把隐式解析可选当做一个可以自动解析的可选。你要做的只是声明的时候把感叹号放到类型的结尾，而不是每次取值的可选名字的结尾。
 
