@@ -788,6 +788,11 @@ someFunctionThatTakesAClosure(closure: {
 someFunctionThatTakesAClosure() {
     // trailing closure's body goes here
 }
+
+// 使用尾部闭包如果没有参数，可以省略括号
+someFunctionThatTakesAclosure {
+  
+}
 ```
 
 可以看到很明显的区别。没有使用尾部闭包的时候是非常正规的函数调用。如果是尾部闭包的情况，那么就单独拿出来放到外面。
