@@ -374,6 +374,35 @@ ViewController基本上是大部分业务的载体，本身代码已经相当复
 #endif
 ```
 
+### 如何定义一个结构
+
+使用结构保存多个相关数据。
+
+```objc
+struct Person{
+	float height；
+	int age；
+}；
+```
+
+使用：`struct Person mikey；` 
+
+使用 `typedef` 简化。`typedef` 可以为某类型声明一个等价的别名，该别名用法和常规数据类型无异。
+
+```objc
+typedef struct {
+	float height；
+	int age；
+} Person；
+```
+
+使用，就当做一个普通类型使用：
+
+```objc
+Person mikey；
+mikey.length = 1.45
+```
+
 
 
 ### extern和static

@@ -123,6 +123,27 @@ typedef NS_OPTION(NSUInteger, EOCPermittedDirection) {
 
 在枚举类型的 switch 语句中不要实现 default 分支。它的好处是，当我们给枚举增加成员时，编译器就会提示开发者：switch 语句并未处理所有的枚举。否则添加了枚举却没有实现 switch 将可能导致严重的崩溃。
 
+注意，switch 的 `case`中如果声明了变量，必须要用`{}`包住，这是编译器强制的，不然会报错，例子：
+
+```objc
+- (void)startAnimationInitialWithType:(NSInteger)type{
+    switch (type) {
+        case BaseAnimation:{
+            CALayer *myLayer=[CALayer layer];
+
+            //添加layer
+            [self.view.layer addSublayer:myLayer];
+            self.myLayer=myLayer;
+        }
+            break;
+        default:
+            break;
+    }
+}
+```
+
+
+
 ## 对象、消息、运行期
 ### 第6条：理解“属性”这一概念
 #### 属性
