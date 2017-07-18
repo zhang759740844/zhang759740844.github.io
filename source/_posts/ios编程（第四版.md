@@ -126,13 +126,17 @@ scrollView.contentSize = bigRect.size;
 视图控制器可以通过两种方式创建视图层次结构:
 
 - 代码方式:覆盖 **UIViewController** 中的 **loadView** 
-- NIB 文件方式:使用 Interface Builder 创建一个 NIB 文件
+- NIB 文件方式:不覆盖 **UIViewController** 中的 **loadView** 
 
-**loadView** 方法会在 ViewController 的 view 被请求并且**当前view为nil时**调用这个方法(所以你调用 `[[UIViewController alloc] init]` 并且将这个 ViewController 显示出来的时候，会自动触发 **loadView** 方法)。
+**loadView** 方法会在 ViewController 的 view 被请求并且**当前view为nil时**调用这个方法。所以你调用 `[[UIViewController alloc] init]` 并且将这个 ViewController 显示出来的时候，会自动触发 **loadView** 方法。
 
-系统的 **loadView** 方法的默认实现是：寻找有关可用的 nib 文件的信息(**这个信息是通过 initWithNibName:Bundle: 方法提供的，如果使用 init 方法初始化的，默认寻找同名的 nib 文件**)，根据这个信息来加载 nib 文件。如果没有有关nib文件的信息，默认创建一个空白的 **UIView** 对象，然后把对象成赋值给 ViewController 的主 view。
+系统的 **loadView** 方法的默认实现是：寻找有关的 nib 文件的信息，根据这个信息来加载 nib 文件。如果没有相关nib文件的信息，默认创建一个空白的 UIView 对象，然后把对象成赋值给 ViewController 的主 view。
 
-自定义重载 **loadView** 的时候不需要调用系统方法 `[super loadView];` 因为如果你用 Interface Builder 来创建界面，那么不应该重载这个方法；如果你想自己创建 view 对象，你需要自己给 view 属性赋值。
+这个nib文件的信息是 **initWithNibName:Bundle:** 方法提供的，你可以在创建 VC 的时候直接手动调用：`[[UIViewController alloc] initWithNibName:@"xxxx" Bundle:[UIBundle mainBundle]]`。如果是使用 init 方法初始化的，init 方法会默认调用该方法，其中的 nibName 默认是同名文件。
+
+> 通过 Nib 文件方式加载视图就是不要重写 loadView 方法
+
+自定义重载 **loadView** 的时候注意不需要调用上面所说的系统实现方法 `[super loadView];` 因为你想自定义 view 的话，就需要自己给 view 属性赋值。
 
 ```objc
 - (void)loadView{
@@ -144,6 +148,8 @@ scrollView.contentSize = bigRect.size;
   ...
 }
 ```
+
+> 重写 loadView 来实现代码方式自定义视图
 
 无论 XIB 还是代码创建都会调用 **viewDidLoad** 方法。如果你需要对 view 及添加在其上的视图做一些其他的定制操作，在 **viewDidLoad** 里面去做。
 
