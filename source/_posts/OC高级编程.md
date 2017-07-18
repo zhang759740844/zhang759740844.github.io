@@ -97,11 +97,34 @@ id obj1 = [obj0 allocObject];
 // 自己持有对象
 ```
 
-由于内部是通过 `alloc` 方法生成的，所以外部调用的时候不需要在 `retain` 了。
+由于外部是通过 `allocObject` 生成的，所以内部不用 `[obj autorelease]`
 
-> 由于是符合上面的命名规范，所以再 ARC 中，系统不会给 obj1 使用 retain 方法。
->
-> 我想 应该是通过 `alloc` 方法，引用计数已经加过一了，而后又没有 `release` 过，最终只有 `obj1` 一个变量会指向该对象，所以就不用再 `retain` 了。
+---
+
+上面的例子把 `allocObject` 中不用 `alloc` 创建，这个时候就会添加 `retain` 了：
+
+```objc
+- (id)allocObject{
+  //取得非自己生成并持有的对象
+  id obj = [NSArray array];
+  //取得对象的存在，但自己不持有对象
+  [obj retain];
+  // 自己持有对象
+  return obj；
+}
+
+// 取得非自己生成并持有的对象
+id obj1 = [obj0 allocObject];
+// 自己持有对象
+```
+
+由于外部是符合命名规范的，因此，内部不添加 `autorelease` 方法。
+
+> 其实可以这么理解，方法内如果是用 `alloc` 创建对象并返回的，那么不用 `retain`；如果不用 `alloc` 创建对象的，会自动插入 `retain`，所以不管怎样引用计数器必然加一。这个时候，由于方法是带有 `alloc` 等字眼的，编译器不会在方法中的最后添加 `release` 方法。因此，外部就不用再 retain 了，因为内部已经加过一了。
+
+---
+
+
 
 那么如果是类似 ` [NSMutableArray array]` 方式，该如何取得对象呢？以自定义一个 `object` 方法为例：
 
@@ -120,9 +143,11 @@ id obj1 = [obj0 object];
 // 自己持有对象
 ```
 
-> 在 ARC 中，如果不符合上面的命名规范，那么系统会自动添加 autorelease 方法
+> 在 ARC 中，如果不符合上面的命名规范，那么系统会自动添加 autorelease 方法，并且外部就需要再 retain 一次了。
 >
-> 这里由于 autorelease 了，所以引用计数又为0了，就需要在外部再 retain 一次了
+> 如此：符合命名规范，既不要内部 release，也不要外部 retain；不符合命名规范，既要内部 release 一次，也要外部 retain 一次。这样成对的操作，才保证了引用计数的正确性。
+>
+> 那不符合命名规范的时候先 release 在 retain 不是很浪费性能么？其实在这种情况下，oc 做了优化，不会把对象注册到 AutoreleasePool 中，实现方法是使用`objc_retainAutoreleasedReturnValue()` 和 `objc_autoreleaseReturnValue()`，具体在下方。
 
 上例中，使用 `autorelease` 方法，取得对象的存在，但是自己不持有对象。`autorelease` 提供这样的功能，**使对象在超出指定的生存范围能够自动并正确的释放**(调用 release 方法)。
 
@@ -287,7 +312,7 @@ ACR 有效时，将源代码写成这样:
 }
 ```
 
-中间调用了 `objc_retainAutoreleasedReturnValue()` 方法。它持有的对象应为 返回注册在 `autoreleasepool` 中对象的方法，或是函数的返回值。这个方法是与 `objcautoreleaseReturnValue()` 方法成对出现的，用于优化程序运行。来看 `[NSMutableArray array]` 方法:
+中间调用了 `objc_retainAutoreleasedReturnValue()` 方法。它持有的对象应为 返回注册在 `autoreleasepool` 中对象的方法，或是函数的返回值。这个方法是与 `objc_autoreleaseReturnValue()` 方法成对出现的，用于优化程序运行。来看 `[NSMutableArray array]` 方法:
 
 ```objc
 + (id)array{
@@ -366,15 +391,15 @@ weak 表和引用计数器表相同，作为散列表被实现。如果使用 we
 
 ```objc
 {
-  id __weak o = obj;
-  id tmp = o;
+  id __weak obj1 = obj;
+  id tmp = obj1;
   NSLog(@"1 %@",obj1);
   NSLog(@"2 %@",obj1);
   NSLog(@"3 %@",obj1);
 }
 ```
 
-如果没有 `id tmp = o`，`o` 就会被注册到 `autoreleasepool` 注册3次，但是如果有这句，就只会注册一次。
+如果没有 `id tmp = obj1`，`obj1` 就会被注册到 `autoreleasepool` 注册3次，但是如果有这句，就只会注册一次。
 
 ### __autoreleasing
 

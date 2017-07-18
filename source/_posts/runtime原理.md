@@ -27,7 +27,10 @@ struct objc_object {
 };
 ```
 
+> 所有对象都是继承于 `objc_object` 的，所以所有对象都有 `isa` 指针，即都有一个 `objc_class` 结构体的指针。（注意，这和 superclass 是不同的）
+
 ### SEL
+
 `objc_msgSend`函数第二个参数类型为`SEL`，它是`selector`在Objc中的表示类型.`selector`是方法选择器，可以理解为区分方法的 ID，而这个 ID 的数据结构是`SEL`:
 ```objc
 typedef struct objc_selector *SEL;
@@ -216,6 +219,8 @@ struct objc_super { id receiver; Class class; };
 
 这里调用`class`只是举例，所有调用`super`的方法，最后都变成了`self`的调用。
 
+> 其实就是即使是 [super class] **调用的是父类的 class 方法**，但是**接收对象永远还是 self**
+
 
 ## Category 的实现原理
 ### 概述
@@ -273,6 +278,10 @@ static void attachCategories(Class cls, category_list *cats, bool flush_caches) 
 
 首先，通过 `while` 循环，我们遍历所有的 category，也就是参数 `cats` 中的 `list` 属性。对于每一个 category，得到它的方法列表 `mlist` 并存入 `mlists` 中。换句话说，我们将所有 category 中的方法拼接到了一个大的二维数组中，数组的每一个元素都是装有一个 category 所有方法的容器。
 
+> 在上面的objc_class结构体中，ivars是objc_ivar_list（成员变量列表）指针；methodLists是指向objc_method_list指针的指针。在Runtime中，objc_class结构体大小是固定的，不可能往这个结构体中添加数据，只能修改。所以ivars指向的是一个固定区域，只能修改成员变量值，不能增加成员变量个数。methodList是一个二维数组，所以可以修改*methodLists的值来增加成员方法，虽没办法扩展methodLists指向的内存区域，却可以改变这个内存区域的值（存储的是指针）。因此，可以动态添加方法，不能添加成员变量。
+
+> 编译好了就不能改变 objc_class 的大小了。应该就是编译的时候可以拿到 category 文件的数量，但是无法拿到 category 里的具体内容。所以预先声明好了 mlists 的大小，至于每个 category 里的方法有多少，那个到运行时才决定，不保存在 objc_class 结构内。
+
 在 `while` 循环外，我们得到了拼接成的方法，此时需要与类原来的方法合并:
 ```objc
 auto rw = cls->data();
@@ -291,5 +300,7 @@ void attachLists(List* const * addedLists, uint32_t addedCount) {
 }
 ```
 需要注意的是，无论执行哪种逻辑，参数列表中的方法都会被添加到二维数组的前面。因此 category 中定义的同名方法不会替换类中原有的方法，但是对原方法的调用实际上会调用 category 中的方法。
+
+
 
 [runtime的一篇较好的参考资料](http://www.jianshu.com/p/9d649ce6d0b8)

@@ -308,6 +308,7 @@ CGContextAddQuadCurveToPoint(CGContextRef c, CGFloat cpx, CGFloat cpy, CGFloat x
 CGContextRef gc = UIGraphicsGetCurrentContext();
     
 //创建用于转移坐标的Transform，这样我们不用按照实际显示做坐标计算
+// 就表示以 50，50 为起点
 CGAffineTransform transform = CGAffineTransformMakeTranslation(50, 50);
 //创建CGMutablePathRef
 CGMutablePathRef path = CGPathCreateMutable();
