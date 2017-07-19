@@ -3,7 +3,6 @@ date: 2016/11/1 14:07:12
 categories: iOS
 tags: 
 	- 学习笔记
-
 ---
 
 在学习 RunLoop 的时候，碰到了一些不太理解的东西，查阅资料后发现是多线程的相关方法。因此在完成 RunLoop 的笔记前，先学习下多线程的使用方法。
@@ -89,34 +88,10 @@ NSThread *thread = [[NSThread alloc] initWithTarget:self selector:@selector(run:
 #### 同步执行
 把多个线程都要执行此段代码添加到同一个串行队列，这样就实现了线程同步的概念。
 
-### 延迟执行
-#### perform
 
-```objc
-// 3秒后自动调用self的run:方法，并且传递参数：@"abc"
-[self performSelector:@selector(run:) withObject:@"abc" afterDelay:3];
-```
-
-#### GCD
-
-```objc
-// 创建队列
-dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
-// 设置延时，单位秒
-double delay = 3; 
-
-dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), queue, ^{
-    // 3秒后需要执行的任务
-});
-```
-
-#### NSTimer
-
-```objc
-[NSTimer scheduledTimerWithTimeInterval:3.0 target:self selector:@selector(run:) userInfo:@"abc" repeats:NO];
-```
 
 ### 从其他线程回到主线程的方法
+
 在其他线程操作完成后必须到主线程更新UI
 
 #### NSThread

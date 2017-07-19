@@ -3,7 +3,6 @@ date: 2016/11/1 14:07:12
 categories: iOS
 tags: 
 	- 学习笔记
-
 ---
 
 runLoop 虽然平时用不到，但是面试的时候问的多啊。那我也就来了解一下 runLoop 的原理。
@@ -80,7 +79,11 @@ CFRunLoopRef CFRunLoopGetCurrent() {
 }
 ```
 
-从上面的代码可以看出，线程和 RunLoop 之间是一一对应的(这也就解释了前面关系图中 CFRunLoop 和 Thread 连线中的两个`1`的意义)，其关系是保存在一个全局的 Dictionary 里。线程刚创建时并没有 RunLoop，如果你不主动获取，那它一直都不会有。RunLoop 的创建是发生在第一次获取时，RunLoop 的销毁是发生在线程结束时。你只能在一个线程的内部获取其 RunLoop（主线程除外）。
+从上面的代码可以看出，线程和 RunLoop 之间是一一对应的(这也就解释了前面关系图中 CFRunLoop 和 Thread 连线中的两个`1`的意义)，其关系是保存在一个全局的 Dictionary 里。线程刚创建时并没有 RunLoop，如果你不主动获取，那它一直都不会有，**所以一个子线程，你想要它有 RunLoop 就必须在该线程内调用 `NSRunLoop *runLoop =[NSRunLoop currentRunLoop]`。如果你想启动这个 RunLoop，则要继续调用 `[runLoop run]**`。**但是注意，一般不需要开启子线程的 runLoop，因为这会让子线程一直存在，不会回收。**RunLoop 的创建是发生在第一次获取时，RunLoop 的销毁是发生在线程结束时。**你只能在一个线程的内部获取其 RunLoop（主线程除外）**。
+
+推荐一个链接[深入研究 runloop 与线程保活](https://bestswifter.com/runloop-and-thread/)
+
+
 
 ## RunLoop对外接口
 在 CoreFoundation 里面关于 RunLoop 有5个类:
@@ -399,28 +402,8 @@ ZN2CA11Transaction17observer_callbackEP19__CFRunLoopObservermPv()
 ```
 
 ### 定时器
-NSTimer 其实就是 CFRunLoopTimerRef，他们之间是 toll-free bridged 的。一个 NSTimer 注册到 RunLoop 后，RunLoop 会为其重复的时间点注册好事件。例如 10:00, 10:10, 10:20 这几个时间点。RunLoop 为了节省资源，并不会在非常准确的时间点回调这个 Timer。Timer 有个属性叫做 Tolerance (宽容度)，标示了当时间点到后，容许有多少最大误差。
 
-定时器使用方式：
-
-```objc
-self.timer = [NSTimer timerWithTimeInterval:5 target:self selector:@selector(showTime) userInfo:nil repeats:YES];
-[[NSRunLoop currentRunLoop] addTimer:self.timer forMode:NSRunLoopCommonModes];
-```
-
-这里如果不是用的 `NSRunLoopCommonModes` 而是 `NSDefaultRunLoopMode` 那么当界面滑动时，无法执行 `showTime` 方法回调。当滑动停止时，立刻执行最初的注册的定时事件，之后由于滑动导致未能注册的事件的回调一律忽略。
-
-### PerformSelector
-当调用 NSObject 的 `performSelector:afterDelay:` 后，实际上其内部会创建一个 Timer 并添加到当前线程的 Run Loop 中。所以如果当前线程没有 Run Loop，则这个方法会失效。
-
-当调用 `performSelector:onThread:` 时，实际上其会创建一个 Timer 加到对应的线程去，同样的，如果对应线程没有 Run Loop 该方法也会失效。
-
-所以一般还是在主线程调用这些方法，如果实在要在子线程里调用，那么记得在其后调用 `[[NSRunLoop currentRunLoop] run];`
-
-### 关于 GCD
-GCD 提供的某些接口也用到了 Run Loop， 例如 `dispatch_async()`。
-
-当调用 `dispatch_async(dispatch_get_main_queue(), block)` 时，libDispatch 会向主线程的 RunLoop 发送消息，RunLoop 会被唤醒，并从消息中取得这个 block，并在回调 `__CFRUNLOOP_IS_SERVICING_THE_MAIN_DISPATCH_QUEUE__()` 里执行这个 block。但这个逻辑仅限于 dispatch 到主线程，dispatch 到其他线程仍然是由 libDispatch 处理的。
+参见 iOS 定时器 这一篇。几乎所有定时器都要求 runloop 开启，且将自身加入到 runloop 中。
 
 ### 关于网络请求
 

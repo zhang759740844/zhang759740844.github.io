@@ -131,22 +131,7 @@ dispatch_apply([array count], queue, ^(size_t index){
 
 如果需要异步执行这些代码，只需要用dispatch_async方法，将所有代码推至后台。
 
-```objc
-dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
-dispatch_async(queue, ^{
-    dispatch_apply([array count], queue, ^(size_t index){
-        [self doSomethingIntensiveWith:[array objectAtIndex:index]];
-    });
-    [self doSomethingWith:array];
-});
-```
-
-那何时才适合用 dispatch_apply 呢？
-
-- 自定义串行队列：串行队列会完全抵消 dispatch_apply 的功能；你还不如直接使用普通的 for 循环。
-- 主队列（串行）：与上面一样，在串行队列上不适合使用 dispatch_apply 。还是用普通的 for 循环吧。
-- 并发队列：对于并发循环来说是很好选择，特别是当你需要追踪任务的进度时。
-
+> 说实话，由于 dispatch_apply 是同步的，和 for 循环相比，差别不大。没有太大使用的必要
 
 #### dispatch_after
 延迟提交 block：
@@ -158,6 +143,10 @@ dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
      // code to be executed on the main queue after delay
 });
 ```
+
+其中 `NSEC_PER_SEC` 表示一秒钟有多少纳秒。
+
+
 
 dispatch_after 是延迟提交，不是延迟运行，**不是在特定的时间后立即运行！**：
 
@@ -264,7 +253,10 @@ dispatch_group_notify(group, queue, ^{
 
 GCD 提供了 `dispatch_barrier_async` 函数。该函数同 Concurrent Dispatch Queue 一起使用。`dispatch_barrier_async` 函数会等待追加到 Concurrent Dispatch Queue 上的并行执行的处理全部结束之后，再将指定的处理追加到该 Concurrent Dispatch Queue中。然后在由 `dispatch_barrier_async` 函数追加的处理执行完毕后，Concurrent Dispatch Queue 才恢复为一般的动作，追加到该 Concurrent Dispatch Queue 的处理又开始并行执行。
 
+> 一定要注意，官方提示：在使用栅栏函数时.使用自定义队列才有意义,如果用的是串行队列或者系统提供的全局并发队列,这个栅栏函数的作用等同于一个同步函数的作用
+
 ```objc
+dispatch_queue_t queue = dispatch_queue_create("myQueue", DISPATCH_QUEUE_CONCURRENT);
 dispatch_async(queue, blk0_for_reading);
 dispatch_async(queue, blk1_for_reading);
 dispatch_async(queue, blk2_for_reading);
@@ -281,6 +273,10 @@ dispatch_async(queue, blk7_for_reading);
 ![dispatch_barrier_async](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/dispatch_barrier_async.jpg?raw=true)
 
 使用 `dispatch_barrier_async` 可提高数据库访问和文件访问的效率。
+
+除了 `dispatch_barrier_async` 还有一个 `dispatch_barrier_sync`，两者有什么区别呢？两者都能达到等待在它前面插入队列的任务先执行完，等待他们自己的任务执行完再执行后面的任务的目的。但是不同的是，`dispatch_barrier_async` 将自己的任务插入到队列之后，不会等待自己的任务结束，它会继续把后面的任务插入到队列，然后等待自己的任务结束后才执行后面任务；`dispatch_barrier_sync` 将自己的任务插入到队列的时候，需要等待自己的任务结束之后才会继续插入被写在它后面的任务，然后执行它们。也就是说前者不会阻塞当前线程，而后者会阻塞当前线程。
+
+[dispatch_barrier_sync 和dispatch_barrier_async的区别](http://www.jianshu.com/p/e4d5b26b6a36)
 
 #### dispatch_semaphore
 
@@ -334,7 +330,20 @@ for (int i = 0; i < 100; i++) {
 
 
 
+### 问题
 
+- 串行并行，同步异步的区别？
+- 如何创建串行/并行队列？
+- 如何获取全局队列/主队列？
+- 如何提交一个同步或者异步的Job？
+- 什么情况下会造成死锁？
+- 如何使用 `dispatch_time_t `？如何使用 `dispatch_after`？
+- `dispatch_after` 作为倒计时准确么？什么情况下会不准？
+- 如何使用 `dispatch_once`？
+- 如何创建和使用 `dispatch_group`?
+- 什么时候使用 `dispatch_group_enter(group)`和`dispatch_group_leave(group)`?怎么使用？
+- `dispatch_barrier_async`和`dispatch_barrier_sync` 怎么用？需要注意什么？用在什么情况下？两者有什么差别？
+- `dispatch_semaphore` 有什么用？如何使用？如何用它模拟同步请求？如何加锁以及阻塞其他线程？
 
 
 

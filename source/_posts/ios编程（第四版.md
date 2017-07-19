@@ -11,21 +11,6 @@ tags:
 
 
 
-## 问题：
-
-- 什么情况下会进行重绘，重绘的时机是什么时候？
-- `loadView` 什么时候会被调用？
-- 系统的  `loadView` 做了什么事？什么情况下要自定义 `loadView` ？要注意什么？
-- 为什么要在 xib 中设置 Files’s Owner 的 Custom Class 为目标 ViewController？
-- 插座变量为什么要设置为 weak？
-- 为什么不能将 ViewController 设置为 View 的 Custom Class ？
-- 将某个 View 设置为 Files’s Owner 的 Custom Class 或者设置为 View 的 Custom Class 在创建方式上有什么不同？
-- `initWithCoder` 何时会被调用？怎么使用？
-- 如何将 ViewController 的 xib 中拖拽出的一个 view 和自定义的 View 关联？此时怎么用这个自定义的 View 加载另一个 nib 文件？有什么注意点？
-- 如何设置一个 UITabBarController，包括 tabbar、tabBarItem 属性？
-- 如何给一个 View 设置一个 UIMenuController？对这个 View 有什么要求？
-
-
 
 ## 视图与视图层次结构
 
@@ -402,7 +387,19 @@ iOS SDK 提供一个名为 **UIMenuController** 的类，可以用来显示菜�
 
 
 
+## 问题：
 
+- 什么情况下会进行重绘，重绘的时机是什么时候？
+- `loadView` 什么时候会被调用？
+- 系统的  `loadView` 做了什么事？什么情况下要自定义 `loadView` ？要注意什么？
+- 为什么要在 xib 中设置 Files’s Owner 的 Custom Class 为目标 ViewController？
+- 插座变量为什么要设置为 weak？
+- 为什么不能将 ViewController 设置为 View 的 Custom Class ？
+- 将某个 View 设置为 Files’s Owner 的 Custom Class 或者设置为 View 的 Custom Class 在创建方式上有什么不同？
+- `initWithCoder` 何时会被调用？怎么使用？
+- 如何将 ViewController 的 xib 中拖拽出的一个 view 和自定义的 View 关联？此时怎么用这个自定义的 View 加载另一个 nib 文件？有什么注意点？
+- 如何设置一个 UITabBarController，包括 tabbar、tabBarItem 属性？
+- 如何给一个 View 设置一个 UIMenuController？对这个 View 有什么要求？
 
 
 
