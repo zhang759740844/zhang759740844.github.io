@@ -232,7 +232,7 @@ UIView *headerView = [[[NSBundle mainBundle] loadNibNamed:@"HotelReviewsHeaderVi
 
 
 
-### **在 xib 中使用自定义的view**
+### 插播二：在 xib 中使用自定义的view
 
 上面演示了如何用代码的方式对设置了 File's owner 或 View 的 custom view 的自定义视图进行实例化。那么一直有一个疑惑，如何在 xib 中直接添加自定义view 的 xib？
 
