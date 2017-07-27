@@ -303,4 +303,20 @@ void attachLists(List* const * addedLists, uint32_t addedCount) {
 
 
 
+## 问题
+
+- 什么是消息机制？
+- id 是个什么类型？
+- isa 是个什么类型？
+- objc_class 中的 isa 指向什么？有什么用？
+- 子类，父类，NSObject，之间 super class 与 isa 指向的关系图是怎样？
+- objc_msgSend 的执行过程？
+- 为什么调用 `[super class]` 还是返回的还是 self 的类名？
+- category 为什么只能存方法，不能存实例变量？
+- category 会替换原来的方法吗？
+- 动态方法解析与消息转发的三步各是什么作用？
+- 转发和多继承有什么关系？
+
+
+
 [runtime的一篇较好的参考资料](http://www.jianshu.com/p/9d649ce6d0b8)

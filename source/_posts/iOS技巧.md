@@ -11,6 +11,14 @@ tags:
 
 <!--more-->
 
+### VC 中使用 self.view 获取屏幕宽高出错
+
+**错误描述：**在 `viewDidLoad` 中视图通过 `self.view` 获取屏幕宽高，但是获取数值有误。
+
+**原因：**这种情况一般是使用 xib 设置页面的时候出现。使用xib设置页面的时候，选择的是iPhone7的布局，宽度是375.当从 xib 加载页面后，`viewDidLoad` 时，约束没有更新。所以 `self.view` 的宽度和高度还是 xib 设计的高宽。要等到 `viewDidAppear` 时页面约束就会更新。
+
+建议不要在 `viewDidLoad` 中直接使用 `self.view.bounds` 的高宽来计算其他属性的 `frame`。 而是使用 `[UIScreen mainScreen].bounds` 获取手机屏幕的真实高宽。
+
 ### 如何在二级页面隐藏 `tabbar`
 一般会在 `TabBarController` 中设置多个 `NavigationController` 作为各个 `tab` 的 `ViewController`。我们只要写一个 `BaseViewController`，在其中重写 `pushViewController:animated` 方法，在其中判断是否需要隐藏就行。设置 `hidesBottomBarWhenPushed` 属性来控制在跳转的时候隐藏。
 ```objc
@@ -182,9 +190,11 @@ UIImageRenderingModeAlwaysTemplate   // 始终根据Tint Color绘制图片，忽
 
 **另外最好不要孤立地改动在 `layoutSubviews` 中设置过的子视图（比如大小，位置等）。因为 `layoutSubviews` 会被多次调用。在被调用后，改动又会变回去了。要改动也是要先将要改动的属性保存起来，让 `layoutSuibviews` 调用的时候通过这个属性设置 View。**
 
-> 这个方法只是在要设置子视图大小位置的时候调用，如果子视图使用的 autolayout，则直接在 `init` 中设置 constraints 就可以了，不需要再重写这个方法，否则会重复添加约束。
+> 这个方法只是在要设置子视图 frame 的时候重写。如果你使用的是 autolayout 来设定位置，那么直接在 `init` 中设置 constraints 就可以了，因为这个方法会被调用多次，在这个方法里添加约束会导致约束重复添加。
 >
 > 什么时候用 autolayout 什么时候用 frame 就见仁见智了。一般来说只与父视图有关的话，那么就用 frame 设置位置，如果与兄弟视图有关的话，还是用 autolayout 教好一些。
+>
+> 同样的还有 ViewController 的 `viewWillLayoutSubviews` 方法，这个方法会在 VC 的 view 调用其 `layoutSubViews` 前调用。如果要设置 VC 中的视图的 frame，可以考虑在这个方法里设置。但是一般我们都是在 `viewDidLoad` 方法里设置的无论是 frame 还是 constraint，这是为什么呢？因为 VC 的 view 永远不用担心大小为 0.
 
 #### 改变约束的注意事项
 
