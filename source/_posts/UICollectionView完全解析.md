@@ -13,11 +13,11 @@ UICollectionView 功能强大，方法众多。实现一个简单的布局并不
 
 <!--more-->
 
-## 用 UICollectionView 展示内容
+## 基本展示
 
 ### UIScrollView 概述
 
-UICollectionView 继承于 UIScrollView，UICollectionViewDelegate 继承于 UIScrollViewDelegate。所以在使用 UICollectionView 的时候，可以直接使用 UIScrollView 的各个属性方法。
+UICollectionView 继承于 UIScrollView，`UICollectionViewDelegate` 协议继承于 `UIScrollViewDelegate` 协议。所以在使用 UICollectionView 的时候，可以直接使用 UIScrollView 的各个属性方法。
 
 UIScrollView 中有几个重要的属性，`contentSize` 用来标识 UIScrollView 的滚动范围；`contentOffset` 用来设置视图原点与可视区域左上角的距离；`contentInset` 可用通过 `UIEdgeInsetMake(10,10,10,10)` 的方法设置一个内边框，这个值可以是负的，能使视图超出可视的滚动范围。
 
@@ -49,6 +49,8 @@ UIScrollView 中有几个重要的属性，`contentSize` 用来标识 UIScrollVi
 
 #### 准备一个 cell 类
 
+自定义一个类继承于 `UICollectionViewCell`:
+
 ```objc
 @interface SimpleCollectionViewCell : UICollectionViewCell
 
@@ -59,7 +61,7 @@ UIScrollView 中有几个重要的属性，`contentSize` 用来标识 UIScrollVi
 @end
 ```
 
-UICollectionViewCell 提供了一个重用前清空 cell 内数据的方法 `prepareForReuse`，重写它：
+UICollectionViewCell 提供了一个重用前清空 cell 内数据的方法 `prepareForReuse`，重写它，：
 
 ```objc
 - (void)prepareForReuse {
@@ -68,9 +70,11 @@ UICollectionViewCell 提供了一个重用前清空 cell 内数据的方法 `pre
 }
 ```
 
+> 一定要调用 super 方法
 
+#### 设置 ViewController
 
-#### 在 VC 中添加 UICollectionView
+先添加一个 CollectionView，然后注册，先定义一个 static 的 Identifier：
 
 ```objc
 static NSString *SIMPLECELLIDENTIFIER = @"Simple Cell Identifier";
@@ -97,11 +101,11 @@ static NSString *SIMPLECELLIDENTIFIER = @"Simple Cell Identifier";
 }
 ```
 
-
+> 一定要先将 collectionView 的 delegate 和 dataSource 设置为 self 哦
 
 #### 实现代理
 
-实现两个必须的代理：
+实现两个必须的代理，一个返回 `item` 的数量，一个返回具体的 `cell`：
 
 ```objc
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
@@ -116,11 +120,9 @@ static NSString *SIMPLECELLIDENTIFIER = @"Simple Cell Identifier";
 }
 ```
 
-
-
 #### 批量处理
 
-通过 `performBatchUpdates:completion:` 方法可以批量增删：
+可以将这些操作通过 `performBatchUpdates:completion:` 方法进行批量处理：
 
 ```objc
 - (void)addItem:(id)sender {
@@ -133,7 +135,7 @@ static NSString *SIMPLECELLIDENTIFIER = @"Simple Cell Identifier";
 
 
 
-#### Cell 的视图层级
+### Cell 的视图层级
 
 在 cell 中添加视图的时候，我们要将视图添加到 `contentView` 上，而不是 `self`。我们可以观察 cell 的视图层级：
 
@@ -144,6 +146,186 @@ static NSString *SIMPLECELLIDENTIFIER = @"Simple Cell Identifier";
 ```objc
 self.backgroundView = [UIView alloc] init];
 ```
+
+
+
+##  更进一步
+
+上面一节讲了如何展示一个最基本的 CollectionView，本节要在展示的基础上拓展一些操作方法。
+
+
+
+### Supplementary Views
+
+Supplementary View 是 `UICollectionViewLayout` 提供的，可以随着 CollectionView 滚动，并且是数据驱动，可以展示信息的。
+
+在 `UICollectionViewFlowLayout` 中提供了两种 Supplementary View：头部视图和尾部视图。但是这只是在这种 Layout 方式下的特殊类型，之后我们会学习如何自定义 Supplementary View。只要记住，**任何有数据展示的并且不是 cell 的视图，都可以用 Supplementary View 展示**。
+
+Supplementary View 和 cell 类似，也需要注册 `Nib` 或者 `Class`，也会被一直重用。
+
+
+
+#### 定义一个 Supplementary View 类
+
+自定义的 Supplementary View 继承于 `UICollectionReusableView`。这个类提供了一些和 `UICollectionViewCell` 相同的方法，但是比其更轻量级，比如无法像 Cell 一样，处理点击以及高亮等。
+
+```objc
+@interface SimpleReusableView : UICollectionReusableView
+
+@property (nonatomic,strong) NSString *num;
+
+- (void)refreshData;
+
+@end
+```
+
+同样实现以下 `prepareForReuse` 方法：
+
+```objc
+- (void)prepareForReuse {
+    [super prepareForReuse];
+    self.num = @"";
+}
+```
+
+#### 设置 ViewController
+
+还是在 `viewDidLoad` 方法中注册，同样先定义一个 Identifier：
+
+```objc
+static NSString *SIMPLESUPPLEMENTARYIDENTIFIER = @"Simple Supplementary Identifier";
+static NSString *SIMPLECELLIDENTIFIER = @"Simple Cell Identifier";
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+  	...
+      
+    // 设置大小
+    flowLayout.headerReferenceSize = CGSizeMake(self.view.bounds.size.width, 30);
+  
+  	// 注册 Supplementary View
+  	[_collectionView registerClass:[SimpleReusableView class] forSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:SIMPLESUPPLEMENTARYIDENTIFIER];
+}
+```
+
+这里注册的是 header:`UICollectionElementKindSectionHeader`，类似的还可以注册 footer:`UICollectionElementKindSectionFooter`
+
+另外，一定要设置 `UICollectionViewFlowLayout` 的 `headerReferenceSize` 属性，其默认是 `CGSizeZero` 的，如果不手动设置，Supplementary View 就无法显示。
+
+
+
+#### 实现代理：
+
+同样实现两个代理，一个返回 `section` 的数量，一个返回 `Supplementary View` ：
+
+```objc
+- (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView {
+    return _sectionCount;
+}
+
+- (UICollectionReusableView *)collectionView:(UICollectionView *)collectionView viewForSupplementaryElementOfKind:(NSString *)kind atIndexPath:(NSIndexPath *)indexPath {
+    SimpleReusableView *reuseableView = (SimpleReusableView *)[collectionView dequeueReusableSupplementaryViewOfKind:kind withReuseIdentifier:SIMPLESUPPLEMENTARYIDENTIFIER forIndexPath:indexPath];
+    reuseableView.num = [NSString stringWithFormat:@"%ld",(long)indexPath.section];
+    [reuseableView refreshData];
+    return reuseableView;
+}
+```
+
+
+
+### 响应交互
+
+实现 `CollectionViewDelegate` 的方法 `collectionView:didSelectedAtIndexPath:`
+
+```objc
+- (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
+    // 取消选中
+    [collectionView deselectItemAtIndexPath:indexPath animated:YES];
+    // 获取当前点击的 cell
+    SimpleCollectionViewCell *cell = (SimpleCollectionViewCell *)[collectionView cellForItemAtIndexPath:indexPath];
+	...
+}
+```
+
+ `deselectItemAtIndexPath:animted:` 方法取消选中。
+
+`cellForItemAtIndexPath:` 方法通过 `indexPath` 获取当前 cell。
+
+
+
+### 对 item 和 section 的操作
+
+系统提供了以下方法来对 item 和 section 进行插入、删除、重载、移动操作：
+
+- `insertSections:`
+- `deleteSections:`
+- `reloadSections:`
+- `moveSection:toSection:`
+- `insertItemsAtIndexPaths:`
+- `deleteItemsAtIndexPaths:`
+- `reloadItemsAtIndexPaths:`
+- `moveItemAtIndexPath:toIndexPath:`
+
+注意一定要先改变 item 或者 section 的数量，然后才能对 item 或者 section 进行插入和删除。
+
+这些方法可以放在 `performBatchUpdates:completion:` 中进行批量处理。
+
+### 改变 item 和 section 的大小
+
+前面，我们通过 `UICollectionViewFlowLayout`  的 `itemSize` 和 `headerReferenceSize` (包括 `footerReferenceSize`) 统一设置了 item 和 section 的大小。
+
+如何每个 item 和 section 的大小不规则呢？ 我们可以实现 `UICollectionViewDelegateFlowLayout` 协议中的以下方法实现：
+
+- `collectionView:layout:sizeForItemAtIndexPath:`
+- `collectionView:layout:referenceSizeForHeaderInSection:`
+- `collectionView:layout:referenceSizeForFooterInSection:`
+
+实现这些方法，并在根据 `indexPath` 返回响应的 `CGSize`.
+
+`UICollectionViewDelegateFlowLayout `协议继承于 `UICollectionViewDelegate `协议，所以仍然将 CollectionView 的 `delegate` 设置为 ViewController 就行了。
+
+### 是否可以选中
+
+实现 `UICollectionViewDelegate` 协议中的以下方法可以实现控制 item 是否可以高亮，选中，取消选中：
+
+- `collectionView:shouldHighlightItemAtIndexPath:`
+- `collectionView:shouldSelectItemAtIndexPath:`
+- `collectionView:shouldDeselectedItemAtIndexPath:`
+
+### 复制粘贴操作
+
+有时候我们想复制一些 cell 中的东西，实现下面方法就可以复制：
+
+```objc
+// 能否选中
+- (BOOL)collectionView:(UICollectionView *)collectionView shouldSelectItemAtIndexPath:(NSIndexPath *)indexPath {
+    return YES;
+}
+
+// 选中后能否弹出菜单
+- (BOOL)collectionView:(UICollectionView *)collectionView shouldShowMenuForItemAtIndexPath:(NSIndexPath *)indexPath {
+    return YES;
+}
+
+// 能否执行菜单里的某个操作
+- (BOOL)collectionView:(UICollectionView *)collectionView canPerformAction:(SEL)action forItemAtIndexPath:(NSIndexPath *)indexPath withSender:(id)sender {
+    return YES;
+}
+
+// 棘突执行菜单选项的操作
+- (void)collectionView:(UICollectionView *)collectionView performAction:(SEL)action forItemAtIndexPath:(NSIndexPath *)indexPath withSender:(id)sender {
+    if ([NSStringFromSelector(action) isEqualToString:@"copy:"]) {
+        UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+        [pasteboard setString:((SimpleCollectionViewCell *)[collectionView cellForItemAtIndexPath:indexPath]).num];
+    }
+}
+```
+
+
+
+## 使用 UICollectionViewFlowLayout
+
+### 创建 UICollectionViewFlowLayout 的子类
 
 
 

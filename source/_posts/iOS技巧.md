@@ -186,6 +186,30 @@ UIImageRenderingModeAlwaysTemplate   // 始终根据Tint Color绘制图片，忽
 
 `layoutSubViews` 方法给 View 提供了一个统一设置子视图大小布局的地方，不能在 `init` 方法中。因为当外部创建该 view 时，如果外部调用 `init` 方法而不是调用 `initWithFrame` (即没有给这个 view 设置大小），那么 view 中子视图就无法正确初始化出大小。因此，**子视图的 `bounds` 等属性（例如 `center` 等）的设置必须放在 `layoutSubviews` 中，即外部 view 大小已经确定，就要显示的时候。**
 
+---
+
+**记一个错误容易犯的错误：**
+
+`frame`，`center` 都是相对于父 View 的。所以如果你要让一个子 View 在 父 View 居中，你绝对不能写 `subView.center = parentView.center`，因为 `parentView.center` 又是相对于其父 View 的。你应该通过父 View 的 `bounds` 计算得到:
+
+```objc
+- (void)layoutSubViews {
+  subView.center = CGPointMake(self.bounds.size.width/2,self.bounds.size.height/2);
+}
+```
+
+**记另一个容易犯的错误**
+
+上面重写了 `layoutSubViews` 这个方法，并没有调用父类方法 `[super layoutSubViews]`，那么到底要不要调用呢？答案是最好调用，否则可能会出错。下面简述可能会出错的情况。
+
+比如一个 CollectionViewCell，其中有一层图层 `contentView`。我们添加的视图一般都是添加在 `contentView` 上。当 cell 的 bounds 发生变化的时候，`contentView` 的大小不会立即变化，而是在调用了系统的 `[super layoutSubViews]` 后才会将 `contentView` 变为和 cell 一样大。如果你不调用父类方法，那么你就不能将你添加的子视图的位置依赖于 `contentView` 的 bounds
+
+其实就是系统会在 `[super layoutSubViews]` 中修改系统自身添加的子视图的位置信息。如果你要用到系统的子视图，你就必须要先调用 `[super layoutSubViews]`
+
+---
+
+
+
 **注意，不是添加子视图。子视图在 `init` 方法中添加。一定不要在 `layoutSubviews` 方法中添加子视图。因为 `layoutSubviews` 方法会被多次调用，不可能每次调用都添加一遍子视图吧。**
 
 **另外最好不要孤立地改动在 `layoutSubviews` 中设置过的子视图（比如大小，位置等）。因为 `layoutSubviews` 会被多次调用。在被调用后，改动又会变回去了。要改动也是要先将要改动的属性保存起来，让 `layoutSuibviews` 调用的时候通过这个属性设置 View。**
