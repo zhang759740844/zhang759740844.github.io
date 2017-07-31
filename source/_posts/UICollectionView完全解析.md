@@ -167,7 +167,7 @@ Supplementary View 和 cell 类似，也需要注册 `Nib` 或者 `Class`，也�
 
 #### 定义一个 Supplementary View 类
 
-自定义的 Supplementary View 继承于 `UICollectionReusableView`。这个类提供了一些和 `UICollectionViewCell` 相同的方法，但是比其更轻量级，比如无法像 Cell 一样，处理点击以及高亮等。
+自定义的 Supplementary View 继承于 `UICollectionReusableView`。这个类提供了一些和 `UICollectionViewCell` 相同的方法（其实 `UICollectionViewCell` 就是继承于 `UICollectionReusableView` 的），但是比其更轻量级，比如无法像 Cell 一样，处理点击以及高亮等（如果你想要，你需要自己实现）。
 
 ```objc
 @interface SimpleReusableView : UICollectionReusableView
@@ -327,20 +327,307 @@ static NSString *SIMPLECELLIDENTIFIER = @"Simple Cell Identifier";
 
 ### 创建 UICollectionViewFlowLayout 的子类
 
+系统的 `UICollectionViewFlowLayout` 虽然允许你定义 item 以及 Supplementary Views 的大小，但是你不能自定义每个 View 的位置。比如下图，你想让所有 item 都沿着虚线排布，只用 `UICollectionViewFlowLayout` 是不够的。我们需要继承它，并且重写其中的部分方法，实现自定义的布局。
+
+![实际布局](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/custom_layout.png?raw=true)
+
+#### 继承 `UICollectionViewFlowLayout`
+
+创建一个类，继承于 `UICollectionViewFlowlayout`，重写它 `init` 方法。我们可以把之前写在 ViewController 中的对于 layout 的设置移到 `init` 方法中，作为默认实现，减少 VC 中的代码量：
+
+```objc
+- (instancetype)init {
+    if (!(self = [super init])) {
+        return nil;
+    }
+    self.minimumInteritemSpacing = 20;
+    self.minimumLineSpacing = 40;
+    self.sectionInset = UIEdgeInsetsMake(10, 10, 10, 10);
+    self.itemSize = CGSizeMake(50, 50);
+    self.headerReferenceSize = CGSizeMake([UIScreen mainScreen].bounds.size.width, 30);
+    
+    return self;
+}
+```
 
 
 
+#### 重写布局方法`layoutAttributesForElementsInRect:`
+
+我们需要重写 `layoutAttributesForElementsInRect:` 方法，该方法返回一个包含所有布局信息 `UICollectionViewLayoutAttributes`的数组。比如我们可以把 CollectionView 中所有 cell 都旋转 45°：
+
+```objc
+- (NSArray<UICollectionViewLayoutAttributes *> *)layoutAttributesForElementsInRect:(CGRect)rect {
+    NSArray *array = [super layoutAttributesForElementsInRect:rect];
+    NSMutableArray *newArray = [NSMutableArray array];
+    for (UICollectionViewLayoutAttributes *attrs in newArray) {
+        UICollectionViewLayoutAttributes *newAttrs = [attrs copy];
+        if (attrs.representedElementKind == nil) {
+            newAttrs.transform = CGAffineTransformMakeRotation(45);
+        }
+        [newArray addObject:newAttrs];
+    }
+    return newArray;
+}
+```
+
+我们通过父类方法 `[super layoutAttributesForElementsInRect:rect]` 先创建了一个正常情况下的所有属性的数组。这个父类方法默认情况下，只会创建在 `rect` 范围内的视图的布局属性。所以如果你想把原来不会被现实的视图也显示出来的话，你就不得不自己把所有布局属性都创建出来，放入数组中。
+
+最好不要直接修改这个数组里的元素，而是创建一个新的拷贝。否则当你想增删修改 cell 的时候会出现下面的问题，极有可能引起应用崩溃：
+
+![拷贝数组](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/custom_copy.png?raw=true)
+
+修改的时候我们还要判断 `attrs.representedElementKind == nil`。这是由于这个属性数组包含了所有视图的布局信息，包括 cell,supplementary view,decortation view。当 `representedElementKind` 是 `nil` 的时候，表示这个布局信息是 Item 的布局信息。
+
+#### 重写其他布局方法
+
+除了`layoutAttributesForElementsInRect:` 方法，还提供了如下方法用来分别订制 Item，SupplementaryView，DecorationView：
+
+- `layoutAttributesForItemAtIndexPath:`
+- `layoutAttributesForSupplementaryViewOfKind:atIndexPath:`
+- `layoutAttributesForDecorationViewOfKind:atIndexPath:`
+
+这些方法用来订制某个特殊的视图的布局。系统不会主动调用你你重写的这几个方法，需要你自己在 `layoutAttributesForElementsInRect:` 中手动调用。比如将第二栏的第五个 Item 及第二栏的 SupplementaryView 旋转 45°：
+
+```objc
+- (NSArray<UICollectionViewLayoutAttributes *> *)layoutAttributesForElementsInRect:(CGRect)rect {
+    NSArray *array = [super layoutAttributesForElementsInRect:rect];
+    NSMutableArray *newArray = [NSMutableArray array];
+    for (UICollectionViewLayoutAttributes *attrs in array) {
+        UICollectionViewLayoutAttributes *newAttrs = [attrs copy];
+        // 设置每一个 item
+        if (attrs.representedElementKind == nil) {
+            if (attrs.indexPath.item == 5 && attrs.indexPath.section == 1) {
+                newAttrs = [self layoutAttributesForItemAtIndexPath:[NSIndexPath indexPathForItem:5 inSection:1]];
+            }
+        }
+        // 设置每一个 SupplementaryView
+        if (attrs.representedElementCategory == UICollectionElementCategorySupplementaryView) {
+            if (attrs.indexPath.section == 1) {
+                newAttrs = [self layoutAttributesForSupplementaryViewOfKind:UICollectionElementKindSectionHeader atIndexPath:[NSIndexPath indexPathForItem:0 inSection:1]];
+            }
+        }
+        [newArray addObject:newAttrs];
+    }
+    
+    return newArray;
+}
+
+- (UICollectionViewLayoutAttributes *)layoutAttributesForItemAtIndexPath:(NSIndexPath *)indexPath {
+    UICollectionViewLayoutAttributes *itemAttributes = [super layoutAttributesForItemAtIndexPath:indexPath];
+    itemAttributes.transform = CGAffineTransformMakeRotation(-45);
+    return itemAttributes;
+}
+
+- (UICollectionViewLayoutAttributes *)layoutAttributesForSupplementaryViewOfKind:(NSString *)elementKind atIndexPath:(NSIndexPath *)indexPath {
+    UICollectionViewLayoutAttributes *supplementaryAttributes = [super layoutAttributesForSupplementaryViewOfKind:elementKind atIndexPath:indexPath];
+    itemAttributes.transform = CGAffineTransformMakeRotation(45);
+    return supplementaryAttributes;
+}
+```
+
+其中判断 `representElementCategory` 是否为 `UICollectionElementCategorySupplementaryView` 来区分是否是 SupplementaryView。
 
 
 
+#### 使用 DecorationView
+
+DecorationView 不展示任何信息，所以不需要再 ViewController 中添加任何代码，所有的代码都在 `UICollectionViewFlowLayout` 的子类中。DecorationView 也是继承于 `UICollectionReusableView`。
+
+##### 创建一个 DecorationView 实例
+
+DecorationView 除了继承于 `UICollectionReusableView` 之外和普通 View 的创建毫无差异。重写它的 `init` 方法：
+
+```objc
+- (instancetype)initWithFrame:(CGRect)frame {
+    if (!(self = [super initWithFrame:frame])) {
+        return nil;
+    }
+    _decorationView = [[UIView alloc] initWithFrame:frame];
+    _decorationView.backgroundColor = [UIColor blueColor];
+    [self addSubview:_decorationView];
+    return self;
+}
+
+- (void)layoutSubviews {
+    _decorationView.frame = self.bounds;
+}
+```
+
+##### 重写 `layoutAttributesForDecorationViewOfKind:atIndexPath:`
+
+如果你愿意，你想设置多少个 DecorationView 就可以设置多少个。下面将实现为某个 section 添加一个 DecorationView 的背景：
+
+```objc
+- (UICollectionViewLayoutAttributes *)layoutAttributesForDecorationViewOfKind:(NSString *)elementKind atIndexPath:(NSIndexPath *)indexPath {
+    UICollectionViewLayoutAttributes *decorationAttributes = [UICollectionViewLayoutAttributes layoutAttributesForDecorationViewOfKind:elementKind withIndexPath:indexPath];
+    UICollectionViewLayoutAttributes *newDecorationAttributes = [decorationAttributes copy];
+    if ([elementKind isEqualToString:SIMPLEDECORATIONKIND]) {
+        NSIndexPath *indexPathFirst = [NSIndexPath indexPathForItem:0 inSection:1];
+        NSIndexPath *indexPathLast = [NSIndexPath indexPathForItem:[self.collectionView numberOfItemsInSection:1] inSection:1];
+        UICollectionViewLayoutAttributes *attrsFirst = [self layoutAttributesForItemAtIndexPath:indexPathFirst];
+        UICollectionViewLayoutAttributes *attrsLast = [self layoutAttributesForItemAtIndexPath:indexPathLast];
+        newDecorationAttributes.frame = CGRectMake(attrsFirst.frame.origin.x, attrsFirst.frame.origin.y, self.collectionView.frame.size.width, attrsLast.frame.origin.y-attrsFirst.frame.origin.y);
+        // 想要作为背景图像，就一定要将其 zIndex 设置为 -1
+        newDecorationAttributes.zIndex = -1;
+    }
+    return newDecorationAttributes;
+}
+
+```
+
+这个方法中，通过 section1 中最后一个 item 与第一个 item，计算得出了 section 的大小以及位置。将设置为 `UICollectionViewLayoutAttributes` 的 `frame` 属性。
+
+由于是背景所以一定要将其 `zIndex` 设置为一个负值，使其永远在图层的下部。
+
+这里判断的 `SIMPLEDECORATIONKIND` 是一个自己设定的字符串，用来标识是哪个 DecorationView。
+
+##### 添加布局属性
+
+在 `layoutAttributesForElementsInRect:` 中调用上面的方法，将其属性添加到布局属性数组中。
+
+```objc
+- (NSArray<UICollectionViewLayoutAttributes *> *)layoutAttributesForElementsInRect:(CGRect)rect {
+    NSArray *array = [super layoutAttributesForElementsInRect:rect];
+    NSMutableArray *newArray = [NSMutableArray array];
+    // 设置 Item 和 SupplementaryView
+  	...
+    // 设置 DecorationView
+    UICollectionViewLayoutAttributes *newAttrs = [self layoutAttributesForDecorationViewOfKind:SIMPLEDECORATIONKIND atIndexPath:[NSIndexPath indexPathForItem:0 inSection:1]];
+    [newArray addObject:newAttrs];
+    
+    return newArray;
+}
+```
 
 
 
+##### 初始方法中注册自己
+
+由于 DecorationView 是和数据无关的，不需要在 ViewController 中添加任何代码。我们在 `UICollectionViewFlowLayout` 中注册自己：
+
+```objc
+//  SimpleCollectionViewFlowLayout.m
+
+static NSString *SIMPLEDECORATIONKIND = @"Simple Decoration Kind";
+- (instancetype)init {
+    if (!(self = [super init])) {
+        return nil;
+    }
+  	// layout 的其他初始化设置
+	...
+    [self registerClass:[SimpleDecorationView class] forDecorationViewOfKind:SIMPLEDECORATIONKIND];
+    return self;
+}
+```
+
+为什么要注册呢？因为布局属性中只知道 kind 这个标识的字符串是不行的，要将 kind 和 class 关联起来。所以需要 `registerClass:forDecorationViewOfKind:` 这一个步骤。Item 和 SupplementaryView 的注册也是类似的道理（这两个的注册是为了 class 和重用数组关联起来）。
+
+最终的显示效果：
+
+![最终效果](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/CollectionView_Demo.png?raw=true)
 
 
 
+###  UICollectionViewLayoutAttributes 的属性
+
+布局属性 `UICollectionViewLayoutAttributes` 包含了许多属性：
+
+- Frame
+- Center
+- Size
+- 3D Transform
+- Alpha
+- Z-Index
+- Hidden
+- Element category （cell，supplementary view，or decoration view）
+- Element kind （nil for cells）
+
+最后两个属性用来判断视图的类型，这个在之前也用到过了。`representedElementCategory` 是一个枚举，包含了表示 cell，SupplementaryView，DecorationView 的几个枚举值。`representedElementKind` 其实就是注册 SupplementaryView 和 DecorationView 时候传入的 kind，由于 Item 注册的时候不需要传入 kind，所以 Item 布局的这个属性就是 nil。
+
+### 一个例子
+
+如何将布局切换到下面这个图片的效果呢？下面将分析几个基本点，具体详见 Demo。
+
+![例子](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/CollectionView_Example.png?raw=true)
 
 
+
+#### 切换布局
+
+一个 CollectionView 可以通过其自身的 `setCollectionViewLayout:animated:` 方法随时切换布局。在切换布局后，需要通过 `invalidateLayout` 方法刷新新设置的布局。
+
+#### 一列展示一个
+
+一列展示一个，你可以重写 Item 的布局方法手动计算每一个 Item 的 `frame`，但是这是没有必要的。`UICollectionViewFlowLayout` 默认在当前列不能排下下一个 Item 的时候自动换列，所以我们只要将 `minimumInteritemSpacing` 设置的很大就可以了。
+
+#### 设置布局属性
+
+我们要对在屏幕上显示的视图，根据其所在的位置设置布局属性。我们可以通过自定义的 FlowLayout 类拿到 CollectionView 实例的 `contentOffset`（`self.collectionView.contentOffset.x`），然后和布局属性的 `frame` 进行比较。
+
+```objc
+- (NSArray<UICollectionViewLayoutAttributes *> *)layoutAttributesForElementsInRect:(CGRect)rect {
+    NSArray *array = [super layoutAttributesForElementsInRect:rect];
+    NSMutableArray *newArray = [NSMutableArray array];
+    float centerX = self.collectionView.contentOffset.x + self.collectionView.bounds.size.width/2;
+    
+    for (UICollectionViewLayoutAttributes *attrs in array) {
+        UICollectionViewLayoutAttributes *newAttrs = [attrs copy];
+        if (newAttrs.representedElementCategory == UICollectionElementCategorySupplementaryView) {
+            continue;
+        }
+        float offset = 1.5 - fabs(centerX - attrs.center.x)/self.collectionView.frame.size.width;
+        newAttrs.transform = CGAffineTransformScale(newAttrs.transform, offset, offset);
+        [newArray addObject:newAttrs];
+    }
+    return newArray;
+}
+```
+
+
+
+#### 动态计算布局属性
+
+获取布局属性只会在加载的时候进行一次，而这个例子需要时时根据 offset 更新。这就需要重写 FlowLayout 的 `shouldInvalidateLayoutForBoundsChange:` 方法，并返回 `YES`，保证用户滑动的时候，布局属性的方法总是会重新计算的：
+
+```objc
+- (BOOL)shouldInvalidateLayoutForBoundsChange:(CGRect)newBounds {
+    return YES;
+}
+```
+
+#### 滑动到特定位置
+
+这个例子中需要在停止滑动的时候，图片总是在最中间的，那就需要改变最终的 offset。可以重写 `targetContentOffsetForProposedContentOffset:withScrollingVelocity:`，该方法输入理想情况下的 `contentOffset`，返回一个自己设定的 `contentOffset`。因此，你可以找到离屏幕中心最近的布局属性，然后计算其与中心的差值作为补偿值：
+
+```objc
+- (CGPoint)targetContentOffsetForProposedContentOffset:(CGPoint)proposedContentOffset withScrollingVelocity:(CGPoint)velocity {
+    CGRect proposedRect = CGRectMake(proposedContentOffset.x, 0, self.collectionView.bounds.size.width, self.collectionView.bounds.size.height);
+    NSArray *array = [self layoutAttributesForElementsInRect:proposedRect];
+    float offset = 1000;
+    for (UICollectionViewLayoutAttributes *attrs in array) {
+        if (attrs.representedElementCategory == UICollectionElementCategorySupplementaryView) {
+            continue;
+        }
+        if (fabs(attrs.center.x - (proposedContentOffset.x+self.collectionView.bounds.size.width/2))<fabs(offset)) {
+            offset = attrs.center.x - (proposedContentOffset.x+self.collectionView.bounds.size.width/2);
+        }
+    }
+    return CGPointMake(proposedContentOffset.x + offset, proposedContentOffset.y);
+}
+```
+
+### 总结
+
+> 整个 CollectionView 可以划分为两个部分，视图部分和布局部分。这两者如何联系在一起的，或者说给定一块区域到底是如何知道应该显示哪个视图的呢？通过 `indexPath` 以及 `representedElementKind`。这两个都是 `UICollectionViewLayoutAttributes` 中的属性。
+>
+> 在视图加载的时候，会在 `layoutAttributesForElementsInRect` 返回的数组中找到会在屏幕上显示的布局，然后根据这个布局的 `indexPath` 以及 `representedElementKind` 通过 `collectionView:viewForSupplementaryElementOfKind:atIndexPath`,`collectionView:cellForItemAtIndexPath` 这两个代理方法，获取相对应的视图展示出来。
+>
+> 那么为什么有了 `indexPath` 了还要 `representedElementKind` 呢？对于 Item 来说，`indexPath` 可以通过 `item` 和 `section` 唯一地确定视图。但是对于 SupplementaryView 的 DecorationView，这两个视图通常只用到了 `section` 而不用 `item`（其实你想用 `item` 来标识也是可以的，`representedElementKind` 其实就相当于是个 `item` 的作用。比如一个 SupplementaryView 的头尾视图，你可以规定 `item` 为0代表头视图，`item` 为1代表尾视图，但是这样肯定没有用 `UICollectionElementKindSectionHeader`,`UICollectionElementKindSectionFooter` 来的直观），所以就要用一个 `representedElementKind` 来标识在同一个 `section` 内，这个位置到底是应该显示哪个视图。
+
+
+
+## 使用 `UICollectionViewLayout` 的自定义布局
 
 
 

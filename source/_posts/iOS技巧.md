@@ -218,7 +218,7 @@ UIImageRenderingModeAlwaysTemplate   // 始终根据Tint Color绘制图片，忽
 >
 > 什么时候用 autolayout 什么时候用 frame 就见仁见智了。一般来说只与父视图有关的话，那么就用 frame 设置位置，如果与兄弟视图有关的话，还是用 autolayout 教好一些。
 >
-> 同样的还有 ViewController 的 `viewWillLayoutSubviews` 方法，这个方法会在 VC 的 view 调用其 `layoutSubViews` 前调用。如果要设置 VC 中的视图的 frame，可以考虑在这个方法里设置。但是一般我们都是在 `viewDidLoad` 方法里设置的无论是 frame 还是 constraint，这是为什么呢？因为 VC 的 view 永远不用担心大小为 0.
+> 同样的还有 ViewController 的 `viewDidLayoutSubviews` 方法，这个方法会在 VC 的 view 调用其 `layoutSubViews` 后调用（相当于调用了 `[super layoutSubViews]`）。如果要设置 VC 中的视图的 frame，可以考虑在这个方法里设置。但是一般我们都是在 `viewDidLoad` 方法里设置的无论是 frame 还是 constraint，这是为什么呢？因为 VC 的 view 永远不用担心大小为 0.
 
 #### 改变约束的注意事项
 
