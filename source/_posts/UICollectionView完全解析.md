@@ -7,9 +7,11 @@ tags:
 
 花了一周的时间看完了《iOS UICollectionView:The Complete Guide》。英文书读起来还是有点累人的，读完写了些代码做了些笔记和大家分享。书中深入的东西不是太多，时间不充裕的话不太建议大家自己读一遍了。
 
+<!--more-->
+
 ![书名](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/UICollectionViewBookName.jpeg?raw=true)
 
-<!--more-->
+
 
 ## 基本展示
 
