@@ -1,13 +1,11 @@
-title: 你真的会使用 UICollectionView 了吗？
+title: 一篇较为详细的 UICollectionView 使用方法总结
 date: 2017/7/27 14:07:12  
 categories: iOS
 tags: 
 	- 基本控件	
 ---
 
-UICollectionView 功能强大，方法众多。实现一个简单的布局并不难，但是你真的敢说自己会使用 UICollectionView 了吗？
-
-本篇是 《iOS UICollectionView:The Complete Guide》 的读书笔记，与大家分享。
+花了一周的时间看完了《iOS UICollectionView:The Complete Guide》。英文书读起来还是有点累人的，读完写了些代码做了些笔记和大家分享。书中深入的东西不是太多，时间不充裕的话不太建议大家自己读一遍了。
 
 ![书名](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/UICollectionViewBookName.jpeg?raw=true)
 
@@ -210,7 +208,7 @@ static NSString *SIMPLECELLIDENTIFIER = @"Simple Cell Identifier";
 
 这里注册的是 header:`UICollectionElementKindSectionHeader`，类似的还可以注册 footer:`UICollectionElementKindSectionFooter`
 
-另外，一定要设置 `UICollectionViewFlowLayout` 的 `headerReferenceSize` 属性，其默认是 `CGSizeZero` 的，如果不手动设置，Supplementary View 就无法显示。
+另外，一定要设置 `UICollectionViewFlowLayout` 的 `headerReferenceSize` 属性，其默认是 `CGSizeZero` 的，如果不手动设置，Supplementary View 就无法显示。**但是切记，如果你设置了这个值，就一定要实现 `collectionView:viewForSupplementaryElementOfKind:atIndexPath:` 返回一个 SupplementaryView，否则就会产生异常。**
 
 
 
@@ -331,7 +329,7 @@ static NSString *SIMPLECELLIDENTIFIER = @"Simple Cell Identifier";
 
 ![实际布局](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/custom_layout.png?raw=true)
 
-#### 继承 `UICollectionViewFlowLayout`
+#### 继承 UICollectionViewFlowLayout
 
 创建一个类，继承于 `UICollectionViewFlowlayout`，重写它 `init` 方法。我们可以把之前写在 ViewController 中的对于 layout 的设置移到 `init` 方法中，作为默认实现，减少 VC 中的代码量：
 
@@ -352,7 +350,7 @@ static NSString *SIMPLECELLIDENTIFIER = @"Simple Cell Identifier";
 
 
 
-#### 重写布局方法`layoutAttributesForElementsInRect:`
+#### 重写布局方法 layoutAttributesForElementsInRect:
 
 我们需要重写 `layoutAttributesForElementsInRect:` 方法，该方法返回一个包含所有布局信息 `UICollectionViewLayoutAttributes`的数组。比如我们可以把 CollectionView 中所有 cell 都旋转 45°：
 
@@ -387,7 +385,7 @@ static NSString *SIMPLECELLIDENTIFIER = @"Simple Cell Identifier";
 - `layoutAttributesForSupplementaryViewOfKind:atIndexPath:`
 - `layoutAttributesForDecorationViewOfKind:atIndexPath:`
 
-这些方法用来订制某个特殊的视图的布局。系统不会主动调用你你重写的这几个方法，需要你自己在 `layoutAttributesForElementsInRect:` 中手动调用。比如将第二栏的第五个 Item 及第二栏的 SupplementaryView 旋转 45°：
+这些方法用来订制某个特殊的视图的布局。系统**一般**不会主动调用你你重写的这几个方法（**不是绝对不会调用啊**，比如下面的移动 Item 的时候，就是系统调用这个方法获取被点击的 Item 的布局属性。所以最好还是实现这几个方法，然后手动在 `layoutAttributesForElementsInRect:` 中调用），需要你自己在 `layoutAttributesForElementsInRect:` 中手动调用。比如将第二栏的第五个 Item 及第二栏的 SupplementaryView 旋转 45°：
 
 ```objc
 - (NSArray<UICollectionViewLayoutAttributes *> *)layoutAttributesForElementsInRect:(CGRect)rect {
@@ -454,7 +452,7 @@ DecorationView 除了继承于 `UICollectionReusableView` 之外和普通 View �
 }
 ```
 
-##### 重写 `layoutAttributesForDecorationViewOfKind:atIndexPath:`
+##### 重写 layoutAttributesForDecorationViewOfKind:atIndexPath:
 
 如果你愿意，你想设置多少个 DecorationView 就可以设置多少个。下面将实现为某个 section 添加一个 DecorationView 的背景：
 
@@ -473,7 +471,6 @@ DecorationView 除了继承于 `UICollectionReusableView` 之外和普通 View �
     }
     return newDecorationAttributes;
 }
-
 ```
 
 这个方法中，通过 section1 中最后一个 item 与第一个 item，计算得出了 section 的大小以及位置。将设置为 `UICollectionViewLayoutAttributes` 的 `frame` 属性。
@@ -481,6 +478,16 @@ DecorationView 除了继承于 `UICollectionReusableView` 之外和普通 View �
 由于是背景所以一定要将其 `zIndex` 设置为一个负值，使其永远在图层的下部。
 
 这里判断的 `SIMPLEDECORATIONKIND` 是一个自己设定的字符串，用来标识是哪个 DecorationView。
+
+可以通过 `[UICollectionViewLayoutAttributes layoutAttributesForDecorationViewOfKind:elementKind withIndexPath:indexPath]` 这个类方法获取了一个默认的布局属性的值（之前我们都是用 super 获取的），Item 和 SupplementaryView 也有类似的方法：
+
+- `[UICollectionViewLayoutAttributes layoutAttributesForCellWithIndexPath:indexPath]`
+- `[UICollectionViewLayoutAttributes layoutAttributesForSupplementaryViewOfKind:elementKind withIndexPath:indexPath]`
+
+
+- `[UICollectionViewLayoutAttributes layoutAttributesForDecorationViewOfKind:elementKind withIndexPath:indexPath]`
+
+
 
 ##### 添加布局属性
 
@@ -544,6 +551,51 @@ static NSString *SIMPLEDECORATIONKIND = @"Simple Decoration Kind";
 - Element kind （nil for cells）
 
 最后两个属性用来判断视图的类型，这个在之前也用到过了。`representedElementCategory` 是一个枚举，包含了表示 cell，SupplementaryView，DecorationView 的几个枚举值。`representedElementKind` 其实就是注册 SupplementaryView 和 DecorationView 时候传入的 kind，由于 Item 注册的时候不需要传入 kind，所以 Item 布局的这个属性就是 nil。
+
+
+
+### 继承 UICollectionViewLayout
+
+一般情况下，能用 `UICollectionViewFlowLayout` 的，我们就不需要自己继承 `UICollectionViewLayout`。
+
+新建一个类继承于 `UICollectionViewLayout`，该类提供了一个方法 `prepareLayout` 用来做布局前的准备，在每次布局的时候都会调用。我们可以把之前在 `init` 中的设置放到这个方法中：
+
+```objc
+- (void)prepareLayout {
+    [super prepareLayout];
+    CGSize size = self.collectionView.bounds.size;
+    _cellCount = [self.collectionView numberOfItemsInSection:0];
+    _center = CGPointMake(size.width/2, size.height/2);
+    _radius = size.width/2.5;
+}
+```
+
+同样的我们需要实现 `layoutAttributesForElementsInRect:` 来获取布局属性：
+
+```objc
+- (NSArray<UICollectionViewLayoutAttributes *> *)layoutAttributesForElementsInRect:(CGRect)rect {
+    NSMutableArray *attrs = [NSMutableArray array];
+    for (int i = 0; i < self.cellCount; i++) {
+        NSIndexPath *indexPath = [NSIndexPath indexPathForItem:i inSection:0];
+        [attrs addObject:[self layoutAttributesForItemAtIndexPath:indexPath]];
+    }
+    return attrs; 
+}
+
+- (UICollectionViewLayoutAttributes *)layoutAttributesForItemAtIndexPath:(NSIndexPath *)indexPath {
+    UICollectionViewLayoutAttributes *attrs = [UICollectionViewLayoutAttributes layoutAttributesForCellWithIndexPath:indexPath];
+    attrs.size =  CGSizeMake(70, 70);
+    attrs.center = CGPointMake(self.center.x +self.radius * cosf(2 * indexPath.item * M_PI / self.cellCount -M_PI_2), self.center.y +self.radius * sinf(2 * indexPath.item * M_PI /self.cellCount - M_PI_2));
+    attrs.transform3D = CATransform3DMakeRotation(2 * M_PI *indexPath.item / self.cellCount, 0, 0, 1);
+    return attrs;
+}
+```
+
+和 `UICollectionViewFlowLayout` 不同的是，这里的所有布局属性都需要我们自己实现，没有父类方法可以调用了。另外，由于 `collectionView:sizeForItemAtIndexPath:` 这个获取 Item 大小的方法也是 FlowLayout 提供的，所以我们需要自己设置布局属性的 `size`。
+
+### 
+
+
 
 ### 一个例子
 
@@ -627,11 +679,252 @@ static NSString *SIMPLEDECORATIONKIND = @"Simple Decoration Kind";
 
 
 
-## 使用 `UICollectionViewLayout` 的自定义布局
+## 一些应用
+
+### 移动 Item
+
+首先，在 ViewController 中为 CollectionView 添加长按手势：
+
+```objc
+- (void)viewDidLoad {
+	...
+    UILongPressGestureRecognizer *longGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handlelongGesture:)];
+    [self.collectionView addGestureRecognizer:longGesture];
+}
+```
+
+实现手势操作，算是比较固定的套路：
+
+```objc
+//再实现手势操作
+- (void)handlelongGesture:(UILongPressGestureRecognizer *)longGesture {
+    //判断手势状态
+    switch (longGesture.state) {
+        case UIGestureRecognizerStateBegan:{
+            //判断手势落点位置是否在路径上
+            NSIndexPath *indexPath = [self.collectionView indexPathForItemAtPoint:[longGesture locationInView:self.collectionView]];
+            if (indexPath == nil) {
+                break;
+            }
+            //在路径上则开始移动该路径上的cell
+            [self.collectionView beginInteractiveMovementForItemAtIndexPath:indexPath];
+        }
+            break;
+        case UIGestureRecognizerStateChanged:
+            //移动过程当中随时更新cell位置
+            [self.collectionView updateInteractiveMovementTargetPosition:[longGesture locationInView:self.collectionView]];
+            break;
+        case UIGestureRecognizerStateEnded:
+            //移动结束后关闭cell移动
+            [self.collectionView endInteractiveMovement];
+            break;
+        default:
+            [self.collectionView cancelInteractiveMovement];
+            break;
+    }
+}
+```
+
+其中 CollectionView 提供了 `indexPathForItemAtPoint:` 方法通过坐标找到对应的 Item。 
+
+在 CollectionView 中允许 Item 移动：
+
+```objc
+//返回YES允许其item移动
+- (BOOL)collectionView:(UICollectionView *)collectionView canMoveItemAtIndexPath:(NSIndexPath *)indexPath{
+    return YES;
+}
+
+//移动item时回调
+- (void)collectionView:(UICollectionView *)collectionView moveItemAtIndexPath:(NSIndexPath *)sourceIndexPath toIndexPath:(NSIndexPath*)destinationIndexPath {
+}
+```
+
+
+
+### 点击 Item 高亮操作
+
+实现方式是在高亮的回调方法中获取当前点击的 Item，然后对其布局属性进行修改：
+
+```objc
+// 允许选中时，高亮
+-(BOOL)collectionView:(UICollectionView *)collectionView shouldHighlightItemAtIndexPath:(NSIndexPath *)indexPath{
+    return YES;
+}
+// 高亮完成后回调
+// 放大缩小效果
+-(void)collectionView:(UICollectionView *)collectionView didHighlightItemAtIndexPath:(NSIndexPath *)indexPath{
+    UICollectionViewCell *selectedCell = [collectionView cellForItemAtIndexPath:indexPath];
+    [UIView animateWithDuration:1 animations:^{
+        selectedCell.transform = CGAffineTransformMakeScale(2.0f, 2.0f);
+    }];
+}
+// 由高亮转成非高亮完成时的回调
+-(void)collectionView:(UICollectionView *)collectionView didUnhighlightItemAtIndexPath:(NSIndexPath *)indexPath{
+    UICollectionViewCell *selectedCell = [collectionView cellForItemAtIndexPath:indexPath];
+    [UIView animateWithDuration:1 animations:^{
+        selectedCell.transform = CGAffineTransformMakeScale(1.0f, 1.0f);
+    }];
+}
+```
+
+
+
+### 无限轮播
+
+无限轮播的主要方法就是将 CollectionView 的 Item 设置的足够多以至于让用户不能一下子滚动到底部。并且，在滑动到临界区的时候修改器 `contentOffset`.
+
+#### 初始化
+
+比如要实现一个图片的轮播，collectionview 传入了一组 url：
+
+```objc
+- (instancetype)initWithURLs:(NSArray <NSURL *> *)urls {
+    // UICollectionViewFlowLayout
+    self = [super initWithFrame:CGRectZero collectionViewLayout:[[LoopViewLayout alloc] init]];
+    if (self) {
+        _urls = urls;
+        
+        self.dataSource = self;
+        self.delegate = self;
+        
+      	// 自定义了一个 LoopViewCell 具体布局按照实际情况设置
+        [self registerClass:[LoopViewCell class] forCellWithReuseIdentifier:loopViewCellId];
+        
+        // 初始显示第二组 [0,1,2] [3(_urls.count),4,5]
+        // 主队列：
+        // 1. 安排任务在主线程上执行
+        // 2. 如果主线程当前有任务，主队列暂时不调度任务！所以等cell的数据源和代理方法执行完毕后才执行这个block里面的滚动任务.
+        dispatch_async(dispatch_get_main_queue(), ^{
+            
+            NSIndexPath *indexPath = [NSIndexPath indexPathForItem:_urls.count inSection:0];
+            
+            // 滚动位置！
+            [self scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionLeft animated:NO];
+        });
+    }
+    return self;
+}
+```
+
+初始化的时候先将 collectionview 滚动到第二组的第一个cell。
+
+
+
+#### 设置cell个数
+
+```objc
+- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
+    //这里为了防止滚动到最后一页来回跳动导致的卡顿,多写点组数让一直到不了最后一组,因为cell重用,所以不影响内存.
+    return _urls.count * 100;
+}
+```
+
+防止滚动太多引起卡顿，所以将数量设置的很大
+
+#### 边界设置
+
+```objc
+#pragma mark - UICollectionViewDelegate
+- (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView {
+    // 1. 获取当前停止的页面
+    NSInteger offset = scrollView.contentOffset.x / scrollView.bounds.size.width;
+    // 2. 第0页，调转到，第1组的第0页
+    // 最后一页，跳转到第0组的最后一页
+    if (offset == 0 || offset == ([self numberOfItemsInSection:0] - 1)) {
+//        NSLog(@"%zd", offset);
+        // 第 0 页
+        if (offset == 0) {
+            offset = _urls.count;
+        } else {
+            offset = _urls.count - 1;
+        }
+        // 重新调整 contentOffset
+        scrollView.contentOffset = CGPointMake(offset * scrollView.bounds.size.width, 0);
+    }
+}
+```
+
+自行按照情况设置 contentOffse
+
+
+
+### 流式布局
+
+其实就是在 `prepareLayout`  方法中，自定义了每一个 Item 的布局属性。
+
+```objc
+@interface MyLayout : UICollectionViewFlowLayout
+@property(nonatomic,assign)int itemCount;
+@end
+  
+@interface MyLayout()
+@property (nonatomic,assign) CGFloat maxHeight;
+@end
+@implementation MyLayout
+{
+    //这个数组就是我们自定义的布局配置数组
+    NSMutableArray * _attributeAttay;
+}
+//数组的相关设置在这个方法中
+//布局前的准备会调用这个方法
+-(void)prepareLayout{
+    _attributeAttay = [[NSMutableArray alloc]init];
+    [super prepareLayout];
+    //演示方便 我们设置为静态的2列
+    //计算每一个item的宽度
+    float WIDTH = ([UIScreen mainScreen].bounds.size.width-self.sectionInset.left-self.sectionInset.right-self.minimumInteritemSpacing)/2;
+    //定义数组保存每一列的高度
+    //这个数组的主要作用是保存每一列的总高度，这样在布局时，我们可以始终将下一个Item放在最短的列下面
+    CGFloat colHight[2]={self.sectionInset.top,self.sectionInset.bottom};
+    //itemCount是外界传进来的item的个数 遍历来设置每一个item的布局
+    for (int i=0; i<_itemCount; i++) {
+        //设置每个item的位置等相关属性
+        NSIndexPath *index = [NSIndexPath indexPathForItem:i inSection:0];
+        //创建一个布局属性类，通过indexPath来创建
+        UICollectionViewLayoutAttributes * attris = [UICollectionViewLayoutAttributes layoutAttributesForCellWithIndexPath:index];
+        //随机一个高度 在40——190之间
+        CGFloat hight = arc4random()%150+40;
+        //哪一列高度小 则放到那一列下面
+        //标记最短的列
+        int width=0;
+        if (colHight[0]<colHight[1]) {
+            //将新的item高度加入到短的一列
+            colHight[0] = colHight[0]+hight+self.minimumLineSpacing;
+            width=0;
+        }else{
+            colHight[1] = colHight[1]+hight+self.minimumLineSpacing;
+            width=1;
+        }
+        
+        //设置item的位置
+        attris.frame = CGRectMake(self.sectionInset.left+(self.minimumInteritemSpacing+WIDTH)*width, colHight[width]-hight-self.minimumLineSpacing, WIDTH, hight);
+        [_attributeAttay addObject:attris];
+        
+    }
+    if (colHight[0]>colHight[1]) {
+        _maxHeight = colHight[0];
+    }else{
+        _maxHeight = colHight[1];
+    }
+    
+}
+
+-(CGSize)collectionViewContentSize{
+    return CGSizeMake(100, _maxHeight);
+}
+//这个方法中返回我们的布局数组
+-(NSArray<UICollectionViewLayoutAttributes *> *)layoutAttributesForElementsInRect:(CGRect)rect{
+    return _attributeAttay;
+}
+@end
+```
 
 
 
 
+
+[本文Demo](https://github.com/zhang759740844/MyOCDemo/tree/develop/UICollectionViewDemo)
 
 
 
