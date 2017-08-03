@@ -613,7 +613,7 @@ static NSString *SIMPLEDECORATIONKIND = @"Simple Decoration Kind";
 
 #### 一列展示一个
 
-一列展示一个，你可以重写 Item 的布局方法手动计算每一个 Item 的 `frame`，但是这是没有必要的。`UICollectionViewFlowLayout` 默认在当前列不能排下下一个 Item 的时候自动换列，所以我们只要将 `minimumInteritemSpacing` 设置的很大就可以了。
+一列展示一个，你可以重写 Item 的布局方法手动计算每一个 Item 的 `frame`，但是这是没有必要的。`UICollectionViewFlowLayout` 默认在当前列不能排下下一个 Item 的时候自动换列，所以我们只要将 `minimumInteritemSpacing` 设置的很大就可以了。
 
 #### 设置布局属性
 
