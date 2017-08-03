@@ -74,21 +74,16 @@ CocoaPods 通过组件 CocoaPods-Downloader 已经成功将所有的依赖下载
 
 #### :path
 
-如果是我们自己开发的私有库，并且在开发阶段的情况下，可能就希望开发模式进行引用，则可以使用path参数：`:path => '~/Documents/AFNetworking'`
+如果是我们自己开发的私有库，并且在**开发阶段**的情况下，可能就希望开发模式进行引用，则可以使用path参数：`:path => '~/Documents/AFNetworking'`
 
 ```ruby
 target ‘Mike’ do
 pod 'RNFS', :path => '../node_modules/react-native-fs'
-pod 'React', :path => '../node_modules/react-native', :subspecs => [
-  'Core',
-  'RCTText',
-  'RCTNetwork',
-  'RCTWebSocket',
-  'RCTImage',
-  'RCTAnimation',
-]
+pod 'React', :path => '../node_modules/react-native'
 end
 ```
+
+**cocoapods 会自动到 path 所在文件夹内查找 `RNFS.podspec` 以及 `React.podspec` 文件，然后根据这两个文件内提供的信息创建库**（下面介绍如何创建库的时候会说到）。
 
 #### platform
 
@@ -233,13 +228,32 @@ end
 其中要说明的是： 
 
 1. source 可以填写远端 git 仓库，也可以是像我写的那样的本地 git 仓库。
+
 2. 依赖项不仅要包含你自己类库的依赖，还要包括所有第三方类库的依赖，只有这样当你的类库打包成 .a 或 .framework 时才能让其他项目正常使用。
+
 3. source_file 路径中出现的通配符 `*` 表示匹配任意字符， `**` 表示匹配所有当前文件夹和子文件夹。
+
 4. source_bundles 中花括号内的 `'StaticWithCocoapods'` 就表示一个 `StaticWithCocoapods` bundle。
-5. 这里的 dependency 一般情况下是指 cocoapods 的官方库。当然你也可以给自己创建的库添加自己的私有库，依赖同样是直接写在 dependency 里。由于 **dependency 中无法指定地址**。因此，如果添加私有库的时候要在使用这个库的工程的 Podfile 要添加你私有库的地址。这样的话，在下载 s.dependency 时，官方库找不到的情况下，就会到私有库中查找。
-6. 有了 s.dependency 为什么还要用 s.subspec 呢？说明5中说到，dependency 无法指定地址。会有两种情况：1.别人用你的库的时候要在工程的 Podfile 文件中添加你的私有库的地址。2.如果你想用 cocoapods-packager 将你的库打包，你只能将你的私有库手动添加到项目的项目中。所以综上，你的私有库最好不要使用 s.dependency 的形式添加，使用 s.subspec 添加你的私有库信息，你的子私有库中的文件将直接回被添加到父库中编译。比如我在一个 `test_oc` 的库中添加了 `Aswift` 的 subspec，在 pod install 后得到如下文件结构：
+
+5. 这里的 dependency 一般情况下是 cocoapods 的官方库中的。当然你也可以给自己创建的库添加自己的私有库，同样是直接写在 dependency 里。但是由于 **dependency 表示编译器需要这样的一个依赖，没有指定从哪里获取**，因此，添加私有库的时候要在使用这个库的工程的 Podfile 要添加你私有库的远端地址。这样的话，在下载 s.dependency 时，官方库找不到的情况下，就会到私有库的远端地址中查找。如果都找不到就会 `pod install` 失败。有一种情况不用添加私有库的远端地址，也可以 install 成功。那就是**在 Podfile 中添加这个私有库，并为这个私有库设置本地路径 `:path`**。由于 **s.dependency 其实是创建了一个外部依赖，所以只要外部存在这个私有库，s.denpendency 就会自动链接过去**。这一点非常非常重要。我们平时用 pod 实现组件化就是这么做的。比如你的主工程同时依赖于私有库 pod A，pod B，以及本地私有库 pod C。与此同时，pod A 和 pod B 也依赖于 pod C。这个时候是不是一定要将 pod C 放到远端，然后才能成功设置 pod A 和 pod B 呢？肯定不用。因为 pod C 已经通过本地路径引入: `pod 'C', :path => '../'`。所以 pod A 和 pod B 的 s.dependency 就不需要再到远端去查找 pod C 了。
+
+6. 什么时候用 s.subspec 呢？一般一个大的项目写成pod的时候，它可能会分为多个subspec，这样的话当你用一个庞大的库时，只需要其中的一小部分，那么就可以使用其中的某个subspec了。
+
+   我们拿AFNetworking.podspec来看:
+
+   ```ruby
+   ​```
+   pod 'AFNetworking/Reachability'
+   或者
+   pod 'AFNetworking',:subspecs=>['Reachability','Security']
+   ​```
+   ```
+
+   所以可以把subspec当做一个小型的pod来看。来看一下用 subspec 后，在 pod install 后得到如下文件结构：
 
 ![subspec](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_cocoapods_sub.png?raw=true)
+
+（上面说的 *你的库* 指的是你在做的库，*私有库* 指的是在你私有远端仓库而不是在官方仓库里的库）
 
 #### 添加文件
 
@@ -355,6 +369,8 @@ pod package StaticWithCocoapods.podspec --force
 ![打包过程](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_cocoapods_5.png?raw=true)
 
 现在在目标文件夹下就会多出一个 `StaticWithCocoapods-0.2.0` 目录，里面是打包好的 framework 。
+
+> 切记，这样打包出来的库是不包含 s.dependency 里的内容的，只是创建了一个链接。如果外部没有 s.dependency 中依赖的库，就会报错。所以你需要把这些库文件手动添加进去，或者用 s.subspec 的形式。参见上面。
 
 ### 发布.podspec
 
