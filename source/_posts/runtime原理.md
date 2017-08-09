@@ -219,7 +219,7 @@ struct objc_super { id receiver; Class class; };
 
 这里调用`class`只是举例，所有调用`super`的方法，最后都变成了`self`的调用。
 
-> 其实就是即使是 [super class] **调用的是父类的 class 方法**，但是**接收对象永远还是 self**
+> 其实就是即使是 [super class] **调用的是父类的 class 方法**，但是**接收对象永远还是 self**(验证过，此结论正确)
 
 
 ## Category 的实现原理
