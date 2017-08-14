@@ -370,7 +370,7 @@ pod package StaticWithCocoapods.podspec --force
 
 现在在目标文件夹下就会多出一个 `StaticWithCocoapods-0.2.0` 目录，里面是打包好的 framework 。
 
-> 切记，这样打包出来的库是不包含 s.dependency 里的内容的，只是创建了一个链接。如果外部没有 s.dependency 中依赖的库，就会报错。所以你需要把这些库文件手动添加进去，或者用 s.subspec 的形式。参见上面。
+> 虽然 s.dependency 只是创建了一个链接，但是 package 会下载 dependency 的代码，并将其打包进你的库中
 
 ### 发布.podspec
 

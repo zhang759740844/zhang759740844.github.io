@@ -51,11 +51,19 @@ tags:
 
 ### Q&A
 
+#### 关于依赖层级
+
 依赖关系都是上层依赖下层，因为下层为上层提供服务。
+
+#### 关于如何 import
 
 不要使用 pch，也最好不要专门添加一个头文件 import 所有要用到的类。在你的类中，需要使用到哪个就 import 哪个。
 
+#### 关于拆分pod
+
 category 理想的拆分是按照被 category 的对象拆分成 pod。string 就 string 一个 pod，uiview 就 uiview 一个 pod，然后用刀哪个就引用哪个 pod，pod 多一点没有问题。如果单个 pod 很大，还可以根据业务继续拆。
+
+#### 关于管理图片
 
 可以通过 cocoapods 封装组件，将每个 SDK 及其对应的再封装的代码放到同一个 repo 里去。也可以通过 cocoapods 专门管理一个图片 repo，然后根据模块分文件夹来管理，每次添加图片的时候都去看一下这个 repo 里是不是已经有这个图片了。
 
@@ -116,7 +124,25 @@ category 理想的拆分是按照被 category 的对象拆分成 pod。string �
 
 ### Q&A
 
-Notification 的
+#### 关于 Notification 在哪设置
+
+Notification 最好在 `viewDidAppear` 中注册，在 `viewDidDisappear` 中移除，即在页面显示的时候接收通知。实在需要页面不显示的时候也能接到通知的话就只能在 `init` 和 `dealloc` 中做添加删除了（`dealloc` 中 remove 不会造成内存泄漏，Notification 中的 Observer 不是 strong，所以不会让引用+1，但是必须 remove 不然会产生野指针导致崩溃）由于 `viewDidAppear` 和 `viewDidDisappear` 不是成对出现的，需要在 `viewDidAppear` 注册通知前先移除一下该通知。
+
+#### 关于 BaseViewController 和 AOP
+
+我觉得用 aop 代替继承还是要看使用范围。如果像埋点这样的所有情况都要走埋点接口的就适合 aop，而 ViewController 这种自己的要还是要写个 base 重写 `viewDidLoad` 的。比如设置背景色，如果用 aop，那么系统的各种弹窗也会同样设置了背景色。这就需要判断是不是系统的，就还要在所有的基础上做减法，就感觉很蠢。
+
+当然，base 绝对不能乱用，我觉得设置设置背景色，代理类应该是没有问题的。base 还有一个好处是能设置一个代码规范，告诉业务开发者，哪些东西要写在哪个方法里。
+
+####  关于 cell 处理事件
+
+场景：点击一个 cell 要跳转另一个 VC，那么是直接在 cell 里跳转，还是先通知所在 VC，让 VC 跳转？
+
+应该设置一个 delegate 为当前 VC，然后通知 delegate 跳转。cell 这种层次的 View 不应该参合在页面调度这种 VC 才应该做的事情上。
+
+
+
+## 网络层设计方案
 
 
 
