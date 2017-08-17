@@ -203,6 +203,7 @@ TODO: Add long description of the pod here.
 
   s.source_files = 'StaticWithCocoapods/Classes/**/*'
   
+  s.resources = ['Images/*.png','Sounds/*']
   s.resource_bundles = {
     'StaticWithCocoapods' => ['StaticWithCocoapods/Assets/*.png']
   }
@@ -220,22 +221,23 @@ end
 - s.version 表示的是当前类库的版本号
 - s.source 表示当前类库源
 - s.sources_files 表示类库的源文件存放目录
-- s.resource_bundles 表示资源文件存放目录
+- s.resources 表示将资源文件打包在 mainBundle 中
+- s.resource_bundles 表示将资源文件创建为某个 bundle
 - s.frameworks 表示类库依赖的framework
 - s.dependency 表示依赖的第三方类库，如果有多个要写多个 s.dependency
 - s.subspec 表示依赖的子 podspec
 
 其中要说明的是： 
 
-1. source 可以填写远端 git 仓库，也可以是像我写的那样的本地 git 仓库。
+1. source 表示从哪里拉取代码。可以填写远端 git 仓库，也可以是像我写的那样的本地 git 仓库。如果 Podfile 中指定了 `:path`， 那么，就会在指定的路径查找，source 这里写啥都无所谓。
 
 2. 依赖项不仅要包含你自己类库的依赖，还要包括所有第三方类库的依赖，只有这样当你的类库打包成 .a 或 .framework 时才能让其他项目正常使用。
 
 3. source_file 路径中出现的通配符 `*` 表示匹配任意字符， `**` 表示匹配所有当前文件夹和子文件夹。
 
-4. source_bundles 中花括号内的 `'StaticWithCocoapods'` 就表示一个 `StaticWithCocoapods` bundle。
+4. s.resources 中的资源文件**如果是静态库就直接放在 mainBundle 中，如果是动态库就放在动态库所在 bundle 中**。这样文件多了可能会重名，一般的做法是讲资源文件先自己打个 bundle，然后再通过 s.sources 引入。另外，Cocoapods 提供了 s.resource_bundles，可以将资源文件按需打成不同的 bundle。比如上面就是将 `StaticWithCocoapods/Assets/*.png` 目录下的所有图片打成 `StaticWithCocoapods` 的 bundle。
 
-5. 这里的 dependency 一般情况下是 cocoapods 的官方库中的。当然你也可以给自己创建的库添加自己的私有库，同样是直接写在 dependency 里。但是由于 **dependency 表示编译器需要这样的一个依赖，没有指定从哪里获取**，因此，添加私有库的时候要在使用这个库的工程的 Podfile 要添加你私有库的远端地址。这样的话，在下载 s.dependency 时，官方库找不到的情况下，就会到私有库的远端地址中查找。如果都找不到就会 `pod install` 失败。有一种情况不用添加私有库的远端地址，也可以 install 成功。那就是**在 Podfile 中添加这个私有库，并为这个私有库设置本地路径 `:path`**。由于 **s.dependency 其实是创建了一个外部依赖，所以只要外部存在这个私有库，s.denpendency 就会自动链接过去**。这一点非常非常重要。我们平时用 pod 实现组件化就是这么做的。比如你的主工程同时依赖于私有库 pod A，pod B，以及本地私有库 pod C。与此同时，pod A 和 pod B 也依赖于 pod C。这个时候是不是一定要将 pod C 放到远端，然后才能成功设置 pod A 和 pod B 呢？肯定不用。因为 pod C 已经通过本地路径引入: `pod 'C', :path => '../'`。所以 pod A 和 pod B 的 s.dependency 就不需要再到远端去查找 pod C 了。
+5. 这里的 dependency 一般情况下是 cocoapods 的官方库中的。当然你也可以给自己创建的库添加自己的私有库，同样是直接写在 dependency 里。但是由于 **dependency 表示编译器需要这样的一个依赖，没有指定从哪里获取**，因此，添加私有库的时候要在使用这个库的工程的 Podfile 中添加你私有库的远端地址。这样的话，在下载 s.dependency 时，官方库找不到的情况下，就会到私有库的远端地址中查找。如果都找不到就会 `pod install` 失败。有一种情况不用添加私有库的远端地址，也可以 install 成功。那就是**在 Podfile 中添加这个私有库，并为这个私有库设置本地路径 `:path`**。由于 **s.dependency 其实是创建了一个外部依赖，所以只要外部存在这个私有库，s.denpendency 就会自动链接过去**。这一点非常非常重要。我们平时用 pod 实现组件化就是这么做的。比如你的主工程同时依赖于私有库 pod A，pod B，以及本地私有库 pod C。与此同时，pod A 和 pod B 也依赖于 pod C。这个时候是不是一定要将 pod C 放到远端，然后才能成功设置 pod A 和 pod B 呢？肯定不用。因为 pod C 已经通过本地路径引入: `pod 'C', :path => '../'`。所以 pod A 和 pod B 的 s.dependency 就不需要再到远端去查找 pod C 了。
 
 6. 什么时候用 s.subspec 呢？一般一个大的项目写成pod的时候，它可能会分为多个subspec，这样的话当你用一个庞大的库时，只需要其中的一小部分，那么就可以使用其中的某个subspec了。
 
@@ -302,10 +304,13 @@ end
 
 ![.a](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_bundle_1.png?raw=true)
 
-此时就不能再在 mainBundle 中，而需要在动态库中找到 StaticWithCocoapods.bundle 下的文件了。通过的做法肯定不能直接获取 mainBundle，而是可以通过`[NSBundle bundleForClass:self.class]` 获取当前类所在的动态库的bundle，所以获取 `UIImage` 的通用方式为：
+此时就不能再在 mainBundle 中，而需要在动态库中的 bundle 下找文件了。我们可以学习下 `SVProgressHUD` 的做法，通过 `[NSBundle bundleForClass:[SVProgressHUD class]]` 拿到 `SVProgressHUD` 所在的 Bundle，然后获取图片的 bundle：
 
 ```objc
-UIImage *image = [UIImage imageNamed:[[[NSBundle bundleForClass:self.class] pathForResource:@"StaticWithCocoapods" ofType:@"bundle" ] stringByAppendingString:@"/author.png"]];
+NSBundle *bundle = [NSBundle bundleForClass:[SVProgressHUD class]];
+NSURL *url = [bundle URLForResource:@"SVProgressHUD" withExtension:@"bundle"];
+NSBundle *imageBundle = [NSBundle bundleWithURL:url];
+UIImage* infoImage = [UIImage imageWithContentsOfFile:[imageBundle pathForResource:@"info" ofType:@"png"]];
 ```
 
 ##### 测试类库
@@ -364,7 +369,7 @@ sudo gem install cocoapods-packager
 pod package StaticWithCocoapods.podspec --force
 ```
 
-打包成 `.framework` ，也可以用 `--library` 打包成 `.a` 。不过 cocoapods 之前有过打包成 `.a` 但是没有暴露出头文件的bug，懒得试有没有修复了，所以还是都打成 `.framework` 吧。
+打包成 `.framework` ，也可以用 `--library` 打包成 `.a` 。
 
 ![打包过程](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_cocoapods_5.png?raw=true)
 
