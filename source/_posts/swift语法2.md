@@ -90,6 +90,8 @@ default:
 // Prints "The last letter of the alphabet"
 ```
 
+> 一定要注意，swift 中的 switch 一定要有 default，一定要有 default，一定要有 default。
+
 #### 没有隐性掉入
 
 相比而言，没有 `break`，匹配一个后，直接返回。也可以一条里面匹配多个，用逗号隔开：
@@ -107,6 +109,8 @@ default:
 // Prints "The first letter of the alphabet"
 ```
 
+> 这样挺好的，不然每次都要写个 break，挺烦人的
+
 这样就匹配到了第一个情况。
 
 另外，每个 case 的主干都需要至少一句可执行语句，不能只有 case：
@@ -122,6 +126,8 @@ default:
 }
 // This will report a compile-time error.
 ```
+
+> 这就引导我们，没有执行方法的条件，就不要写
 
 #### 范围匹配
 
@@ -149,7 +155,7 @@ print("There are \(naturalCount) \(countedThings).")
 // Prints "There are dozens of moons orbiting Saturn."
 ```
 
-(`1..<5` 这种写法也是蛋疼 )
+> 这种方式可以一定程度上替代一些判断数值的 if…else
 
 #### 元组
 
@@ -172,6 +178,8 @@ default:
 // Prints "(1, 1) is inside the box"
 ```
 
+> 元组其实相当于 if…else… 中 && 的操作
+
 #### 值绑定
 
 在前面的基础上，前面用 `_` 代替任意值。如果在 case 中需要用到这个值怎么办呢？用 let 声明一个：
@@ -190,6 +198,10 @@ case let (x, y):
 ```
 
 这里面 `let(x,y)` 和 `(let x,let y)` 是一样的。
+
+> 这种值绑定的方式，可以把函数中要用到的变量先确定下来。
+
+> 最后一定要有一个 `let(x,y)`，表示一个 default 操作，否则编译器会抛出异常。
 
 #### where
 
@@ -210,7 +222,9 @@ case let (x, y):
 
 三个 switch 的 case 声明了占位常量 x 和 y，临时占用 point 中元组值。这些常量作为 where 子句的一部分，用来创建动态的筛选。只有当 where 子句的条件结果为 true，Switch 的 case 则会匹配现有 point 的值。
 
-（不觉得这样写 case 很方便。还不如 if-else 呢）
+> 这里的 where 不仅适用于元组，也可以是普通的 `case let x where x==1:`但是如果不用元组就没有 if…else… 简洁。
+
+> switch 能在一定程度上代替判断相等，以及判断在某一个范围的简单 if…else 操作 
 
 ### 控制转移声明
 
@@ -222,7 +236,7 @@ case let (x, y):
 - return
 - throw
 
-除了 `fallthrough` 其他都差不多。这里要注意一下在 switch 中使用的 `break`。由于 switch 中的 case 里的执行语句不能为空，所以如果匹配到一种情况不需要操作，可以直接用 `break`:
+除了 `fallthrough` 其他都差不多。这里要注意一下在 switch 中使用的 `break`。由于 switch 中的 case 里的执行语句不能为空，所以**如果匹配到一种情况不需要操作，可以直接用 `break`:**
 
 ```swift
 let numberSymbol: Character = "三"  // Chinese symbol for the number 3
@@ -260,6 +274,8 @@ print(description)
 ```
 
 特别注意：调用 `fallthrough` 后，**不检查 case 里的条件，会直接掉入下一个 case **。所以这里面直接执行了 default 的代码。
+
+> 适用于那种满足了某个条件包含其他条件的操作，即要执行 A 那么 B 也要执行。最上面的永远是执行的最多的。
 
 #### 标签声明
 
@@ -399,7 +415,7 @@ greet(person: "Dave")
 // Prints "Hello, Dave!"
 ```
 
-严格来说，其实无返回类型的函数还是返回了一个值，即使没有返回值定义。函数没有定义返回类型但返 回了一个 `void` 返回类型的特殊值。它是一个空的元组，可以写为`()`
+严格来说，其实无返回类型的函数还是返回了一个值，即使没有返回值定义。函数没有定义返回类型但返 回了一个 `void` 返回类型的特殊值。它是一个空的元组，可以写为`return ()`
 
 #### 多个返回值
 
@@ -432,7 +448,7 @@ print("min is \(bounds.min) and max is \(bounds.max)")
 
 #### 可选的元组返回类型
 
-如果返回的元组可能没有值，那么可以使用可选的元组作为返回类型，来表示整个元组可以为 `nil`。在元组之后加上 `?` 来表示可选类型，例如 `(Int,Int)?` （注意不要写成 `(Int?,Int?)` 这个表示元组中的元素是可选的）。
+如果返回的元组可能没有值，那么可以使用可选的元组作为返回类型，来表示整个元组可以为 `nil`。**在元组之后加上 `?` 来表示可选类型，例如 `(Int,Int)?`** （注意不要写成 `(Int?,Int?)` 这个表示元组中的元素是可选的）。
 
 如果是可选元组，那么一定要先做非空判断。否则当你想要取出元组中元素后，就会触发运行时错误。你可以通过可选绑定来判断是否为空：
 
@@ -491,7 +507,7 @@ func someFunction(_ firstParameterName: Int, secondParameterName: Int) {
 someFunction(1, secondParameterName: 2)
 ```
 
-注意，参数顺序还是不能错的。
+注意，参数顺序还是不能错的，否则产生异常。
 
 #### 默认的参数值
 
@@ -536,7 +552,7 @@ arithmeticMean(3, 8.25, 18.75)
 2. 上面的是省略了 argument labels 的情况。如果不省略，比如将 `_` 替换成 `to`，那么调用的时候改为 `arithmeticMean(to:1, 2, 3, 4, 5)` 即可。
 3. 一个函数里最多只能有一个可变数量的入参。
 4. 如果参数是可变的那么就没法设置默认值了。
-5. 还有一种情形：`func arithmeticMean(_ numbers: Double...,_ anotherNumber: Double)`，这种情况下由于两个入参都是缺省的，所有传入的参数都被 `numbers` 接收，第二个参数无法接收参数。
+5. 还有一种情形：`func arithmeticMean(_ numbers: Double...,_ anotherNumber: Double)`，这种情况下由于两个入参都是缺省的，所有传入的参数都被 `numbers` 接收，第二个参数无法接收参数。最好不要这样写。
 
 #### 输入输出参数
 
@@ -602,7 +618,9 @@ print("Result: \(mathFunction(2, 3))")
 // Prints "Result: 5"
 ```
 
-> 就算 addTwoInts 的两个入参是有 argument label 的，这里调用 mathFunction 的时候也要省略：
+> **注意，使用函数类型的地方就不能再有 argument label 以及 parameter name 了**
+
+就算 addTwoInts 的两个入参是有 argument label 的，这里调用 mathFunction 的时候也要省略。mathFunction 不能自己定义 argument label 以及 parameter name ，只能赋予函数之后直接使用。例子：
 
 ![添加桥接文件](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/swift_example.png?raw=true) 
 
@@ -620,6 +638,8 @@ print("Result: \(mathFunction(2, 3))")
 let anotherMathFunction = addTwoInts
 // anotherMathFunction is inferred to be of type (Int, Int) -> Int
 ```
+
+> 由于传递函数不能改变 argument label 以及 parameter name，所以使用类型推断更方便一些，不要再写一遍函数类型了。
 
 #### 函数类型作为参数类型
 
@@ -927,6 +947,10 @@ print(instance.x)
 
 其中，逃逸的闭包没有立刻执行，所以 `instance.x` 先被设置成了 100，然后闭包执行了后，才被设置成 200。
 
+另外，看到 `completionHandlers.first?()` 了么，从数组里取出第一个对象，这里加了一个 `?`。**一般数组里的对象都要这样。因为很有可能取出的是nil**。
+
+> 类比 oc 中block，在某个方法中传递回调 block。这个 block 使用的外部变量都要设为 weak，以防引用循环。同样，这里调用的时候要用 self，外加 @escaping 标记，来告诉编译器，要优化这里的存储，以防引用循环。
+
 ### 自动闭包
 
 自动闭包是一种闭包的简写方式。不接受任何参数，当他被调用时，会返回被包装在其中的表达式的值。这种便利语法让你能够省略闭包的花括号，用一个普通的表达式来代替显式的闭包。
@@ -953,3 +977,5 @@ serve(customer: customersInLine.remove(at: 0))
 ```
 
 上面用了 `autoclosure` 标记后，下面的闭包可以不用括号。(**这玩意会有人用？毫无意义。就当记录一下吧**)
+
+> 貌似只针对一句话的闭包

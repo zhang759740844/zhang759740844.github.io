@@ -37,6 +37,10 @@ var x = 0.0, y = 0.0, z = 0.0
 
 （变量初始化后就不能赋给其非该类型的值了，比如上面的 x，就只能接收 double 类型的值了）
 
+> 变量常量都可以先声明，不用立即赋值。
+>
+> 但是在获取前一定要先赋值，否则会产生异常
+
 #### 类型注释
 
 声明的时候可以注明类型：
@@ -50,6 +54,10 @@ var welcomeMessage: String
 ```swift
 var red, green, blue: Double
 ```
+
+> 如果没有值，就一定要标注类型，如果有值，就可以通过类型推断。
+>
+> 反正一定要在声明的时候确定类型
 
 #### 打印
 
@@ -126,6 +134,8 @@ typealias AudioSample = Int
 var num:AudioSample = 10
 ```
 
+> 感觉没啥用，还容易让人误解
+
 ### 布尔类型
 
 Swift 的布尔类型叫做 Bool，两个布尔值为 true 和 false。
@@ -147,6 +157,10 @@ if i == 1 {
 ```
 
 如果你在需要使用 Bool 类型的地方使用了非布尔值，Swift 的类型安全机制会报错。这就不像很多其他语言，非零非空就是 true。
+
+> if 条件语句必须是一个有值的表达式
+>
+> 条件判断不用括号，因为不会产生二意
 
 ### 元组
 
@@ -211,7 +225,11 @@ let convertedNumber = Int(possibleNumber)
 
 这里面将 `possibleNumber` 强转为 Int 型，可能成功，但如果是 `"hello,world"` 就肯定失败了。所以这里 `convertedNumber` 就是一个可选类型，不一定是 Int。可选的 Int 类型用 `Int?` 表示。问号暗示包含的值是可选，也就是说可能是 Int 也可能不包含值。
 
-直接赋值的都能通过赋给的值进行类型推断，而不是可选类型。除非将 `possibleNumber` 写成 `let possibleNumber: String? = "123"`，否则都相当于 `let possibleNumber: String! = "123"`.
+****，除非将 `possibleNumber` 写成 `let possibleNumber: String? = "123"`。
+
+> 直接赋值的都能通过赋给的值进行类型推断，而不是可选类型；前面直接 `var str: String` 声明但没有赋值的也是非可选的。
+>
+> 可选变量的声明，一定要加上 ?,即 `let possibleNumber: String?`
 
 #### nil
 
@@ -235,7 +253,20 @@ var surveyAnswer: String
 print(surveyAnswer) 		// variable 'surveyAnswer' used before being initialized
 ```
 
+> 上面是 var 类型，let 类型的常量，无论是否可选，使用前必须初始化。
+>
+> 可能是因为如果没有初始化，那就要被推断为 nil，且不能改变。这种不是由程序上下文设置的 nil，而是推断出的 nil 没有意义，所以索性抛出个异常。
+
 oc 中的 nil 是一个指向不存在对象的指针。在 Swift 中 nil 不是指针，只是表示缺失值，任何类型都可以被设置为 nil（包括基本类型）。
+
+元组内可以包含 nil，但是要确保元组内的cheng'yuan成员声明了可选类型。同前面所说的一样，不声明明确类型的默认为非可选：
+
+```swift
+let a: (String?,Int) = (nil,2)  // √
+let a = (nil,2) 				// ×
+```
+
+
 
 #### 强制解析
 
@@ -307,6 +338,8 @@ if let firstNumber = Int("4") {
 
 可以都用逗号，但是有可选绑定就不能用 `&&`
 
+> 可选绑定的生命周期在函数内，出了函数，这个变量就回收了。
+
 #### 隐式解析可选
 
 搞了这么个可选后，如果确定有值，每次都要判断和解析可选值是非常低效的。因此就定义了一个隐式解析可选的方式:
@@ -324,9 +357,9 @@ let implicitString: String = assumedString // no need for an exclamation mark
 
 **一个隐式解析可选类型其实就是一个普通的可选类型，但是可以被当做非可选类型来使用，**并不需要每次都使用解析来获取可选值。
 
-你可以把隐式解析可选当做一个可以自动解析的可选。你要做的只是声明的时候把感叹号放到类型的结尾，而不是每次取值的可选名字的结尾。
+你可以把隐式解析可选当做一个可以自动解析的可选。你要做的只是声明的时候把感叹号放到类型的结尾，而不是每次取值的可选名字的结尾。**其实就是本质上是可选，但是表面上当做非可选用。**
 
-> 如果你在隐式解析可选没有值的时候尝试取值，会触发运行时错误。和你在没有值的普通可选后面加一个惊叹号一样。
+> **如果你在隐式解析可选没有值的时候尝试取值，会触发运行时错误**。和你在没有值的普通可选后面加一个惊叹号一样。
 
 > 如果一个变量之后可能变成 nil 的话请不要使用隐式解析可选。如果你需要在变量的生命周期中判断是否是 nil 的话，请使用普通可选类型。
 
@@ -386,6 +419,10 @@ Swift 中可以对浮点数进行取余：
 #### 自增自减
 
 自增自减已被移除
+
+> 由于自增自减在 for 循环中使用的多，并且 swift 中现在 for 循环已经不是 c 那种 for 循环了。所以就被干掉了
+>
+> 可以使用复合赋值替代
 
 ### 复合赋值
 
@@ -508,7 +545,15 @@ constantString += " and another Highlander"
 
 ### 字符串是值传递
 
-Swift 中，如果创建了一个新的字符串，那么当其进行常量、变量赋值操作或在函数/方法中传递时，都会对已有字符串值创建新副本，并对该新副本进行传递或赋值。而在 oc 中，由于 `NSString` 是不可变的，所以所有操作都是对 `NSString` 实例的一个引用。
+Swift 中，如果创建了一个新的字符串，那么当其进行常量、变量赋值操作或在函数/方法中传递时，都会对已有字符串值创建新副本，并对该新副本进行传递或赋值。
+
+> let 相当于 oc 中 const 的 NSString
+>
+> var 相当于 oc 中可变的 NSString
+>
+> oc 中的 NSMutableString 是引用传递，swift 中没有和其对应的
+
+
 
 Swift 默认字符串拷贝的方式保证了在函数/方法中传递的是字符串的值，其明确了无论该值来自于哪里，都是您独自拥有的。您可以放心您传递的字符串本身不会被更改。
 
@@ -526,6 +571,8 @@ for character in "Dog!🐶".characters {
 // !
 // 🐶
 ```
+
+> swift 中的字符串没有了 length 这个属性。要获取长度还得通过 characters 这个数组属性。拿到这个数组的 count 就是字符串中的长度。
 
 可以直接创建一个字符：
 
@@ -583,7 +630,7 @@ Swift 提供 array，sets，dictionaries 来存储数据。在同一个集合中
 
 ### 可变集合
 
-和 String 类似，如果你把一个集合赋给一个 `var` 类型的变量，那么你可以动态地对集合操作；如果你把一个集合赋给一个 `let` 的常量，那么这个集合就是不可变的（包括大小和内容）。
+和 String 类似，如果你把一个集合赋给一个 `var` 类型的变量，那么你可以动态地对集合操作；**如果你把一个集合赋给一个 `let` 的常量，那么这个集合就是不可变的**（包括数组的长度，以及数组内的对象的地址，但是可以改变对象的属性）。
 
 ### 数组
 
@@ -608,7 +655,7 @@ print("someInts is of type [Int] with \(someInts.count) items.")
 
 要注意变量 `someInts` 会被推断为 `[Int]` 类型。
 
-上面的操作主要还是为了明确数组的类型。一个不明确的类型的数组声明，比如 `var someInts = []`是不合法的。但是如果数组本身的类型已经明确了，就可以直接用 `[]` 置空了：
+上面的操作主要还是为了明确数组的类型。**一个不明确的类型的数组声明，比如 `var someInts = []`是不合法的。但是如果数组本身的类型已经明确了，就可以直接用 `[]` 置空了**：
 
 ```swift
 var someInts = [Int]()
@@ -627,6 +674,8 @@ someInts = []
 var threeDoubles = Array(repeating: 0.0, count: 3)
 // threeDoubles is of type [Double], and equals [0.0, 0.0, 0.0]
 ```
+
+> 没啥用
 
 #### 连接两个数组
 
@@ -654,6 +703,10 @@ var shoppingList: [String] = ["Eggs", "Milk"]
 ```swift
 var shoppingList = ["Eggs", "Milk"]
 ```
+
+> **array 和 String 一样，也是值引用。**
+>
+>  `var array1 = array2` 在堆中开辟了两块内存空间，而不是指向同一个地址。可以分别处理 array1 和 array2
 
 #### 存取和更改数组
 
@@ -707,6 +760,8 @@ shoppingList[4...6] = ["Bananas", "Apples"]
 // shoppingList now contains 6 items
 ```
 
+> 这里 4…6 是闭区间运算符，表示三个值。这里只赋了两个值 `["Bananas", "Apples"]`，所以4，5被修改，6 被 remove 掉。如果赋四个值 `["Bananas", "Apples","Pear","Cherry"]` 呢？4，5，6被修改，最后一个插入数组中变为 7，原来数组中的 7 及以后顺延为 8 及以后。
+
 通过 `insert(_:at:)` 在指定位置插入：
 
 ```swift
@@ -715,7 +770,7 @@ shoppingList.insert("Maple Syrup", at: 0)
 // "Maple Syrup" is now the first item in the list
 ```
 
-通过 `remove(_:at:)` 删除指定位置数组内容，并返回**删除的那个内容**（如果你用不到返回值，可以忽略）：
+通过 `remove(at:)` 删除指定位置数组内容，并返回**删除的那个内容**（如果你用不到返回值，可以忽略）：
 
 ```swift
 let mapleSyrup = shoppingList.remove(at: 0)
