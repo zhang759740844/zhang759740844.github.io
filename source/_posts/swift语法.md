@@ -225,7 +225,7 @@ let convertedNumber = Int(possibleNumber)
 
 这里面将 `possibleNumber` 强转为 Int 型，可能成功，但如果是 `"hello,world"` 就肯定失败了。所以这里 `convertedNumber` 就是一个可选类型，不一定是 Int。可选的 Int 类型用 `Int?` 表示。问号暗示包含的值是可选，也就是说可能是 Int 也可能不包含值。
 
-****，除非将 `possibleNumber` 写成 `let possibleNumber: String? = "123"`。
+上面 possibleNumber 由于类型推断，一定是不可选类型，除非将 `possibleNumber` 写成 `let possibleNumber: String? = "123"`，才能表示可选。
 
 > 直接赋值的都能通过赋给的值进行类型推断，而不是可选类型；前面直接 `var str: String` 声明但没有赋值的也是非可选的。
 >
