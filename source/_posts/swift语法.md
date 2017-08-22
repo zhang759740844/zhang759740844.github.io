@@ -39,7 +39,11 @@ var x = 0.0, y = 0.0, z = 0.0
 
 > 变量常量都可以先声明，不用立即赋值。
 >
-> 但是在获取前一定要先赋值，否则会产生异常
+> 但是在获取的时候，只有可选变量会被默认设置为 nil。
+>
+> 其余非可选变量常量，以及可选常量，在没有赋初值的情况下读取，都会产生异常。
+>
+> (可选的常量如果默认为 nil，那就没有意义了，所以强制可选常量也抛出异常)
 
 #### 类型注释
 
@@ -223,13 +227,26 @@ let convertedNumber = Int(possibleNumber)
 // convertedNumber is inferred to be of type "Int?", or "optional Int"
 ```
 
-这里面将 `possibleNumber` 强转为 Int 型，可能成功，但如果是 `"hello,world"` 就肯定失败了。所以这里 `convertedNumber` 就是一个可选类型，不一定是 Int。可选的 Int 类型用 `Int?` 表示。问号暗示包含的值是可选，也就是说可能是 Int 也可能不包含值。
+1. 这里面将 `possibleNumber` 强转为 Int 型，可能成功，但如果是 `"hello,world"` 就肯定失败了。所以这里 `convertedNumber` 就是一个可选类型，不一定是 Int。可选的 Int 类型用 `Int?` 表示。问号暗示包含的值是可选，也就是说可能是 Int 也可能不包含值。
+2. 上面 possibleNumber 由于类型推断，一定是不可选类型，除非将 `possibleNumber` 写成 `let possibleNumber: String? = "123"`，才能表示可选。
+3. `convertedNumber` 是一个可选类型，**在对可选类型进行赋值以外的操作的时候，需要使用 `!` 或者 `?` 包裹**。
 
-上面 possibleNumber 由于类型推断，一定是不可选类型，除非将 `possibleNumber` 写成 `let possibleNumber: String? = "123"`，才能表示可选。
+元组也可以被设置为可选，在元组后添加 `?`：
 
-> 直接赋值的都能通过赋给的值进行类型推断，而不是可选类型；前面直接 `var str: String` 声明但没有赋值的也是非可选的。
+```swift
+let a: (Int,Int)? = nil
+```
+
+还有一种需要区别的是元组内元素的可选，在可选的类型后添加 `?`：
+
+```swift
+let a: (String?,Int) = (nil,2)  // √
+let a = (nil,2) 				// ×
+```
+
+> 直接赋值的都能通过赋给的值进行类型推断，而不是可选类型；前面直接 `var str: String` 声明但没有赋值的也是**非可选**的。
 >
-> 可选变量的声明，一定要加上 ?,即 `let possibleNumber: String?`
+> **可选变量的声明，一定要手动标明**，即一定要加上 ?,即 `let possibleNumber: String?`，否则就是不可选的
 
 #### nil
 
@@ -242,7 +259,7 @@ serverResponseCode = nil
 // serverResponseCode now contains no value
 ```
 
-**如果变量或常量的类型不是可选的，那么就不能用 `nil` 了。当代码中的变量或者常量可能会为空的时候，总是将其设置为可选类型。**
+如果变量或常量的类型不是可选的，那么就不能用 `nil` 了。**反之亦然，如果代码中的变量或者常量可能会为空的时候，总是将其设置为可选类型。**
 
 如果定义了一个没有提供默认值的可选变量，那么默认设置为 nil；定义一个没有默认值的非可选变量，如果使用那么会报错：
 
@@ -259,13 +276,6 @@ print(surveyAnswer) 		// variable 'surveyAnswer' used before being initialized
 
 oc 中的 nil 是一个指向不存在对象的指针。在 Swift 中 nil 不是指针，只是表示缺失值，任何类型都可以被设置为 nil（包括基本类型）。
 
-元组内可以包含 nil，但是要确保元组内的cheng'yuan成员声明了可选类型。同前面所说的一样，不声明明确类型的默认为非可选：
-
-```swift
-let a: (String?,Int) = (nil,2)  // √
-let a = (nil,2) 				// ×
-```
-
 
 
 #### 强制解析
@@ -279,17 +289,15 @@ if convertedNumber != nil {
 // Prints "convertedNumber has an integer value of 123."
 ```
 
-这里要注意啊，由于 `convertedNumber` 是一个可选类型，如果想要正确打印一定要加 `!`。否则就会像下面这样：
+如果想要对一个可选类型进行赋值以外的操作，必须使用强制解析，因为只能对非空对象进行操作：
 
 ```swift
-var convertedNumber = Int("123")
-if convertedNumber != nil {
-    print("convertedNumber has an integer value of \(convertedNumber).")
-}
-// Prints "convertedNumber has an integer value of Optional(123)."
+print(convertedNumber! - 12)	//√
+print(convertedNumber - 12)		//×
+print(convertedNumber? - 12)	//×
 ```
 
-很奇怪不是么？
+
 
 ####  可选绑定
 
@@ -355,9 +363,9 @@ let implicitString: String = assumedString // no need for an exclamation mark
 
 当可选被第一次赋值之后就可以确定之后一直有值的时候，隐式解析可选非常有用。隐式解析可选主要被用在 Swift 中类的构造过程中(参考无主解析)
 
-**一个隐式解析可选类型其实就是一个普通的可选类型，但是可以被当做非可选类型来使用，**并不需要每次都使用解析来获取可选值。
+**一个隐式解析可选类型其实就是一个普通的可选类型，但是可以被当做非可选类型来使用，**并不需要每次都使用解析来获取可选值。你可以把隐式解析可选当做一个可以自动解析的可选。你要做的只是声明的时候把感叹号放到类型的结尾，而不是每次取值的可选名字的结尾。**其实就是本质上是可选，但是表面上(指的是写法上)当做非可选用。**
 
-你可以把隐式解析可选当做一个可以自动解析的可选。你要做的只是声明的时候把感叹号放到类型的结尾，而不是每次取值的可选名字的结尾。**其实就是本质上是可选，但是表面上当做非可选用。**
+
 
 > **如果你在隐式解析可选没有值的时候尝试取值，会触发运行时错误**。和你在没有值的普通可选后面加一个惊叹号一样。
 
@@ -642,6 +650,8 @@ Swift 数组的类型被写作 `Array<Element>`，另一种简写方式是 `[Ele
 var nums1:Array<Int> = [12,34,12]
 var nums2:[Int] = [12,12,32]
 ```
+
+
 
 #### 创建一个空数组
 
@@ -942,8 +952,66 @@ let airportNames = [String](airports.values)
 
 上面见过创建空数组的方式是 `[String]()`，我们也可以通过这种方式创建带值的数组，即在括号内添加数组。
 
+### 数组和字典的可选
+
+#### 数组的类型推断
+
+数组是可选的，数组内的值也是可选的，下面列举一些例子：
+
+```swift
+let arr1 = [1,2,3]				//数组不可选，值不可选
+let arr2 = [1,2,nil]			//数组不可选，值可选
+let arr3: [Int] = [1,2,3]		//数组不可选，值不可选
+let arr4: [Int?] = [1,2,nil]	//数组不可选，值可选
+let arr5: [Int]? = [1,2,3]		//数组可选，值不可选
+let arr6: [Int?]? = [1,2,nil]	//数组可选，值可选
+```
+
+我们可以看到：
+
+1. `arr1` 由于赋给的值都非空，所以数组值被类型推断为不可选。这和 `arr3` 同一个意思。
+2. `arr2` 由于赋给的值有空，所以数组值被推断为可选。这和 `arr4` 同一个意思。
+3. `arr5` 手动设置数组本生是可选的.
+4. `arr6` 手动设置数组和数组值为可选的
+
+上面对应的调用方式如下：
+
+```swift
+var sum1 = arr1[0] + 2
+var sum2 = arr2[0]! + 2
+var sum3 = arr3[0] + 2
+var sum4 = arr4[0]! + 2
+var sum5 = arr5![0] + 2
+var sum6 = arr6![0]! + 2
+```
+
+1. `arr1` 中的值是非可选的，所以直接取出计算
+2. `arr2` 中的值是可选的，所以取出后要强制解析然后才能计算
+3. `arr3` 同 `arr1`,`arr4` 同 `arr2`
+4. `arr5` 由于数组是可选的，所以要在 `arr` 后强制解析一下
+5. `arr6` 由于数组和值都是可选的，所以 `arr` 以及 `[0]` 后都要强制解析
 
 
 
+#### 字典的类型推断
+
+字典也是可以进行类型推断的：
+
+```swift
+let dic1 = [1:1,2:2,3:3]
+let dic2: [Int:Int] = [1:1,2:2,3:3]
+let dic3: [Int:Int]? = [1:1,2:2,3:3]
+```
+
+可以看到字典中只有这三种写法。这是因为 dic 中如果值为 nil，那么就会将键删除，所以不存在字典值的可选的情况。虽然字典不存在值的可选，但是使用的时候可能获取不到对应的键值对，所以使用的时候需要使用强制解析：
+
+```swift
+var sum1 = dic1[1]! + 2
+var sum3 = dic3![1]! + 2
+```
+
+上面的例子中，可能字典中不包含键为 `1` 的键值对，所以取出可能为空，这就需要强制解析了。这就涉及到了一个关于可选的原则：**如果要对一个可能为空的值操作，先将其强制解析**。
+
+注意字典里获取不存在的键，是能返回 nil 的，所以返回值是个可选类型，要强制解析；而如果越界访问数组，不是返回 nil，直接抛出异常。
 
 
