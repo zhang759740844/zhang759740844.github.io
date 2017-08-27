@@ -18,7 +18,7 @@ tags:
 
 ### 析构过程原理
 
-Swift 通过`自动引用计数（ARC）`处理实例的内存管理。通常当你的实例被释放时不需要手动地去清理。但是，当使用自己的资源时，你可能需要进行一些额外的清理。例如，如果创建了一个自定义的类来打开一个文件，并写入一些数据，你可能需要在类实例被释放之前手动去关闭该文件。
+Swift 通过自动引用计数（ARC）处理实例的内存管理。通常当你的实例被释放时不需要手动地去清理。但是，当使用自己的资源时，你可能需要进行一些额外的清理。例如，如果创建了一个自定义的类来打开一个文件，并写入一些数据，你可能需要在类实例被释放之前手动去关闭该文件。
 
 在类的定义中，每个类最多只能有一个析构器，而且析构器不带任何参数，如下所示：
 
@@ -30,7 +30,7 @@ deinit {
 
 析构器是在实例释放发生前被自动调用。你不能主动调用析构器。子类继承了父类的析构器，并且在子类析构器实现的最后，父类的析构器会被自动调用。即使子类没有提供自己的析构器，父类的析构器也同样会被调用。
 
-因为直到实例的析构器被调用后，实例才会被释放，所以析构器可以访问实例的所有属性，并且可以根据那些属性可以修改它的行为（比如查找一个需要被关闭的文件）。
+因为直到实例的析构器被调用后，实例才会被释放，所以**析构器可以访问实例的所有属性**，并且可以根据那些属性可以修改它的行为（比如查找一个需要被关闭的文件）。
 
 > 其实就是一个在对象销毁前的回调，你可以在对象销毁前做任何你想做的事。
 
@@ -48,7 +48,9 @@ Swift 提供了两种办法用来解决你在使用类的属性时所遇到的�
 
 在实例的生命周期中，如果某些时候引用没有值，那么弱引用可以避免循环强引用。
 
-> 弱引用必须被声明为变量，表明其值能在运行时被修改。弱引用不能被声明为常量。
+> 弱引用必须被声明为变量，表明其值能在运行时被修改。**弱引用不能被声明为常量**。
+>
+> 弱引用只能修饰类对象，不能修饰引用传递对象，即类对象，不能修饰值传递引用，即不能修饰基本类型，结构体，数组等。(涉及到引用了，肯定是要修饰引用传递对象啊)
 
 因为弱引用可以没有值，你必须将每一个弱引用声明为可选类型。因为弱引用不会保持所引用的实例，即使引用存在，实例也有可能被销毁。因此，ARC 会在引用的实例被销毁后自动将其赋值为`nil`。你可以像其他可选值一样，检查弱引用的值是否存在，你将永远不会访问已销毁的实例的引用。
 
@@ -63,53 +65,21 @@ class Apartment {
 }
 ```
 
-> 在使用垃圾收集的系统里（如 Java），弱指针有时用来实现简单的缓冲机制，因为没有强引用的对象只会在内存压力触发垃圾收集时才被销毁。但是在 ARC 中，一旦值的最后一个强引用被移除，就会被立即销毁，这导致弱引用并不适合上面的用途。
-
 #### 无主引用
 
-和弱引用类似，无主引用不会牢牢保持住引用的实例。和弱引用不同的是，无主引用是永远有值的。因此，无主引用总是被定义为非可选类型（non-optional type）。你可以在声明属性或者变量时，在前面加上关键字`unowned`表示这是一个无主引用。
+和弱引用类似，无主引用不会牢牢保持住引用的实例。和弱引用不同的是，**无主引用是永远有值的**。因此，无主引用总是被定义为非可选类型（non-optional type）。你可以在声明属性或者变量时，在前面加上关键字`unowned`表示这是一个无主引用。
 
 由于无主引用是非可选类型，你不需要在使用它的时候将它展开。无主引用总是可以被直接访问。不过 ARC 无法在实例被销毁后将无主引用设为`nil`，因为非可选类型的变量不允许被赋值为`nil`。
 
 > 如果你试图在实例被销毁后，访问该实例的无主引用，会触发运行时错误。使用无主引用，你必须确保引用始终指向一个未销毁的实例。(A 中有一个属性 B为无主引用，那么就要确保 B 没有被回收)
-
-例子：
-
-```swift
-class Customer {
-    let name: String
-    var card: CreditCard?
-    init(name: String) {
-        self.name = name
-    }
-    deinit { print("\(name) is being deinitialized") }
-}
-
-class CreditCard {
-    let number: UInt64
-    unowned let customer: Customer
-    init(number: UInt64, customer: Customer) {
-        self.number = number
-        self.customer = customer
-    }
-    deinit { print("Card #\(number) is being deinitialized") }
-}
-
-var john: Customer?
-john = Customer(name: "John Appleseed")
-john!.card = CreditCard(number: 1234_5678_9012_3456, customer: john!)
-john = nil
-// 打印 “John Appleseed is being deinitialized”
-// 打印 ”Card #1234567890123456 is being deinitialized”
-```
+>
+> 无主应用也只能修饰引用传递对象
 
 #### 无主引用以及隐式解析可选属性
 
 上面弱引用和无主引用的例子涵盖了两种常用的需要打破循环强引用的场景。
 
-`Person`和`Apartment`的例子展示了两个属性的值都允许为`nil`，并会潜在的产生循环强引用。这种场景最适合用弱引用来解决。
-
-`Customer`和`CreditCard`的例子展示了一个属性的值允许为`nil`，而另一个属性的值不允许为`nil`，这也可能会产生循环强引用。这种场景最适合通过无主引用来解决。
+两个属性的值都允许为`nil`，并会潜在的产生循环强引用。这种场景最适合用弱引用来解决。一个属性的值允许为`nil`，而另一个属性的值不允许为`nil`，这也可能会产生循环强引用。这种场景最适合通过无主引用来解决。
 
 然而，存在着第三种场景，在这种场景中，两个属性都必须有值，并且初始化完成后永远不会为`nil`。在这种场景中，需要一个类使用无主属性，而另外一个类使用隐式解析可选属性。
 
@@ -139,9 +109,11 @@ print("\(country.name)'s capital city is called \(country.capitalCity.name)")
 // 打印 “Canada's capital city is called Ottawa”
 ```
 
-以上的意义在于你可以通过一条语句同时创建`Country`和`City`的实例，而不产生循环强引用，并且`capitalCity`的属性能被直接访问，而不需要通过感叹号来展开它的可选值
+上面如果使用无主引用，无主引用是常量类型，并且对象必须要在其内部常量属性都有了初值之后才能使用 self 属性，所以 `country:self` 就会产生异常。必须要使用变量类型来替代原来的无主引用。
 
-在上面的例子中，使用隐式解析可选值意味着满足了类的构造函数的两个构造阶段的要求。`capitalCity`属性在初始化完成后，能像非可选值一样使用和存取，同时还避免了循环强引用。
+> 无主引用和隐式解析的区别在于，无主引用永远不能为 nil，而隐式解析值要保证用到的时候不为 nil
+
+
 
 ### 闭包引起的循环强引用
 
@@ -183,12 +155,12 @@ class HTMLElement {
 
 ```swift
 lazy var someClosure: (Int, String) -> String = {
-    [unowned self, weak delegate = self.delegate!] (index: Int, stringToProcess: String) -> String in
+    [unowned self, weak delegate = self.delegate!] (index, stringToProcess) in
     // 这里是闭包的函数体
 }
 ```
 
-如果闭包没有指明参数列表或者返回类型，即它们会通过上下文推断，那么可以把捕获列表和关键字`in`放在闭包最开始的地方：
+上面闭包的参数类型由于可以通过类型推断得到，因此都省略了。如果闭包没有指明参数列表，那么可以把捕获列表和关键字`in`放在闭包最开始的地方：
 
 ```swift
 lazy var someClosure: () -> String = {
@@ -197,15 +169,7 @@ lazy var someClosure: () -> String = {
 }
 ```
 
-> 不要在意为什么一定要加参数列表和返回类型，就是这么规定你打我啊
 
-#### 弱引用和无主引用
-
-在闭包和捕获的实例总是互相引用并且总是同时销毁时，将闭包内的捕获定义为`无主引用`。
-
-相反的，在被捕获的引用可能会变为`nil`时，将闭包内的捕获定义为`弱引用`。弱引用总是可选类型，并且当引用的实例被销毁后，弱引用的值会自动置为`nil`。这使我们可以在闭包体内检查它们是否存在。
-
-> 如果被捕获的引用绝对不会变为`nil`，应该用无主引用，而不是弱引用。
 
 ## 可选链式调用
 
@@ -243,7 +207,7 @@ if let roomCount = john.residence?.numberOfRooms {
 
 不只是属性，方法和下标也是可选链式调用的。
 
-> 通过可选链式调用访问可选值的下标时，应该将问号放在下标方括号的前面而不是后面。可选链式调用的问号一般直接跟在可选表达式的后面。例如：`john.residence?[0].name`
+
 
 ### 连接多层可选链式调用
 
@@ -294,27 +258,7 @@ throw VendingMachineError.insufficientFunds(coinsNeeded: 5)
 
 > 这里枚举中的 `coninsNeeded` 就是前面讲枚举的时候的关联值，只是设置了参数名，比如下面枚举的元组情况可能会用到
 
-```swift
-enum VendingMachineError {
-    case InvalidSelection                     //选择无效
-    case InsufficientFunds(first:Int,coinsNeeded: Int) //金额不足
-    case OutOfStock                             //缺货
-}
 
-var i = VendingMachineError.InsufficientFunds(first:5,coinsNeeded: 4)
-switch i{
-case .InsufficientFunds(let coinsNeeded):
-    print(coinsNeeded.first)
-default:
-    print("none")
-}
-
-//print  5
-```
-
-### 捕捉异常
-
-暂时写到的东西不太需要捕捉，抛出去就行了。所以就不记录了。
 
 ## 类型转换
 
@@ -333,6 +277,13 @@ for item in library {
 ```
 
 这里只截取了代码的部分。演示了 `is` 的用法。
+
+### 类型转换
+
+用类型转化你操作符 `as` 来转换类型。 `as`  应用条件有2种情况：
+
+1.  和 `as` 右边类型一致
+2. 是右边类型的子类(向上转型)
 
 ### 向下转型
 
@@ -418,7 +369,9 @@ for thing in things {
 // Hello, Michael
 ```
 
-> 注意这里 `case 0 as Int` 以及 `case letstringConverter as (String)->String` 的写法
+> case 还能用 `is 类型` 判断是某一类类型；`let xx as 类型` 判断是某一种类型。
+>
+> 厉害了
 
 ## 嵌套类型
 
@@ -473,7 +426,7 @@ print("theAceOfSpades: \(theAceOfSpades.description)")
 // 打印 “theAceOfSpades: suit is ♠, value is 1 or 11”
 ```
 
-注意看这个例子的应用部分。尽管`Rank`和`Suit`嵌套在`BlackjackCard`中，但它们的类型仍可从上下文中推断出来，所以在初始化实例时能够单独通过成员名称（`.Ace`和`.Spades`）引用枚举实例。
+注意看这个例子的应用部分。尽管`Rank`和`Suit`嵌套在`BlackjackCard`中，但它们的**类型仍可从上下文中推断出来**，所以在初始化实例时能够单独通过成员名称（`.Ace`和`.Spades`）引用枚举实例。
 
 > 如果没有类型推断，需要将代码补全的话，需要写成：`BlackjackCard.Rank.Ace` 的形式。
 
