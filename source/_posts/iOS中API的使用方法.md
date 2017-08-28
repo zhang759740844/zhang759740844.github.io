@@ -114,5 +114,54 @@ group.motionEffects = @[effectX, effectY];
 
 
 
-> 
+## UISearchController 实现搜索
+
+iOS8 之后，苹果提供了 `UISearchController` 统一了搜索方式。
+
+首先，需要创建一个用来显示搜索结果的视图 `SearchResultsController`，它需要实现 `UISearchResultsUpdating` 协议，在 `UISearchController` 中的搜索关键字变化的时候，会回调 `UISearchResultsUpdating` 中的 `updateSearchResultsForSearchController:` 方法执行数据的筛选搜索。所以，`SearchResultController` 中还需要两个属性，待搜索的所有数据集合和搜索出的数据集合：
+
+```swift
+class SearchResultsController: UITableViewController,UISearchResultsUpdating {
+    //搜索出和待搜索的数据
+  	var names:[String,[String]] = [String:[String]]()
+  	var keys: [String] = []
+  	var filteredNames: [String] = []
+  	
+  	func updateSearchResultsForSearchController(searchController: UISearchController) {
+        //搜索过程
+      	...
+      	//筛选出数据后刷新列表
+      	tableView.reloadData()
+    }
+}
+```
+
+ 
+
+现在要定义一个跳转前的页面。在某个 `ViewController` 中保存一个 `UISearchController` 的实例。在初始化 ` ViewController` 的同时，初始化 `UISearchController` 并拿到 `UISearchController` 中的 `searchBar` 的实例，将其添加到 `ViewController` 的视图中去（为了点击后跳转时，searchBar 的动画效果）。初始化 `UISearchController` 的时候，将搜索结果展示页 `resultsController` 传入，并将其赋给 `searchResultsUpdater` 属性(通过这个属性调用的 `updateSearchResultsForSearchController:` 方法):
+
+```swift
+class ViewController: UIViewController {
+    var searchController: UISearchController!
+  	...
+	override func viewDidLoad() {
+        super.viewDidLoad()
+      	...
+      	let resultsController = SearchResultsController()
+      	resultsController.names = names
+      	resultsController.keys = keys
+      	searchController = UISearchController(searchResultsController: resultsController)
+      	let searchBar = searchController.searchBar
+		searchBar.scopeButtonTitles = ["All","Short"]
+      	searchBar.placeholder = "Enter a search item"
+      	searchBar.sizeToFit()
+      	tableView.tableHeaderView = searchBar
+      	searchController.searchResultsUpdater = resultsController
+    }
+}
+```
+
+其中 `scopeButtonTitles` 是可选的，在 `searchBar` 下显示用来进一步筛选的，可以通过 `searchController.searchBar.selectedScopeButtonIndex` 来获取筛选信息。另外，`searchController.searchBar` 要确定通过 `sizeToFit()` 方法确定了大小后，加入到 `ViewController` 中。
+
+当然，这是最基本的一个流程，还有一些自定义的操作以及一些代理方法
 
