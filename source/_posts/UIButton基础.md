@@ -159,6 +159,14 @@ button选中与否是由`UIControlStateSelected`控制的。
 [button setImage:[UIImage imageNamed:@"like_selected"] forState:UIControlStateSelected | UIControlStateHighlighted];
 ```
 
+### 取消图片的点击高亮
+
+图片的点击会有一个高亮状态，如果你不想要有这个状态，那么需要取消点击高亮，可以：
+
+```objc
+btn.adjustsImageWhenHighlighted = NO;
+```
+
 
 
 ### 设置image和title位置

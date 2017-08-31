@@ -11,6 +11,21 @@ tags:
 
 <!--more-->
 
+### 为文本加上下划线
+
+基本就是用 `NSMutableAttributedString` 代替原来的 `NSString`，然后为文本长度的 range 内添加一个下划线的属性。
+
+下面演示一个为按钮添加下划线:
+
+```objc
+NSMutableAttributedString *string = [[NSMutableAttributedString alloc] initWithString:button.titleLabel.text];
+NSRange strRange = {0,[string length]};
+[string addAttribute:NSUnderlineStyleAttributeName value:[NSNumber numberWithInteger:NSUnderlineStyleSingle] range:strRange];
+[button setAttributedTitle:string forState:UIControlStateNormal];
+```
+
+
+
 ### 如何让 xib 中的两个视图平分父视图
 
 说是平分，其实就是两个视图的宽度相同。最开始的办法是设置一个空白视图居于父视图的中间，然后两个视图分别贴着这个空白视图的左右，但是这个方法非常的蠢。其实只要选中两个视图，然后设置为 `equal width` 就行了，就在设置约束的地方。
