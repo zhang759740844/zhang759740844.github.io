@@ -494,15 +494,15 @@ for index in 1...5 {
 
 #### 半闭区间
 
-半闭区间 `a..b`，定义一个从 a 到 b，但不包括 b 的区间。
+半闭区间 `a..<b`，定义一个从 a 到 b，但不包括 b 的区间。
 
 半闭区间的实用性在于当你使用一个 0 始的列表(如数组)时，非常方便地从 0 数到列表的长度：
 
 ```swift
 let names = ["Anna", "Alex", "Brian", "Jack"]
 let count = names.count
-for i in 0..count {
-    println("第 \(i + 1) 个人叫 \(names[i])")
+for i in 0..<count {
+    print("第 \(i + 1) 个人叫 \(names[i])")
 }
 // 第 1 个人叫 Anna
 // 第 2 个人叫 Alex
@@ -510,11 +510,11 @@ for i in 0..count {
 // 第 4 个人叫 Jack
 ```
 
+>注意现在半闭区间必须是 `..<`，不是之前的 `..`
+
 ### 逻辑操作符
 
 没什么区别
-
-
 
 ## 字符串与字符
 
