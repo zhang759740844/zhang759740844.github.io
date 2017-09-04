@@ -799,13 +799,19 @@ _instanceVariable = [[self stringValue] retain];
 EOCNetwork * __weak weakFetcher = fetcher;
 ```
 
-因此，我们可以定义一个 `weakSelf` 来简化这种声明方式：
+我们在使用 block 的过程中，经常会需要引用 `self`，为了打破引用循环，我们需要这么做：
 
 ```objc
-#define WEAKSELF typeof(self) __weak weakSelf = self;
+// block 外
+__weak typeof(self) wself = self;
+
+// block 内
+// 先判断 self 是否已被回收，然后再强引用 wself，使之不会在 block 执行的时候被回收
+if (!wself) return;
+__strong typeof(wself) sself = wself
 ```
 
-这样，在 ViewController 中用到 `self` 时，就可以直接用 `weakSelf` 替代。
+
 
 ### 第31条：在dealloc方法中只释放引用并解除监听
 对象在经历生命期后，最终会被系统回收，这里就是执行 `dealloc` 方法了。永远不要自己调用 `dealloc` 方法，运行期系统会在适当的时候调用它。根据性能需求我们有时需要在 `dealloc` 方法中做一些操作。那么我们可以在 `dealloc` 方法里做什么呢？
