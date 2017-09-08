@@ -12,6 +12,97 @@ tags:
 
 <!--more-->
 
+## NSJSONSerialization
+
+JSON(也就是特定类型的 `NSString`) 和 `NSDictionary`、`NSArray` 之间的转换可以通过 `NSJSONSerialization` 类进行
+
+### JSON(NSString) => NSDictionary/NSArray
+
+先将 JSON 通过 `dataUSingEncoding:` 转换为 `NSData`，然后再用通过 `NSJSONSerialization` 将 `NSData` 转换为 `NSDictionary`/`NSArray`.
+
+```objc
+#import "NSString+JSONCategories.h"
+@implementation NSString(JSONCategories)
+-(id)JSONValue {
+   NSData* data = [self dataUsingEncoding:NSUTF8StringEncoding];
+   __autoreleasing NSError* error = nil;
+   id result = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:&error];
+   if (error != nil) return nil;
+   return result;
+}
+@end
+```
+
+使用：
+
+```objc
+// 数组
+NSString *str = @"[{ \"id\": \"hu\"},{\"blog\": \"damon\"}]";
+NSArray *array = (NSArray*)[str JSONValue];
+
+// 字典
+NSString *str = @"{ \"id\": \"hu\",\"blog\": \"damon\"}";
+NSDictionary *array = (NSDictionary *)[str JSONValue];
+```
+
+数组的 JSON 是用 `[]` 包裹起来的。这个例子中每个元素都是单元素的 `NSDictionary`。字典的 JSON 就是 `{}` 括起来的键值对。注意由于返回时是 `id` 类型，不区分具体是 `NSDictionary` 还是 `NSArray`，所以要进行类型转换
+
+### NSDictionary/NSArray => JSON(NSString)
+
+在 `NSObject` 中添加分类，先将 `NSDictionary`/`NSArray` 转换为 `NSData`。注意上面使用的方法是 `JSONObjectWithData:options:error:` 这里是 `dataWithJSONObject:options:error:`。然后通过 `initWithData:encoding:` 将 `NSData` 转为 `NSString`:
+
+```objc
+#import "NSObject+JSONCategories.h"
+@implementation NSObject (JSONCategories)
+-(NSString *)JSONString {
+   NSError *error = nil;
+   NSData *result = [NSJSONSerialization dataWithJSONObject:self
+                                               options:kNilOptions error:&error];
+   if (error != nil) return nil;
+   return [[NSString alloc] initWithData:result encoding:NSUTF8StringEncoding];
+}
+@end
+```
+
+### NSString 与 NSArray 的互转
+
+上面的 JSON 是一种特殊格式的 `NSString`，所以要借助于 `NSJSONSerialization` 进行解析。但是如果直接的 `NSString` 和 `NSArray` 的互相转换就要简单许多，但是还有注意点.
+
+一般我们把 `NSArray` 转为 `NSString` 是直接通过 `stringWithFormat:` 的形式：
+
+```objc
+NSArray *array = [NSArray arrayWithObjects:@"sss",@"mmm",@"lll",@"kkk",@"ppp",@"ooo", nil];
+NSString *str1 = [NSString stringWithFormat:@"%@",array];
+
+//输出 str1
+str1 = @"(\n    sss,\n    mmm,\n    lll,\n    kkk,\n    ppp,\n    ooo\n)"
+```
+
+可以看出，这样的转换是有问题的，中间引入了空格，并且两边还有括号没有消除。👇是正确的方式：
+
+```objc
+NSArray *array = [NSArray arrayWithObjects:@"sss",@"mmm",@"lll",@"kkk",@"ppp",@"ooo", nil];
+NSString *str2 = [array componentsJoinedByString:@","];
+
+// 输出 str2 
+str2 = @"sss,mmm,lll,kkk,ppp,ooo"
+```
+
+通过 `NSArray` 的方法，将数组中的元素完全拿了出来。
+
+另一方面， `NSString` 转为 `NSArray`。通过 `NSString` 的 `componentsSeparatedByString:` 方法，识别逗号:
+
+```objc
+NSArray *array2 = [str1 componentsSeparatedByString:@","];
+NSArray *array3 = [str2 componentsSeparatedByString:@","];
+```
+
+比较输出结果可以发现，`str1` 无法重新转回最开始的数组了，所以两者互转一定要用 `str2` 的方式：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/NSString_NSArray.png?raw=true)
+
+
+
 ## UIView 中的坐标转换
 
 一个 View 的 `frame` 的起点是相当于其所在的 View，即调用 `addSubView:` 方法的 View。如果要判断两个 View 是否是包含关系，由于两者的起点不同，那么肯定是无法进行比较的。
