@@ -24,8 +24,8 @@ JSON(也就是特定类型的 `NSString`) 和 `NSDictionary`、`NSArray` 之间�
 #import "NSString+JSONCategories.h"
 @implementation NSString(JSONCategories)
 -(id)JSONValue {
-   NSData* data = [self dataUsingEncoding:NSUTF8StringEncoding];
-   __autoreleasing NSError* error = nil;
+   NSData *data = [self dataUsingEncoding:NSUTF8StringEncoding];
+   NSError *error = nil;
    id result = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:&error];
    if (error != nil) return nil;
    return result;
