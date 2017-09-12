@@ -205,7 +205,11 @@ UIReturnKeyEmergencyCall, 紧急呼叫按钮
 }
 ```
 
+如果你不能拿到 textfield 的实例，其实可以直接设置 `endEditing` 属性，表示结束编辑：
 
+```objc
+[self.view endEditing:YES];
+```
 
 #### 限制长度
 
