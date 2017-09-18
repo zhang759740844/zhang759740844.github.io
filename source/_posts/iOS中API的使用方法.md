@@ -12,6 +12,235 @@ tags:
 
 <!--more-->
 
+## NSUndoManager
+
+NSUndoManger 是苹果对于命令模式的一种封装，用来撤销历史命令。共有两种撤销操作，简单的以 selector 为基础的撤销和复杂的以 NSInvocation 为基础的撤销。
+
+### 撤销操作
+
+#### 注册一个简单撤销操作
+
+我们可以用 `registerUndoWithTarget:selector:object:` 注册一个撤销操作，保存撤销时会执行的方法和参数：
+
+```objc
+- (void)updateScore:(NSNumber*)score {
+    [undoManager registerUndoWithTarget:self selector:@selector(updateScore:) object:myMovie.score];
+    [undoManager setActionName:NSLocalizedString(@"actions.update", @"Update Score")];
+    myMovie.score = score;
+}
+```
+
+ 上面将改变前的  `myMoview.score` 通过撤销方法保存了起来。另外 `setActionName:` 指定撤销操作的名词。
+
+#### 使用 NSInvocation 注册复杂撤销操作
+
+简单撤销不能应对多参数的情况，所以要使用 `NSInvocation` ，调用 `prepareWithInvocationTarget:` 记录哪些对象会接收哪些发生改变的消息：
+
+```objc
+- (void)movePiece:(ChessPiece*)piece toRow:(NSUInteger)row column:(NSUInteger)column {
+    [[undoManager prepareWithInvocationTarget:self] movePiece:piece ToRow:piece.row column:piece.column];
+    [undoManager setActionName:NSLocalizedString(@"actions.move-piece", @"Move Piece")];
+
+    piece.row = row;
+    piece.column = column;
+    [self updateChessboard];
+}
+```
+
+`NSUndoManager` 对象本身并没有上面的 `movePiece:ToRow:column:` 方法。是通过 `forwardInvocation:` 将消息转发至相应对象的。
+
+#### 将动作组合在一起
+
+上面只能撤消一个方法，如果要撤销多个操作呢？
+
+```objc
+- (void)readAndArchiveEmail:(Email*)email {
+    [undoManager beginUndoGrouping];
+    [self markEmail:email asRead:YES];
+    [self archiveEmail:email];
+    [undoManager setActionName:NSLocalizedString(@"actions.read-archive", @"Mark as Read and Archive")];
+    [undoManager endUndoGrouping];
+}
+
+- (void)markEmail:(Email*)email asRead:(BOOL)isRead {
+    [[undoManager prepareWithInvocationTarget:self] markEmail:email asRead:[email isRead]];
+    [undoManager setActionName:NSLocalizedString(@"actions.read", @"Mark as Read")];
+    email.read = isRead;
+}
+
+- (void)archiveEmail:(Email*)email {
+    [[undoManager prepareWithInvocationTarget:self] moveEmail:email toFolder:@"Inbox"];
+    [undoManager setActionName:NSLocalizedString(@"actions.archive", @"Archive")];
+    [self moveEmail:email toFolder:@"All Mail"];
+}
+```
+
+通过 `beginUndoGrouping` 和 `endUndoGrouping` 将多个分离的撤销操作组合在一起。
+
+
+
+### 实现一次撤销
+
+#### iOS 摇晃手势
+
+默认情况下，用户通过摇晃设备来触发撤销操作。如果一个 view controller 需要处理一个撤销请求，那么这个 view controller 必须：
+
+1. 能成为 first responder
+2. 一旦页面显示(view appears)，即变成 first responder
+3. 一旦页面消失(view disappears)，即放弃 first responder
+
+当 view controller 接收到运动事件，当撤销或重做可用时，系统会展示给用户一个会话界面。View controller 的 `undoManager` 属性不需要其他操作就可以响应用户的选择。
+
+```objc
+@implementation ViewController
+
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+    [self becomeFirstResponder];
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    [self resignFirstResponder];
+}
+
+- (BOOL)canBecomeFirstResponder {
+    return YES;
+}
+
+@end
+```
+
+#### 执行撤销
+
+执行撤销操作的时候，系统会将撤销栈中的对象 pop 出来，然后执行。通过 `undo` 方法触发：
+
+```objc
+if ([self.undoManager canUndo]) {
+    [self.undoManager undo];
+}
+```
+
+
+
+#### 清空撤销栈
+
+有时候我们需要手动清空撤销栈。通常情况下当上下文发生戏剧性变化时，比如说 iOS 上改变了显示的 view controller 或一个打开的文档外部发生了变化。此时，撤销管理器的栈可以通过 `removeAllActions` 来清空或使用 `removeAllActionsWithTarget:` 清空某一个对象的所有撤销方法。
+
+#### 撤销与恢复
+
+如果有一对相反的方法需要表示既能撤销也能恢复，需要这样使用：
+
+```objc
+- (void)addItem:(id)item {
+    [undoManager registerUndoWithTarget:self selector:@selector(removeItem:) object:item];
+    if (![undoManager isUndoing]) {
+        [undoManager setActionName:NSLocalizedString(@"actions.add-item", @"Add Item")];
+    }
+    [myArray addObject:item];
+}
+
+- (void)removeItem:(id)item {
+    [undoManager registerUndoWithTarget:self selector:@selector(addItem:) object:item];
+    if (![undoManager isUndoing]) {
+        [undoManager setActionName:NSLocalizedString(@"actions.remove-item", @"Remove Item")];
+    }
+    [myArray removeObject:item];
+}
+```
+
+在恢复中注册撤销，在撤销中注册恢复。这里先判断 `isUndoing` 其实没有太大必要，去掉也没什么问题。
+
+
+
+## NSInvocation
+
+当我们想要动态调用某一个方法的时候，我们一般会选择 `performSelector:withObject:withObject` 方法。但是这个方法有一个局限就是最多只能调用含有两个参数的函数:
+
+```objc
+NSString *sample = [self performSelector:@selector(append:withStr:) withObject:@"a" withObject:@"b"];
+==> ab
+```
+
+苹果提供了另外一种方法：`NSInvocation`。下面介绍一下使用步骤：
+
+### 提供方法签名
+
+首先要获得调用方法的方法签名：
+
+```objc
+//NSObject的对象方法，任何继承自NSObject的对象都可以调用
+- (NSMethodSignature *)methodSignatureForSelector:(SEL)aSelector
+//NSObject的类方法，任何继承自NSObject的类都可以调用
++ (NSMethodSignature *)instanceMethodSignatureForSelector:(SEL)aSelector
+```
+
+```objc
+NSString *methodNameStr = @"test:withArg2:andArg3:"
+SEL selector = NSSelectorFromString(methodNameStr);
+NSMethodSignature *signature = [self methodSignatureForSelector:selector];
+//或使用下面这种方式
+NSMethodSignature *signature = [[self class] instanceMethodSignatureForSelector:selector];
+```
+
+### 使用方法签名创建一个 NSInvocation 对象
+
+```objc
+NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
+//只能使用该方法来创建，不能使用alloc init
+```
+
+### 设置调用对象和调用方法
+
+invocation 对象有两个属性，执行对象 target，执行的方法 selector：
+
+```objc
+invocation.target = self;
+invocation.selector = selector;
+```
+
+### 设置参数
+
+使用 `setArgument:atIndex:` 方法设置参数。参数从2开始，因为0、1被 target 和 selector占用了:
+
+```objc
+NSString *arg1 = @"a";
+NSString *arg2 = @"b";
+NSString *arg3 = @"c";
+[invocation setArgument:&arg1 atIndex:2];
+[invocation setArgument:&arg2 atIndex:3];
+[invocation setArgument:&arg3 atIndex:4];
+```
+
+注意，这里是使用的是参数的引用，传递的是地址。
+
+
+
+### 执行方法
+
+直接执行方法：
+
+```objc
+[invocation invoke];
+```
+
+如果方法有返回值呢？在上面的语句执行方法后，我们通过 `getReturnValue:` 方法拿到返回值：
+
+```objc
+//可以在invoke方法前添加，也可以在invoke方法后添加
+//通过方法签名的methodReturnLength判断是否有返回值
+if (signature.methodReturnLength > 0) {
+    id *result = nil;
+    [invocation getReturnValue:&result];
+}
+```
+
+方法签名有两个只读属性，一个是 `numberOfArguments` 表示方法参数的个数；还有个就是上面代码涉及的 `methodReturnLength` 表示方法返回值类型的长度，大于0表示有返回值。
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/NSInvocation.png?raw=true)
+
+
+
 ## NSJSONSerialization
 
 JSON(也就是特定类型的 `NSString`) 和 `NSDictionary`、`NSArray` 之间的转换可以通过 `NSJSONSerialization` 类进行
