@@ -239,8 +239,6 @@ if (signature.methodReturnLength > 0) {
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/NSInvocation.png?raw=true)
 
-
-
 ## NSJSONSerialization
 
 JSON(也就是特定类型的 `NSString`) 和 `NSDictionary`、`NSArray` 之间的转换可以通过 `NSJSONSerialization` 类进行
