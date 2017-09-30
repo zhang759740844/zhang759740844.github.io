@@ -241,7 +241,7 @@ let a: (Int,Int)? = nil
 
 ```swift
 let a: (String?,Int) = (nil,2)  // √
-let a = (nil,2) 				// ×
+let a = (nil,2) 				// × 没有声明，那就表示是非可选
 ```
 
 > 直接赋值的都能通过赋给的值进行类型推断，而不是可选类型；前面直接 `var str: String` 声明但没有赋值的也是**非可选**的。
