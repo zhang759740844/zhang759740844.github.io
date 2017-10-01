@@ -14,6 +14,8 @@ tags:
 
 ## 继承
 
+只有类可以被继承，结构体和枚举不能被继承
+
 ### 定义一个基类
 
 不继承于其它类的类，称之为*基类*。
@@ -92,6 +94,8 @@ automatic.currentSpeed = 35.0
 print("AutomaticCar: \(automatic.description)")
 // AutomaticCar: traveling at 35.0 miles per hour in gear 4
 ```
+
+> 重写的是属性的方法，重写不能改变非计算型属性原有的值。所以，比如上面的 currentSpeed 不能赋值，因为父类 Car 里已经有这个属性的初值了。
 
 ### 防止重写
 
@@ -628,6 +632,8 @@ class SomeSubclass: SomeClass {
     }
 }
 ```
+
+> required 表示所有子类都必须实现这个构造器，而不是说，只要一个子类实现就可以了。
 
 ### 通过闭包或函数设置属性的默认值
 

@@ -27,7 +27,7 @@ Swift 中的扩展可以：
 - 定义和使用新的嵌套类型
 - 使一个已有类型符合某个协议
 
-> 拓展可以为一个类型添加新的功能，但是不能重写已有功能，也不可以添加存储型的属性类属性，这和 oc 一致
+> 拓展可以为一个类型添加新的功能，但是不能重写已有功能，也不可以添加存储型的属性、类属性，这和 oc 一致
 >
 
 ### 拓展语法
@@ -49,6 +49,28 @@ extension SomeType: SomeProtocol, AnotherProctocol {
 ```
 
 > 如果你通过扩展为一个已有类型添加新功能，那么新功能对该类型的所有已有实例都是可用的，即使它们是在这个扩展定义之前创建的。
+
+swift4 中新特性，`extension` 中也可以访问原本 private 的属性。在 Swift3 中就需要使用 fileprivate。
+
+```swift
+struct Date {
+    private let secondsSinceReferenceDate: Double
+}
+extension Date: Equatable {
+    static func ==(lhs: Date, rhs: Date) -> Bool {
+        return lhs.secondsSinceReferenceDate == rhs.secondsSinceReferenceDate
+    }
+}
+extension Date: Comparable {
+    static func <(lhs: Date, rhs: Date) -> Bool {
+        return lhs.secondsSinceReferenceDate < rhs.secondsSinceReferenceDate
+    }
+}
+```
+
+这里就可以访问 `secondsSinceReferenceDate` 属性。
+
+在 Swift 4 中，private 的属性的作用域扩大到了 extension 中，并且被限定在了 struct 和 extension 内部，这样就不需要再改成 fileprivate 了，这是最好的结果。
 
 ### 计算型属性
 
@@ -73,6 +95,8 @@ print("Three feet is \(threeFeet) meters")
 由于拓展里不会有非可选属性，所以，这里可以直接获取 self
 
 > 扩展可以添加新的计算型属性，但是不可以添加存储型属性，也不可以为已有属性添加属性观察器。
+>
+> **添加计算型属性就相当于是添加方法**
 
 ### 构造器
 
@@ -250,9 +274,9 @@ class SomeClass: SomeSuperClass, FirstProtocol, AnotherProtocol {
 
 协议可以要求采纳协议的类型提供特定名称和类型的实例属性或类型属性。协议不指定属性是存储型属性还是计算型属性，它只指定属性的名称和类型。此外，协议还指定属性是可读的还是可读可写的。
 
-如果协议要求属性是可读可写的，那么该属性不能是常量属性或只读的计算型属性。如果协议只要求属性是可读的，那么该属性不仅可以是可读的，如果代码需要的话，还可以是可写的。
+如果协议要求属性是可读可写的，那么该属性不能是常量属性或只读的计算型属性。**如果协议只要求属性是可读的，那么该属性不仅可以是可读的，如果代码需要的话，还可以是可写的。（可读包括可写可读）**
 
-协议总是用 `var` 关键字来声明变量属性，在类型声明后加上 `{ set get }` 来表示属性是可读可写的，只读属性则用 `{ get }` 来表示：
+协议总是用 `var` 关键字来声明变量属性，在类型声明后加上 `{ set get }` 来表示属性是可读可写的，使用`{get}` 来明确可读的属性：
 
 ```swift
 protocol SomeProtocol {
@@ -269,7 +293,9 @@ protocol AnotherProtocol {
 }
 ```
 
-> 当类类型采纳协议时，除了 `static` 关键字，还可以使用 `class` 关键字来声明类型属性
+> 当类类型采纳协议时，除了 `static` 关键字，还可以使用 `class` 关键字来声明类型属性，表示可被继承
+
+> Swift 中是真能在协议中添加属性，而 OC 中，添加的属性只是表示要求实现 get set 方法，但是并没有实例变量
 
  ### 方法要求
 
@@ -314,24 +340,20 @@ print("And another one: \(generator.random())")
 > 实现协议中的 `mutating` 方法时，若是类类型，则不用写 `mutating` 关键字。而对于结构体和枚举，则必须写 `mutating` 关键字。
 
 ```swift
-protocol Togglable {
-    mutating func toggle()
-}
-
 enum OnOffSwitch: Togglable {
-    case Off, On
+    case off, on
     mutating func toggle() {
         switch self {
-        case Off:
-            self = On
-        case On:
-            self = Off
+        case .off:
+            self = .on
+        case .on:
+            self = .off
         }
     }
 }
-var lightSwitch = OnOffSwitch.Off
+var lightSwitch = OnOffSwitch.off
 lightSwitch.toggle()
-// lightSwitch 现在的值为 .On
+// lightSwitch is now equal to .on
 ```
 
 ### 构造器要求
@@ -356,7 +378,7 @@ class SomeClass: SomeProtocol {
 }
 ```
 
-使用 `required` 修饰符可以确保所有子类也必须提供此构造器实现，从而也能符合协议。
+使用 `required` 修饰符可以确保所有子类也必须提供此构造器实现，从而也能符合协议。**就是构造器比较特殊**
 
 > 如果类已经被标记为 `final`，那么不需要在协议构造器的实现中使用 `required` 修饰符，因为 `final` 类不能有子类。
 
@@ -439,6 +461,20 @@ extension Dice: TextRepresentable {
         return "A \(sides)-sided dice"
     }
 }
+```
+
+### 使用拓展声明采纳协议
+
+如果一个类型已经遵循了协议的所有需求，但是还没有声明它采纳了这个协议，你可以让通过一个空的扩展来让它采纳这个协议：
+
+```swift
+struct Hamster {
+    var name: String
+    var textualDescription: String {
+        return "A hamster named \(name)"
+    }
+}
+extension Hamster: TextRepresentable {}
 ```
 
 ### 协议的继承
@@ -548,6 +584,8 @@ for _ in 1...4 {
 // 9
 // 12
 ```
+
+这里方法后的可选是指这个方法是否存在，而之前出现过的方法后的可选是指，方法是否有返回值。
 
 > 注意 `fixedIncrement` 在协议中是 var，但是实现是可以设置为 `let`
 

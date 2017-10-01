@@ -349,7 +349,7 @@ rangeOfFourItems.firstValue = 6
 
 **这种行为是由于结构体（struct）属于*值类型*。当值类型的实例被声明为常量的时候，它的所有属性也就成了常量。**属于*引用类型*的类（class）则不一样。把一个引用类型的实例赋给一个常量后，仍然可以修改该实例的变量属性。
 
-> **因此数组字典等如果设置为 `let` ，那么值类型无法给内容，引用类型无法改地址**
+> **因此数组字典等如果设置为 `let` ，那么数组字典中的项，值类型无法给内容，引用类型无法改地址**
 
 #### 延迟存储属性
 
@@ -543,7 +543,17 @@ class SomeClass {
 }
 ```
 
-(为什么要用 class 来标识呢？计算型存储属性又如何重写父类呢？)
+使用了 `class`，子类才能知道这个计算型属性是可以重写的，重写的时候要加上 `override` 表示：
+
+```swift
+class OverridedClass: SomeClass {
+    override class var overrideableComputedTypeProperty: Int {
+        return 20
+    }
+}
+```
+
+> 其实计算型属性就相当于是个方法。
 
 #### 获取和设置类型属性的值
 

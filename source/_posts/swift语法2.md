@@ -109,7 +109,7 @@ default:
 // Prints "The first letter of the alphabet"
 ```
 
-> 这样挺好的，不然每次都要写个 break，挺烦人的
+> 这个就相当于是或操作，下面还有与操作
 
 这样就匹配到了第一个情况。
 

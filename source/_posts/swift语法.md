@@ -41,9 +41,8 @@ var x = 0.0, y = 0.0, z = 0.0
 >
 > 但是在获取的时候，只有可选变量会被默认设置为 nil。
 >
-> 其余非可选变量常量，以及可选常量，在没有赋初值的情况下读取，都会产生异常。
+> 其余非可选变量常量，以及可选常量，在没有赋初值的情况下读取或者强制解包，都会产生异常。
 >
-> (可选的常量如果默认为 nil，那就没有意义了，所以强制可选常量也抛出异常)
 
 #### 类型注释
 
@@ -160,7 +159,7 @@ if i == 1 {
 }
 ```
 
-如果你在需要使用 Bool 类型的地方使用了非布尔值，Swift 的类型安全机制会报错。这就不像很多其他语言，非零非空就是 true。
+如果你在需要使用 Bool 类型的地方使用了非布尔值，Swift 的类型安全机制会报错。这就不像很多其他语言，非零非空就是 true。**Swift 会阻止你用一个非布尔量替换调 Bool**
 
 > if 条件语句必须是一个有值的表达式
 >
@@ -246,7 +245,7 @@ let a = (nil,2) 				// × 没有声明，那就表示是非可选
 
 > 直接赋值的都能通过赋给的值进行类型推断，而不是可选类型；前面直接 `var str: String` 声明但没有赋值的也是**非可选**的。
 >
-> **可选变量的声明，一定要手动标明**，即一定要加上 ?,即 `let possibleNumber: String?`，否则就是不可选的
+> **可选变量的声明，一定要手动标明**，即一定要加上 ?,即 `let possibleNumber: String?`，否则就是不可选的。切记切记。
 
 #### nil
 
@@ -312,7 +311,7 @@ if let actualNumber = Int(possibleNumber) {
 // Prints ""123" has an integer value of 123"
 ```
 
-这个表示，如果 `Int(possibleNumber)` 转换后有值，那么赋值给 `actualNumber`，走成功的分支，否则走失败的分支。注意，这里的 `actualNumber` 就不需要加 `!` 了，因为由于可选绑定，它已经不是一个可选类型了。
+这个表示，如果 `Int(possibleNumber)` 转换后有值，那么赋值给 `actualNumber`，走成功的分支，否则走失败的分支。注意，**这里的 `actualNumber` 就不需要加 `!` 了，因为由于可选绑定，它已经不是一个可选类型了。**
 
 > 这其实就是判断非空操作的语法糖
 
@@ -483,7 +482,7 @@ var colorNameToUse = userDefinedColorName ?? defaultColorName
 
 ```swift
 for index in 1...5 {
-    println("\(index) * 5 = \(index * 5)")
+    print("\(index) * 5 = \(index * 5)")
 }
 // 1 * 5 = 5
 // 2 * 5 = 10
