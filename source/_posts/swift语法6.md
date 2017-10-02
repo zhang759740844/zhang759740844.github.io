@@ -737,8 +737,8 @@ struct IntStack: Container {
     }
     // Container 协议的实现部分
     typealias ItemType = Int
-    mutating func append(item: Int) {
-        self.push(item)
+    mutating func append(_ item: Int) {
+        self.push(item: item)
     }
     var count: Int {
         return items.count

@@ -100,23 +100,7 @@ open class SubclassE : SubclassableParentClass {
 }
 ```
 
-
-
-`fileprivate` 的出现是为了弥补以前 `private` 的缺陷。在**原有**的 swift 中的` private`其实并不是真正的私有，如果一个变量定义为 `private`，在同一个文件中的其他类依然是可以访问到的。这个场景在使用 extension 的时候很明显:
-
-```swift
-class User {
-    private var name = "private"
-}
-
-extension User{
-    var accessPrivate: String {
-        return name
-    }
-}
-```
-
-现在就可以使用 `fileprivate` 代替上面的  `private`
+在 Swift3 中 `private` 修饰的变量 extension 中是不能访问的，因为不在一个作用域中。但是 Swift4 中修改了这一个限制。现在在 extension 中也是能够访问 private 的属性的。
 
 ### 访问级别基本原则
 
