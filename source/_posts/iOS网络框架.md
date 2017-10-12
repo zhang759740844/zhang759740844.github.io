@@ -159,13 +159,37 @@ else 的逻辑，不是从本地获取的那么直接成功回调没有问题。
 
 `CTServiceProtocol` 中提供了一个可选方法 `shouldCallBackByFailedOnCallingAPI:`，用来集中处理 Service 层的错误，比如 token 失效。我们就可以在 Service 中实现该方法，在其中发出通知。处理完错误后，直接 return，不再继续执行。所以总的来说，分为三层，Service 层，APIManager 层和业务层，每一层都能进行处理。
 
+### 博客中的问答
+
+#### 如何处理请求链
+
+如何处理链式请求？一般我们都是在成功回调后拿到数据，然后再进行下一个请求。如果存在多个请求，那么这个成功回调会嵌套的非常长。进行的改进就是争取将各个请求从回调中取出。我们可以将每一个回调放在一个专门的类中：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_18.png?raw=true)
+
+如图所示，为每一个请求链上的 API 创建一个 Command 类。这个 Command 类是对 APIManager 的一层封装，ViewController 中不再直接调用 APIManager 中的 `loadData` 方法，而是调用 Command 中提供的 `execute`(名字叫什么不重要)表示我发起了一个请求链。将 Command 设置为 APIManager 的 paramSource，delegate。APIManager 先执行 Command 的回调。Command 中提供了一个同为 Command 类型的 `next` 属性，这就是请求链的下一级。在 Command 的回调中，判断 `next` 是否为空。当存在时，如果下一级要依赖上一级返回的结果作为参数，就将下一级的 paramSource 设置为上一级，然后通过 `[self.next execute]` 执行。如果不存在，那么调用 delegate（一般是 ViewController）的完成回调，表示请求链结束。
+
+使用的时候为每一个 Command 设置 `next` 即可：
+
+```objc
+// ViewController 中
+API1Command *api1 = [[API1Command alloc] init];
+API2Command *api2 = [[API2Command alloc] init];
+API3Command *api3 = [[API3Command alloc] init];
+api1.next = api2;
+api1.paramSource = self;
+api2.next = api3;
+api3.delegate = self;
+[api1 execute];
+```
+
+这只是一个思路，具体还需要自己按照需求做出一定的调整。
 
 
 
 
 
-
-
+ 
 
 
 
