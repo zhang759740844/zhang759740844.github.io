@@ -370,6 +370,8 @@ let implicitString: String = assumedString // no need for an exclamation mark
 
 > 如果一个变量之后可能变成 nil 的话请不要使用隐式解析可选。如果你需要在变量的生命周期中判断是否是 nil 的话，请使用普通可选类型。
 
+
+
 ## 基础运算符
 
 ### 赋值运算
@@ -384,7 +386,7 @@ let (x, y) = (1, 2) // 现在 x 等于 1, y 等于 2
 
 补充：这里的 x 和 y 相当于被声明成为 let 类型。
 
-另外，由于 Swift 中的 if 判断需要明确的布尔值，所以下面的代码在 Swift 中是不合法的：
+ 另外，**Swift 的赋值符号自身不会返回值**，所以下面的代码在 Swift 中是不合法的：
 
 ```swift
 if x = y {

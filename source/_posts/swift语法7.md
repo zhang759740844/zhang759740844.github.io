@@ -219,3 +219,114 @@ private var privateInstance = SomePrivateClass()
 采纳了协议的类型的访问级别取它本身和所采纳协议两者间最低的访问级别。也就是说如果一个类型是 `public` 级别，采纳的协议是 `internal` 级别，那么采纳了这个协议后，该类型作为符合协议的类型时，其访问级别也是 `internal`。
 
 如果你采纳了协议，那么实现了协议的所有要求后，你必须确保这些实现的访问级别不能低于协议的访问级别。例如，一个 `public` 级别的类型，采纳了 `internal` 级别的协议，那么协议的实现至少也得是 `internal` 级别
+
+
+
+## 补充
+
+###  断言与先决条件
+
+断言和先决条件用来检查某些条件是否满足。断言和先决条件不同之处在于什么时候做检查：断言只在 debug 时候检查，先决条件则在 debug 和生产构建中都生效。生产构建中，断言的条件不会被计算，因此无需担心新能。
+
+####  断言的使用方式
+
+使用 `assert(_:_:)` 来进行断言：
+
+```swift
+let age = -3
+assert(age >= 0, "A person's age cannot be less than zero")
+```
+
+如果不需要检查条件直接抛出异常，那么可以使用 `assertionFailure(_:)`
+
+```swift
+if age > 10 {
+    print("You can ride the roller-coaster or the ferris wheel.")
+} else if age > 0 {
+    print("You can ride the ferris wheel.")
+} else {
+    assertionFailure("A person's age can't be less than zero.")
+}
+```
+
+#### 强制先决条件
+
+使用上和断言类似，使用 `precondition(_:_:)` 也有 `preconditionFailure(_:)` 来强制抛出：
+
+```swift
+precondition(index > 0, "Index must be greater than zero.")
+```
+
+
+
+### Where 分句
+
+Where 主要用来约束泛型或者协议中的关联类型。在类型、函数、拓展、协议中都可以使用。
+
+#### 类型和函数中
+
+类型或函数中本来是可以直接定义泛型的，可以直接对泛型做约束：
+
+```swift
+protocol a {
+    associatedtype itemType
+}
+
+protocol b {
+    associatedtype itemType
+}
+
+class s {
+}
+
+class S<T: a, K: b> : s {
+}
+```
+
+但是这样，我们无法约束协议 a 和 b 中的关联类型。所以我们可以用 where 分句：
+
+```swift
+class S<T: a, K: b> : s where T.itemType == K.itemitemType {
+}
+或者
+
+class S<T,K> : s where T: a, K: b, T.itemType == K.itemType {
+}
+```
+
+泛型实现的协议以及协议中的关联类型都可以用 where 限制
+
+#### extension 中
+
+由于 extension 中不能定义泛型，只能使用泛型，所以不能直接在 `<>` 中直接约束泛型了，但是仍然可以使用 Where：
+
+```swift
+extension Stack where Element: Equatable {
+    func isTop(_ item: Element) -> Bool {
+        guard let topItem = items.last else {
+            return false
+        }
+        return topItem == item
+    }
+}
+```
+
+#### 协议中
+
+协议中不适用 `<>` 定义泛型，而是使用关联类型。如果要约束关联类型，那么也可以使用 where：
+
+```swift
+protocol pro {
+}
+protocol Container where Item: pro { 
+    associatedtype Item
+    mutating func append(_ item: Item)
+    var count: Int { get }
+    subscript(i: Int) -> Item { get }
+    
+    associatedtype Iterator: IteratorProtocol where Iterator.Element == Item
+    func makeIterator() -> Iterator
+}
+```
+
+ 我们可以看到：**where 都是将泛型或者关联类型约束为实现某个协议而不是继承某个类，原因很明显，因为明确了某个类了就不需要泛型以及关联类型了**。
