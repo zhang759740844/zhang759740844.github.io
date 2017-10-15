@@ -259,9 +259,9 @@ precondition(index > 0, "Index must be greater than zero.")
 
 
 
-### Where 分句
+### 泛型中的 Where
 
-Where 主要用来约束泛型或者协议中的关联类型。在类型、函数、拓展、协议中都可以使用。
+泛型中的 Where 主要用来约束泛型或者协议中的关联类型。在类型、函数、拓展、协议中都可以使用。
 
 #### 类型和函数中
 
@@ -330,3 +330,33 @@ protocol Container where Item: pro {
 ```
 
  我们可以看到：**where 都是将泛型或者关联类型约束为实现某个协议而不是继承某个类，原因很明显，因为明确了某个类了就不需要泛型以及关联类型了**。
+
+
+
+### 条件判断的 where
+
+where 还可以用在条件判断上，比如之前在学习 Swith 的使用用到的，where 接受一个返回 Bool 类型的分句，用来做条件判断：
+
+```swift
+case let(x, y) where x == y:
+```
+
+在 for…in 循环中，同样可以使用 where：
+
+```swift
+for element in 1...5 where element >3 {
+    print(element)
+}
+// 4,5
+```
+
+相当于：
+
+```swift
+for element in 1...5 {
+    if element > 3 {
+        print element
+    }
+}
+```
+
