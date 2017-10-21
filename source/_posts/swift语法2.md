@@ -333,6 +333,11 @@ greet(person: ["name": "Jane", "location": "Cupertino"])
 
 当 `guard` 满足的时候代码直接往后走，如果条件不满足，那么执行 else 内的代码。其实逻辑和 if 是一样的。但是为什么要弄出这么个东西呢？为了让代码可读性更高。
 
+> 有两点和 if 不同的注意点：
+>
+> 1. `guard let` 中必须要有 `return`，而 `if let` 则不需要 `return`
+> 2. `guard let` 变量的作用域是外部作用域，`if let` 的作用域是内部作用域。也就是说，guard 方式 let 得到的值外部还能用到，if 方式 let 到的值外部已经无法使用。
+
 ### 检查 API 是否可用
 
 Swift 3 中提供了检查 API 是否可用的方法：
