@@ -294,7 +294,16 @@ class S<T,K> : s where T: a, K: b, T.itemType == K.itemType {
 }
 ```
 
-泛型实现的协议以及协议中的关联类型都可以用 where 限制
+泛型实现的协议以及协议中的关联类型都可以用 where 限制。
+
+函数中使用 where 也类似，将 where 放在函数签名之后：
+
+```swift
+func method<T>(param: T) where T: s {
+}
+```
+
+
 
 #### extension 中
 
