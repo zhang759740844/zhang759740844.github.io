@@ -9,6 +9,45 @@ tags:
 
 <!--more-->
 
+### 使用 iterm2
+
+#### 下载主题
+
+官方的颜色默认是黑色的，可以去[Iterm2-color-schemes](http://iterm2colorschemes.com/)下载主题。按照上面提供的步骤设置。推荐使用 **Solarized Dark Higher Contrast**
+
+#### 设置终端字体颜色
+
+下载好主题后，终端颜色并没有很好看，需要进一步设置，在终端输入 `vim ~/.bash_profile`
+
+```shell
+#enables colorin the terminal bash shell export
+export CLICOLOR=1
+
+#setsup thecolor scheme for list export
+export LSCOLORS=gxfxcxdxbxegedabagacad
+
+#sets up theprompt color (currently a green similar to linux terminal)
+export PS1='\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;36m\]\w\[\033[00m\]\$ '
+#enables colorfor iTerm
+export TERM=xterm-256color
+```
+
+终端颜色就能非常漂亮了
+
+#### 设置 Vim 颜色
+
+在终端输入 `vim .vimrc`
+
+```shell
+ syntax on
+ set number
+ set ruler
+```
+
+这样 Vim 就能高亮提示了。
+
+
+
 ### 如何显示/不显示隐藏文件
 
 **在终端中执行如下代码并重启动Finder。**
