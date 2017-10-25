@@ -9,6 +9,16 @@ tags:
 
 <!--more-->
 
+### Alfred3 开机访问通讯录
+
+破解的 Alfred3 每次开机都要访问通讯录，解决办法是在终端中进行签名:
+
+```shell
+sudo codesign -f -d -s - /Applications/Alfred\ 3.app/Contents/Frameworks/Alfred\ Framework.framework/Versions/A/Alfred\ Framework
+```
+
+
+
 ### 使用 iterm2
 
 #### 下载主题
