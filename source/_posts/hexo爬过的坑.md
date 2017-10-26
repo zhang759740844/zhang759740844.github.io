@@ -11,42 +11,77 @@ tags:
 
 <!--more-->
 
+### 更新 hexo
+
+自从把自己的博客构建起来后就没有升级过 hexo，这次要设置 apple-touch-icon，更新了 hexo，也花了小半天时间。记述一下，以后更新或者换电脑迁移就容易一些了。
+
+#### 下载 npm
+
+npm 是由 node 提供的。因此，到 node 的官网下载安装 node 即可获得 npm
+
+#### 安装 hexo
+
+使用如下命令安装 hexo 的最新版本
+
+```shell
+npm install hexo-cli -g
+```
+
+#### 初始化 hexo
+
+如果你是更新 hexo，可能以为这步没有必要，这么想就错了。hexo 更新的时候会更新一些 node-modules，这些 node-modules 并不在 package.json 中记录，这些 module 是很重要的。所以不管是更新还是新建，你都必须要初始化 hexo。你可以在一个空文件夹中初始化好 hexo，然后把这些 module 拷贝到你当前的 node-module 文件夹内
+
+```shell
+hexo init
+```
+
+#### 下载 node-module
+
+这步就不多说了
+
+```shell
+npm install
+```
+
+#### 下载 deploy module
+
+hexo3 开始需要借助一个 deploy module 来推送博客，但这并没有在默认的 package.json 中，要自己动手添加：
+
+```shell
+npm install hexo-deployer-git --save
+```
+
+### 更新 next
+
+next 肯定要和 hexo 同步更新呀，现在 next 主题非常人性化了，现在可以添加 apple-touch-icon，而且也有了默认的本地搜索。所以记得要仔细看配置文件，不要直接把以前的配置文件直接拷贝过来。
+
+#### 更新 next
+
+更新 next 的话，你可以直接把原来的 next 文件夹删掉，然后使用终端拉取：
+
+```shell
+git clone https://github.com/iissnan/hexo-theme-next themes/next
+```
+
+#### 更改图片
+
+包括 favicon，apple-touch-icon，avatar 都可以在 next 主题中随意替换。路径在 next 主题的 `_config.yml` 中配置，默认路径在 `themes/next/source/images` 内。
+
+#### 搜索
+
+在 `_config.yml` 中已经有了搜索的配置，你只要设置 enable 为 true 即可。然后就是下载搜索的 module，执行：
+
+```shell
+npm install hexo-generator-search --save
+npm install hexo-generator-searchdb --save
+```
+
 ### 各种部署的内容和本地不一致
 有时候 hexo 会抽风，有些文件无论怎么 `hexo g` 都 deploy 不上去。这个时候可以输入 `hexo clean`，删除 database 和 public 文件夹，再 generate 和 deploy 就可以部署成功了。 
 
-### next主题空白
-这是16年11月份的问题，突然打开自己的博客发现一片空白，但是在本地 `hexo s` 就能够显示出来。原本以为是我远端仓库出了问题，就重建了个新的，但是没有效果。很急很难受。网上搜索真的难，以为我不知道有没有人遇到过这样的问题，并且我也不知道该怎么去描述这个出现的问题。不过，几经波折，还是找到了解决的方案。
-
-因为 Github 在 11月3日的更新中忽略了 `venders` 和 `node_modules` 两个文件夹。于是就打不开 `venders` 目录下的 js 文件了。
-
-那么如何解决呢？`next` 的作者推荐我们修改 `venders` 文件夹名。比如将 `source/venders` 修改成 `source/libs`。同时，修改主题下的配置文件 `_config.yml`,将 `_internal: venders` 修改成之前修改的名字，如 `_internal: libs`。
-
-当然，如果是直接克隆的 `next` 主题，可以通过 `git pull` 直接拉取 `next` 作者的修改。
-
-### 缺少 DTraceProviderBindings 模块
-这是在换了 Mac，重新安装 hexo 后，`hexo g` 时出现的问题。会出现如下 Error 提示：
-
-```
-{ [Error: Cannot find module './build/Release/DTraceProviderBindings'] code: 'MODULE_NOT_FOUND' }
-{ [Error: Cannot find module './build/default/DTraceProviderBindings'] code: 'MODULE_NOT_FOUND' }
-{ [Error: Cannot find module './build/Debug/DTraceProviderBindings'] code: 'MODULE_NOT_FOUND' }
-```
-
-虽然结果上来说并不影响 hexo 的执行，但是每次都提示还是很让人不爽的。于是，搜索了一下，网上确实有很多讨论这个问题的解决方法的。一般比较多的方式是使用 `npm install hexo --no-optional` 安装 hexo（一般安装还是将 hexo 安装成全局的吧，使用 `-g` 选项）。
-
-但是我用了这个方式后，并没有效果，然后又查了几种方式都不行，就很气。然后就看 hexo 的安装文档，突然灵光一闪。因为现在安装 hexo 的方式变成了 `npm install hexo-cli -g`，那么是不是说原本的  `npm install hexo` 方式已经被废弃了呢？ 于是我就尝试在终端输入 `npm install hexo-cli -g --no-optional`。果然就没有这个 Error 了。
-
 ### 搜索功能打不开
 
-hexo 可以安装插件来实现搜索功能，但是有特殊情况会使搜索点击后不响应。
-
-原因是我的一篇文章写了 10000+ 个字，可能超出搜索上限了，然后就打不来了。
-
-所以最好将长文章分为几篇短文章发布
-
-### 还是搜索功能打不开
-
-还是写了一片文章后点击搜索无响应了。
+写了一片文章后点击搜索无响应了。
 
 这回的原因是在文章中的某一处多了一个空白字符，就是那种什么位置也不占，但是按一次 delete 才能删除的那种东西。把这个空白字符删掉就可以正常搜索了。
 
