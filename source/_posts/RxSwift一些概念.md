@@ -252,6 +252,33 @@ subject.onNext("3")						// 没有任何反应
 
 #### Variables
 
+Variable 是 BehaviorSubject 的包装，将其值作为状态。当值变化时，触发事件，不再需要 `onNext()` 方法触发事件。Variable 不会出现 error，也不需要手动触发 completed 事件。
+
+代码示例如下：
+
+```swift
+let disposeBag = DisposeBag()
+// 创建 Variable
+var variable = Variable("Initial value")
+// 更改值
+variable.value = "New Value"
+// 订阅
+variable.asObservable()
+	.subscribe {
+        print($0.element)
+    }.addDisposableTo(bag)			// New Value
+```
+
+Variable 需要使用 `asObservable()` 方法将其转换为 Observable，值是其 `value` 属性。另外，由于是 BehaviorSubject 的包装，因此，订阅的时候会打印最后一次的事件值。
+
+## 操作符的最佳实践
+
+### 过滤操作符
+
+
+
+
+
 
 
 
