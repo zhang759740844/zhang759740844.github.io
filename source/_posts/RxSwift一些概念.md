@@ -657,6 +657,8 @@ observable.subscribe(onNext: { value in
 
 需要注意的是，zip 不需要所有内部序列都完成，只要有一个 completed，整个事件序列就结束了。
 
+(确实这个挺像拉链的，名字起得很形象)
+
 #### 触发器
 
 ##### withLatestFrom
@@ -739,7 +741,40 @@ source.onNext(two)
 two.onNext("emit")				// emit
 ```
 
-还记得 flatMapLatest 吗？
+还记得 flatMapLatest 吗？之前说过 flatMapLatest，就是 map + switchLatest
+
+#### 元素和序列的结合
+
+##### reduce
+
+Rx 中的 reduce 类似于 Swift 中的 reduce，将一个序列的所有事件值通过运算，得到一个最终的事件值，并触发事件：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_35.png?raw=true)
+
+代码如下：
+
+```swift
+Observable.of(1, 2, 3)
+	.reduce(0) { summary, newValue in
+        return summary + newValue
+    }.subscribe { print($0.element && $0) }
+	.addDeposiableAt(bag)
+```
+
+##### scan
+
+scan 和 reduce 的不同在于，reduce 是一锤子买卖，scan 每次接收到事件值时都会触发一个事件：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_36.png?raw=true)
+
+代码如下：
+
+```swift
+Observable.of(1, 2, 3)
+	.scan(0, accumulator: +)
+	.subscribe(onNext: { value in print(value) })
+	.addDeposiableTo(bag)
+```
 
 
 
