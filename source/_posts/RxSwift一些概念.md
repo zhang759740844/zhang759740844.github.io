@@ -5,7 +5,7 @@ tags:
 	- Swift
 ---
 
-学习 RxSwift，开始冲了个泊学会员看视频，发现看视频还不如直接看泊学文档。之后看到了这本书，果然看文旦还不如看书。
+学习 RxSwift，开始冲了个泊学会员看视频，发现看视频还不如直接看泊学文档。之后看到了这本书，果然看文档还不如看书。（泊学视频中的RxSwift 就是照搬了这本书的前两个 Section，例子也是照搬的）
 
 <!--more-->
 
@@ -275,15 +275,471 @@ Variable 需要使用 `asObservable()` 方法将其转换为 Observable，值是
 
 ### 过滤操作符
 
+#### Igoring operators
 
+##### ignoreElements
 
+ignoreElements 用来忽略所有的 `.next` 事件。所以用来指接受 completed 事件
 
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_10.png?raw=true)
 
+示例如下：
 
+```swift
+let strikes = PublishSubject<String>
+strikes.ignoreElements()
+	.subscribt { print("You are out") }
+	.addDisposableTo(bag)
+```
 
+##### elementAt
 
+elementAt 只会获取索引序号的事件，忽略其他的所有 `.next`。索引序号从 0 开始:
 
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_11.png?raw=true)
 
+代码如下：
+
+```swift
+let strikes = PublishSubject<String>()
+strikes.elementAt(1)
+	.subscribe { print("You are out") }
+	.addDisposableTo(bag)
+```
+
+##### filter
+
+filter 接受一个断言闭包，入参为当前事件值。接受所有断言正确的事件。注意是接受而不是过滤掉：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_12.png?raw=true)
+
+代码如下：
+
+```swift
+Observable.of(1, 2, 3, 4, 5)
+	.filter { $0 % 2 == 0}
+	.subscribe { print($0.elemetn ?? $0) }
+	.addDisposableTo(bag)
+```
+
+#### Skipping operators
+
+上面一节是根据条件筛选；这一节是忽略到某个满足条件的，后面的全部接受。
+
+##### skip
+
+skip 用来略过一定数量的 `.next`事件，然后开始接受。从 1 开始计数
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_13.png?raw=true)
+
+代码如下：
+
+```swift
+Observable.of(1, 2, 3, 4, 5)
+	.skip(2)
+	.subscribe { print($0.element ?? $0)}
+	.addDisposableTo(bag)
+```
+
+##### skipWhile
+
+skipWhile 是略过直到某个满足条件的事件发生。skipWhile 还有一个兄弟方法 skipWhileWithIndex，除了接受事件值，还接受事件序号，index 从 0 开始：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_14.png?raw=true)
+
+代码如下：
+
+```swift
+Observable.of(1, 2, 3, 4, 5)
+	.skipWhile { $0 % 2 == 0 }
+	.subscribe { print($0.element ?? $0)}
+	.addDisposableTo(bag)
+```
+
+##### skipUntil
+
+skipUntil 是略过直到某个事件发生。就是当前 Observable 和另外一个 Observable 相关联，当特定的 Observable 的 `.next` 发生的时候，才开始接受事件：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_15.png?raw=true)
+
+代码如下：
+
+```swift
+let subject = PublishSubject<String>()
+let trigger = PublishSubject<String>()
+
+subject.skipUntil(trigger)
+	.subscribe { print( $0.element ?? $0) }
+	.addDisposableTo(bag)
+// ... 当前时刻虽然订阅了，但是发送事件是无反应的
+trigger.onNext("a")
+// ... 由于 trigger 发送了 onNext 事件，现在 subject 可以接收到 next 事件了
+```
+
+ #### Taking operators
+
+本小节和上一小结正好相反，这一小节是接受某个事件之前的所有事件，之后的都不接受。
+
+##### take
+
+take 和 skip 正好相反。take 是直到一定数量的事件发生后才开始取，而不是取到一定数量的时候停
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_16.png?raw=true)
+
+代码如下：
+
+```swift
+Observable.of(1, 2, 3, 4, 5)
+	.take(2)
+	.subscribe { print($0.element ?? $0) }
+	.addDisposableTo(bag)
+```
+
+##### takeWhile
+
+takeWhile 和 skipWhile 正好相反。takeWhile 是取到某个不满足条件的事件。takeWhile 还有一个兄弟方法 takeWhileWithIndex，除了事件值 value，还接受事件的序号 index：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_17.png?raw=true)
+
+代码如下：
+
+```swift
+Observable.of(1, 2, 3, 4, 5)
+	.takeWhileWithIndex { v, i in 
+		v > 1 && i >1
+	}.subscribe { print($0.element ?? $0) }
+	.addDisposableTo(bag)
+```
+
+##### takeUntil
+
+takeUntil 和 skipUntil 相反。表示接受事件知道某个 Observable 的事件触发：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_18.png?raw=true)
+
+代码如下：
+
+```swift
+let subject = PublishSubject<String>()
+let trigger = PublishSubject<String>()
+
+subject.takeUntil(trigger)
+	.subscribe { print($0.element ?? $0 )}
+	.addDisposableTo(bag)
+// ... 此时一直接受 next 事件
+trigger.onNext("x")
+// ... 现在忽略所有的 next 事件了
+```
+
+#### Distinct operators
+
+本小节的操作符可以防止重复事件
+
+##### distinctUntilChanged
+
+如果当前事件和前一个事件的事件值相同，那么忽略这个事件：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_19.png?raw=true)
+
+代码如下：
+
+```swift
+Observable.of(1, 2, 2, 1)
+	.distinctUntilChanged()
+	.subscribe { print($0.elemet ?? $0) }
+	.addDisposableTo(bag)
+```
+
+distinctUntilChanged 还接受一个闭包，闭包入参为相邻事件的事件值，闭包返回值为 true 则忽略当前事件。
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_20.png?raw=true)
+
+代码如下，当前一个事件值为 1，当前事件值为 2 的时候忽略当前事件：
+
+```swift
+Observable.of(1, 2, 2, 1)
+	.distinctUntilChanged { a, b in
+		if a == 1 && b == 2 {
+            return true
+        }
+		return false
+    }
+```
+
+### 转换操作符
+
+#### 转换元素
+
+##### toArray
+
+将事件序列的元素转换成一个数组，然后将这个数组作为事件值，触发 `.next` 事件：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_21.png?raw=true)
+
+代码示例：
+
+```swift
+Observable.of("A", "B", "C")
+	.toArray()
+	.subscribe(onNext: { print($0) })
+	.addDisposableTo(bag)					// ["A", "B", "c"]
+```
+
+##### map
+
+map 和数组中的 map 无异：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_22.png?raw=true)
+
+代码示例：
+
+```swift
+Observable.of(1, 2, 3)
+	.map{ $0 * 2}
+	.subscribe{ print($0.element ?? $0) }
+	.addDisposableTo(bag)
+```
+
+map 还有一个兄弟方法 mapWithIndex 带有一个索引：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_23.png?raw=true)
+
+代码示例：
+
+```swift
+Observable.of(1, 2, 3)
+	.mapWithIndex{ v, i in
+		i > 1 ? v * 2 : v
+	}.subscribe{ print($0.element ?? $0) }
+	.addDisposableTo(bag)
+```
+
+#### 转换内部 Observables
+
+##### flatMap
+
+flatMap 主要就是将一个 Observable 中的每个元素都转换为一个 Observable，并且订阅。flatMap 需要一个闭包，传入当前 Observable 的事件值，返回一个新的 Observable。下面图示的例子中 Observable 的事件值类型为 Variable。传入一个 Variable，将其 value 属性扩大十倍：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_24.png?raw=true)
+
+代码示例：
+
+```swift
+let outter = PublishSubject<Variable<Int>>
+outter.asObservable()
+	.flatMap { 
+		$0.value *= 10
+  		return $0.asObservable()
+	}.subscribe(onNext: { print($0) })
+	.addDisposableTo(bag)
+
+outter.onNext(Variable(1))
+outter.onNext(Variable(2))
+```
+
+##### flatMapLatest
+
+flatMapLatest 是 flatMap 和 switchlatest 的合体。在使用上和 flatMap 一致，但是它值订阅最新的 Observable：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_25.png?raw=true)
+
+看出区别了么？当有新的订阅产生的时候，旧的 Observable 就取消订阅了，所以这里由于订阅了绿色的 Observable，所以蓝色变为 30，并不会触发订阅；由于订阅了橙色的 Observable，所以绿色变为 50，也不会触发订阅。而 flatMap 则是全部都触发了订阅的。
+
+### 关联操作符
+
+#### 前缀与串联
+
+##### startWith
+
+startWith 接受一个事件值，将其插到当前事件序列的最前面，返回一个新的 Observable：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_26.png?raw=true)
+
+代码如下：
+
+```swift
+let numbers = Observable.of(2, 3, 4)
+let observable = numbers.startWith(1)
+observable.subscribe{ print($0.element ?? $0) }
+	.addDisposableTo(bag)
+```
+
+##### concat
+
+concat 连接两个事件序列，生成一个新的事件序列：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_27.png?raw=true)
+
+代码如下，注意要用 `[]` 将事件序列当成一个数组：
+
+```swift
+let first = Observable.of(1, 2, 3)
+let second = Observable.of(4, 5, 6)
+let observable = Observable.concat([first, second])
+
+observable.subscribe{ print($0.element ?? $0) }
+	.addDisposableTo(bag)
+```
+
+连个事件序列的泛型类型一定要相同，否则崩溃给你看😖
+
+#### 合并
+
+##### merge
+
+merge 将元素为事件序列的事件序列自动拆开，成为一个新的事件序列。其实你也可以分开来写，让它们分别订阅，merge 主要就是用来减少事件序列的订阅的：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_28.png?raw=true)
+
+代码如下：
+
+```swift
+let left = PublishSubject<String>()
+let right = PublishSubject<String>()
+// 将两个事件序列作为事件值
+let source = Observable.of(left.asObservable(), right.asObservable())
+// 将新的事件序列的元素合并，返回一个新的事件序列
+let observable = source.merge()
+
+observable.subscribe{ print($0.element ?? $0) }
+	.addDisposableTo(bag)
+```
+
+注意，只有当内部的时间序列都 completed 后，merge 产生的事件序列才会 completed。
+
+#### 关联元素
+
+##### combineLatest 
+
+当 combineLatest 中的子序列中的任意一个发出事件的时候，将会调用一个你提供的闭包。这个闭包将子序列的最近的事件值作为入参传入，得到的返回值作为事件值执行订阅的方法。主要用在同时监控多个源的状态。
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_29.png?raw=true)
+
+上面图示中，当事件 1 触发的时候，由于另外一个序列没有事件发生过，所以不触发订阅，直到那一个序列发生了事件 4，才触发了订阅。
+
+代码如下：
+
+```swift
+let left = PublishSubject<String>()
+let right = PublishSubject<String>()
+let observable = Observable.combineLatest(left, right, resultSelector: {
+    lastLeft, lastRight in
+  	"\(lastLeft) \(lastRight)"
+})
+observable.subscribe(onNext: { value in 
+		print(value)
+	}).addDisposableTo(bag)
+```
+
+另外需要说明的就是只有两个子序列都 completed，外部序列才会 completed。如果其中一个子序列先结束了，当另外一个序列触发事件的时候，使用的是结束的那个子序列结束前最后一次事件的事件值。其实上面的图中也有展示，right 先结束了，此时left 触发了事件 3，所以最终是将 3，6 的值作为事件值的。
+
+##### zip
+
+和上面的 combineLatest 不同，zip 要求必须每个子序列都有新消息的时候，才触发事件：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_30.png?raw=true)
+
+可以看到，left 和 right 都必须有新的消息最终才能产生事件。由于 right 已经结束了，所以 sunny 永远不会接收到。
+
+代码如下：
+
+```swift
+let left = PublishSubject<String>()
+let right = PublishSubject<String>()
+let observable = Observable.zip(left, right) {
+    lastLeft, lastRight in
+  	"\(lastLeft) \(lastRight)"
+})
+observable.subscribe(onNext: { value in 
+		print(value)
+	}).addDisposableTo(bag)
+```
+
+需要注意的是，zip 不需要所有内部序列都完成，只要有一个 completed，整个事件序列就结束了。
+
+#### 触发器
+
+##### withLatestFrom
+
+当一个 Observable 触发的时候，获取另一个 Observable 的最新的事件值。很常用，比如点击按钮的时候要获取 textfield 的最新值：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_31.png?raw=true)
+
+text 不管怎么修改，当 button 点击的时候，都获得最新的 text 的值。
+
+代码如下：
+
+```swift
+let button = PublishSubject<Void>()
+let textField = PublishSubject<String>()
+
+button.WithLatestFrom(textField)
+	.subScribe { print($0.element ?? $0) }
+	.addDisposableTo(bag)
+```
+
+##### simple
+
+触发某个 Observable 获取另一个 Observable 的最新值。但是和 withLatestFrom 不同的是，当再次触发这个 Observable 的时候，如果另一个 Observable 没有更新值，那么不会触发事件，类似于 distinctUntilChanged：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_32.png?raw=true)
+
+代码如下：
+
+```swift
+let Observable = textField.sample(button)
+```
+
+一定要注意这里啊，前面是 `button.withLatestFrom(textField)`，这里是 `textField.sample(button)`。
+
+#### 开关
+
+##### amb
+
+当两个 Observable 中的任意一个触发的时候，取消订阅另一个，以后只接受当前 Observable 的事件。如图所示，由于 right 先出法，所以就取消了 left 的订阅，以后就只能接收到 right 的事件了：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_33.png?raw=true)
+
+代码如下：
+
+```swift
+let left = PublishSubject<String>()
+let right = PublishSubject<String>()
+
+left.amb(right)
+	.subscribe { print($0.element ?? $0) }
+	.addDisposableTo(bag)
+```
+
+##### switchLatest
+
+前面那个是被动的哪个 Observable 最先触发就一直订阅哪一个。这个是可以自己控制当前想要订阅那个 Observable：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_34.png?raw=true)
+
+如图所示，source 在选择 one 的时候，只接受 one 的事件，在选择 two 的时候，只接受 two 的事件。
+
+```swift
+let one = PublishSubject<String>()
+let two = PublishSubject<String>()
+let three = PublishSubject<String>()
+
+// source 的事件值类型是 Observable 类型
+let source = PublishSubject<Observable<String>>()
+
+let observable = source.switchLatest()
+let disposable = observable.subscribe(onNext: { value in print(value) })
+
+// 选择Observable one
+source.onNext(one)
+one.onNext("emit") 				// emit
+two.onNext("emit")				// 没有 emit
+// 选择Observable two
+source.onNext(two)
+two.onNext("emit")				// emit
+```
+
+还记得 flatMapLatest 吗？
 
 
 
