@@ -776,7 +776,105 @@ Observable.of(1, 2, 3)
 	.addDeposiableTo(bag)
 ```
 
+### 基于时间的操作符
 
+#### 缓存操作符
+
+##### replay
+
+这个操作符是针对**一个 Observable，多个订阅者**的。为 Observable 设置 replay ，当有新的订阅者订阅的时候，会立即触发最近的几个事件：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_37.png?raw=true)
+
+上面的是 Observable，每隔 1s 发出一次事件。下面是一个订阅者，在第 4s 的时候开始订阅。由于设置了 replay 的数量为 1，所以立刻重现之前的事件 3，再加上当前事件 4 的触发，所以再时刻 4，有两个事件一起触发了。
+
+代码如下：
+
+```swift
+let interval = Observable<Int>.interval(1,
+    scheduler:MainScheduler.instance).replay(1)
+
+_ = interval.connect()
+
+delay(3) {
+    _ = interval.subscribe(onNext: {
+        print("Subscriber 2: Event - \($0) at \(stamp())")
+    })
+}
+```
+
+这种一个 Observable，多个订阅者的情况叫做可连接 Observable，一般的 Observable 类型为 `Observable<E>`，这种类型为 `ConnectableObservable<E>`。所以需要使用 `.connect` 方法来表示 Observable 开始运行。
+
+如果要所有元素都重现，那么可以使用 `.replayAll()`
+
+##### buffer
+
+buffer 用于将事件缓存，在某个条件下，一并发出。`buffer(timeSpan:count:scheduler:)` 接受一个最大时间跨度 timeSpan，一个事件最大发生数量 count。处理逻辑在于，当最大时间跨度内事件数量没有到时，发送一个事件，其事件值为当前事件跨度内发出的时间的事件值组成的数组，重置时间跨度；当时间跨度内发生的事件超过了最大发生数量时，立即发送一个事件值为这些事件值所组成的数组的事件，重置时间跨度：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_38.png?raw=true)
+
+如图，时间跨度为4，最大事件值为2。最开始什么时间也没有发生，所以发送一个 0 个元素的数组。之后某个时刻发出了三个事件，所以将前两个事件值合成为一个数组发送，剩余一个事件，重置时间跨度。后面事件数量没有到最大值，但是时间跨度到了，所以也发送一个事件的数组，重置时间跨度。最后又没有事件发生，发送 0 个元素的数组的事件。
+
+```swift
+let interval = Observable<String>.interval(1, scheduler: MainScheduler.instance)
+					.buffer(timeSpan: 4, count: 2, scheduler: MainScheduler.instance)
+
+_ = interval.subscribe(onNext: $0)
+
+interval.onNext("🐈")
+interval.onNext("🐈")
+interval.onNext("🐈")
+```
+
+#### 时间平移操作符
+
+##### delaySubscription
+
+延迟订阅，在正式订阅前发生的事件都会被忽略：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_39.png?raw=true)
+
+如图，在 1 时刻开始订阅，由于延迟了 1.5s，所以前两个事件被忽略了。
+
+```swift
+Observable.of(1, 2, 3, 4, 5)
+	.delaySubscription(RxTimeInterval(delayInSeconds), scheduler: MainSchedular.instance)
+	.subscribe{ print($0.element ?? $0) }
+```
+
+##### delay
+
+delay 则将序列中的所有事件延迟执行，所以并不会忽略掉事件：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_40.png?raw=true)
+
+差别就在于，上面的忽略了1，2，而这里则仍是从事件 1 开始。
+
+```swift
+Observable.of(1, 2, 3, 4, 5)
+	.delay(RxTimeInterval(delayInSeconds), scheduler: MainSchedular.instance)
+	.subscribe{ print($0.element ?? $0) }
+```
+
+#### 定时操作符
+
+##### interval
+
+Rx 中的定时不需要使用 NSTimer，也不需要使用 DispatchSource。interval 的使用非常简单，比如一个1s的定时器：
+
+```swift
+Observable<Int>.interval(1, scheduler: MainScheduler.instance)
+```
+
+事件值默认是从 0 开始发送，依次递增。如果你不想要从 0 开始，可以使用 map。不过一般我们不需要使用这个事件值。
+
+##### timer
+
+`timer(_:period:scheduler:)` 和 interval 的区别在于，可以设置一个重复次数 period。如果不设置，默认只执行一次：
+
+```swift
+Observable<Int>.timer(3, period:3, scheduler: MainScheduler.instance)
+```
 
 
 
