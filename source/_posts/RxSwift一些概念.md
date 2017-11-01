@@ -271,6 +271,20 @@ variable.asObservable()
 
 Variable 需要使用 `asObservable()` 方法将其转换为 Observable，值是其 `value` 属性。另外，由于是 BehaviorSubject 的包装，因此，订阅的时候会打印最后一次的事件值。
 
+#### Subject 与 Observer 和 Observable 的区别
+
+`onNext`，`onError`，`onCompleted` 都是 Observer 中的方法，但是本身并没有具体的实现。
+
+Observable 在订阅的时候传入了这几个方法的实现，所以在触发事件的时候，直接内部调用这些闭包响应事件即可。你可以把这个过程想象成 Observable 调用其内部的 Observer。**所以 Observable 必须要能被订阅，订阅有什么用？用来传递事件处理方法**。
+
+Subject 既是 Observable 又是 Observer，我们订阅完，传入事件的实现后，就可以直接调用 `observer.onNext()`。相当于，我们**可以选择主动触发事件的时机**，然后 Observer 响应事件。而单纯的 Observable 则不行，它是非常被动的，要么直接触发，要么延迟多久或者多少周期触发。
+
+因为 Subject 能主动触发这一点，所以**一般需要交互的 UI 控件是都是 Subject**。就是在某个时刻，比如按了某个按钮，这个点击事件的代码中就会调用 `observer.onNext(someButton)` 主动触发事件。
+
+对于单纯的 Observer，由于没有这些事件方法的具体实现，所以我们也不能像 Subject 一样主动触发事件。但是**有一些特殊的 Observer 本生在初始化的时候就提供了事件处理的方法**，这种 Observer 不需要用 subscribe 一样订阅的时候传入事件处理方法，直接使用 `bindTo()` 绑定即可。
+
+**所以，在我的理解下，Observable 需要传递事件处理方法，可以定制，因此不能主动触发；Observer 有默认事件处理方法，可以主动触发，但是不能定制。Subject 代表着既能个性化事件处理方法，又能主动选择触发事件的时机**。这是单独的 Observable 和 Observer 所不具备的。
+
 ## 操作符的最佳实践
 
 ### 过滤操作符
@@ -518,7 +532,7 @@ Observable.of(1, 2, 3)
 
 ##### flatMap
 
-flatMap 主要就是将一个 Observable 中的每个元素都转换为一个 Observable，并且订阅。flatMap 需要一个闭包，传入当前 Observable 的事件值，返回一个新的 Observable。下面图示的例子中 Observable 的事件值类型为 Variable。传入一个 Variable，将其 value 属性扩大十倍：
+flatMap 主要就是**将一个 Observable 中的每个元素都转换为一个 Observable，并且订阅**。flatMap 需要一个闭包，传入当前 Observable 的事件值，返回一个新的 Observable。下面图示的例子中 Observable 的事件值类型为 Variable。传入一个 Variable，将其 value 属性扩大十倍：
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_24.png?raw=true)
 
@@ -875,6 +889,95 @@ Observable<Int>.interval(1, scheduler: MainScheduler.instance)
 ```swift
 Observable<Int>.timer(3, period:3, scheduler: MainScheduler.instance)
 ```
+
+## 使用 RxCocoa 的应用
+
+###开始使用 RxCocoa
+
+这一章节主要是一个例子。讲的是如何通过 Rx 将天气信息展示出来。
+
+#### 初印象
+
+打开 `UITextField+Rx.swift`，其中只有一个类型为 `ControlProperty<String?>` 的 `text` 属性：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_42.png?raw=true)
+
+`ControlProperty` 是一个特殊的 subject，前面也提到过了，和 UI 控件交互的属性都是 subject 类型的。更具体一点，Rxcocoa 中，和 UI 交互的属性都是 `ControlProperty` 类型。
+
+再打开 `UILabel+Rx.swift`，它的两个属性都是 `UIBindingObserver` 类型：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_43.png?raw=true) 
+
+`UIBindingObserver` 是一个 Observer。前面也提到过，Observer 类型不能主动触发事件，只能通过绑定给某个 Observable。所以 `UIBindingObserver` 一般都是 UI 交互无关的属性，比如 UILabel 的 text 属性。
+
+#### 使用 RxCocoa 的 UIKit
+
+`ApiController.swift` 用来提供数据，在其中定义了一个方法 `currentWeather(city:)`，用来提供默认的天气数据：
+
+```swift
+func currentWeather(city: String) -> Observable<Weather> {
+    return Observable.just(
+    	Weather(
+        	cityName: city,
+        	temperature: 20,
+        	humidity: 90)
+    )
+}
+```
+
+这个方法接受一个参数：城市city，返回一个只有一个元素的 Observable，事件值类型为天气Weather类型。
+
+接下来就可以在 ViewController 中订阅了。在 `viewDidLoad` 中设置:
+
+```swift
+ApiController.shared.currentWeather(city: "Shanghai")
+	.observeOn(MainScheduler.instance)
+	.subscribe( onNext: { data in
+		self.tempLabel.text = "\(data.temperature)°C"
+		self.cityNameLabel.text = data.cityName
+		self.humidityLabel.text = "\(data.humidity)%"
+	}).addDisposableTo(bag)
+```
+
+其中 `shared` 用来获取单例，`observeOn(MainScheduler.instance)` 用来将操作限制在主线程中，因为这是在操作 UI。
+
+那么如何获取到 city 的呢？我们可以有一个 textfield `searchCityName` 用来接受用户的输入。RxCocoa 通过协议拓展的方式为大多数 UIKit 的成员都添加了 `rx` 的相关属性。比如 textfield，我们可以输入 `searchCityName.rx.` 就可以查看到很多可以使用的 Rx 相关的属性和方法。这里我们要使用的是 textfield 的 `text` 属性：
+
+```swift
+searchCityName.rx.text
+	.filter { ($0 ?? "").characters.count > 0}
+	.flatMapLatest { text in
+		return ApiController.shared.currentWeather(city: text ?? "Error")
+                    .catchErrorJustReturn(ApiController.Weather.empty)
+	}.observeOn(MainScheduler.instance)
+	.subscribe(
+    	...
+    ).addDisposableTo(bag)
+```
+
+这段代码做了什么，这段代码将 textfield 的输入框和处理逻辑绑定了起来，输入框一有输入，那么就触发事件。先将空输入过滤掉，然后将 textfield 中输入的值通过 flatMapLatest 再转换为新的 Observable，即 city 转 Weather 的过程。其中如果 `currentWeather` 的转换产生了错误，就通过 `catchErrorJustReturn` 使用默认的事件值，空 Weather。
+
+通过这个例子，可以再复习一下 flatMapLatest 和 flatMap 的区别。这个例子中 flatMapLatest 和 flatMap 是一样的，因为 `currentWeather` 返回的 Observable 只有一个元素，所以只订阅最后的 Observable 和 订阅每一个 Observable 没有区别，因为 Observable 不会再有事件发生了。但是，如果这里 `currentWeather` 是一个异步的操作，比如去网上拉取数据，那就必须使用 flatMapLatest 了。试想一下，在上一个网络请求还没有完成的时候，输入变化，这样又触发了一次网络请求。使用 flatMap 就会在每一次网络请求结束时都做响应，但这个并不符合逻辑，应该只响应最后一次网络请求，否则会产生请求覆盖。所以一定要用 flatMapLatest。 
+
+以上的数据流程如图所示：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_41r.png?raw=true)
+
+#### 绑定 Observable
+
+绑定是一种单向的数据流。RxCocoa 中的绑定通过 `bindTo(_:)` 实现。被绑定的对象的类型必须是 `ObserverType`，也就是前面说的 Observer 对象。
+
+> 书上这个地方我认为是有问题的，书上的原话是：
+>
+> The fundamental function of binding is bindTo(_:). To bind an observable to another entity, the receiver must conform to ObserverType. This entity has been explained in previous chapters: it’s a Subject which can process values, but can also be written to manually.
+>
+> 书上说 ObserverType 就是一种 Subject，这样说是没有道理的。Subject 的范围要比 ObserverType 大，Subject 可以被订阅，提供自定义事件处理方法，但是 `bindTo()` 并不需要，它只需要有一个默认的事件处理方法即可。所以我认为书上这么说至少不严谨的。
+
+
+
+
+
+
 
 
 
