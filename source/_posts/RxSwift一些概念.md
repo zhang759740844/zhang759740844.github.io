@@ -271,19 +271,29 @@ variable.asObservable()
 
 Variable 需要使用 `asObservable()` 方法将其转换为 Observable，值是其 `value` 属性。另外，由于是 BehaviorSubject 的包装，因此，订阅的时候会打印最后一次的事件值。
 
-#### Subject 与 Observer 和 Observable 的区别
+### Subject 与 Observer 和 Observable 的区别
 
-`onNext`，`onError`，`onCompleted` 都是 Observer 中的方法，但是本身并没有具体的实现。
+这一节是我自己的理解，可能在理解上有偏差。如果看到这里可以自己也思考一下。
 
-Observable 在订阅的时候传入了这几个方法的实现，所以在触发事件的时候，直接内部调用这些闭包响应事件即可。你可以把这个过程想象成 Observable 调用其内部的 Observer。**所以 Observable 必须要能被订阅，订阅有什么用？用来传递事件处理方法**。
+#### Subject 与 Observable 的不同
 
-Subject 既是 Observable 又是 Observer，我们订阅完，传入事件的实现后，就可以直接调用 `observer.onNext()`。相当于，我们**可以选择主动触发事件的时机**，然后 Observer 响应事件。而单纯的 Observable 则不行，它是非常被动的，要么直接触发，要么延迟多久或者多少周期触发。
+`onNext`，`onError`，`onCompleted` 都是 Observer 中的方法，但是本身并没有具体的实现。Observable 在订阅的时候传入了这几个方法的实现，所以在触发事件的时候，直接内部调用这些闭包响应事件即可。你可以把这个过程想象成 Observable 调用其内部的 Observer。**所以 Observable 必须要能被订阅，订阅有什么用？用来传递事件处理方法**。
 
-因为 Subject 能主动触发这一点，所以**一般需要交互的 UI 控件是都是 Subject**。就是在某个时刻，比如按了某个按钮，这个点击事件的代码中就会调用 `observer.onNext(someButton)` 主动触发事件。
+Subject 既是 Observable 又是 Observer，我们订阅完，传入事件的实现后，就可以直接调用 `observer.onNext()`。相当于，我们**可以选择主动触发事件的时机**，然后 Observer 响应事件。这很有用，比如处理 UI 交互，就必须要在任意时刻都能主动触发 `observer.onNext()` 方法。而单纯的 Observable 则不行，它是非常被动的，要么直接触发，要么延迟多久或者多少周期触发。
 
-对于单纯的 Observer，由于没有这些事件方法的具体实现，所以我们也不能像 Subject 一样主动触发事件。但是**有一些特殊的 Observer 本生在初始化的时候就提供了事件处理的方法**，这种 Observer 不需要用 subscribe 一样订阅的时候传入事件处理方法，直接使用 `bindTo()` 绑定即可。
+#### Subject 与 Observer 的不同
 
-**所以，在我的理解下，Observable 需要传递事件处理方法，可以定制，因此不能主动触发；Observer 有默认事件处理方法，可以主动触发，但是不能定制。Subject 代表着既能个性化事件处理方法，又能主动选择触发事件的时机**。这是单独的 Observable 和 Observer 所不具备的。
+对于单纯的 Observer，由于没有这些事件方法的具体实现，所以我们也不能像 Subject 一样主动触发事件。但是**有一些特殊的 Observer 本身在初始化的时候就提供了事件处理的方法**，这种 Observer 不需要像 subscribe 一样订阅的时候传入事件处理方法，直接使用 `bindTo()` 绑定即可。
+
+不过也正是因为 Observer 提供了默认的事件处理方法，所以我们不能用其处理 UI 交互。因为 UI 交互的事件处理方法是要根据具体情况而定的。比如点击一个按钮我可能要让计数加一，或者让计数减一。
+
+#### 总结
+
+**所以，在我的理解下，Observable 需要传递事件处理方法，所以可以定制，但不能主动触发；Observer 有默认事件处理方法，所以可以主动触发，但不能定制。**
+
+**因为 Subject 既能主动选择触发事件的时机，又能个性化事件处理的方法，所以一般交互的 UI 控件中的属性都是 Subject 类型。**
+
+
 
 ## 操作符的最佳实践
 
@@ -908,7 +918,9 @@ Observable<Int>.timer(3, period:3, scheduler: MainScheduler.instance)
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_43.png?raw=true) 
 
-`UIBindingObserver` 是一个 Observer。前面也提到过，Observer 类型不能主动触发事件，只能通过绑定给某个 Observable。所以 `UIBindingObserver` 一般都是 UI 交互无关的属性，比如 UILabel 的 text 属性。
+`UIBindingObserver` 是一个 Observer。它就是在 Subject 与 Observer 一节中提到的特殊的 Observer。它有一个 `binding` 属性，用来保存默认的事件处理方法，在初始化的时候设置。
+
+前面也提到过，这种 Observer，没有自定义的事件处理方法，所以只能做诸如设置 UILabel 的 text 等无须 UI 交互的事。
 
 #### 使用 RxCocoa 的 UIKit
 
@@ -965,15 +977,15 @@ searchCityName.rx.text
 
 #### 绑定 Observable
 
-绑定是一种单向的数据流。RxCocoa 中的绑定通过 `bindTo(_:)` 实现。被绑定的对象的类型必须是 `ObserverType`，也就是前面说的 Observer 对象。
+绑定是一种单向的数据流。RxCocoa 中的绑定通过 `bindTo(_:)` 实现。被绑定的对象的类型必须是 `ObserverType`，也就是 Observer 对象。
 
 > 书上这个地方我认为是有问题的，书上的原话是：
 >
 > The fundamental function of binding is bindTo(_:). To bind an observable to another entity, the receiver must conform to ObserverType. This entity has been explained in previous chapters: it’s a Subject which can process values, but can also be written to manually.
 >
-> 书上说 ObserverType 就是一种 Subject，这样说是没有道理的。Subject 的范围要比 ObserverType 大，Subject 可以被订阅，提供自定义事件处理方法，但是 `bindTo()` 并不需要，它只需要有一个默认的事件处理方法即可。所以我认为书上这么说至少不严谨的。
+> 书上说 ObserverType 就是一种 Subject，这样说是没有道理的。Subject 的范围要比 ObserverType 大，Subject 可以被订阅，提供自定义事件处理方法，但是 `bindTo()` 并不需要，它只需要有一个默认的事件处理方法即可。所以我认为书上这么说至少是不严谨的。
 
-
+`bindTo(_:)` 是一种特殊的 subscribe，也是在 Observable 触发事件的时候，调用 Observer 的事件处理方法。但是原本需要在 subscribe 的时候传入的事件处理方法现在要求被绑定的 Observer 自己提供。所以像 `UIBindingObserver` 这样有默认事件处理方法的 Observer 或者一个已经被订阅过的 Subject 都是可以作为绑定对象的。
 
 
 
