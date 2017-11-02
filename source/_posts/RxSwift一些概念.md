@@ -956,13 +956,14 @@ ApiController.shared.currentWeather(city: "Shanghai")
 那么如何获取到 city 的呢？我们可以有一个 textfield `searchCityName` 用来接受用户的输入。RxCocoa 通过协议拓展的方式为大多数 UIKit 的成员都添加了 `rx` 的相关属性。比如 textfield，我们可以输入 `searchCityName.rx.` 就可以查看到很多可以使用的 Rx 相关的属性和方法。这里我们要使用的是 textfield 的 `text` 属性：
 
 ```swift
-searchCityName.rx.text
+let search = searchCityName.rx.text
 	.filter { ($0 ?? "").characters.count > 0}
 	.flatMapLatest { text in
 		return ApiController.shared.currentWeather(city: text ?? "Error")
                     .catchErrorJustReturn(ApiController.Weather.empty)
 	}.observeOn(MainScheduler.instance)
-	.subscribe(
+// 订阅
+search.subscribe(
     	...
     ).addDisposableTo(bag)
 ```
@@ -973,7 +974,7 @@ searchCityName.rx.text
 
 以上的数据流程如图所示：
 
-![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_41r.png?raw=true)
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_41.png?raw=true)
 
 #### 绑定 Observable
 
@@ -986,6 +987,59 @@ searchCityName.rx.text
 > 书上说 ObserverType 就是一种 Subject，这样说是没有道理的。Subject 的范围要比 ObserverType 大，Subject 可以被订阅，提供自定义事件处理方法，但是 `bindTo()` 并不需要，它只需要有一个默认的事件处理方法即可。所以我认为书上这么说至少是不严谨的。
 
 `bindTo(_:)` 是一种特殊的 subscribe，也是在 Observable 触发事件的时候，调用 Observer 的事件处理方法。但是原本需要在 subscribe 的时候传入的事件处理方法现在要求被绑定的 Observer 自己提供。所以像 `UIBindingObserver` 这样有默认事件处理方法的 Observer 或者一个已经被订阅过的 Subject 都是可以作为绑定对象的。
+
+```swift
+let search = searchCityName.rx.text
+	.filter { ($0 ?? "").characters.count > 0}
+	.flatMapLatest { text in
+		return ApiController.shared.currentWeather(city: text ?? "Error")
+                    .catchErrorJustReturn(ApiController.Weather.empty)
+	}.observeOn(MainScheduler.instance)
+// 绑定
+search.map {"\($0.temperature)°C"}
+	.bindTo(tempLabel.rx.text)
+	.addDisposableTo(bag)
+```
+
+看到上面的代码，通过一个 map 将整个 `Weather` 对象剥离出来，只要其中的 `temperature` 属性。然后将其绑定给 `tempLabel.rx.text` 这个 Observer（这种通过 map 取出部分属性再进行绑定是一个很好的方式）。这就是前面说到的 `UIBindingObserver` 类型，它提供了一个默认的事件处理方法，将外部传来的字符串，设置为自己的 text 属性。
+
+#### 使用 Units
+
+Units 是一类专门用来使 UI 绑定更简单的 Observables。它不会产生异常，并且默认在主线程中。它有以下两大类：
+
+1. `ControlProperty` 和 `ControlEvent`
+2. `Driver`
+
+`ControlProperty` 前面已经看到过了，是一种 Subject，用来将 UI 组件和数据绑定，例子中的 `searchCityName.rx.text` 就是一个  `ControlProperty`。`ControlEvent` 从命名上也能推测出，它用来监听 `UIControlEvents`。`Drivers `就是刚才说的不会产生异常，并且一定在主线程中的 Observable。如果不使用 Units，你可能会忘记调用 `.observeOn(MainScheduler.instance)`，最终在其他线程中更新 UI 导致崩溃。
+
+```swift
+let search = searchCityName.rx.text
+	.filter { ($0 ?? "").characters.count > 0}
+	.flatMapLatest { text in
+		return ApiController.shared.currentWeather(city: text ?? "Error")
+	}.asDriver(onErrorJustReturn: ApiController.Weather.empty)
+
+search.map { "\($0/temerature)°C" }
+	.drive(tempLabel.rx.text)
+	.addDisposableTo(bag)
+```
+
+可以看到，使用 `asDriver(onErrorJustReturn:)` 代替了 `observeOn(MainSchedule.instance)`。另外，用 `drive` 代替了 `bindTo`。
+
+我们现在绑定了一个 textfield，在每次其输入的时候都做了响应，这样其实是没有必要的。一般可以使用 `throttle` 操作符，这个是用来控制每隔多久发送一次事件的。还有更好的方法是监听用户点击返回按钮，当点击的时候获取搜索框中的输入。需要对上面的代码做一些变化：
+
+```swift
+let search = searchCityName.rx.controlEvent(.editingDidEndOnExit).asObservable()
+	.map { self.searchCityName.text }
+	.filter { ($0 ?? "").characters.count > 0}
+	.flatMapLatest { text in
+		return ApiController.shared.currentWeather(city: text ?? "Error")
+	}.asDriver(onErrorJustReturn: ApiController.Weather.empty)
+```
+
+所以现在的数据流图变成了：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_44.png?raw=true)
 
 
 
