@@ -199,8 +199,6 @@ running.drive(tempLabel.rx.isHidden)
 
 这一章主要讲的是如何用 RxSwift 实现一个代理方法，要理解起来挺有难度的，这里先只是讲步骤，后面会转门写一篇代理转发的源码解析。
 
-##### 创建拓展
-
 获取位置使用的是 `CCLocationManager` 类，这个类有一个代理 `CLLocationManagerDelegate`。我们需要做的就是在 `CCLocationManager` 回调代理方法的时候触发事件，将回调的参数作为事件值。
 
 怎么做到的呢？这里不做详细展开，只介绍一下大概思路。简单来说，就是首先将我们创建的基于 Rx 的代理设置为 `CCLocationManager` 的 delegate。其次，由于我们不是没有写真实的响应方法嘛，当 `CCLocationManager` 要调用代理方法的时候一般是会产生异常的。但是我们可以通过消息转发，将所有调用代理方法的行为转化为发出特定事件。我们只需要通过方法名获取到相应的 Observable 并且订阅，即可达到响应式的效果。
@@ -241,23 +239,27 @@ extension Reactive where Base: CLLocationManager {
 现在设置到代理就可以添加监听代理方法调用的 Observable 了：
 
 ```swift
-class RxCLLocationManagerDelegateProxy: DelegateProxy, CLLocationManager, DelegateProxyType {
-  var didUpdateLocations: Observable<[CLLocation]> {
+extension Reactive where Base: CLLocationManager {
+    var delegate: DelegateProxy {
+        return RxCLLocationManagerDelegateProxy.proxyForObject(base)
+    }
+  
+    var didUpdateLocations: Observable<[CLLocation]> {
       return delegate.methodInvoked(#selector(CLLocationManagerDelegate.locationManager(_:didUpdateLocations:)))
     	.map { paramters in
              return parameters[1] as! [CLLocation]
         }
-  }
+  	}
 }
 ```
 
 `methodInvoked` 方法同样是 `DelegateProxy` 中实现的方法。它获取相应 selector 所对应的 Observable。这个 selector 和 Observable 的关系是以字典的方式保存在 `DelegateProxy` 中的。当调用代理方法的时候，就会变为触发相应 selector 的 Observable。Observable 的事件值就是代理方法的参数，上面的 `parameters[1]` 就表示 `didUpdateLocations:` 的参数。
 
-到此，rx 实现的代理方法就完成了
+到此，rx 实现的代理方法就完成了。
 
-##### 通过按钮获得当前位置
+最后如何监听按钮开始定位我就不再赘述了。
 
-
+#### 拓展一个 UIKit View
 
 
 
