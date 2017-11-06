@@ -261,7 +261,174 @@ extension Reactive where Base: CLLocationManager {
 
 #### 拓展一个 UIKit View
 
+上一节的代理方法都是没有返回值的方法。对于又返回值的方法，我们依旧可以订阅，但是返回值不能通过订阅获得，所以还需要结合实现原本的代理方法。
 
+比如这样一个方法，我们需要在一个 `mapView` 上添加一个 layer：
+
+```swift
+func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer{}
+```
+
+你设置代理的时候不能再使用 `proxyForObject()` 方法了，Rx 提供了一个方法：
+
+```swift
+public static func installForwardDelegate(_ forwardDelegate: AnyObject, retainDelegate: Bool, onProxyForObject object: AnyObject) -> Disposable{}
+```
+
+这个方法类似于在内部还会调用 `proxyForObject()`，但是它多了一步保存原始 delegate 的步骤。在发射事件的方法中会先检查 `forwardDelegate` 是否为空，来判断是否要调用原始的 delegate 的方法。`forwardDelegate` 是原始 delegate，`retainDelegate` 是是否要强引用这个 delegate，`onProxyForObject` 是 delegate 的对象。
+
+所以你设置 delegate 的方法应该修改为：
+
+```swift
+public func setDelegate(_ delegate: MKMapViewDelegate) -> Disposable {
+    return RxMKMapViewDelegateProxy.installForwardDelegate(
+    	delegate,
+      	retainDelegate: false,
+      	onProxyForObject: self.base
+    )
+}
+```
+
+另外，由于可能强引用，所以，需要在 Observable 销毁的时候，解除强引用。所以你需要在 `viewDidLoad()` 中将其放入 DisposabeBag 中：
+
+```swift
+mapView.rx.setDelegate(self).addDisposableTo(bag)
+```
+
+现在完成常规的代理方法就行了：
+
+```swift
+extension ViewController: MKMapViewDelegate { 
+  	func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
+		if let overlay = overlay as? ApiController.Weather.Overlay { 
+          	let overlayView = ApiController.Weather.OverlayView(overlay: overlay, overlayIcon: overlay.icon) 
+          	return overlayView
+        }
+		return MKOverlayRenderer()
+	} 
+}
+```
+
+进一步的完善功能。我们要学习自己创建一个 `UIBindingObserver `。前面提到过 `UIBindingObserver` 的特点。我们创建一个 `overlays` 属性，它在事件到来时将 overlays 加载到视图上：
+
+```swift
+var overlays: UIBindingObserver<Base, [MKOverlay]> {
+  	return UIBindingObserver(UIElement: self.base) { mapView, overlays in 
+		mapView.removeOverlays(mapView.overlays) 
+		mapView.addOverlays(overlays) 
+	} 
+}
+```
+
+然后让它去订阅前面的 search：
+
+```swift
+search.map { [$0.overlay()] } 
+	.drive(mapView.rx.overlays) 
+	.addDisposableTo(bag)
+```
+
+
+
+## 中级 RxSwift/RxCocoa
+
+### 错误处理
+
+错误处理部分比较简单，一般有两种方式：捕获或者重试。
+
+#### 捕获
+
+捕获有两种，一种是直接传递一个默认值，也就是前面常见的:
+
+```swift
+func catchErrorJustReturn(_ element:) -> RxSwift.Observable<Self.E>
+```
+
+
+
+它会自动将这个默认值作为事件值发出一个新的事件。另外还有一种，接受一个闭包，然后返回一个新的 Observable：
+
+```swift
+func catchError(_ handler:) -> RxSwift.Observable<Self.E>
+```
+
+示例：
+
+```swift
+.catchError { error in
+    if let text = text, let cachedData = self.cache[text] {
+        return Observable.just(cachedData)
+    } else {
+        return Observable.just(ApiController.Weather.empty)
+    }
+}
+```
+
+#### 重试
+
+重试就是在 Observable 触发 error 的时候，重新尝试发出事件。使用方式很简单，在捕获错误前即可，参数为做大尝试次数：
+
+```swift
+return ApiController.shared.currentWeather(city: text ?? "Error") 
+	.do(onNext: { data in 
+		if let text = text { 
+          	self.cache[text] = data 
+        } 
+	}).retry(3) 
+	.catchError { error in 
+		if let text = text, let cachedData = self.cache[text] { 
+          	return Observable.just(cachedData) 
+        } else { 
+          	return Observable.just(ApiController.Weather.empty) 
+        } 
+}
+```
+
+还有一种 `retryWhen()` 方法：
+
+```swift
+.retryWhen { e in 
+	return e.flatMapWithIndex { (error, attempt) -> Observable<Int> in 
+		if attempt >= maxAttempts - 1 { 
+          	return Observable.error(error) 
+        } 
+		return Observable<Int>.timer(Double(attempt + 1), scheduler: MainScheduler.instance).take(1) 
+	} 
+}
+```
+
+这个方法中，在未达到最多尝试次数前都不报错。每隔一秒钟重试一次。
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_45.png?raw=true)
+
+### Scheduler 的介绍
+
+对 Scheduler 的通常误解是认为 Scheduler 就是 thread。其实 Scheduler 应该类比 dispatch queue。一个 Schelduler 可能在多个线程中，多个 Scheduler 也可能在一个线程中：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_47.png?raw=true)
+
+#### 基本使用
+
+我们可以通过 `subscribeOn()` 以及 `observerOn()` 来将订阅和执行设置不同 scheduler：
+
+```swift
+let globalScheduler = ConcurrentDispatchQueueScheduler(queue: DispatchQueue.global())
+
+observable.subscribeOn(globalScheduler)
+	.subsribeOn(gloibalScheduler)
+	.dump()
+	.observeOn(MainScheduler.instance)
+	.dumpingSubscription()
+	.addDisposableTo(bag)
+```
+
+#### 冷热Observable 对 Schedulers 的影响
+
+这里主要介绍了一个注意点，就是对于 hot Observable，它订阅所在的线程就是其发出事件所在的线程，所以使用 `subscribeOn()` 方法控制是无效的。
+
+关于 冷热 Observable，会在后续文章中介绍。
+
+### 自定义 Rx 拓展
 
 
 
