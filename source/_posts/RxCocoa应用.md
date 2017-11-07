@@ -430,6 +430,127 @@ observable.subscribeOn(globalScheduler)
 
 ### 自定义 Rx 拓展
 
+这里是一个拓展 `URLSession`，使其通过 rx 获取数据以及处理数据的例子：
+
+```swift
+extensiong Reactive where Base: URLSession {
+    func response(request: URLRequest) -> Observable<(HTTPURLResponse, Data)> {
+        return Observable.create { observer in 
+			let tast = self.base.dataTask(with: request) { (data, response, error) in
+				guard let response = response, let data = data else {
+                    observer.on(.error(error ?? RxURLSessionError.unKnown))
+                  	return
+                }
+				guard let httpResponse = response as? HTTPURLResponse else {
+                    observer.on(.error(RxURLSessionError.invalidResponse(response: response)))
+                  	return
+                }
+				observer.on(.next(httpResponse, data))
+				observer.on(.completed)
+			}
+			task.resume()
+			
+			return Disponsables.create(with: task.cancel)
+		}
+    }
+  
+  	func data(request: URLRequest) -> Observable<Data> {
+        return response(requset: request).map { (response, data) -> Data in
+			if 200 ..< 300 ~= response.statusCode {
+                return data
+            } else {
+                throw RxURLSessionError.requestFailed(response: response, data: data)
+            }
+        }
+    }
+  
+  	func image(request: URLResquest) -> Observable<UIImage> {
+        return data(request: request).map { d in
+        	return UIImage(data: d) ?? UIImage()                                  
+		}
+    }
+}
+```
+
+以上就是一个获取网络图片的的一个基本过程，先是一个 `response` 方法，因为是 rx 嘛，必须返回一个 Observable 以供订阅。在方法中通过 `.create()` 创建一个 Observable，然后在其中开始网络请求，也就是 `dataTask` 方法。在网络请求的回调中，将获取的数据作为事件值，发出一个事件，之后结束整个 Observable。另外的两个方法是在网络请求的基础上，通过 `map` 将事件值进行进一步处理。这个网络请求流程如图：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_48.png?raw=true)
+
+更进一步的，我们可以为这个网络请求设置一个缓存，即将获取的数据做一个接口层面的缓存。我们可以这样做：
+
+```swift
+// 全局的或者某个单例,用来保存缓存
+fileprivate var internalCache = [String: Data]()
+
+// 缓存方法
+extension ObservableType where E == (HTTPURLResponse, Data) {
+    func cache() -> Observable<E> {
+      	return self.do(onNext: {(response, data) in 
+        	if let url = response.url?.absoluteString, 200 ..< 300 ~= response.statusCode {
+            	internalCache[url] = data
+        	}
+		})
+    }
+}
+
+```
+
+先创建一个全局的保存缓存的地方，键是 url，值是数据。然后在 `ObservableType` 中添加一个针对网络请求的缓存方法，所有 Observable 都是 `ObservableType` 类型的。这个 `cache` 方法做了一件事就是通过 `.do`给 Observable 添加了一个 `onNext` 方法，每次触发事件的时候都会调用。使用上和 `map` 类似。现在将之前的 `data`，以及 `image` 方法修改一下即可：
+
+```swift
+return response(request: request).cache().map { (response, data) -> Data in
+	//...
+}
+```
+
+由于有了缓存，所以需要在请求数据前加一步验证。如果有缓存，直接返回一个 Observable：
+
+```swift
+if let url = request.url?.absoluteString, let data = internalCache[url] {
+    return Observable.just(data)
+}
+```
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_49.png?raw=true)
+
+## RxSwift 的一些组件的使用方式
+
+### tableView 的使用
+
+这一章只讲了如何使用 RxCocoa 提供的方法创建一个 tableView，而没有使用 RxDataSources。
+
+Rxswift 中提供的 tableview 使用起来还算简单，但是如何实现的还是需要好好看看的，后面我会对源码进行详解。这里先展示一下如何使用：
+
+```swift
+@IBOutlet var tableView: UITableView!
+
+func bindTableView() {
+    let cities = Observable.of(["Shanghai", "Beijin", "HangZhou"])
+  	cities.bindTo(tableView.rx.items) {
+        (tableView: UITableView, index: Int, element: String) in 
+      	let cell = UITableView(style: .default, reuseIdentifier: "cell")
+      	cell.textLabel?.text = element
+      	return cell
+    }.addDisposableTo(disposeBag)
+}
+```
+
+简单讲一下，可以看到，这里的 `bindTo` 方法和前面的不一样，这里包含了一个尾部闭包，是何用意呢？前面我们使用的 `bindTo` 一般传入的是 Variable，在 `bindTo` 方法内，就对 Variable 进行了订阅，属于简单的情况。对于复杂的情况，就需要自定义了，也就是上面的情况。第一个参数是 RxSwift 针对 tableview 提供的一个方法，会在其中进行订阅。而这个尾部闭包，就是我们根据实际情况的操作了，会由第一个参数的那个方法选择执行。
+
+除了 `items`，还提供了许多方法需要在使用的时候进一步学习。另外，如果你还是需要使用到原来 delegate 中的方法，那么你最好通过 Rx 的方式设置，否则可能会引起无法正常工作：
+
+```swift
+tableView.rx.setDelegate(myDelegatObject)
+```
+
+### Action
+
+
+
+
+
+
+
 
 
 
