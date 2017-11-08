@@ -513,51 +513,5 @@ if let url = request.url?.absoluteString, let data = internalCache[url] {
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_49.png?raw=true)
 
-## RxSwift 的一些组件的使用方式
-
-### tableView 的使用
-
-这一章只讲了如何使用 RxCocoa 提供的方法创建一个 tableView，而没有使用 RxDataSources。
-
-Rxswift 中提供的 tableview 使用起来还算简单，但是如何实现的还是需要好好看看的，后面我会对源码进行详解。这里先展示一下如何使用：
-
-```swift
-@IBOutlet var tableView: UITableView!
-
-func bindTableView() {
-    let cities = Observable.of(["Shanghai", "Beijin", "HangZhou"])
-  	cities.bindTo(tableView.rx.items) {
-        (tableView: UITableView, index: Int, element: String) in 
-      	let cell = UITableView(style: .default, reuseIdentifier: "cell")
-      	cell.textLabel?.text = element
-      	return cell
-    }.addDisposableTo(disposeBag)
-}
-```
-
-简单讲一下，可以看到，这里的 `bindTo` 方法和前面的不一样，这里包含了一个尾部闭包，是何用意呢？前面我们使用的 `bindTo` 一般传入的是 Variable，在 `bindTo` 方法内，就对 Variable 进行了订阅，属于简单的情况。对于复杂的情况，就需要自定义了，也就是上面的情况。第一个参数是 RxSwift 针对 tableview 提供的一个方法，会在其中进行订阅。而这个尾部闭包，就是我们根据实际情况的操作了，会由第一个参数的那个方法选择执行。
-
-除了 `items`，还提供了许多方法需要在使用的时候进一步学习。另外，如果你还是需要使用到原来 delegate 中的方法，那么你最好通过 Rx 的方式设置，否则可能会引起无法正常工作：
-
-```swift
-tableView.rx.setDelegate(myDelegatObject)
-```
-
-### Action
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
