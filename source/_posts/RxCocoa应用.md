@@ -401,6 +401,97 @@ return ApiController.shared.currentWeather(city: text ?? "Error")
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_45.png?raw=true)
 
+### 单元测试
+
+RxSwift 的官方提供了 RxTest 和 RxBlocking 两个库帮助我们进行单元测试。下面来学习一下。
+
+#### RxTest
+
+RxSwift 的单元测试的主要过程就是：自建一个 Observable，然后给定几个默认的值，以检测订阅方法的正确性。
+
+Observable 主要分为 Cold Observable 和 Hot Observable。Rx 认为，这两者都是 Observable，所以并不怎么做区分。但是单元测试的时候还是需要了解一下的。简单的说，通过 `create` 等创建的普通的 Observable 就是 Cold Observable，特点就是当订阅发生的时候立刻发出事件；各种 Subject 就是 Hot Observable，特点就是无论是否订阅都会发出事件，订阅之后才能收到事件。
+
+我们来看一个例子：
+
+```swift
+override func setUp() {
+    super.setUp()
+  	scheduler = TestScheduler(initialClock: 0)
+}
+
+func testFilter() {
+  	// 1
+    let observer = scheduler.createObserver(Int.self)
+  	
+  	// 2
+  	let observable = scheduler.createHotObservable([
+        next(100, 1),
+      	next(200, 2),
+      	next(300, 3),
+      	next(400, 2),
+      	next(500, 1)
+    ])
+  
+  	// 3
+  	let filterObservable = observable.filter {
+        $0 < 3
+    }
+  
+  	// 4
+  	schedyler.scheduleAt(0) {
+        self.subscription = filterObservable.subscribe(observer)
+    }
+  
+  	// 5
+  	scheduler.start()
+  
+  	// 6
+  	let results = observer.events.map {
+        $0.value.element@
+    }
+  
+  	// 7
+    XCTAssertEqual(results, [1, 2, 2, 3])
+}
+
+override func tearDown() {
+    scheduler.scheduleAt(1000) {
+        self.subsciprtion.dispose()
+    }
+  	super.tearDown()
+}
+```
+
+下面来解释一下这个例子。首先在 `setUp` 方法中，创建了 `TestScheduler` 实例。所有的订阅事件都会在这个 Scheduler 中进行。然后就是测试方法。测试方法分为七个步骤：
+
+1. 用 Scheduler 创建 Observer，并且设置 Observable 事件值类型
+2. 用 Scheduler 创建 Hot Observable，并且设置了延迟多久发出事件，以及发出的事件值
+3. 这一步的过滤就是被测试的方法
+4. 用 Scheduler 在某个时刻开始订阅上面创建的 Observable
+5. 开启 Scheduler，不开启是不会有事件发生的哦
+6. 用一个对象收集 Observer 获得的事件值
+7. 断言判断 Observer 获得的事件值是否和预期的一样
+
+#### RxBlocking
+
+上面的 RxTest 是一个同步测试。如果有网络请求之类的异步事件该如何呢？我们可以使用 XCTest 中提供的 expectation，不过这样就显得很啰嗦了。RxBlocking 可以简化这一过程。下面是一个使用实例：
+
+```swift
+func testRgbIs010() {
+    let rgbObservable = viewModel.rgb.asObservable().subscribeOn(scheduler)
+  	viewModel.hexString.value = "#00ff00"
+  	let result = try! rgbObservable.toBlocking(timeout: 1.0).first()!
+  
+  	XCTAssertEqual(0 * 255, result.0)
+  	XCTAssertEqual(1 * 255, result.1)
+  	XCTAssertEqual(0 * 255, result.2)
+}
+```
+
+看一下这个例子，这里 `rgb` 是一个 `Driver` 类型，我没有把它的定义写出来。`rgbObservable` 是一个异步事件的 Observable。如果不适用 `toBlocking()`，那么程序顺序执行，订阅完了也就结束了。但是这里通过对 Observable 使用 `toBlocking` 方法，就将 Observable 阻塞住了。它会等待事件的到来，直到定时结束。
+
+
+
 ### Scheduler 的介绍
 
 对 Scheduler 的通常误解是认为 Scheduler 就是 thread。其实 Scheduler 应该类比 dispatch queue。一个 Schelduler 可能在多个线程中，多个 Scheduler 也可能在一个线程中：
@@ -425,8 +516,6 @@ observable.subscribeOn(globalScheduler)
 #### 冷热Observable 对 Schedulers 的影响
 
 这里主要介绍了一个注意点，就是对于 hot Observable，它订阅所在的线程就是其发出事件所在的线程，所以使用 `subscribeOn()` 方法控制是无效的。
-
-关于 冷热 Observable，会在后续文章中介绍。
 
 ### 自定义 Rx 拓展
 
