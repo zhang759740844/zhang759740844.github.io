@@ -237,7 +237,11 @@ UIImageRenderingModeAlwaysTemplate   // 始终根据Tint Color绘制图片，忽
 >
 > 什么时候用 autolayout 什么时候用 frame 就见仁见智了。一般来说只与父视图有关的话，那么就用 frame 设置位置，如果与兄弟视图有关的话，还是用 autolayout 教好一些。
 >
-> 同样的还有 ViewController 的 `viewDidLayoutSubviews` 方法，这个方法会在 VC 的 view 调用其 `layoutSubViews` 后调用（相当于调用了 `[super layoutSubViews]`）。如果要设置 VC 中的视图的 frame，可以考虑在这个方法里设置。但是一般我们都是在 `viewDidLoad` 方法里设置的无论是 frame 还是 constraint，这是为什么呢？因为 VC 的 view 永远不用担心大小为 0.
+> 同样的还有 ViewController 的 `viewDidLayoutSubviews` 方法，这个方法会在 VC 的 view 调用其 `layoutSubViews` 后调用（相当于调用了 `[super layoutSubViews]`）。如果要设置 VC 中的视图的 frame，可以考虑在这个方法里设置。但是一般我们都是在 `viewDidLoad` 方法里设置的无论是 frame 还是 constraint。
+
+#### frame 修改 AutoLayout
+
+AutoLayout 最后也是将约束设置为要展示的位置信息。所以我们也是可以使用 frame 来改变 autolayout 产生的位置的。但是修改的时机很重要。比如你在 xib 中设置了约束，然后你再 `viewDidLoad` 方法中修改了某个空间的 frame 那是没有用的。**因为，autolayout 的布局，本质上还是 frame 的形式。系统会在 layout subViews 时加载约束信息，将其转换为 frame。**所以如果你想改变 autolayout 的布局，你需要在 `viewDidLayoutSubviews` 中设置 frame
 
 #### 改变约束的注意事项
 
