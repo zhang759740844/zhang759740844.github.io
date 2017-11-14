@@ -97,7 +97,7 @@ let observable4 = Observable<Void>.empty()
 let observable5 = Obnservable<Any>.never()
 ```
 
-`.create` 创建 Observable，需要传入一个入参为 subscribe，返回一个 Disposable 实例的闭包。在这个闭包里定义了所有将要发送的事件：
+`.create` 创建 Observable，需要传入一个入参为 observer，返回一个 Disposable 实例的闭包。在这个闭包里定义了所有将要发送的事件：
 
 ```swift
 Observable<String>.create { observer in 
