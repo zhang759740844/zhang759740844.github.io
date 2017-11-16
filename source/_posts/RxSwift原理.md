@@ -403,5 +403,199 @@ fileprivate final class SinkDisposer: Cancelable {
 
 ## Subject 的创建与订阅
 
+Subject 是 hot observable，和上面的区别在于，可以自己定义事件触发的时机。那么这个不同是如何体现出来的呢？下面来瞧瞧 Variable 的原理。
+
+### Variable
+
+Variable 是 BehaviorSubject 的封装。来看一下 Variable 中的属性：
+
+```swift
+public final class Variable<Element> {
+
+    public typealias E = Element
+    
+    private let _subject: BehaviorSubject<Element>
+    
+    private var _lock = SpinLock()
+ 
+    // state
+    private var _value: E
+  
+  	...
+}
+```
+
+可以看到，很简单，一个 `BehaviorSubject`，一个同步锁，以及一个 `value` 属性。Variable 和 BehaviorSubject 相比，唯一的不同就是 Variable 有一个 `value` 属性， 并在其 set 方法中，自动触发了 next 事件。
+
+现在看一下初始化方法，以及 `value` 的 get set 方法：
+
+```swift
+public final class Variable<Element> {
+
+	...
+    /// Gets or sets current value of variable.
+    ///
+    /// Whenever a new value is set, all the observers are notified of the change.
+    ///
+    /// Even if the newly set value is same as the old value, observers are still notified for change.
+    public var value: E {
+        get {
+            _lock.lock(); defer { _lock.unlock() }
+            return _value
+        }
+        set(newValue) {
+            _lock.lock()
+            _value = newValue
+            _lock.unlock()
+
+            _subject.on(.next(newValue))
+        }
+    }
+    
+    /// Initializes variable with initial value.
+    ///
+    /// - parameter value: Initial variable value.
+    public init(_ value: Element) {
+        _value = value
+        _subject = BehaviorSubject(value: value)
+    }
+
+  	...
+}
+
+```
+
+`init` 方法就是初始化了一个 `BehaviorSubject` 以及设置了 `value` 的初始值。`value` 的 setter 方法就是更新了 `value` 值，然后触发了 BehaviorSubject 的事件。
+
+这里学习一个加锁解锁的方法，在 getter 方法中通过 `defer` 在 return 之后执行解锁操作。
+
+好了这就是 Variable 的全部了。由于 Variable 并不是继承于 Observable，所以你甚至都不能订阅，只能通过 `asObservable` 方法，返回其中的 `BehaviorSubject` 属性。下面来看下 BehaviorSubject 是如何实现的。
+
+### BehaviorSubject
+
+我们使用 BehaviorSubject 进行订阅的时候，一开始的步骤还是一样的：`Observable` 先创建一个 `AnonymousObserver`，将事件处理方法设置给它的 `eventHandler` 属性。所有的 Observable 订阅，都会进行这样的方法，我们可以将这部分成为订阅的公共部分。
+
+然后到上面的 step 5 开始有区别了。在 `create` 中，由于继承关系调用的是 `Producer` 的 `subscribe`；而 BehaviorSubject 中也实现了自己的 `subscribe` 方法，我们可以称这部分为订阅的私有部分(这两个名字都是我随便起的)。
+
+在 `Producer` 的订阅私有部分，进行的是 step7 以及 step 8，也就是创建一个 `SinkDisposer` 和执行 `run` 方法(执行事件闭包中的事件)，这也就是 `create` 能够自己发出事件的原因。BehaviorSubject 的订阅私有部分做的是将刚创建的 `AnonymousObserver` 保存起来，然后以当前 `value` 值作为事件值，发出一个事件，这就是 BehaviorSubject 订阅就会触发事件的原因。
+
+下面来看代码，首先看看 `BehaviorSubject` 的属性:
+
+```swift
+public final class BehaviorSubject<Element>
+    : Observable<Element>
+    , SubjectType
+    , ObserverType
+    , SynchronizedUnsubscribeType
+    , Disposable {
+    public typealias SubjectObserverType = BehaviorSubject<Element>
+    typealias DisposeKey = Bag<AnyObserver<Element>>.KeyType
+    
+    /// Indicates whether the subject has any observers
+    public var hasObservers: Bool {
+        _lock.lock()
+        let value = _observers.count > 0
+        _lock.unlock()
+        return value
+    }
+    
+    let _lock = RecursiveLock()
+    
+    // state
+    private var _isDisposed = false
+    private var _value: Element
+    private var _observers = Bag<(Event<Element>) -> ()>()
+    private var _stoppedEvent: Event<Element>?
+
+    /// Indicates whether the subject has been disposed.
+    public var isDisposed: Bool {
+        return _isDisposed
+    }
+}
+```
+
+BehaviorSubject 的属性就这么多，基本上看到都是能一眼看明白的。`_observers` 就是创建的 `AnonymousObserver`，它的类型 `Bag` 是一个字典的封装，它可以为不同的 `AnonymousObserver` 提供不同的键，这样能在取消订阅的时候便于回收响应 `AnonymousObserver`。另外，`_stoppedEvent` 也是需要解释一下的，就是在 `completed` 以及 `error` 事件发生后，保存这个 event，以后当有其他事件触发的时候，发出的是这个 event 的事件。
+
+接下来看一下订阅的私有部分的相关代码：
+
+```swift
+    /// Subscribes an observer to the subject.
+    ///
+    /// - parameter observer: Observer to subscribe to the subject.
+    /// - returns: Disposable object that can be used to unsubscribe the observer from the subject.
+    public override func subscribe<O : ObserverType>(_ observer: O) -> Disposable where O.E == Element {
+        _lock.lock()
+        let subscription = _synchronized_subscribe(observer)
+        _lock.unlock()
+        return subscription
+    }
+
+    func _synchronized_subscribe<O : ObserverType>(_ observer: O) -> Disposable where O.E == E {
+        if _isDisposed {
+            observer.on(.error(RxError.disposed(object: self)))
+            return Disposables.create()
+        }
+        
+        if let stoppedEvent = _stoppedEvent {
+            observer.on(stoppedEvent)
+            return Disposables.create()
+        }
+        
+        let key = _observers.insert(observer.on)
+        observer.on(.next(_value))
+    
+        return SubscriptionDisposable(owner: self, key: key)
+    }
+
+```
+
+需要把这部分加上锁，防止在将 Observer 加入字典的时候，产生错误。然后就像上面讲的一样，先看看有没有 `stoppedEvent`，有的话执行该 event，没有的话，将 Observer 加入字典，然后触发这个 Observer 的事件。
+
+最后，返回了一个 `SubscriptionDisposable`，它是一个非常简单的结构体。保存了 self，防止 BehaviorSubject 回收，保存了`key`，用于回收对应的 Observer。
+
+`on` 方法是因为 BehaviorSubject 也实现了 `ObserverType` 协议，再看一下 `on` 做了什么：
+
+```swift
+    /// Notifies all subscribed observers about next event.
+    ///
+    /// - parameter event: Event to send to the observers.
+    public func on(_ event: Event<E>) {
+        _lock.lock()
+        dispatch(_synchronized_on(event), event)
+        _lock.unlock()
+    }
+
+    func _synchronized_on(_ event: Event<E>) -> Bag<(Event<Element>) -> ()> {
+        if _stoppedEvent != nil || _isDisposed {
+            return Bag()
+        }
+        
+        switch event {
+        case .next(let value):
+            _value = value
+        case .error, .completed:
+            _stoppedEvent = event
+        }
+        
+        return _observers
+    }
+```
+
+同样的也是将这个过程锁上，避免在执行的时候，新的 Observer 被加入字典中，导致新的 Observer 也响应事件。这里的 `dispatch` 方法主要就是通过一个 for 循环，将 `_observers` 中的每个 Observer 都触发 `event` 事件。下面同步的 `on` 方法也就不多解释了。
+
+这就是 BehaviorSubject 的大致实现过程。
+
+> 其实 Subject 就是典型的观察者模式。`create` 把类大概分成了四个部分。Subject 则结合了 Observable 和 Sink 做的事情。将创建事件对了和执行事件队列放在了一起。
+
+## 代理转发
+
+前面的文章说到，会详细叙述一下代理转发的流程，那么现在来看一看这方面的源码。我们在 RxCocoa 中找一个需要实现代理的控件类，看一下它的解决方式。此处，我们以 UITabBarController 为例，因为这个控件比较简单。
+
+
+
+
+
+ 
+
 
 

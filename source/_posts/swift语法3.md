@@ -417,6 +417,8 @@ print("square.origin is now at (\(square.origin.x), \(square.origin.y))")
 
 上面这个矩形的类，通过 `origin` 和 `size` 来计算出 `center`。其中 setter 方法的 `newCenter` 由于类型推断，默认为 `Point` 类型，就不用再写明类型了。
 
+> 这里要强调一点。计算属性的 set 方法在 init 方法中是不会被调用的。如果你在初始化方法中给计算属性赋值了，那么这个计算属性直接就等于这个值，而不是再调用 setter 方法。
+
 #### 便捷 setter 声明
 
 由于 `setter` 函数必然要传入一个新值，所以 Swift 定义了一个默认名称 `newValue`。所以可以采取简略的形式：
