@@ -585,17 +585,281 @@ BehaviorSubject 的属性就这么多，基本上看到都是能一眼看明白�
 
 这就是 BehaviorSubject 的大致实现过程。
 
-> 其实 Subject 就是典型的观察者模式。`create` 把类大概分成了四个部分。Subject 则结合了 Observable 和 Sink 做的事情。将创建事件对了和执行事件队列放在了一起。
+> 其实 Subject 就是典型的观察者模式。`create` 把类大概分成了四个部分。Subject 则结合了 Observable 和 Sink 做的事情。它在内部为每个观察者创建了匿名的 Observer 并保存，然后可以自行调用 `onNext` 调用这些 Observer 的事件处理方法。将创建事件队列和执行事件队列放在了一起。
 
 ## 代理转发
 
-前面的文章说到，会详细叙述一下代理转发的流程，那么现在来看一看这方面的源码。我们在 RxCocoa 中找一个需要实现代理的控件类，看一下它的解决方式。此处，我们以 UITabBarController 为例，因为这个控件比较简单。
+前面的文章说到，会详细叙述一下代理转发的流程，那么现在来看一看这方面的源码。我们在 RxCocoa 中找一个需要实现代理的控件类，看一下它的解决方式。比如 UITabBarController。
+
+### 控件的 rx 拓展
+
+关于代理转发需要我们创建的只有两个类，一个是 UITabBarController 的 rx 拓展类，一个是 UITabBarControllerDelegate 的实现类 DelegateProxy。先来看一下 UITabBarController 的 rx 拓展类：
+
+```swift
+extension Reactive where Base: UITabBarController {
+    /// Reactive wrapper for `delegate`.
+    ///
+    /// For more information take a look at `DelegateProxyType` protocol documentation.
+    public var delegate: DelegateProxy {
+        return RxTabBarControllerDelegateProxy.proxyForObject(base)
+    }
+    
+    /// Reactive wrapper for `delegate` message `tabBarController:didSelect:`.
+    public var didSelect: ControlEvent<UIViewController> {
+        let source = delegate.methodInvoked(#selector(UITabBarControllerDelegate.tabBarController(_:didSelect:)))
+            .map { a in
+                return try castOrThrow(UIViewController.self, a[1])
+        }
+        
+        return ControlEvent(events: source)
+    }
+}
+```
+
+我们可以看到，这个类中先定义了一个 `DelegateProxy` 类型的 `delegate`，这就是上面所说的 UITabBarControllerDelegate 的实现类。另外定义了一个 `didSelect` 属性，它的类型是 `ControlEvent`，其实就是一个 Observable。我们知道 UITabBarControllerDelegate 中有一个代理方法就是 `didSelect`，所以这里定义的 Observable 其实就是用来替代传统的代理方法的。
+
+`delegate` 是一个只读属性，它只是调用了 DelegateProxy 的 `proxyForObject` 方法。DelegateProxy 的继承关系比较复杂，我们先看一下关系图：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_prin_3.png?raw=true)
+
+> 强调一下，`delegate` 是 rx 命名空间下的，不会影响到控件本生的 delegate 属性。
+
+### 替换代理类
+
+可以看到 `proxyForObject` 是 `DelegateProxyType` 协议中的方法，它在协议的拓展中提供了默认的实现：
+
+```swift
+    public static func proxyForObject(_ object: AnyObject) -> Self {
+        MainScheduler.ensureExecutingOnScheduler()
+
+        let maybeProxy = Self.assignedProxyFor(object) as? Self
+
+        let proxy: Self
+        if let existingProxy = maybeProxy {
+            proxy = existingProxy
+        }
+        else {
+            proxy = Self.createProxyForObject(object) as! Self
+            Self.assignProxy(proxy, toObject: object)
+            assert(Self.assignedProxyFor(object) === proxy)
+        }
+
+        let currentDelegate: AnyObject? = Self.currentDelegateFor(object)
+
+        if currentDelegate !== proxy {
+            proxy.setForwardToDelegate(currentDelegate, retainDelegate: false)
+            assert(proxy.forwardToDelegate() === currentDelegate)
+            Self.setCurrentDelegate(proxy, toObject: object)
+            assert(Self.currentDelegateFor(object) === proxy)
+            assert(proxy.forwardToDelegate() === currentDelegate)
+        }
+        
+        return proxy
+    }
+```
+
+#### 创建 proxy
+
+首先通过 `assignedPorxyFor` 这个类方法方法，获取指定控件(object)的 DelegateProxy 的实例。这个方法在 `DelegateProxyType` 协议中定义，在 `DelegateType` 中实现：
+
+```swift
+    open class func assignedProxyFor(_ object: AnyObject) -> AnyObject? {
+        let maybeDelegate = objc_getAssociatedObject(object, self.delegateAssociatedObjectTag())
+        return castOptionalOrFatalError(maybeDelegate.map { $0 as AnyObject })
+    }
+```
+
+它通过关联对象的方式，从指定控件中取出。如果这个 proxy 存在，就说明之前已经设置过了，如果没有，那么通过 `createProxyForObject` 方法创建。这个创建方法同样是在 `DelegateProxyType` 中定义，在 `DelegateProxy` 中实现。它做的很简单，就是实例化自身：
+
+```swift
+    open class func createProxyForObject(_ object: AnyObject) -> AnyObject {
+        return self.init(parentObject: object)
+    }
+```
+
+然后就是将自身与控件关联。总的来说，上面就是要创建一个 DelegateProxy，然后保存为相应控件的属性的一个属性。
+
+#### 获取当前代理对象
+
+接下来通过 `currentDelegateFor` 获取当前控件的实际代理类。这个方法是需要自己在 DelegtateProxy 子类中实现的，因为虽然用做代理，但是可能叫法不同，比如 tableView 的数据源代理就叫做 dataSource。TabBarController 的 DelegateProxy 中仅有的两个方法就是取出和设置自身的代理：
+
+```swift
+public class RxTabBarControllerDelegateProxy
+    : DelegateProxy
+    , UITabBarControllerDelegate
+    , DelegateProxyType {
+    
+    /// For more information take a look at `DelegateProxyType`.
+    public class func currentDelegateFor(_ object: AnyObject) -> AnyObject? {
+        let tabBarController: UITabBarController = castOrFatalError(object)
+        return tabBarController.delegate
+    }
+    
+    /// For more information take a look at `DelegateProxyType`.
+    public class func setCurrentDelegate(_ delegate: AnyObject?, toObject object: AnyObject) {
+        let tabBarController: UITabBarController = castOrFatalError(object)
+        tabBarController.delegate = castOptionalOrFatalError(delegate)
+    }
+}
+```
+
+> 就是说，上面代码中的 delegate 在一些情况下，可能不叫 delegate，所以没法写成一个公共的方法，必须要每个 DelegateProxy 都自己根据情况实现。
+
+#### 用 proxy 替换代理对象
+
+拿到当前的代理对象后，通过一个 if 判断当前代理对象是否是上面得到的 proxy。如果是，说明之前已经设置过了，直接将 proxy 返回即可；如果不是，那就要用 proxy 将代理对象替换掉。这个过程由 `setForwardToDelegate` 方法完成，实现还是在 `DelegateProxy` 中：
+
+```swift
+open func setForwardToDelegate(_ delegate: AnyObject?, retainDelegate: Bool) {
+    self._setForward(toDelegate: delegate, retainDelegate: retainDelegate)
+}
+```
+
+看到这个带下划线的方法，应该能猜到，这就是调用的 OC 的方法了。在 `_RXDelegateProxy` 这个 OC 类中，定义了一个 `__forwardToDelegate` 属性。这个属性是弱引用的，它用来保存正真的代理对象：
+
+```objc
+-(void)_setForwardToDelegate:(id __nullable)forwardToDelegate retainDelegate:(BOOL)retainDelegate {
+    __forwardToDelegate = forwardToDelegate;
+    if (retainDelegate) {
+        self.strongForwardDelegate = forwardToDelegate;
+    }
+    else {
+        self.strongForwardDelegate = nil;
+    }
+}
+```
+
+我们可以看到有一个 Bool 类型的  `retainDelegate` 入参。它来决定是否将弱引用变成强引用，不过一般情况，我们并不需要强引用。总之，将原本的代理对象安顿好了之后，就通过 `setCurrentDelegate` 将 proxy 设置为代理对象，并且返回了。
+
+### 获取方法的 Observable
+
+回到我们看过的控件的 rx 拓展中，前面说到 `didSelect` 这个计算属性，返回一个 Observable，拦截代理方法的工作也是由它自己完成的：
+
+```swift
+public var didSelect: ControlEvent<UIViewController> {
+    let source = delegate.methodInvoked(#selector(UITabBarControllerDelegate.tabBarController(_:didSelect:)))
+        .map { a in
+            return try castOrThrow(UIViewController.self, a[1])
+    }
+    
+    return ControlEvent(events: source)
+}
+```
+
+这里的主要方法就是这个 `methodInvoked`，它在 `DelegateProxy` 中。（另外插一句，这里的 `a` 代表的是代理方法的各个入参，`a[0]` 表示该 tabBarController，`a[1]` 表示的就是 `didSelect:` 对应的入参。）我们继续看下去：
+
+```swift
+open func methodInvoked(_ selector: Selector) -> Observable<[Any]> {
+    checkSelectorIsObservable(selector)
+
+    let subject = methodInvokedForSelector[selector]
+
+    if let subject = subject {
+        return subject
+    }
+    else {
+        let subject = PublishSubject<[Any]>()
+        methodInvokedForSelector[selector] = subject
+        return subject
+    }
+}
+```
+
+首先通过 `checkSelectorIsObservable` 检查方法是否已通过非 rx 的代理方式实现了。这个方法不是太重要。之后从 `methodInvokedForSelector` 中取出 selector 对应的 subject 对象。这个属性是一个字典，以 selector 为键，以 subject 为值。如果存在 subject 就说明，已经创建了 selector 对应的 Observable 对象了，直接返回即可；如果没有，那么就创建一个 PublishSubject，并且将其存入 `methodInvokedForSelecotr` 字典中去，最后返回这个 subject。我们就可以使用这个 subject 来进行订阅了。
+
+> 所以获取方法的 Observable 的过程就是从一个字典中取出方法对应 Observable 的过程。
+
+### 拦截方法
+
+那么调用代理方法的过程是如何转变为触发事件的呢？这里就要用到 OC runtime 中的消息转发。在 `_RXDelegateProxy` 中实现了消息转发的方法 `forwardInvocation`。我们将 DelegateProxy 设置为代理类，但是我们一直没有实现代理方法。所以系统企图调用代理方法的时候发现没有代理方法，就执行消息转发的方法：
+
+```objc
+-(void)forwardInvocation:(NSInvocation *)anInvocation {
+    BOOL isVoid = RX_is_method_signature_void(anInvocation.methodSignature);
+    NSArray *arguments = nil;
+    if (isVoid) {
+        arguments = RX_extract_arguments(anInvocation);
+        [self _sentMessage:anInvocation.selector withArguments:arguments];
+    }
+    
+    if (self._forwardToDelegate && [self._forwardToDelegate respondsToSelector:anInvocation.selector]) {
+        [anInvocation invokeWithTarget:self._forwardToDelegate];
+    }
+
+    if (isVoid) {
+        [self _methodInvoked:anInvocation.selector withArguments:arguments];
+    }
+}
+```
+
+首先检查一下代理方法是不是有返回值。为什么要检查这个呢？因为我们订阅 Observable 的处理方法是不会有返回值的，但是一般的代理方法不同，代理方法有一些是要返回处理完的数据的。对于有返回值的代理方法，我们是无法以 Observable 的方式订阅的，只能老老实实的写回调方法。
+
+下面是三个 if 判断。中间的 if 我们看到了熟悉的 `_forwardToDelegate` 属性。我们也说过了，这个属性是用来临时保存原本正真的代理对象的。这个 if 的作用就是，检查一下正真的代理对象有没有实现这个 selector，如果有，那么执行。这样的好处就是既不影响原本代理方法的执行，又能给我们提供用 Observable 处理的余地。
+
+上下两个 if 判断就都是用来触发事件的。一上一下分别在正真的代理方法执行前后触发。前文中，我们有通过 `methodInvoked` 方法获取 selector 对应的 Observable，其实还有一个 `sendMessage` 方法也起着一样的作用，原理也是相同的。是不是很像 AOP。
+
+`_methodInvoked` 方法将代理方法的参数作为事件值触发事件：
+
+```swift
+open override func _methodInvoked(_ selector: Selector, withArguments arguments: [Any]) {
+    methodInvokedForSelector[selector]?.on(.next(arguments))
+}
+```
+
+> 如何获得触发事件的入口？答案就是通过消息转发。所有没有实现的代理方法走消息转发，达到统一触发事件的目的。
+
+### 另一种替换代理类的方式
+
+前面替换代理类的方式是 `proxyForObject`方法，它会把该 Object 的 delegate 替换为 DelegateProxy，把原本的 delegate 对象设置为 DelegateProxy 的 forwardDelegate 属性。
+
+除此之外，还有一个替换代理的方法：
+
+```swift
+public static func installForwardDelegate(_ forwardDelegate: AnyObject, retainDelegate: Bool, onProxyForObject object: AnyObject) -> Disposable {
+    weak var weakForwardDelegate: AnyObject? = forwardDelegate
+
+    let proxy = Self.proxyForObject(object)
+    
+    assert(proxy.forwardToDelegate() === nil, "This is a feature to warn you that there is already a delegate (or data source) set somewhere previously. The action you are trying to perform will clear that delegate (data source) and that means that some of your features that depend on that delegate (data source) being set will likely stop working.\n" +
+        "If you are ok with this, try to set delegate (data source) to `nil` in front of this operation.\n" +
+        " This is the source object value: \(object)\n" +
+        " This this the original delegate (data source) value: \(proxy.forwardToDelegate()!)\n" +
+        "Hint: Maybe delegate was already set in xib or storyboard and now it's being overwritten in code.\n")
+
+    proxy.setForwardToDelegate(forwardDelegate, retainDelegate: retainDelegate)
+    
+    // refresh properties after delegate is set
+    // some views like UITableView cache `respondsToSelector`
+    Self.setCurrentDelegate(nil, toObject: object)
+    Self.setCurrentDelegate(proxy, toObject: object)
+    
+    assert(proxy.forwardToDelegate() === forwardDelegate, "Setting of delegate failed:\ncurrent:\n\(String(describing: proxy.forwardToDelegate()))\nexpected:\n\(forwardDelegate)")
+    
+    return Disposables.create {
+        MainScheduler.ensureExecutingOnScheduler()
+        
+        let delegate: AnyObject? = weakForwardDelegate
+        
+        assert(delegate == nil || proxy.forwardToDelegate() === delegate, "Delegate was changed from time it was first set. Current \(String(describing: proxy.forwardToDelegate())), and it should have been \(proxy)")
+        
+        proxy.setForwardToDelegate(nil, retainDelegate: retainDelegate)
+    }
+}
+```
+
+这个方法会直接让你传入 forwardDelegate，并且你要是之前设置过 delegate，它还不高兴了。所以这个方法最好在你没有设置代理的时候用。该方法中也调用了 `proxyForObject`。除此之外，这个方法返回一个 Disposer，并在 dispose 的时候，将 forwardDelegate 正式设置为 delegate。因此，用这种方式的话，你需要将其放入 disposableBag 中。这样的功效就是如果 DelegateProxy 回收了，那么 forwardDelegate 就顺势升值了。
+
+其实这也就是 Disposer 给我们带来的便利。我们不需要再 dealloc 的时候做设置了，直接全部扔到 disposableBag 中去。
+
+> 整个过程就是，我们通过  proxyForObject 将 delegate 设置为 DelegateProxy。DelegateProxy 为每一个无返回值的代理方法都创建了 subject。我们通过 DelegateProxy 提供的 methodInvoked 获取这些 subject，并订阅。不在 DelegateProxy 中实现这些代理方法，使其触发消息转发。消息转发中统一执行方法，获取 selector 的 subject，并触发事件。
+>
+> 我们需要做的是：
+>
+> 1. 在 rx 拓展中，添加一个只读的代理属性(不一定叫做 delegate)。读取方法中调用相应 DelegateProxy 的 proxyForObject 并返回。
+> 2. 在 rx 拓展中，添加只读的属性。读取方法中调用 DelegateProxy 的 methodInvoked 获取相应 selector 的 subject
+> 3. 在相应 DelegateProxy 中添加 `currentDelegateFor`  和 `setCurrentDelegate` 方法，返回，设置类的原始代理属性(不一定是 delegate)。
+> 4. 在相应 DelegateProxy 中添加返回值非空的代理方法的实现。
 
 
 
-
-
- 
-
-
-
+不想在写了，累的兔血，暂时就这样吧。
