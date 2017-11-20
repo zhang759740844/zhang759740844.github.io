@@ -59,13 +59,13 @@ Casa 关于网络架构的博客中主要讲了如何渔，没有分析他的鱼
 
 接下来询问**是否可以缓存**，如果子类没有实现这个方法，那么从 `CTNetworkingConfigurationManager` 这个配置中心获取。（这里不太对，因为 `shouldCache` 是 `APIManager` 协议中定义的必须实现的方法方法，所以不会存在从配置中心读取这一步。其实最好还是直接设置成可选方法，在 base 中提供个默认实现。）
 
-如果这个 API 可以缓存，那么再通过 `serviceType`，`methodName` 以及 `requestParams` 组成的字符串，去**查看本地是否有数据**。取出一个自定义的 `CTCachedObject` 类型。这个类型保存两个东西，一个是缓存的数据 `content`，一个是缓存的时间 `lastUpdateTime`，因为要判断**是否超过了缓存的时间**。如果既有缓存内容，缓存还没有超时，那么拿出来，在主线程中执行成功回调。
+如果这个 API 可以缓存，那么再通过 `serviceType`，`methodName` 以及 `requestParams` 组成的字符串，使用 `CTCache` 这个单例去**查看本地是否有数据**。取出一个自定义的 `CTCachedObject` 类型。这个类型保存两个 `NSData` 对象，一个是缓存的数据 `content`，一个是缓存的时间 `lastUpdateTime`，因为要判断**是否超过了缓存的时间**。如果既有缓存内容，缓存还没有超时，那么拿出来，在主线程中执行成功回调。
 
 不论是从本地还是从 Cache 都使用了**生成了一个返回实例**的封装 `CTURLResponse`，这个封装里有一个标识符 `isCache`，表示非网络请求得到的数据，以此和网络请求数据进行区别。它提供了三个初始化方法，上面两个是网络返回成功和失败的初始化的方法。最后一个 `initWithData:` 就是刚才说的本地数据的初始化方法。
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_8.png?raw=true)
 
-如果没有缓存，那么就要执行网络请求了。但是在请求前，还需要**检查一下网络情况**。在上面的配置中心还提供了一个方法调用 AFNetworking  的方法，只要不是明确的无网络 `NotReachable` 就返回 YES。如果无连接，那么执行失败回调， `errorType` 为无网络连接。 
+如果没有缓存，那么就要执行网络请求了。但是在请求前，还需要**检查一下网络情况**。在上面的配置中心(`CTNetworkingConfigurationManager`，关于配置的都扔在这里)还提供了一个方法调用 AFNetworking  的方法，只要不是明确的无网络 `NotReachable` 就返回 YES。如果无连接，那么执行失败回调， `errorType` 为无网络连接。 
 
 最后，发送网络请求前，将 APIManager 中的 `isLoading` 标志位置为 YES，表示正在进行网络请求。这个的作用是在某些 API 中可以防止重复发送请求。比如翻页，就可以判断 `isLoading` 的状态来执行不同的请求策略。
 
@@ -91,13 +91,13 @@ Casa 关于网络架构的博客中主要讲了如何渔，没有分析他的鱼
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_11.png?raw=true)
 
-将 `CTService` 中的几个属性分为了线上和线下版本。所有实现该协议的类都需要定义这些属性的 get 方法。事实上，我们定义的子类不需要设置 `CTService` 的几个属性。它会自动根据当前环境 `isOnline` 进行选择，例如：
+将 `CTService` 中的几个属性分为了线上和线下版本。所有实现该协议的类都需要定义这些属性的 get 方法。事实上，我们定义的子类不需要设置 `CTService` 的几个属性。它会自动根据当前环境 `isOnline` 进行选择，`isOnline` 可以统一读取配置信息中的设置。例如：
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_12.png?raw=true)
 
-`isOnline` 可以统一读取配置信息中的设置。
+> CTServiceProtocol 定义了几个需要实现的读写方法。CTService 不实现 CTServiceProtocol 协议，但是实现了协议中的读写方法，这样 CTService 的子类就不需要再重复写读写方法了。CTService 的子类要做的就是提供 CTServiceProtocol 中定义的几个属性。相关逻辑就会通过 CTService 中提供的读写方法获取这几个属性值了。
 
-提供了一个工厂 `CTServiceFactory` 用于统一管理所有的 service。APIManager 中的`serviceType` 字符串就是用来描述其属于哪个 service 的。`serviceType` 字符串和具体的 `CTService` 的映射关系字典由一个实现了 `CTServiceFactoryDataSource` 协议的类提供。一般将这个字典放在 `AppDelegate` 中。
+由于可能有多个 service，并且如果每次都创建 Service 太损耗性能，所以就提供了一个工厂 `CTServiceFactory` 用于统一管理保存所有的 service。APIManager 通过 `serviceType` 字符串表示其属于哪个 service，即要创建的 service 类型。因此，我们需要一个 `serviceType` 和 `CTService` 的映射表。这个映射表由一个实现了 `CTServiceFactoryDataSource` 协议的类提供。一般我们将 `AppDelegate` 设置为这个 DataSource，提供 type → Service 的映射。
 
 回到主流程。先到 `CTServiceFactory` 中查看是否已经**存在相应的 Service**。如果不存在就要通过映射表找到对应的 Service 类，创建一个。
 
@@ -105,7 +105,7 @@ Casa 关于网络架构的博客中主要讲了如何渔，没有分析他的鱼
 
 之后**添加额外的参数**。这个参数不是业务级的，也不是接口级的，而是 Service 级的，即所有该 Service 都需要传递的参数，比如 token 之类的。
 
-调用 AFNetworking 提供的方法，传入 url、参数和请求类型，**创建一个 request**。
+调用 AFNetworking 提供的方法，传入 url、参数和请求类型，**创建一个 `NSURLRequest` 实例**。
 
 有一些 Service 需要添加自己特有的 header。因此，调用 `CTService` 中的方法，为不同 Service**添加 header**。
 
@@ -117,15 +117,17 @@ Request 本生是没有请求参数这个属性的。但是我们想把请求参
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_13.png?raw=true)
 
-执行过程清晰了很多。通过上面创建的 Request，创建一个 `NSURLSessionDataTask` 的实例 `dataTask`。然后通过拿到该 task 的 `taskIdentifier` 作为这个请求的 `requestId`。在 `CTApiProxy` 中保存了一个 `dispatchTable` 字典，用于存储 `requestId` 对应的 `dataTask`。接着执行这个 `dataTask`，再将 `requestId` 一层层传出，`CTAPIBasemanager` 中有一个保存这些 id 的数组 `requestIdList`。这个 `requestId` 的用处在于通过这个 `requestId` 可以随时取消请求。但是要注意，当 API 请求速度非常快的时候，APIManager 并不能确保当前正在进行的请求所对应的 `requestId` 的正确性。所以如果要取消请求的时候，最好 cancelAll，而不是只取消某一个。
+执行过程清晰了很多。通过上面创建的 Request，创建一个 `NSURLSessionDataTask` 的实例 `dataTask`。然后通过拿到该 task 的 `taskIdentifier` 作为这个请求的 `requestId`。在 `CTApiProxy` 中保存了一个 `dispatchTable` 字典，用于存储 `requestId` 对应的 `dataTask`。接着执行这个 `dataTask`，再将 `requestId` 一层层传出，`CTAPIBasemanager` 中有一个保存这些 id 的数组 `requestIdList`。这个 `requestId` 的用处在于通过这个 `requestId` 可以随时取消请求。取消的时候通过 `requestIdList` 中的`requestId` 找到 `dispatchTable` 中的 `NSURLSessionDataTask` 实例，然后调用其 `cancel` 方法。
 
-在完成了 `dataTask` 的执行后，执行回调。回调会传入响应信息 `NSURLResponse *response`，响应体`id responseObject`，以及错误 `NSError *error`。因为请求已经完成，所以移除 `dispatchTable` 中相应的项。如果出错了，那么生成一个出错的返回对象 `CTURLResponse`，如果没有出错，那么生成一个正确的返回对象 `CTURLResponse`，然后各自执行自开始传入的成功失败回调。对于响应信息的日志打印，也是在这里完成。
-
-![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_14.png?raw=true)
+但是要注意，当 API 请求速度非常快的时候，APIManager 并不能确保当前正在进行的请求所对应的 `requestId` 的正确性。所以如果要取消请求的时候，最好 cancelAll，而不是只取消某一个。
 
 ### 回调
 
-回调的处理都是在 APIManager 中完成。
+在完成了 `dataTask` 的执行后，执行回调。回调会传入响应信息 `NSURLResponse *response`，响应体`id responseObject`，以及错误 `NSError *error`。因为请求已经完成，所以移除 `dispatchTable` 中相应的项。如果出错了，那么生成一个出错的返回对象 `CTURLResponse`，如果没有出错，那么生成一个正确的返回对象 `CTURLResponse`，然后将这个 `CTURLResponse` 传入由 `CTAPIBaseManager` 传入的成功失败回调。对于响应信息的日志打印，也是在这里完成。
+
+`CTURLResponse` 没有什么特别的方法，只是添加了一些标识属性，比如前文说到的 `isCache`，以及 `requestId`，`error` 等，还有就是数据。反正你想让回调方法指导的东西都放在这里就可以了。
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_14.png?raw=true)
 
 #### 成功回调
 
@@ -145,11 +147,11 @@ Request 本生是没有请求参数这个属性的。但是我们想把请求参
 
 接下来就是在最终**成功回调前的拦截**。拦截分为内部拦截和外部拦截。在 base 中定义了 `beforePerformSuccessWithResponse:` 方法，会调用拦截器的相应方法。如果要实现内部拦截，需要子类重写该方法，并且要调用 super 方法。**成功回调后的拦截**也是相同的道理。
 
-最后要说的就是**成功回调**了。并不是所有请求都要走最终的成功回调的。
+最后要说的就是**成功回调**了。这里要强调一下，并不是所有网络请求都要走最终的成功回调的（至少在本文这个情景下是这样的）。
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_16.png?raw=true)
 
-else 的逻辑，不是从本地获取的那么直接成功回调没有问题。那么从本地获取的数据再分这两种情况回调是什么意思呢？前面说过，从本地加载的数据成功后会有一次成功回调，之后并没有结束网络请求，而是继续请求新的数据去了。从网络获得数据后又会产生一个成功回调。这里就要把后面这个成功回调屏蔽掉。所以这里先判断是否应该从本地拿数据。如果是，那么就面临着两次回调的情况。本地数据的成功回调是应该执行的，另外本地没有数据时从网络端拿数据也是应该执行的。而本地存在数据，又从网络端拿到的，是不能执行成功回调的。
+else 的逻辑，不是从本地获取的，那么直接成功回调没有问题。那么从本地获取的数据再分这两种情况，有何用意呢？前面说过，从本地加载的数据成功后会有一次成功回调，之后并没有结束网络请求，而是继续请求新的数据去了。从网络获得数据后又会产生一个成功回调。这里就要把后面这个成功回调屏蔽掉。所以这里先判断是否应该从本地拿数据。如果是，那么就面临着两次回调的情况。本地数据的成功回调是应该执行的，另外本地没有数据时从网络端拿数据也是应该执行的。而本地存在数据，又从网络端拿到的，是不能执行成功回调的。（具体还需要根据实际业务做相应调整的）
 
 #### 失败回调
 
@@ -157,7 +159,11 @@ else 的逻辑，不是从本地获取的那么直接成功回调没有问题。
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_17.png?raw=true)
 
-`CTServiceProtocol` 中提供了一个可选方法 `shouldCallBackByFailedOnCallingAPI:`，用来集中处理 Service 层的错误，比如 token 失效。我们就可以在 Service 中实现该方法，在其中发出通知。处理完错误后，直接 return，不再继续执行。所以总的来说，分为三层，Service 层，APIManager 层和业务层，每一层都能进行处理。
+`CTServiceProtocol` 中提供了一个可选方法 `shouldCallBackByFailedOnCallingAPI:`，用来集中处理 Service 层的错误，**比如 token 失效**。我们就可以在 Service 中实现该方法，在其中发出通知。处理完错误后，直接 return，不再继续执行。
+
+所以总的来说，分为三层，**Service 层**，**APIManager 层**和**业务层**，每一层都能进行处理。
+
+
 
 ### 博客中的问答
 
@@ -178,12 +184,21 @@ API2Command *api2 = [[API2Command alloc] init];
 API3Command *api3 = [[API3Command alloc] init];
 api1.next = api2;
 api1.paramSource = self;
+api1.delegate = self;
 api2.next = api3;
 api3.delegate = self;
 [api1 execute];
 ```
 
-这只是一个思路，具体还需要自己按照需求做出一定的调整。
+这样做有一个优点，就是有些时候，下一级的网络请求并不依赖于 VC，而是从上一级网络请求直接获得。这样，我们就可以直接设置 `next` 的 `params`，而不需要让 `next` 继续问 VC 要数据了。上面的代码示例里也是这样。首先建立调用链 `api1`→`api2`→`api3`，`api1` 和 `api3` 需要执行 VC 中的回调，就设置其 delegate，`api2` 和 `api3` 都不需要 VC 作为 paramSource，所以就不设置了。
+
+#### 的
+
+
+
+
+
+
 
 
 
