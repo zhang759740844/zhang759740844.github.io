@@ -192,7 +192,37 @@ api3.delegate = self;
 
 这样做有一个优点，就是有些时候，下一级的网络请求并不依赖于 VC，而是从上一级网络请求直接获得。这样，我们就可以直接设置 `next` 的 `params`，而不需要让 `next` 继续问 VC 要数据了。上面的代码示例里也是这样。首先建立调用链 `api1`→`api2`→`api3`，`api1` 和 `api3` 需要执行 VC 中的回调，就设置其 delegate，`api2` 和 `api3` 都不需要 VC 作为 paramSource，所以就不设置了。
 
-#### 的
+> 简单总结一下，大致分为三步：
+>
+> 每个 API 都有一个 APIManager，其中有 ServiceType，interceptor，delegate，validator，paramSource 等属性。在正真的数据请求前，先对请求参数做一些处理，比如添加 pageNum 等，然后在其中经过一系列的判断，包括 interceptor，validator，是否有本地缓存，是否有 cache 等，涉及到具体的策略。然后进行网络请求。
+>
+> 网络请求通过 APIProxy 完成，它需要 APIManager 提供各种网络请求需要的东西，包括请求参数，请求名，请求类型，ServiceType。它先用这些参数，通过 CTRequestGenerator 创建 Request。创建 Request 的过程是根据 APPDelegate 中定义的对照表，用 ServiceType 在 CTServiceFactory 中找到正真的 CTService 实例，然后获取一些 Service 层面的参数，比如 baseUrl，Service 层的参数等。最后通过 AF 提供的 AFHTTPRequestSerializer 的方法生成 NSURLRequest。
+>
+> 最后 APIProxy 就要发起请求了。还是通过 AF 的方法生成 dataTask，并开始。将 dataTask 和网络请求返回的 requestId 以字典的方式保存起来，又将 requestId 返回给 APIManager 保存。然后等待回调。回调先将 APIProxy 的字典中相应键值对删除，然后删除 APIManager 的数组中的 requestId 删除。
+
+
+
+## 猿题库的 YTKNetwork
+
+YTKNetWork 同样是一个 star 数非常高的网络框架，它也是基于离散型 API 完成的。同样的来解析一下 YTK 封装的基本流程。坦白说，CTNetworking 真的很折腾，类目很多，对第一次看的人很不友好。YTKNetwork 则简单了许多，总共也就十来个文件。
+
+### 基本流程
+
+YTK 没有了那么多的 delegate，没有了重组参数，没有了验证器，拦截器，只有关于缓存的讨论。因此，它的主流程也显得简单了许多：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_20.png?raw=true)
+
+首先这个过程基本都是在 `YTKRequest` 中完成的，基本类比于 `APIBaseManager`，所有的 API 都继承于它。第一步判断**是否忽略缓存**，这是各个 API 需要设置的属性。默认为不缓存。
+
+然后判断是**否有下载路径**。也就是各个 API 是否实现了提供下载路径的方法。如果有下载路径，那么就得发送网络请求。
+
+最后是判断**是否能够读取缓存**。先获取各个 API 设置的缓存时间，如果没有设置，那么就得发送网络请求。然后尝试读取缓存数据的元数据。元数据包括缓存的缓存时间，APP 版本号，敏感信息等。这些都要分别判断是否和当前一致。如果没有元数据，或者元数据不符合要求的都得进行网络请求。
+
+如果以上都没有问题，那么执行成功回调，将整个 API 作为参数返回。但是其中任意一个不满足，就会要发送网络请求。发送网络请求前有一个执行准备方法的机会，类似于 interceptor。
+
+### 网络请求
+
+####  生成 Request
 
 
 
