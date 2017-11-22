@@ -109,7 +109,7 @@ Casa 关于网络架构的博客中主要讲了如何渔，没有分析他的鱼
 
 有一些 Service 需要添加自己特有的 header。因此，调用 `CTService` 中的方法，为不同 Service**添加 header**。
 
-Request 本生是没有请求参数这个属性的。但是我们想把请求参数保存起来，因为某些情况下，在成功失败回调的时候可能需要用到请求参数。所以我们需要为 `NSURLRequest` 添加一个分类，用于保存请求参数。
+Request 本生是没有请求参数这个属性的。但是我们想**把请求参数保存**起来，因为某些情况下，在成功失败回调的时候可能需要用到请求参数。所以我们需要为 `NSURLRequest` 添加一个分类，用于保存请求参数。
 
 现在 Request 生成完毕
 
@@ -123,15 +123,17 @@ Request 本生是没有请求参数这个属性的。但是我们想把请求参
 
 ### 回调
 
-在完成了 `dataTask` 的执行后，执行回调。回调会传入响应信息 `NSURLResponse *response`，响应体`id responseObject`，以及错误 `NSError *error`。因为请求已经完成，所以移除 `dispatchTable` 中相应的项。如果出错了，那么生成一个出错的返回对象 `CTURLResponse`，如果没有出错，那么生成一个正确的返回对象 `CTURLResponse`，然后将这个 `CTURLResponse` 传入由 `CTAPIBaseManager` 传入的成功失败回调。对于响应信息的日志打印，也是在这里完成。
+#### 统一的回调过程
 
-`CTURLResponse` 没有什么特别的方法，只是添加了一些标识属性，比如前文说到的 `isCache`，以及 `requestId`，`error` 等，还有就是数据。反正你想让回调方法指导的东西都放在这里就可以了。
+在完成了 `dataTask` 的执行后，会由 `APIProxy` 执行统一的回调过程。回调会传入响应信息 `NSURLResponse *response`，响应体`id responseObject`，以及错误 `NSError *error`。因为请求已经完成，所以移除 `dispatchTable` 中相应的项。如果出错了，那么生成一个出错的返回对象 `CTURLResponse`，如果没有出错，那么生成一个正确的返回对象 `CTURLResponse`，然后将这个 `CTURLResponse` 传入由 `CTAPIBaseManager` 传入的成功失败回调。对于响应信息的日志打印，也是在这里完成。
+
+`CTURLResponse` 没有什么特别的方法，只是添加了一些标识属性，比如前文说到的 `isCache`，以及 `requestId`，`error` 等，还有就是数据。反正你想让回调方法知道的东西都放在这里就可以了。
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_14.png?raw=true)
 
 #### 成功回调
 
-成功回调除了调用 ViewController 中提供的成功回调外，主要用来保存数据、验证以及拦截。流程如图：
+成功回调在 APIManager 中进行，除了调用 ViewController 中提供的成功回调外，主要用来保存数据、验证以及拦截。流程如图：
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_15.png?raw=true)
 
@@ -192,13 +194,19 @@ api3.delegate = self;
 
 这样做有一个优点，就是有些时候，下一级的网络请求并不依赖于 VC，而是从上一级网络请求直接获得。这样，我们就可以直接设置 `next` 的 `params`，而不需要让 `next` 继续问 VC 要数据了。上面的代码示例里也是这样。首先建立调用链 `api1`→`api2`→`api3`，`api1` 和 `api3` 需要执行 VC 中的回调，就设置其 delegate，`api2` 和 `api3` 都不需要 VC 作为 paramSource，所以就不设置了。
 
-> 简单总结一下，大致分为三步：
+> 这种新建 Command 的好处是，把 delegate，paramSource 做的事放到了 Command 里，不需要在 VC 中处理了。但是这样也带来一个问题就是每个 APIManager 都需要创建一个创建一个与之对应的 Command，导致类目增多。当然，这是不可避免的，毕竟这些 delegate，paramSource 的方法总是要有一个地方放的。
 >
-> 每个 API 都有一个 APIManager，其中有 ServiceType，interceptor，delegate，validator，paramSource 等属性。在正真的数据请求前，先对请求参数做一些处理，比如添加 pageNum 等，然后在其中经过一系列的判断，包括 interceptor，validator，是否有本地缓存，是否有 cache 等，涉及到具体的策略。然后进行网络请求。
->
-> 网络请求通过 APIProxy 完成，它需要 APIManager 提供各种网络请求需要的东西，包括请求参数，请求名，请求类型，ServiceType。它先用这些参数，通过 CTRequestGenerator 创建 Request。创建 Request 的过程是根据 APPDelegate 中定义的对照表，用 ServiceType 在 CTServiceFactory 中找到正真的 CTService 实例，然后获取一些 Service 层面的参数，比如 baseUrl，Service 层的参数等。最后通过 AF 提供的 AFHTTPRequestSerializer 的方法生成 NSURLRequest。
->
-> 最后 APIProxy 就要发起请求了。还是通过 AF 的方法生成 dataTask，并开始。将 dataTask 和网络请求返回的 requestId 以字典的方式保存起来，又将 requestId 返回给 APIManager 保存。然后等待回调。回调先将 APIProxy 的字典中相应键值对删除，然后删除 APIManager 的数组中的 requestId 删除。
+> 不过我觉得，可以将这种 Command 设计成协议，需要链式调用的 APIManager 实现这个协议。然后再在主流程中判断是否实现了链式调用的方法，来决定是否使用链式调用。
+
+### 总结
+
+简单总结一下，大致分为三步：
+
+每个 API 都有一个 APIManager，其中有 ServiceType，interceptor，delegate，validator，paramSource 等属性。在正真的数据请求前，先对请求参数做一些处理，比如添加 pageNum 等，然后在其中经过一系列的判断，包括 interceptor，validator，是否有本地缓存，是否有 cache 等，涉及到具体的策略。然后进行网络请求。
+
+网络请求通过 APIProxy 完成，它需要 APIManager 提供各种网络请求需要的东西，包括请求参数，请求名，请求类型，ServiceType。它先用这些参数，通过 CTRequestGenerator 创建 Request。创建 Request 的过程是根据 APPDelegate 中定义的对照表，用 ServiceType 在 CTServiceFactory 中找到正真的 CTService 实例，然后获取一些 Service 层面的参数，比如 baseUrl，Service 层的参数等。最后通过 AF 提供的 AFHTTPRequestSerializer 的方法生成 NSURLRequest。
+
+最后 APIProxy 就要发起请求了。还是通过 AF 的方法生成 dataTask，并开始。将 dataTask 和网络请求返回的 requestId 以字典的方式保存起来，又将 requestId 返回给 APIManager 保存。然后等待回调。回调先将 APIProxy 的字典中相应键值对删除，然后删除 APIManager 的数组中的 requestId 删除。
 
 
 
@@ -222,9 +230,81 @@ YTK 没有了那么多的 delegate，没有了重组参数，没有了验证器�
 
 ### 网络请求
 
-####  生成 Request
+YTK 的网络请求由 `YTKNetworkAgent` 完成，类比于 `ApiProxy`。不过不同的是，YTK 的这个 Agent 做了所有的事，并且包含了文件下载。而 Casa 的 Proxy 则结合 `CTService` 以及 `CTRequestGenerator` 添加了更多的参数配置。YTK 网络请求过程如图：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_21.png?raw=true)
+
+首先，YTK 允许使用者自己提供 `NSURLRequest` 的实例。所以判断使用者**是否使用了 Request**。如果没有提供，那么需要帮使用者创建一个 Request。
+
+创建的时候首先是对 **detailUrl 的修改**。YTK 提供了一个 `YTKFilterProtocol`，实现了这个协议的类可以对 `YTKRequest` 提供的 detailUrl 进行一定的修改。
+
+之后还可以**修改 baseUrl**。这一过程主要是判断是否使用了 cdn，如果使用了 cdn，那么切换到 cdn 的 baseUrl。这个方法是每个 `YTKRequest` 选择实现的。
+
+**`AFConstructingBlocks`** 是 AFNetwork 中的属性，它一般是在上传文件的时候使用。由  `YTKRequest` 选择完成它的创建。比如下例中将一张图片以 Content-Type 为 `image/jpeg` 的形式上传：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_22.png?raw=true)
+
+准备工作结束，创建 Request 前还需要检查一下该请求**是否是一个下载请求**。还是 `YTKRequest` 提供的可选实现的方法，如果提供了下载路径就表示是一个下载请求。下载的请求涉及到判断路径上文件是否存在，是否可以继续下载等，会通过 AFNetworking 创建一个站稳的 dataTask 类:`NSURLSessionDownloadTask`，所以必须专门创建一个**下载请求的 dataTask**。
+
+不是下载请求的情况下，将上面准备的各种传给 AFNetwork，**生成一个 Request**。之后再将这个 Request 传给 AFNetwork，**得到一个 dataTask**。
+
+之后**设置 dataTask 的优先级**。这个一般也没有太大用处啦。
+
+在执行前，dataTask 肯定是要保存起来的，一来为了方便取消，二来为了到时候能拿到请求的参数等数据。Casa 的实现方式是将 dataTask 保存在 `APIProxy` (对应 `YTKNetworkAgent`)中，以键值分别为 `requestId` 和 dataTask 的字典的形式保存，然后将 `requestId` 以数组的形式又保存在了各个 APIManager(对应 `YTKRequest`) 里。每发送一次请求，数组添加一个 id。VC 可以拿着 id 调用 APIManager 的相关方法来取消请求。
+
+YTK 将 **dataTask 直接保存**在了 `YTKRequest` (对应 APIManager)中。虽然也是通过 `requestId` 和 dataTask 的键值对的方式保存，但是取消并不是以 id 为标识来取消的，而是以 `YTKRequest` 为标识取消的。VC 调用 `YTKNetworkAgent` 的取消方法取消请求。所以 YTK 中每次网络请求，都需要实例化一个 `YTKRequest`。相关过程如图所示：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_23.png?raw=true)
+
+> 不过就算一个 APIManager 能发多个网络请求了，最后的返回结果还是只有一个并且是会被覆盖的，所以这种保存 requestId 数组的方式并不比每个请求实例化一个 `YTKRequest` 好。
+
+最终通过 dataTask 的 `resume` 就可以开启任务了。
+
+### 回调
+
+#### 统一的回调过程
+
+YTK 的统一的回调过程在 `YTKNetworkAgent` 中完成。主要做了两件事，首先通过 `requestId` 移除保存的 dataTask。其次，将返回的结果设置为 `YTKRequest` 的属性，并验证器有效性。
+
+验证有效性的过程就是在 `YTKRequest` 中提供一个结果的模板，然后比较返回结果和模板的形态是否相同。总的来说就是一个递归验证的过程，就不多赘述了。
+
+#### 成功回调
+
+YTK 的成功回调主要过程就是写入缓存，相比较 CTNetworking 根据需求设置的较为复杂的判断逻辑要直接了许多：就是如果要缓存那么就缓存。
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_24.png?raw=true)
+
+这个成功回调还是在 `YTKNetworkAgent` 中实现的。在允许缓存并且是从网络获取的情况下写入缓存。这两步也没有太多可以说的。写入缓存也是正常操作。关于创建元数据，前面也说到过了，写缓存的时候一并创建元数据并保存起来。最后的拦截以及成功回调和 CTNetworking 类似。
+
+> 这里成功回调仍然是在 `YTKNetworkAgent` 进行，相比较 CTNetworking 交由 APIManager 处理，这样少了一些定制性。
+
+#### 失败回调
+
+YTK 对于失败的回调基本完全是给到使用者处理了。在失败回调中做的一件事就是对于下载失败的情况，删除未完成的下载项，并将这些数据保存在一个未完成的路径中。
+
+### 批量请求与链式请求
+
+#### 批量请求
+
+批量请求要做的是同时开始多个请求，在最后一个请求完成的时候回调处理方法。YTK 提供了批量请求的封装 `YTKBatchRequest`。虽然也叫 Request，但是它并不继承于 `YTKRequest`。而是保存了 `YTKRequest` 的一个集合。
+
+简单来说，它的实现方式就是初始化的时候传入一个 `YTKRequest` 的集合。在调用 `YTKBatchRequest` 的 `start` 方法开始请求的时候，将每个 `YTKRequest` 的 delegate 都设置为当前的 `YTKBatchRequest`。这样在每一个请求返回的时候，都会走到 `YTKBatchRequest` 的处理方法中。
+
+然后 `YTKBatchRequest` 中为完成的请求计数。当完成的请求小于总请求时，回调方法直接 return。只有当完成的请求等于总请求时，表示全部请求完成，此时执行成功回调。
+
+如果其中有任意一个请求失败了，那么在失败回调中立即为每一个 Request 调用 cancel 方法，取消所有请求。
+
+以上就是批量请求的实现。非常简单。
+
+#### 链式请求
 
 
+
+
+
+
+
+ 
 
 
 
