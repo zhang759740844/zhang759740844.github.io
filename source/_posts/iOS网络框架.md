@@ -5,7 +5,7 @@ tags:
 	- 架构
 ---
 
-学习一下一些网络封装框架的设计
+最近在看巩固网络请求相关的知识。准备把 AFNetworking 以及基于 AFNetworking 的一些封装库看一看，了解一下原理。这一篇将探究一下 AFNetworking 的两个封装库 Casa 的 CTNetworking，以及猿题库的 YTKNetwork 的实现过程。
 
 <!--more-->
 
@@ -165,11 +165,7 @@ else 的逻辑，不是从本地获取的，那么直接成功回调没有问题
 
 所以总的来说，分为三层，**Service 层**，**APIManager 层**和**业务层**，每一层都能进行处理。
 
-
-
-### 博客中的问答
-
-#### 如何处理请求链
+### 链式请求
 
 如何处理链式请求？一般我们都是在成功回调后拿到数据，然后再进行下一个请求。如果存在多个请求，那么这个成功回调会嵌套的非常长。进行的改进就是争取将各个请求从回调中取出。我们可以将每一个回调放在一个专门的类中：
 
@@ -196,17 +192,15 @@ api3.delegate = self;
 
 > 这种新建 Command 的好处是，把 delegate，paramSource 做的事放到了 Command 里，不需要在 VC 中处理了。但是这样也带来一个问题就是每个 APIManager 都需要创建一个创建一个与之对应的 Command，导致类目增多。当然，这是不可避免的，毕竟这些 delegate，paramSource 的方法总是要有一个地方放的。
 >
-> 不过我觉得，可以将这种 Command 设计成协议，需要链式调用的 APIManager 实现这个协议。然后再在主流程中判断是否实现了链式调用的方法，来决定是否使用链式调用。
+> 另外，最好不要将 next 放在 APIManager 中，这样会污染 APIManager。
 
-### 总结
-
-简单总结一下，大致分为三步：
-
-每个 API 都有一个 APIManager，其中有 ServiceType，interceptor，delegate，validator，paramSource 等属性。在正真的数据请求前，先对请求参数做一些处理，比如添加 pageNum 等，然后在其中经过一系列的判断，包括 interceptor，validator，是否有本地缓存，是否有 cache 等，涉及到具体的策略。然后进行网络请求。
-
-网络请求通过 APIProxy 完成，它需要 APIManager 提供各种网络请求需要的东西，包括请求参数，请求名，请求类型，ServiceType。它先用这些参数，通过 CTRequestGenerator 创建 Request。创建 Request 的过程是根据 APPDelegate 中定义的对照表，用 ServiceType 在 CTServiceFactory 中找到正真的 CTService 实例，然后获取一些 Service 层面的参数，比如 baseUrl，Service 层的参数等。最后通过 AF 提供的 AFHTTPRequestSerializer 的方法生成 NSURLRequest。
-
-最后 APIProxy 就要发起请求了。还是通过 AF 的方法生成 dataTask，并开始。将 dataTask 和网络请求返回的 requestId 以字典的方式保存起来，又将 requestId 返回给 APIManager 保存。然后等待回调。回调先将 APIProxy 的字典中相应键值对删除，然后删除 APIManager 的数组中的 requestId 删除。
+>简单总结一下，大致分为三步：
+>
+>每个 API 都有一个 APIManager，其中有 ServiceType，interceptor，delegate，validator，paramSource 等属性。在正真的数据请求前，先对请求参数做一些处理，比如添加 pageNum 等，然后在其中经过一系列的判断，包括 interceptor，validator，是否有本地缓存，是否有 cache 等，涉及到具体的策略。然后进行网络请求。
+>
+>网络请求通过 APIProxy 完成，它需要 APIManager 提供各种网络请求需要的东西，包括请求参数，请求名，请求类型，ServiceType。它先用这些参数，通过 CTRequestGenerator 创建 Request。创建 Request 的过程是根据 APPDelegate 中定义的对照表，用 ServiceType 在 CTServiceFactory 中找到正真的 CTService 实例，然后获取一些 Service 层面的参数，比如 baseUrl，Service 层的参数等。最后通过 AF 提供的 AFHTTPRequestSerializer 的方法生成 NSURLRequest。
+>
+>最后 APIProxy 就要发起请求了。还是通过 AF 的方法生成 dataTask，并开始。将 dataTask 和网络请求返回的 requestId 以字典的方式保存起来，又将 requestId 返回给 APIManager 保存。然后等待回调。回调先将 APIProxy 的字典中相应键值对删除，然后删除 APIManager 的数组中的 requestId 删除。
 
 
 
@@ -298,15 +292,19 @@ YTK 对于失败的回调基本完全是给到使用者处理了。在失败回�
 
 #### 链式请求
 
+YTK 为链式请求提供了一个 `YTKChainRequest` 类，同样要求在初始化的时候传入一个 `YTKRequest` 的数组。在调用 `YTKChainRequest` 的 `start` 方法开始请求的时候，将第一个 `YTKRequest` 的 delegate 设置为当前的 `YTKChainRequest`。这样在请求返回的时候，都会走到 `YTKChainRequest` 的处理方法中。
 
+除了 `YTKRequest` 的数组，创建的时候还需要传入一个回调闭包的数组。这样，在每个请求完成后，依次执行回调闭包中的方法。
 
+如果其中一个请求失败了，那么执行自定义的失败回调即可。
 
+> 和 CTNetworking 比较，这样的处理方式比较直接，但是不够优雅。
 
+## 总结
 
+CTNetworking 和 YTKNetwork 都是离散型 API 的实现。不过我认为 CTNetworking 的实现方式更为优雅。以协议的方式明确职责，引入 delegate，validator，interceptor，让定制化程度更高，并且减轻了 VC 的负担。引入 CTService 让多服务接入验证变得简单。但是反过来说，这也一定程度上提高了学习成本。并且 CTNetworing 并不支持上传与下载文件。其缓存策略也需要使用者根据实际需求做一定的改写。相比较而言，YTKNetwork 的功能就更纯粹了一些，专注于网络请求，在缓存与下载方面做了充足的处理。
 
- 
-
-
+  
 
 
 
