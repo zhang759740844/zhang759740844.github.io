@@ -88,7 +88,11 @@ id observer = [[NSNotificationCenter defaultCenter] addObserverForName:notificat
 ```
 发送指定`objcet`的通知，只有注册时注册了该对象的通知才可以接收（即注册的时候的 `object` 要写的和这里的一样。`name` 和 `object` 都是用来取区分通知的）。
 
+### 关于 Notification 在哪设置
 
+Notification 最好在 `viewDidAppear` 中注册，在 `viewDidDisappear` 中移除，**即在页面显示的时候接收通知**。实在需要页面不显示的时候也能接到通知的话就只能在 `init` 和 `dealloc` 中做添加删除了（`dealloc` 中 remove 不会造成内存泄漏，Notification 中的 Observer 不是 strong，所以不会让引用+1，但是必须 remove 不然会产生野指针导致崩溃）由于 `viewDidAppear` 和 `viewDidDisappear` 不是成对出现的，需要在 `viewDidAppear` 注册通知前先移除一下该通知。
+
+通过手势操作 VC 可以让 `viewDidAppear` 调用无数次，但 `viewDidDisappear` 一次也不触发。
 
 ## NSNotificationCenter的实现
 

@@ -54,10 +54,6 @@ tags:
 
 ### Q&A
 
-#### 关于 Notification 在哪设置
-
-Notification 最好在 `viewDidAppear` 中注册，在 `viewDidDisappear` 中移除，即在页面显示的时候接收通知。实在需要页面不显示的时候也能接到通知的话就只能在 `init` 和 `dealloc` 中做添加删除了（`dealloc` 中 remove 不会造成内存泄漏，Notification 中的 Observer 不是 strong，所以不会让引用+1，但是必须 remove 不然会产生野指针导致崩溃）由于 `viewDidAppear` 和 `viewDidDisappear` 不是成对出现的，需要在 `viewDidAppear` 注册通知前先移除一下该通知。
-
 #### 关于 BaseViewController 和 AOP
 
 我觉得用 aop 代替继承还是要看使用范围。如果像埋点这样的所有情况都要走埋点接口的就适合 aop，而 ViewController 这种自己的要还是要写个 base 重写 `viewDidLoad` 的。比如设置背景色，如果用 aop，那么系统的各种弹窗也会同样设置了背景色。这就需要判断是不是系统的，就还要在所有的基础上做减法，就感觉很蠢。
@@ -105,6 +101,14 @@ hash 的方式比加密的方式的优点在于快。hash 的作用在于验证�
 也就是压缩。
 
 #### 链接复用的优化
+
+HTTP 每次建立连接都要进行三次握手，可以将链接进行复用，比如使用 HTTP/2.0
+
+
+
+
+
+
 
 
 

@@ -165,7 +165,9 @@ else 的逻辑，不是从本地获取的，那么直接成功回调没有问题
 
 所以总的来说，分为三层，**Service 层**，**APIManager 层**和**业务层**，每一层都能进行处理。
 
-### 链式请求
+### Q&A
+
+#### 链式请求
 
 如何处理链式请求？一般我们都是在成功回调后拿到数据，然后再进行下一个请求。如果存在多个请求，那么这个成功回调会嵌套的非常长。进行的改进就是争取将各个请求从回调中取出。我们可以将每一个回调放在一个专门的类中：
 
@@ -193,6 +195,28 @@ api3.delegate = self;
 > 这种新建 Command 的好处是，把 delegate，paramSource 做的事放到了 Command 里，不需要在 VC 中处理了。但是这样也带来一个问题就是每个 APIManager 都需要创建一个创建一个与之对应的 Command，导致类目增多。当然，这是不可避免的，毕竟这些 delegate，paramSource 的方法总是要有一个地方放的。
 >
 > 另外，最好不要将 next 放在 APIManager 中，这样会污染 APIManager。
+
+#### 等待视图在哪实现
+
+等待视图的展示和隐藏在 interceptor 的请求开始前和请求结束后调用。我们应该将加载框设置为一个单例，其中维护一个计数器。当请求开始的时候计数加一，请求结束的时候计数减一。计数器要加锁，因为 API 是异步的。
+
+#### paramsource 是谁？
+
+一般我们的 paramsource 设置为 VC。但是如果不涉及业务上的数据，可以直接设置为 APIManager。
+
+#### 如何分页
+
+将页数保存在 APIManager 中。每次我们要加载下一页的时候使用 `loadNextPage` 方法即可，不需要 VC 管理请求页了。
+
+关于实现，实现方式应该是这样的。首先在 `APIBaseManager` 中定义一个 `pageNo` 属性，设置默认值为 1，表示第一页；一个 `pageSize` 属性，设置默认值为 10。然后还定义 `reloadData` 方法，它的默认实现就是将 `pageNo` 置为 1，然后调用 `loadData`。
+
+再定义一个协议 `PageProtocol`，声明可选的 `pageNo` 和 `pageSize` 属性，再声明一个可选的 `reloadData` 方法，以告诉使用者可以使用。
+
+对于要分页的 API，在 `loadData` 方法中的重组参数方法中，将当前 `pageNo` 传入。在 `APIBaseManager` 中的内部拦截器中，判断当前 APIManager 是否实现了 `PageProtocol` 协议，实现了，就把 `pageNo` 加一。
+
+
+
+
 
 >简单总结一下，大致分为三步：
 >
