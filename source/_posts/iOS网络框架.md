@@ -214,6 +214,14 @@ api3.delegate = self;
 
 对于要分页的 API，在 `loadData` 方法中的重组参数方法中，将当前 `pageNo` 传入。在 `APIBaseManager` 中的内部拦截器中，判断当前 APIManager 是否实现了 `PageProtocol` 协议，实现了，就把 `pageNo` 加一。
 
+#### requestId 的用处
+
+requestId 设计出来是为了针对 request 的控制留有余地用的，但是现在在工程中用的很少。所以还不如像 YTK 那样，保存 dataTask 就行了。
+
+#### CTService 的设计意图
+
+Service 是用来接入第三方 API 的。对于第三方的 API，就创建一个全新的 Service。
+
 
 
 
