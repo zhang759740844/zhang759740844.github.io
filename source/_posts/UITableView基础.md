@@ -322,61 +322,93 @@ delete操作可以不在编辑模式的情况下，通过左滑cell直接触发�
 
 
 
-## 示例：两级tableView联动效果
+### 使用 UILocalizedIndexedCollation 对数据源分组
 
+比如一个联系人的 tableView，我们需要把联系人按照首字母分组显示。iOS 就提供了一个 `UILocalizedIndexedCollation` 帮助我们进行分组。
 
+#### 属性与方法
 
-两级tableview，左边是一个缩略的索引，右边是索引的详细部分。点击左边的索引cell，右边会滚动到相应cell所对应的详细位置。滑动右边的tableview，左边的tableview也会根据当前显示的区域，选择相应的cell。
-
-### 基本原理
-
-当左边点击 cell 的时候（即调用 `(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath`)，右边获取这个 `indexPath` 信息，并让其滚动到第 `indexPath.row` 分区，第0行即可:
+`UILocalizedIndexedCollation` 需要被记住的属性和方法就这么几个：
 
 ```objc
-- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
-    // 如果点击的是右边的tableView，不做任何处理
-    if (tableView == self.rightTableView) return;
-    // 点击左边的tableView，设置选中右边的tableView某一行。左边的tableView的每一行对应右边tableView的每个分区
-    [self.rightTableView selectRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:indexPath.row] animated:YES scrollPosition:UITableViewScrollPositionTop];
+// 获得单例 UILocalizedIndexedCollation 的实例
++ (instancetype)currentCollation;
+// 字符索引数组(其实内容是固定的就是 A-Z,加上一个代表其他的 #)
+@property(nonatomic, readonly) NSArray<NSString *> * sectionTitles;
+// 输入对象以及一个返回字符串的对象方法，根据返回的 int 判断字符串要加入哪个分组
+- (NSInteger)sectionForObject:(id)object collationStringSelector:(SEL)selector;
+// 数组内对象排序
+- (NSArray *)sortedArrayFromArray:(NSArray *)array collationStringSelector:(SEL)selector;
+```
+
+除了上面的属性和方法还有一个属性和一个方法用不到，不用管它。
+
+#### 实例
+
+比如要实现一个需求是对联系人进行归类，然后以 tableView 的形式展示。特殊的地方时，只展示有值的分组。
+
+##### 初始化数组
+
+```objc
+// 单例对象 
+UILocalizedIndexedCollation *localIndex = [UILocalizedIndexedCollation curre ntCollation]; 
+// 获得当前语言下的所有的indexTitles 
+_allIndexTitles = localIndex.sectionTitles; 
+// 初始化所有数据的数组 (之后的所有进过分组的数据都保存在这个 _data 里)
+_data = [NSMutableArray arrayWithCapacity:_allIndexTitles.count]; 
+// 为每一个indexTitle 生成一个可变的数组 
+for (int i = 0; i<_allIndexTitles.count; i++) {
+	// 初始化数组 (_data 里的元素是各个分组，所以也是数组)
+	[_data addObject:[NSMutableArray array]]; 
+} 
+// 初始化有效的sectionIndexs (之后有值的分组的索引会被保存在这里)
+_sectionIndexs = [NSMutableArray arrayWithCapacity:_allIndexTitles.count];
+```
+
+这里要强调的是 `_data` 是不管分组有没有数据，都创建并保存到其中了。而 `_sectionIndexs` 只保存有数据的分组的索引。
+
+##### 分组
+
+```objc
+SEL nameSelector = @selector(name); 
+for (Person *person in persons) { 
+  	if (person == nil) continue;
   
- 	self.currentSelectIndexPath = indexPath;
+	// 获取到这个contact的name的首字母对应的indexTitle 
+  	// 注意这里必须使用对象，这个selector也是有要求的 
+  	// 必须是这个对象中的selector, 并且不能有参数，必须返回字符串
+  	// 所以这里直接使用 name 属性的get方法就可以 
+  	NSInteger index = [localIndex sectionForObject:person collationStringSe lector:nameSelector];
+	
+  	// 处理多音字 例如 "曾" -->> 会被当做 ceng 来处理，其他需要处理的多音字类似 
+  	if ([person.name hasPrefix:@"曾"]) { 
+      	index = [_allIndexTitles indexOfObject:@"Z"]; 
+    } 
+  	// 将这个contact添加到对应indexTitle的数组中去 
+  	[_data[index] addObject:person];
 }
 ```
 
+这里就通过 `UILocalizedIndexedCollation` 提供的方法将数据源分组了。上面的注释也写到了，传入一个对象以及对象的方法，通过方法返回的字符串获取所在分组的索引。获取到的索引你可以做进一步判断修改。然后通过这个索引将其放到 `_data` 的对应分组内。
 
-
-当拖动右边的时候，左边的 cell 也要相应被选中。tableview 中有一个方法叫做 `indexPathsForVisibleRows`，该方法的官方解释是：
-
-> The value of this property is an array of NSIndexPath objects each representing a row index and section index that together identify a visible row in the table view. If no rows are visible, the value is nil.
-
-拿到这个集合，就能拿到屏幕顶端的 cell 的 indexpath 了。代码如下：
+##### 遍历分组
 
 ```objc
--(void)scrollViewDidScroll:(UIScrollView *)scrollView{ // 监听tableView滑动
-    if (self.currentSelectIndexPath) return;
-    // 如果现在滑动的是左边的tableView，不做任何处理
-    if ((UITableView *)scrollView == self.leftTableView) return;
-    // 滚动右边tableView，设置选中左边的tableView某一行。indexPathsForVisibleRows属性返回屏幕上可见的cell的indexPath数组，利用这个属性就可以找到目前所在的分区
-    [self.leftTableView selectRowAtIndexPath:[NSIndexPath indexPathForRow:self.rightTableView.indexPathsForVisibleRows.firstObject.section inSection:0] animated:YES scrollPosition:UITableViewScrollPositionMiddle];
+for (int i=0; i<_data.count; i++) { 
+	NSArray *temp = _data[i]; 
+  	if (temp.count != 0) { 
+      	// 取出不为空的部分对应的indexTitle 
+      	[_sectionIndexs addObject:[NSNumber numberWithInt:i]]; 
+    } 
+  	// 排序每一个数组 
+  	_data[i] = [localIndex sortedArrayFromArray:temp collationStringSelecto r:nameSelector]; 
 }
 ```
 
+上一节将数据源全都塞到了对应的分组里。现在就要将分组里的数据排序，并且剔除没有数据的分组了。
 
+判断 `_data` 中有数据的分组的索引保存到 `_sectionIndexs` 中。这样以后拿着 `_sectionIndexs` 中保存的索引就可以到 `sectionTitles` 中，找到索引对应的值。
 
-注意到，上面的代码中还有关于 `currentSelectIndexPath` 这个自建属性的设置，这个属性相当于一个标识位，用来解决一个bug。这个 bug 表现在：点击左边的 tableView，右边的 tableView 是从当前位置**动画**滚动到相应位置的，既然有滚动，就会调`- (void)scrollViewDidScroll:(UIScrollView *)scrollView`这个代理方法，说白了就是拖动了右边 tableView，拖动右边的过程中会陆续选中左边。所以如果没有这个标识位，选中左边的某个 cell，那么左边的当前被选中和将要被选中的 cell 中间项，将依次被选中。
+##### 结合字母索引展示
 
-解决这个bug就需要这个标志位，当我们是通过点击左侧 cell 致使右边 tableview 滚动的时候，就使其在 `scrollViewDidScroll:` 方法总直接返回，不触发左侧选中的操作。
-
-那么什么时候将这个标志位置为空呢？就是当右边 tableview 不再滚动的时候，即触发了 `scrollViewDidEndScrollingAnimation:` 回调的时候：
-
-```objc
-- (void)scrollViewDidEndScrollingAnimation:(UIScrollView *)scrollView {
-    if (self.currentSelectIndexPath) self.currentSelectIndexPath = nil;
-}
-```
-
-至此，一个二级联动的 tableview 就实现了参考代码：[两级联动 demo](https://github.com/zhang759740844/MyOCDemo/tree/develop/两级联动%20tableview)
-
-
-
-
+现在我们已经获得了完整的 `_data` 和 `_sectionIndexs`。只需要通过 `_sectionIndexs` 中保存的索引找到 `_data` 中相应的分组即可完成展示。
