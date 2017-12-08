@@ -468,9 +468,9 @@ mikey.length = 1.45
 
 #### static
 
-用static声明局部变量（在`{}` 之内的），使其变为静态存储方式(静态数据区)，作用域不变（**也就是最常用的那种情况**）
+用static声明局部变量（定义在方法内），使其变为静态存储方式(静态数据区)，作用域不变（**其他方法不能使用**），但是延长了生命周期（程序结束才销毁）
 
-用static声明外部变量（在 `{}` 之外的，一般写在 `@interface` 上面），其本身就是静态变量，这只会改变其连接方式，使其**只在本文件内部有效**，而其他文件不可连接或引用该变量。
+用static声明外部变量（在方法外），使其**只在本文件内部有效**，而其他文件不可连接或引用该变量。
 
 #### extern
 
@@ -480,26 +480,41 @@ mikey.length = 1.45
 
 #### 使用方式
 
-`extern` 和 `static` 都必须引入头文件才能用，并且声明在头文件 `@interface` 外面,不用实例对象来调用就能使用。
-
 ```objc
 extern int  b;  //在.h文件中声明，不能在.h文件中初始化，须在.m文件中初始化并写在@implementation之外
-static int a =789;//必须在.h文件中声明和初始化
+static int a =789;   //在哪里声明都行，但是声明的同时就要初始化
 ```
-
-综上所述：`extern` 和 `static` 就相当于全局变量，当然static也可以用在局部程序中。
 
 `extern`，`static` 和 `const` 的结合使用，通常用来定义全局静态常量：
 
 ```objc
-//.h文件中
+/* static */
+//任意地方
 static NSString *const kIFURL = @"abc";
 
+/* extern */
 //.h文件中
 extern NSString *const kZDURLMenuUnit;
 //.m文件中
-NSString *constkZDURLMenuUnit
- = @"就是这个样子";
+NSString *const kZDURLMenuUnit = @"就是这个样子";
+```
+
+另外要强调一点，`static` 和 `extern` 不只是可以修饰变量，还可以**修饰函数**：
+
+```objc
+/* static */
+//任意地方
+static BOOL method(NSString *para) {
+    return NO;
+}
+
+/* extern */
+//.h 文件中
+extern BOOL method(NSString *para);
+//.m 文件中
+BOOL method(NSString *para) {
+    return NO;
+}
 ```
 
 
