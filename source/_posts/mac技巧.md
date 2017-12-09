@@ -9,6 +9,29 @@ tags:
 
 <!--more-->
 
+### sudo 仍然无法获得权限
+
+有些时候使用 sudo 命令仍然会失败，提示 *Operation not permitted*。这是因为开启了 sip 的缘故。我们需要关闭 sip：
+
+1. 重启OSX系统，然后按住Command+R，进入**恢复模式**
+2. 出现界面之后，选择屏幕左上角菜单栏中的**实用工具**中的**Terminal**，打开终端
+3. 在Terminal中输入`csrutil disable` 关闭SIP
+4. 重启reboot OSX
+
+### 自制一个搜索 Markdown 文件的 workflow
+
+可以自制一个 workflow 而不是使用 `open` 打开 markdown 文件。
+
+主要步骤就是新建一个 workflow，然后 **右键→Inputs→File Filter**。这里的重点就是选择 File Filter，这样系统会自动进行文件搜索。然后在弹出的设置界面设置关键字，以及搜索的文件类型。你也可以在第二个选项卡中设置搜索路径：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/workflow1.png?raw=true)
+
+然后设置这个操作的动作：**拉线→Actions→Open File**。Open File 出现的设置界面不用任何操作，直接点完成即可：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/workflow2.png?raw=true)
+
+一般**我们使用的打开 Xcode 工程也可以这样设置。**
+
 ### Alfred3 开机访问通讯录
 
 破解的 Alfred3 每次开机都要访问通讯录，解决办法是在终端中进行签名:
@@ -21,9 +44,19 @@ sudo codesign -f -d -s - /Applications/Alfred\ 3.app/Contents/Frameworks/Alfred\
 
 ### 使用 iterm2
 
+iterm2 最强大的功能就是可以分屏。还有就是可以选中即复制，以及按住 command 点击就可以直接跳转到文件夹或者网页。
+
 #### 下载主题
 
 官方的颜色默认是黑色的，可以去[Iterm2-color-schemes](http://iterm2colorschemes.com/)下载主题。按照上面提供的步骤设置。推荐使用 **Solarized Dark Higher Contrast**
+
+#### 下载 zsh
+
+zsh 可以提供一个很强的命令补全的功能，反正不太记得的命令或者参数，只要按 tab 就行了。下载也比较简单：
+
+```bash
+curl -L https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh | sh
+```
 
 #### 设置终端字体颜色
 
@@ -43,6 +76,10 @@ export TERM=xterm-256color
 ```
 
 终端颜色就能非常漂亮了
+
+> 不确定安装了 oh my zsh 会不会能直接改变字体颜色。如果不能就照着这个设置。
+
+
 
 #### 设置 Vim 颜色
 
@@ -68,6 +105,10 @@ defaults write com.apple.finder AppleShowAllFiles -bool TRUE
 停止显示隐藏文件：
 defaults write com.apple.finder AppleShowAllFiles -bool FALSE
 ```
+**更好的方式：**
+
+可以使用快捷键 **shift+command+.**
+
 ### handoff 无法使用
 
 handoff 是一个能在电脑和手机间共享信息的东西，但是有的时候就是识别不到。如果已经明确自己开启了 handoff 但是任然无法使用，那么可以先关闭电脑的蓝牙功能，然后再打开。这样就可以使用了。
