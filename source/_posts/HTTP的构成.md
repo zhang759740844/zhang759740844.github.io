@@ -89,6 +89,8 @@ Content-Type 用于指定内容类型，一般是指网页中存在的 Content-T
 ### 基本介绍
 HTTP 协议传输的数据都是未加密的，也就是明文的，因此使用 HTTP 协议传输隐私信息非常不安全。比如运营商可以轻易劫持你的 http 请求，在 response 中注入 js代码（如网页上弹窗广告、流量球等），甚至是重定向。为了保证这些隐私数据能加密传输，于是网景公司设计了 SSL（Secure Sockets Layer）协议用于对 HTTP 协议传输的数据进行加密，从而就诞生了 HTTPS。之后对 SSL 进行了升级为 TLS（Transport Layer Security）。我们现在的 HTTPS 都是用的 TLS 协议。
 
+一般来说 HTTPS 也需要进行 TCP 的三次握手，但是和 HTTP 不同的是，HTTPS 还需要进行 SSL 握手。这也就是其比 HTTP 在建立连接时慢的主要原因。
+
 ### 工作原理
 总共分为以下几步：
 1. 浏览器将自己支持的一套加密规则发送给网站。
