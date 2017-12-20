@@ -191,7 +191,7 @@ button点击事件中有一个event对象，记录了当前点击坐标，然后
 通过调用`[_tableView setEditing:!_tableView.isEditing animated:true]`进入编辑模式,可实现添加，删除，移动操作。
 默认是删除，即cell左边出现一个红色的减号，点击可以删除该行。
 
-#### TableView 编辑行
+#### 设置可以编辑的行
 使用**setEditing:animated:**方法让tableView进入编辑模式.可以使用**tableView:canEditRowAtIndexPath**方法筛选能进入编辑模式的行：
 ```objc
 - (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -204,11 +204,11 @@ button点击事件中有一个event对象，记录了当前点击坐标，然后
 ```
 如果不实现该方法，默认为YES。
 
-#### 编辑模式
+#### 设置编辑模式
 通过设置`UITableViewCellEditingStyle`可以切换进入的编辑模式是实现插入还是删除操作。这个返回值将作为下面的`commitEditingStyle:forRowAtIndexPath:`方法的入参传入。
 ```objc
 -(UITableViewCellEditingStyle)tableView:(UITableView *)tableView editingStyleForRowAtIndexPath:(NSIndexPath *)indexPath{
-    if (condition) {
+    if (具体情况) {
         return UITableViewCellEditingStyleInsert;
     }else{
    		return UITableViewCellEditingStyleDelete;
@@ -216,11 +216,8 @@ button点击事件中有一个event对象，记录了当前点击坐标，然后
 }
 ```
 
-#### 编辑模式下的插入和删除行
-实现`tableView:commitEditingStyle:forRowAtIndexPath:`方法。传入三个参数。  
-第一个实参是发送该消息的UITableView对象。  
-第二个实参是`UITableViewCellEditingStyle`类型的常数(删除表格行时，传入的是`UITableViewCellEditingStyleDelete`;插入表格行时，传入的是`UITableViewCellEditingStyleInsert`)。  
-第三个实参是一个NSIndexPath对象。
+#### 设置编辑模式下的操作
+实现`tableView:commitEditingStyle:forRowAtIndexPath:`这个统一的回调方法，无论是添加还是删除都会执行，需要自己根据入参区分开。第二个实参是`UITableViewCellEditingStyle`类型的常数(删除表格行时，传入的是`UITableViewCellEditingStyleDelete`;插入表格行时，传入的是`UITableViewCellEditingStyleInsert`)。  
 ```objc
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
     if (editingStyle == UITableViewCellEditingStyleDelete) {
@@ -233,7 +230,6 @@ button点击事件中有一个event对象，记录了当前点击坐标，然后
 }
 ```
 使用`deleteRowsAtIndexPaths`和`insertRowsAtIndexPaths`可以进行局部刷新，节省资源，并且还能添加指定动画。
-delete操作可以不在编辑模式的情况下，通过左滑cell直接触发。插入则必须进入编辑模式。
 
 #### cell的移动
 进入编辑模式后
@@ -251,14 +247,70 @@ delete操作可以不在编辑模式的情况下，通过左滑cell直接触发�
 ```
 一定要对数据源进行正确操作。
 
-#### TableView 修改删除按钮
+### 侧滑菜单
+
+许多 app 提供侧滑某一栏展示菜单的功能。这在 iOS8 中有了默认的实现：
+
 ```objc
-- (NSString *)tableView:(UITableView *)tableView titleForDeleteConfirmationButtonForRowAtIndexPath:(NSIndexPath *)indexPath{
-    return @"删除";
+//设置cell可编辑状态
+-(BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath{
+    return YES;
+}
+
+//定义编辑样式为删除样式
+-(UITableViewCellEditingStyle)tableView:(UITableView *)tableView editingStyleForRowAtIndexPath:(NSIndexPath *)indexPath{
+    return UITableViewCellEditingStyleDelete;
+}
+
+//设置返回存放侧滑按钮数组
+-(NSArray<UITableViewRowAction *> *)tableView:(UITableView *)tableView editActionsForRowAtIndexPath:(NSIndexPath *)indexPath{
+    
+  //这是iOS8以后的方法
+    UITableViewRowAction *deleBtn = [UITableViewRowAction rowActionWithStyle:UITableViewRowActionStyleDestructive title:@"删除" handler:^(UITableViewRowAction * _Nonnull action, NSIndexPath * _Nonnull indexPath) {
+       
+        [_messageData removeObjectAtIndex:indexPath.row];
+        
+        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationBottom];
+        
+    }];
+    
+    
+    UITableViewRowAction *moreBtn = [UITableViewRowAction  rowActionWithStyle:UITableViewRowActionStyleDestructive title:@"更多更多" handler:^(UITableViewRowAction * _Nonnull action, NSIndexPath * _Nonnull indexPath) {
+       
+        NSLog(@"更多，，点了");
+        
+    }];
+    
+   
+    UITableViewRowAction *upBtn = [UITableViewRowAction rowActionWithStyle:UITableViewRowActionStyleDestructive title:@"置顶" handler:^(UITableViewRowAction * _Nonnull action, NSIndexPath * _Nonnull indexPath) {
+       
+        [_messageData exchangeObjectAtIndex:indexPath.row withObjectAtIndex:0];
+        
+        NSIndexPath *firstIndexPath = [NSIndexPath indexPathForRow:0 inSection:indexPath.section];
+        
+        [tableView moveRowAtIndexPath:indexPath toIndexPath:firstIndexPath];
+        
+    }];
+    
+    //设置背景颜色，他们的大小会分局文字内容自适应，所以不用担心
+    deleBtn.backgroundColor = [UIColor redColor];
+    
+    moreBtn.backgroundColor = [UIColor orangeColor];
+    
+    upBtn.backgroundColor = [UIColor grayColor];
+    
+    
+    return @[deleBtn,moreBtn,upBtn];
+    
 }
 ```
 
-### 不在编辑模式下的编辑方式
+还是设置为可编辑，然后设置编辑样式为删除样式。不同的是，需要实现一个侧滑的专用回调方法。需要创建多个 `UITableViewRowAction` 对象，你可以像 button 一样设置它们，不过在初始化的时候需要事先设置好毁掉方法。
+
+### 代码控制的编辑方式
+
+上面说的都是交互情况下的编辑方式。我们可以自己通过代码控制刷新视图，不需要交互。
+
 #### 刷新方式
 简单总结一些UITableView的刷新方法：
 - reloadData									刷新整个表格
