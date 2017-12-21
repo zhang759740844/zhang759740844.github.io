@@ -398,13 +398,46 @@ OBJC_ASSOCIATION_RETAIN				//retain
 OBJC_ASSOCIATION_COPY				//copy
 ```
 
-
-
-这里要强调的是，要拿到设置的属性，键必须要完全相等。因此，需要设置成静态全局变量：
+这里强调一个地方，第二个参数类型为 `void *` 这是一个可以指向任意类型的指针，类似于 oc 中的 id。但是这两者并不相等，需要进行转换。我们看代码的时候经常会看到以下几种:
 
 ```objc
-static void *EOCMyAlertViewKey = "EOCMyAlertViewKey";
+// 方式1
+static const void * const s = @"type1";
+objc_setAssociatedObject(self, s, @"value", OBJC_ASSOCIATION_COPY_NONATOMIC);
+
+// 方式2
+static const NSString * const s = @"type2";
+objc_setAssociatedObject(self, (__bridge void *)s, @"value", OBJC_ASSOCIATION_COPY_NONATOMIC);
+
+// 方式3
+static const NSString * const s = @"type3";
+objc_setAssociatedObject(self, &s, @"value", OBJC_ASSOCIATION_COPY_NONATOMIC);
+
+// 方式4
+static const void * const s;
+objc_setAssociatedObject(self, &s, @"value", OBJC_ASSOCIATION_COPY_NONATOMIC);
+
+// 方式5
+static const void * const s;
+objc_setAssociatedObject(self, s, @"value", OBJC_ASSOCIATION_COPY_NONATOMIC);
+
+// 方式6
+static const void * const s = &s;
+objc_setAssociatedObject(self, s, @"value", OBJC_ASSOCIATION_COPY_NONATOMIC);
+
+
 ```
+
+1. 由于需要的是 `void *` 类型，所以方式1是最正常的了。
+2. 方式2使用了字符串类型，所以需要将字符串转换为 `void *`，就要使用 `__bridge void *`。
+3. 除了使用 bridge，还可以使用 `&` 取得指针的地址，这就是方式3的处理方式。注意 `&s` 和 `s` 还是有很大的区别的，**前者表示指针在栈中的地址，后者表示指针指向的值在堆中地址**。所以其实方式3是以 `s` 的地址为索引的，而不是以赋的值为索引的。所以和 `@"type3"` 没有太大关系了，也就不用考虑 `__bridge` 转换了。
+4. 根据前一条可知，去掉 `@type3` 也是没有问题的。也就是说，方式4也是对的。
+5. 一定注意，**方式5是错误的**，我们不能这么写。因为我们没有对 `s` 赋值，所以 `s` 指向的是空地址，如果我们要在定义一个关联属性，又创建了一个 `static const void * const j;`，这个 `j` 也指向空地址，就会覆盖 `s` 关联的属性了。因为 `s` 和 `j` 不具有唯一性。
+6. 方式4每次使用的使用都要输入 `&s`，方式6是其改进的方法。 `void *s = &s` 表示的意思是指针 s 指向自己，这样 s 就和其它指针区分开了，就不需要具体考虑赋个什么值，也不需要在每次使用的时候用 `&` 获取自己的地址了。
+
+所以相比较来说，方式4，6会简单些，方式6 尤为简便。
+
+
 
 
 ### 第11条：理解objc_msgSend的作用
@@ -1164,7 +1197,40 @@ dispatch_group_notify(dispatchGroup,notifyQueue,^{
 ```
 
 ### 第46条：不要使用dispatch_get_current_queue
-已经被废弃的 API，不说了。
+因为如果是同步操作的时候再使用 `dispatch_get_current_queue` 会造成死锁。所以 iOS 已经废除了这个 API。
+
+一般我们用其判断当前线程是否为特定线程。比如：
+
+```objc
+void func(dispatch_queue_t queue, dispatch_block_t block)  
+{  
+    if (dispatch_get_current_queue() == queue) {  
+        block();  
+    }else{  
+        dispatch_sync(queue, block);  
+    }  
+}  
+```
+
+但是这样是错误的。因为如果 queue 就是 current_queue 的时候，并不是执行 block，而是发生死锁。
+
+那么我们如何获取当前队列呢？使用 `dispatch_queue_set_specific` 及 `dispatch_queue_set_specific`。比如你在某一个类中的某一个方法里需要判断当前队列是不是队列，举一个 FMDB 中的例子:
+
+```objc
+static const void * const kDispatchQueueSpecificKey = &kDispatchQueueSpecificKey;
+
+// FMDatabaseQueue 某个方法内
+_queue = dispatch_queue_create(@"someQueue", NULL);
+dispatch_queue_set_specific(_queue, kDispatchQueueSpecificKey, (__bridge void *)self, NULL);
+
+// 另一个方法内
+FMDatabaseQueue *currentSyncQueue = (__bridge id)dispatch_get_specific(kDispatchQueueSpecificKey);
+assert(currentSyncQueue == nil);
+```
+
+先创建了一个 `queue` 然后通过 `dispatch_queue_set_specific` 将第一个入参 `queue` 和第二个关键字 `kDispatchQueueSpecificKey` 进行关联。整个过程的上下文 context 是 `self`，也就是说将这个队列和字符串的关联绑定给了第三个参数，这个上下文实例上了。注意是绑定给实例，而不是给类的，不同的 context 可以使用相同的关键字绑定队列。
+
+然后在要判断的时候，在原先的 context 下，使用 `dispatch_get_specific`，入参为之前设置的关键字。如果当前队列为绑定的队列，那么将上面的第三个参数 context 实例返回，否则返回 nil。
 
 ## 系统框架
 ### 第47条：熟悉系统框架
