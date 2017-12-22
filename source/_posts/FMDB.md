@@ -450,11 +450,11 @@ FMDB 封装了为 db 加解密的方法。解密使用如下方法，在打开 d
 
 这里先尝试用 `sqlite3_close()` 关闭，如果不行，那么再 `sqlite3_next_stmt()` 来获取每个 stmt，然后将他们 `sqlite3_finalize()`。整个过程在一个大的 while 循环中，直到数据库关闭为止。
 
-### 多线程
+#### 多线程
 
 有些费时的更新操作我们不希望在主线程中进行。FMDB 提供了 `FMDatabaseQueue` 这个类帮助我们创建了后台线程。但是要注意，只是帮我们创建了后台线程，我们不能在多个线程中共用一个 FMDatabase 对象，这个类不是线程安全的，否则会引起数据混乱。
 
-#### 创建队列
+##### 初始化创建队列
 
 创建队列的代码如下：
 
@@ -485,7 +485,7 @@ static const void * const kDispatchQueueSpecificKey = &kDispatchQueueSpecificKey
 
 主要分为两步，第一步是创建 db。第二步是创建队列。之后还用 `dispatch_queue_set_specific` 绑定了 `FMDatabaseQueue` 对象以及 `queue`，这个的用处下面再说。
 
-#### 执行 sql
+##### 执行 sql
 
 FMDB 为 `FMDatabaseQueue` 提供了一个方法批量处理某一个 db 的 sql。它接收一个 sql 的 block：
 
@@ -513,4 +513,110 @@ FMDB 为 `FMDatabaseQueue` 提供了一个方法批量处理某一个 db 的 sql
 可以看到，主要就是在之前创建的 queue 中同步执行 sql。那么 `dispatch_get_specific` 有何用意呢？简单的说就是如果当前队列为 `_queue`，下面的同步操作就会产生死锁。所以这里 `dispatch_get_specific` 就是为了验证一下，现在是不是在 `_queue` 队列中。如果是，那么 `currentSyncQueue` 就不为空，那么直接通过断言触发异常。
 
 其实我觉得这个判断没什么用啦，因为 `inDatabase:` 方法是使用者调用的，根本不可能让它在 `_queue` 中执行啊。
+
+#### 事务处理
+
+事务处理的方法如下：
+
+```objc
+- (void)inTransaction:(void (^)(FMDatabase *db, BOOL *rollback))block {
+    [self beginTransaction:NO withBlock:block];
+}
+
+- (void)beginTransaction:(BOOL)useDeferred withBlock:(void (^)(FMDatabase *db, BOOL *rollback))block {
+    FMDBRetain(self);
+    dispatch_sync(_queue, ^() { 
+        
+        BOOL shouldRollback = NO;
+        
+        if (useDeferred) {
+            [[self database] beginDeferredTransaction];
+        }
+        else {
+            [[self database] beginTransaction];
+        }
+      
+        block([self database], &shouldRollback);
+      
+        if (shouldRollback) {
+            [[self database] rollback];
+        }else {
+            [[self database] commit];
+        }
+    });
+    
+    FMDBRelease(self);
+}
+
+- (BOOL)rollback {
+    BOOL b = [self executeUpdate:@"rollback transaction"];
+
+    if (b) {
+        _inTransaction = NO;
+    }
+    
+    return b;
+}
+
+- (BOOL)commit {
+    BOOL b =  [self executeUpdate:@"commit transaction"];
+
+    if (b) {
+        _inTransaction = NO;
+    }
+    
+    return b;
+}
+
+- (BOOL)beginDeferredTransaction {
+    
+    BOOL b = [self executeUpdate:@"begin deferred transaction"];
+    if (b) {
+        _inTransaction = YES;
+    }
+    
+    return b;
+}
+
+- (BOOL)beginTransaction {
+    
+    BOOL b = [self executeUpdate:@"begin exclusive transaction"];
+    if (b) {
+        _inTransaction = YES;
+    }
+    
+    return b;
+}
+```
+
+事务处理主要还是调用事务的相关 sql 语句，使用者可以通过 sql 是否执行成功，来决定是否需要回滚。
+
+这里 block 的入参使用的是 `BOOL *roolback`，然后传入一个 BOOL 的地址 `&shouldRoolBack`，可以实现不用返回值传递数据。注意，这种取地址的写法在使用的时候要用 `*shouldRoolBack` 来取地址上的值，因为是基本类型的指针：
+
+```objc
+BOOL roolback = YES;
+BOOL *r = &roolback;
+*r = NO;
+NSLog(@"%d，roolback 从1变为了0",roolback);   
+```
+
+非基本类型的指针的赋值直接就是 `p = Person()` 这种地址的赋值就行了，**不存在 `*p` 的情况**。基本类型的指针必须通过 `*r` 拿到堆上的值 `*r = No`
+
+### 总结
+
+FMDB 的整个过程相对简单，简单来说就是先初始化控制类 `FMDatabase`，然后通过这个类打开 db，执行 sql，关闭数据库等操作。执行的 sql 需要转化为 sqlite 使用的 `sqlite3_stmt` 类型，并缓存。对于有结果的 sql，或创建一个 `FMResultSet` 来保存 sql 已经其相应结果。多线程通过 `FMDatabaseQueue` 实现，它可以为 sql 开启后台线程执行，并且封装了 sqlite 的原子性操作的语句来实现事务。
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/FMDB_1.png?raw=true)
+
+## JQFMDB
+
+JQFMDB 是 FMDB 的一层简单封装。FMDB 只是对 sqlite 进行了封装。JQFMDB 在其基础上封装了一些常用的 sql 语句。也就是说，一般的数据库操作只要调用适当的方法即可，不需要我们自己写 sql 语句了。
+
+另外，JQFMDB 还提供了字典模型转换的功能。即你在执行 sql 方法的时候，传入 model 的 class 类型。会自动进行属性和键的匹配。
+
+代码比较简单，稍微想一下就知道是如何完成的。所以就不做具体解析了。
+
+## BGFMDB
+
+
 
