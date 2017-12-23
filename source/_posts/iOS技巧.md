@@ -464,69 +464,66 @@ mikey.length = 1.45
 
 ### extern和static
 
-`static` 是用来定义静态变量的都知道。但是它和 `extern` 各用在什么情况下呢？
+我们知道在 `@interface...@end`,`@implementation...@end` 之外的是全局变量。OC 提供了两个关键字 `static` 和 `extern` 修饰。 
 
 #### static
 
-用static声明局部变量（定义在方法内），使其变为静态存储方式(静态数据区)，作用域不变（**其他方法不能使用**），但是延长了生命周期（程序结束才销毁）
+用 `static` 声明局部变量（定义在方法内），使其变为静态存储方式(静态数据区)，作用域不变（**其他方法不能使用**），但是延长了生命周期（程序结束才销毁）
 
-用static声明外部变量（在方法外），使其**只在本文件内部有效**，而其他文件不可连接或引用该变量。
+用 `static` 声明外部变量（在方法外），使其**只在本文件内部有效**，而其他文件不可连接或引用该变量。
+
+##### 变量
+
+```objc
+// 方法中或者 @implementation...@end 之外
+static int a = 789;
+```
+
+`static` 可以在任意位置声明。一般我们都将其声明在 `.m` 文件中。可以声明在方法中，或者 `@implementation...@end` 之外。
+
+##### 方法
+
+```objc
+static int method() {
+    return 1;
+}
+```
+
+`static` 的方法可以放在 `@implementation...@end` 之内，也可以放在之外。效果都是一样的。
 
 #### extern
 
-`extern` 其实准确的说，并不是表示全局变量，而是意味着该变量或者方法在别处实现。作用是**让多个文件共享这个变量**。`extern` 的作用域是整个源程序。**只要引用了该变量所在的头文件**，任何文件都可以访问。
+`static` 修饰的全局变量只能在该文件内访问，那么文件如何访问别的文件定义的全局变量呢？使用 `extern` 关键字。使用 `extern` 意味着**该变量或者方法在别处实现**。
 
 如果全局变量和局部变量重名，则在局部变量作用域内，全局变量被屏蔽，不起作用。编程时候尽量不使用全局变量。
 
-`extern` 修饰的变量或者方法**推荐**写在 `@interface...@end` 和 `@implementation..@end` 之外，不过写在之内也没有任何影响，都是全局可见的。不像 `static` 有其作用域。
-
-#### 使用方式
 ##### 变量
+
 ```objc
-// .h 中
-extern int  b;  //在.h文件中声明，但是没有初始化
-// 任意位置
-static int a =789;   //在哪里声明都行，但是声明的同时就要初始化
+// 任意的某一个 .m 的 @implementation...@end 之外
+NSString *s = @"global";
+
+// 要用到全局变量的 .h 中
+extern NSString *s;
 ```
 
-因为之前说过，`extern` 表示变量或方法在别处实现。所以一般我们在头文件中定义 `extern` 变量，而不直接初始化，然后在实现文件中设置它的值。
+在任意的一个 `.m` 中定义一个全局变量。然后要用到这个全局变量的地方使用 `extern`关键字即可。编译的时候就会链接到这个全局变量。
 
+ `extern` 的变量写在任意位置都是可以的，包括 `.h` 的 `@interface...@end` 之内或之外或者`.m` 的 `@implementation...@end` 的之内之外。不过推荐写在 `.h` 的 `@interface...@end` 之外。
 
-
-`extern`，`static` 和 `const` 的结合使用，通常用来定义全局静态常量：
-
-```objc
-/* static */
-//任意地方
-static NSString *const kIFURL = @"abc";
-
-/* extern */
-//.h文件中
-extern NSString *const kZDURLMenuUnit;
-//.m文件中
-NSString *const kZDURLMenuUnit = @"就是这个样子";
-```
-
-##### 函数
-另外要强调一点，`static` 和 `extern` 不只是可以修饰变量，还可以**修饰函数**：
+##### 方法
 
 ```objc
-/* static */
-//任意地方
-static BOOL method(NSString *para) {
-    return NO;
+// 任意的 .m 中
+int method() {
+    return 1;
 }
 
-/* extern */
-//.h 文件中
-extern BOOL method(NSString *para);
-//.m 文件中
-BOOL method(NSString *para) {
-    return NO;
-}
+// 要用到的全局变量的 .h 中
+extern method();
 ```
 
-
+全局方法写在 `.m` 的 `@implementation...@end` 之内还是之外都行，因为这种方式定义的方法就已经表明它是全局方法了。
 
 ### 添加 UIGestureRecognizer 点击事件不响应
 
