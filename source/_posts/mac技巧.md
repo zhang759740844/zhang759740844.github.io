@@ -9,6 +9,14 @@ tags:
 
 <!--more-->
 
+### VSCode 同步方案
+
+VSCode 的插件 Setting Sync 提供了通过 github 的 Gist 完成配置同步的功能。但是由于它的教程不完整，导致同步起来会产生省问题。最常见的问题是无法下载配置，提示信息为：`Sync : Invalid / Expired GitHub Token. Please generate new token with scopes mentioned in readme. Exception Logged in Console.`
+
+Gist 可以保存上传的配置文件。拉取配置文件需要配置两个 id，一个是 Gist Id，一个是 Token Id。这两个 Id 前者标识配置文件，后者用于身份验证。我们无法下载的原因就是我们使用单单在 `Sync:Download Settings` 命令中使用了 Gist id，所以错误提示才是无效的 token。
+
+那么该怎么进行身份验证呢？还是在 VSCode 中输入命令：`Sync:Advanced Options`，然后选择 `Sync:Edit Extension Local Settings`，编辑 `syncLocalSettings.json` 这个配置文件。这个文件中有一项 token 没有设置，这里就需要设置为 Token Id。你可以用之前上传配置文件时设置的 Token，也可以再新建一个 Token。
+
 ### sudo 仍然无法获得权限
 
 有些时候使用 sudo 命令仍然会失败，提示 *Operation not permitted*。这是因为开启了 sip 的缘故。我们需要关闭 sip：
