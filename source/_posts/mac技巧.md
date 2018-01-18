@@ -127,7 +127,7 @@ handoff 是一个能在电脑和手机间共享信息的东西，但是有的时
 
 非注册用户只能使用 Xcode 50次，为了省这 98块钱就在网上找破解版，无意中搜到了修改使用次数的方法。
 
-在 `user/library/preferences/` 文件夹里，找到 `com.eusoft.eudic.plist` 文件。用 Xcode 打开它，然后找到并修改 `MAIN_TimeLeft` 的值：
+在 `~/library/preferences/` 文件夹里，找到 `com.eusoft.eudic.plist` 文件。用 Xcode 打开它，然后找到并修改 `MAIN_TimeLeft` 的值：
 
 ```xml
 <key>MAIN_TimeLeft</key>	<integer>50</integer>
