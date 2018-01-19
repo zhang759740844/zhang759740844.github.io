@@ -167,7 +167,7 @@ _firstName = @"Zachary";
 
 #### @synthesize 与 @dynamic
 
-`@dynamic` 是相对于 `@synthesize` 的，它们用样用于修饰 `@property`：
+`@dynamic` 是相对于 `@synthesize` 的，它们用样用于修饰 `@property`（ `@synthesize` 在 Xcode6 前是配合 `@property` 的，在之后就默认添加了）：
 
 ```objc
 //.h
@@ -183,11 +183,9 @@ _firstName = @"Zachary";
 @end 
 ```
 
-上述语法会将生成的实例变量（ivar）命名为 `_myFirstName` 与 `_myLastName`，并自动合成 `setFirstName:` 和 `firstName`,`setLastName`,`lastName` 这几个方法。
+上述语法是 Xcode 6 前的使用方式。`@property` 将会自动合成 `setFirstName:` 和 `firstName`,`setLastName`,`lastName` 这几个方法。`@synthesize` 为 `@property` 生成两个实例变量，名为 `_myFirstName` 与 `_myLastName` 。
 
-如果是 `@synthesize foo;`，等效于 `@synthesize foo = foo`，省略了下划线，后面使用该实例变量的时候就用 `foo` 就行了。如果已经存在一个名为 `_foo` 的实例变量，就不会自动合成新的变量了：
-
-![foo](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/effectiveoc_foo.png?raw=true)
+如果是 `@synthesize foo;`，等效于 `@synthesize foo = foo`，相当于生成名为 `foo` 的实例变量。
 
 `@dynamic` 类似，告诉编译器，不自动生成getter/setter方法，避免编译期间产生警告，然后由自己实现存取方法或在运行时动态绑定。
 
