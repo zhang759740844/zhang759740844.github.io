@@ -167,7 +167,9 @@ _firstName = @"Zachary";
 
 #### @synthesize 与 @dynamic
 
-`@dynamic` 是相对于 `@synthesize` 的，它们用样用于修饰 `@property`（ `@synthesize` 在 Xcode6 前是配合 `@property` 的，在之后就默认添加了）：
+`@dynamic` 是相对于 `@synthesize` 的，它们同样用于修饰 `@property`。
+
+`@property` 用于声明属性的 get/set 方法。而 `@synthesize` 则可以用来创建实例变量，并且实现属性的 get/set 方法。使用如下：
 
 ```objc
 //.h
@@ -183,13 +185,25 @@ _firstName = @"Zachary";
 @end 
 ```
 
-上述语法是 Xcode 6 前的使用方式。`@property` 将会自动合成 `setFirstName:` 和 `firstName`,`setLastName`,`lastName` 这几个方法。`@synthesize` 为 `@property` 生成两个实例变量，名为 `_myFirstName` 与 `_myLastName` 。
+`@property` 将会自动合成 `setFirstName:` 和 `firstName`,`setLastName`,`lastName` 这几个方法的**声明**。**`@synthesize` 为 `@property` 生成两个实例变量，名为 `_myFirstName` 与 `_myLastName` ，并且在你没有实现 get/set 方法的时候，默认实现了这两个变量的 get/set 方法**：
 
-如果是 `@synthesize foo;`，等效于 `@synthesize foo = foo`，相当于生成名为 `foo` 的实例变量。
+```objc
+- (NSString *)getFirstName() {
+  	return _firstName;
+}
+- (void)firstName:(NSString *)firstName {
+  	_firstName = firstName;
+}
+// lastName 类似
+```
 
-`@dynamic` 类似，告诉编译器，不自动生成getter/setter方法，避免编译期间产生警告，然后由自己实现存取方法或在运行时动态绑定。
+如果是 `@synthesize foo;`，等效于 `@synthesize foo = foo`，相当于生成名为 `foo` 的实例变量，生成的 get/set 方法里使用到的实例变量也相应改变。
 
-> `@synthesize` (Xcode6以后省略这个了, 默认在 `@implementation .m` 中添加这个 `@synthesize xxx = _xxx;` )
+上述语法是 Xcode 6 前的使用方式。在那之后，Xcode 会**默认添加** `@synthesize foo = _foo;` 的语句。也就是说默认情况是会帮你生成 get/set 方法以及实例变量的。但是**有一种情况`@synthesize` 不会自动添加**，那就是如果自己**同时实现了 get/set 方法的时候**。因为自己实现了存取方法就**违背了 `@synthesize` 自动合成的初衷**。所以这个时候，你需要自己添加实例变量，或者手动添加 `@synthesize foo = _foo;`
+
+`@dynamic` 的使用方式形如 `@dynamic foo;`，它和 `@synthesize` 正好相反，它告诉编译器，不自动生成getter/setter方法，然后由自己实现存取方法或在运行时动态绑定。也就是说 `@dynamic` 存在就不会自动插入 `@synthesize`，也就不会自动生成实例变量 `_foo`。
+
+
 
 #### 属相特质
 
