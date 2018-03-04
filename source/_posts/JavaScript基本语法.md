@@ -39,6 +39,8 @@ JavaScript在设计时，有两种比较运算符：
 第一种是`==`比较，它会自动转换数据类型再比较.
 第二种是`===`比较，它不会自动转换数据类型，如果数据类型不一致，返回false，如果一致，再比较。
 
+如果是比较类对象，就是比较两者的地址。如果地址不同，`==` 和 `===` 都返回 false。
+
 `NaN`这个特殊的`Number`与所有其他值都不相等，包括它自己：
 ```javascript
 NaN == NaN; // false
@@ -132,7 +134,9 @@ var message = `你好, ${name}, 你今年${age}岁了!`;
 alert(message);
 ```
 
-> 在 Swift 中有类似的模板字符串：`\(要打印的对象)`，类似于这里的`${}`。
+> 注意这里不只是 `${}` 外边的不再是单引号了，而是 ` `` `。
+>
+> 在 Swift 中有类似的模板字符串：`\(要打印的对象)`，类似于这里的`${}`。不过 Swift 写起来比这个好简单好记多了。 这个没什么用处。
 
 #### 操作字符串
 
@@ -644,6 +648,8 @@ xiaoming.age; // function xiaoming.age()
 xiaoming.age(); // 今年调用是25,明年调用就变成26了
 ```
 
+> 把 age 想象成 OC 中的一个 block 就好理解了。
+
 和普通函数也没啥区别，但是它在内部使用了一个`this`关键字.
 在一个方法内部，`this`是一个特殊变量，**它始终指向当前对象**，也就是`xiaoming`这个变量。所以，`this.birth`可以拿到`xiaoming`的`birth`属性。
 
@@ -664,18 +670,18 @@ xiaoming.age(); // 25, 正常结果
 getAge(); // NaN
 ```
 
-单独调用函数`getAge()`怎么返回了`NaN`？请注意，我们已经进入到了JavaScript的一个大坑里。
-JavaScript的函数内部如果调用了`this`，那么这个`this`到底指向谁？
-答案是，视情况而定！
-如果以对象的方法形式调用，比如`xiaoming.age()`，该函数的`this`指向被调用的对象，也就是`xiaoming`，这是符合我们预期的。
-如果单独调用函数，比如`getAge()`，此时，该函数的`this`指向**全局对象**.
+单独调用函数`getAge()`怎么返回了`NaN`？请注意，我们已经进入到了JavaScript的一个大坑里。JavaScript的函数内部如果调用了`this`，那么这个`this`到底指向谁？答案是，视情况而定！（如果是在浏览器中执行，那就是 `window`）如果以对象的方法形式调用，比如`xiaoming.age()`，该函数的`this`指向被调用的对象，也就是`xiaoming`，这是符合我们预期的。如果单独调用函数，比如`getAge()`，此时，该函数的`this`指向**全局对象**.
 
 更坑爹的是，如果这么写：
 ```javascript
 var fn = xiaoming.age; // 这个表示拿到xiaoming的age函数，而不是拿到上下文
 fn(); // NaN
 ```
-也是不行的！要保证`this`指向正确，必须要给出明确的上下文，必须用`obj.xxx()`的形式调用！谁调用，`this`就是指谁。上面仅仅相当于将`age`方法赋给`fn`.
+也是不行的！要保证`this`指向正确，**必须要给出明确的上下文对象**，必须用`obj.xxx()`的形式调用！谁调用，`this`就是指谁。上面仅仅相当于将`age`方法赋给`fn`.
+
+>   在 ES6 之前，function 也可以通过 `new getAge()` 的方式直接创建对象。这样 this 就指向 new 出来的对象。不过 ES6 之后创建对象都使用 class 了，function 仅用来表示函数。
+>
+>   另外，function 中也能创建 function 的属性，你可以把它理解成闭包中保存的变量值。它的作用以及和 this 的区别在另一篇中介绍。
 
 如果是这种情况：
 ```javascript
@@ -694,7 +700,10 @@ var xiaoming = {
 xiaoming.age(); 
 ```
 
+> js中允许，函数的嵌套，但是外部无法直接获取嵌套的函数，需要函数返回。**不要以为函数也有属性就把函数当成对象一样**。直接 `xiaoming.age.getAgeFromBirth()` 这是不行的。
+
 又不对了。原因是`this`指针只在`age`方法的函数内指向`xiaoming`，在函数内部定义的函数，`this`又指向`undefined`了！需要这样修改：
+
 ```javascript
 var xiaoming = {
     name: '小明',
@@ -935,14 +944,16 @@ var f2 = results[1];
 var f3 = results[2];
 ```
 
-上面的例子中，每次循环，都创建了一个新的函数，然后，把创建的3个函数都添加到一个Array中返回了，**或者说返回了三个闭包**.
-调用的结果全是`16`,因为返回函数都引用了变量`i`，由于闭包性，等到3个函数都返回时，它们所引用的变量i已经变成了`4`。
+上面的例子中，每次循环，都创建了一个新的函数，然后，把创建的3个函数都添加到一个Array中返回了，**或者说返回了三个闭包**。调用的结果全是`16`,因为返回函数都引用了变量`i`，由于闭包性，等到3个函数都返回时，它们所引用的变量i已经变成了`4`。
 
-**返回闭包时牢记的一点就是：返回函数不要引用任何循环变量，或者后续会发生变化的变量。**
+**这是因为 JS 中的闭包对外部变量都是引用传递。**
 
-> 这和 iOS 中的闭包不同，iOS 中会捕获外部的局部变量，所以 i 是几就是几，而 js 中应该只是获得了 i 的地址，
+> 这和 iOS 中的闭包不同，iOS 中会捕获外部的局部变量，也就是保存值。所以 i 是几就是几，而 js 中应该只是获得了 i 的地址。
 
-如何一定要引用循环变量？方法是再创建一个函数，用该函数的参数绑定循环变量当前的值，无论该循环变量后续如何更改，已绑定到函数参数的值不变：
+那么怎么修改呢？有两种方法，**一种方法是将引用传递变为值传递。还有一种是不要引用同一个变量**。
+
+**方法一**是外部再创建一个函数，由传参的方式把变量传入。这样就是将引用传递变为值传递了。无论该循环变量后续如何更改，已绑定到函数参数的值不变：
+
 ```javascript
 function count() {
     var arr = [];
@@ -992,14 +1003,13 @@ function count() {
 
 > 这里就相当于每个循环都创建了一个独立的 n，上面呢是公用一个 i
 
-相反的，如果内存函数还是用的`i`，那么结果就会全是`16`.
+更直接的方式就是**方法二**，用 `let` 代替 `var`。因为 `var` 的作用域是函数，所以，循环期间 `i` 是不会回收的。但是如果是 `let`，那么作用域就是循环的循环体。也就是每次循环体执行，都会创建一个新的 `i`，而不是像 `var` 一样公用一个.
 
 ```javascript
 function count() {
     var arr = [];
-    for (var i=1; i<=3; i++) {
+    for (let i=1; i<=3; i++) {
         arr.push((function () {
-            // var n =i
             return function () {
                 return i*i;
             }
@@ -1053,12 +1063,12 @@ var obj = {
         return fn();
     }
 };
-//箭头函数完全修复了this的指向，this总是指向词法作用域，也就是外层调用者obj：
+//箭头函数完全修复了this的指向，this总是和函数外部的 this 指代相同的东西：
 var obj = {
     birth: 1990,
     getAge: function () {
         var b = this.birth; // 1990
-        var fn = () => new Date().getFullYear() - this.birth; // this指向obj对象
+        var fn = () => new Date().getFullYear() - this.birth; // this 和 this.birth 指的是一个东西
         return fn();
     }
 };
@@ -1066,41 +1076,20 @@ obj.getAge(); // 25
 ```
 如果使用箭头函数,以前 `var that = this;` 以及 `.apply()` 和 `.call()` 这种写法就不需要了。
 
-箭头函数并不创建它自身执行的上下文，使得 `this` 取决于它在定义时的外部函数。**箭头函数一次绑定上下文后便不可更改，即使使用了上下文更改的方法**：
+**箭头函数并不创建它自身执行的上下文，使得 `this` 取决于它在定义时的外部函数**。
 
-```javascript
-    var numbers = [1, 2];  
-    (function() {  
-      var get = () => {
-        console.log(this === numbers); // => true
-        return this;
-      };
-      console.log(this === numbers); // => true
-      get(); // => [1, 2]
-      // 箭头函数使用 .apply() 和 .call()
-      get.call([0]);  // => [1, 2]
-      get.apply([0]); // => [1, 2]
-      // Bind
-      get.bind([0])(); // => [1, 2]
-    }).call(numbers);
-```
-
-这是因为箭头函数拥有静态的上下文环境，不会因为不同的调用而改变。但是要注意：
-
-```javascript
-	function Period (hours, minutes) {  
-      this.hours = hours;
-      this.minutes = minutes;
-    }
-    Period.prototype.format = () => {  
-      console.log(this === window); // => true
-      return this.hours + ' hours and ' + this.minutes + ' minutes';
-    };
-    var walkPeriod = new Period(2, 30);  
-    walkPeriod.format(); // => 'undefined hours and undefined minutes' 
-```
-
-注意这里的 `this === window` 返回的是 `true`。
+> 箭头函数用在嵌套函数里，不要用成这样：
+>
+> ```javascript
+> var obj = {
+>     birth: 1990,
+>     getAge: () => {
+>         var b = this.birth; // this 是 undefined
+>     }
+> }
+> ```
+>
+> 这里并没有外部函数，所以箭头函数里的 this 永远是 undefined
 
 ### generator
 generator（生成器）是ES6标准引入的新的数据类型，类似于Python的generator的概念和语法。一个generator看上去像一个函数，但可以返回多次。
@@ -1148,8 +1137,8 @@ function next_id() {
 function* next_id() {
 	var i = 0;
 	while (true){
-      yield ++i;
-   	}
+		yield ++i;
+	}
 }
 ```
 
@@ -1399,76 +1388,10 @@ foo ----> Function.prototype ----> Object.prototype ----> null
 由于`Function.prototype`定义了`apply()`等方法，因此，所有函数都可以调用`apply()`方法。
 
 #### 构造函数
-除了直接用`{ ... }`创建一个对象外，JavaScript还可以用一种构造函数的方法来创建对象。它的用法是，先定义一个构造函数：
-```javascript
-function Student(name) {
-    this.name = name;
-    this.hello = function () {
-        alert('Hello, ' + this.name + '!');
-    }
-}
-```
-在JavaScript中，可以用关键字`new`来调用这个函数，并返回一个对象：
-```javascript
-var xiaoming = new Student('小明');
-xiaoming.name; // '小明'
-xiaoming.hello(); // Hello, 小明!
-```
-注意，如果不写`new`，这就是一个普通函数，它返回`undefined`。但是，如果写了`new`，它就变成了一个构造函数，它绑定的`this`指向新创建的对象，并默认返回`this`，也就是说，不需要在最后写`return this;`。
-
-用`new Student()`创建的对象还从原型上获得了一个`constructor`属性，它指向函数`Student`本身：
-```javascript
-xiaoming.constructor === Student.prototype.constructor; // true
-Student.prototype.constructor === Student; // true
-
-Object.getPrototypeOf(xiaoming) === Student.prototype; // true
-
-xiaoming instanceof Student; // true
-```
-他们之间的关系就是:
-![constructor](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/js_constructor.png?raw=true)
-
-红色箭头是原型链。注意，`Student.prototype`指向的对象就是`xiaoming`、`xiaohong`的原型对象，这个原型对象自己还有个属性`constructor`，指向`Student`函数本身。
-
-另外，函数`Student`恰好有个属性`prototype`指向`xiaoming`、`xiaohong`的原型对象，但是`xiaoming`、`xiaohong`这些对象可没有`prototype`这个属性，不过可以用`__proto__`这个非标准用法来查看。
-
-不过还有一个小问题，注意观察：
-```javascript
-xiaoming.name; // '小明'
-xiaohong.name; // '小红'
-xiaoming.hello; // function: Student.hello()
-xiaohong.hello; // function: Student.hello()
-xiaoming.hello === xiaohong.hello; // false
-```
-`xiaoming`和`xiaohong`各自的`hello`是一个函数，但它们是两个不同的函数，虽然函数名称和代码都是相同的！
-
-如果我们通过`new Student()`创建了很多对象，这些对象的`hello`函数实际上只需要共享同一个函数就可以了，这样可以节省很多内存。
-要让创建的对象共享一个`hello`函数，根据对象的属性查找原则，我们只要把`hello`函数移动到`xiaoming`、`xiaohong`这些对象共同的原型上就可以了，也就是`Student.prototype`：
-![constructor2](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/js_constructor2.png?raw=true)
-修改代码如下：
-```javascript
-function Student(name) {
-    this.name = name;
-}
-
-Student.prototype.hello = function () {
-    alert('Hello, ' + this.name + '!');
-};
-```
+即用一个 `function` 来构造一个对象。相关的还需要学习 `prototype` 不过 ES6 后，都是用 class 了。
 
 ### class继承
 新的关键字`class`从ES6开始正式被引入到JavaScript中。`class`的目的就是让定义类更简单。
-
-我们先回顾用函数实现`Student`的方法：
-```javscript
-function Student(name) {
-    this.name = name;
-}
-
-Student.prototype.hello = function () {
-    alert('Hello, ' + this.name + '!');
-}
-```
 
 如果用新的`class`关键字来编写`Student`，可以这样写：
 ```javascript
@@ -1481,12 +1404,7 @@ class Student {
         alert('Hello, ' + this.name + '!');
     }
 }
-```
 
-比较一下就可以发现，`class`的定义包含了**构造函数**`constructor`和定义在原型对象上的函数`hello()`（注意没有`function`关键字），这样就避免了`Student.prototype.hello = function () {...}`这样分散的代码。
-
-最后，创建一个Student对象代码和前面章节完全一样：
-```javascript
 var xiaoming = new Student('小明');
 xiaoming.hello();
 ```

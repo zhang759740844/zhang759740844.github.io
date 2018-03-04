@@ -64,6 +64,36 @@ document.body.onclick = function(){};
 
 ### 定义和参数
 
+#### 函数与属性
+
+函数能像对象一样被被传递或者被保存。比如下面的例子中，将函数当做对象 `store` 的一个键 `add` 的值。这个函数又接受一个入参为 `fn` 的函数。判断其是否有 `id` 属性，将其保存在 `cache` 的相应位置上：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/SOJN_4.png?raw=true)
+
+刚才说到函数也是拥有属性的，例如下面 `isPrime` 函数可以定义一个 `answers `属性：
+
+```javascript
+function isPrime() {
+    if (!isPrime.answers) {
+        isPrime.answers = 'old property';
+    }
+}
+
+console.log(isPrime.answers);	// undefined
+isPrime();
+console.log(isPrime.answers);	// old property
+isPrime.answers = 'new property';	
+console.log(isPrime.answers);	// new property
+console.log(isPrime.questions);	// undifined
+isPrime.questions = 'new property';
+console.log(isPrime.questions);	// new property
+```
+
+如上所示，为函数定义属性一定不要用 `this`，因为 `this` 指代的是调用者，而不是函数本身。函数本身的属性就直接用函数名来获取：`isPrime.answers`。如果在函数内部定义的属性，必须要在函数执行后，属性才会存在。这时候你就可以在外部改变属性的值了。另外，在函数外部也可以为函数添加属性。
+
+> 函数属性还是挺有用的。有时候调用函数会用到的变量，如果不能用函数属性保存的话，我们就要在外部再创建一个变量，让函数获取。但是本身这个外部变量在外部并没有其它作用，就显得很多余。
+
+#### 
 
 
 
@@ -71,6 +101,7 @@ document.body.onclick = function(){};
 
 
 
+ 
 
 
 
