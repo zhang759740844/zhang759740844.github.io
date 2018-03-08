@@ -12,7 +12,7 @@ tags:
 ## 基础语法
 ### 数据类型和变量
 #### Number
-JS不区分整数浮点数，统一用`Number`表示：
+JS不区分整数浮点数，统一用`Number `表示：
 ```javascript
 1.2345e3; // 科学计数法表示1.2345x1000，等同于1234.5
 NaN; // NaN表示Not a Number，当无法计算结果时用NaN表示
