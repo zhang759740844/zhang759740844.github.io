@@ -96,27 +96,21 @@ person.name; // 'Bob'
 person.zipcode; // null
 ```
 
-#### 变量
-申明一个变量用var语句，比如：
+#### 变量与常量
+ES6 之前，变量用 `var` 修饰，但是会引起问题，包括作用域问题与变量提升问题。使用 `let` 代替。
 ```javascript
-var a; // 申明了变量a，此时a的值为undefined
-var $b = 1; // 申明了变量$b，同时给$b赋值，此时$b的值为1
-var s_007 = '007'; // s_007是一个字符串
-var Answer = true; // Answer是一个布尔值true
-var t = null; // t的值是null
+let b = 1; // 申明了变量$b，同时给$b赋值，此时$b的值为1
 ```
-注意只能用var申明一次。
+ES6 之后，常量用 `const` 修饰，表示不会再改变的值：
 
-#### strict模式
-为了修补JavaScript这一严重设计缺陷，ECMA在后续规范中推出了strict模式。
-
-启用strict模式的方法是在JavaScript代码的第一行写上：
 ```javascript
-'use strict';
+const b = '234'
 ```
-不支持strict模式的浏览器会把它当做一个字符串语句执行，支持strict模式的浏览器将开启strict模式运行JavaScript。
+
+> Swift 中变量为 `var` 常量为 `let` 略有不同。
 
 ### 字符串
+
 #### 模板字符串
 要把多个字符串连接起来，可以用`+`号连接：
 ```javascript
@@ -135,8 +129,8 @@ alert(message);
 ```
 
 > 注意这里不只是 `${}` 外边的不再是单引号了，而是 ` `` `。
->
-> 在 Swift 中有类似的模板字符串：`\(要打印的对象)`，类似于这里的`${}`。不过 Swift 写起来比这个好简单好记多了。 这个没什么用处。
+
+> 在 Swift 中有类似的模板字符串：`\(要打印的对象)`，类似于这里的`${}`。不过 Swift 写起来比这个好简单好记多了。 
 
 #### 操作字符串
 
@@ -144,25 +138,11 @@ alert(message);
 ```javascript
 var s = 'Hello, world!';
 s.length; // 13
-```
-
-要获取字符串某个指定位置的字符，使用类似Array的下标操作，索引号从0开始：
-```javascript
-var s = 'Hello, world!';
-
-s[0]; // 'H'
-s[6]; // ' '
 s[7]; // 'w'
 s[12]; // '!'
-s[13]; // undefined 超出范围的索引不会报错，但一律返回undefined
 ```
-需要特别注意的是，字符串是不可变的，如果对字符串的某个索引赋值，不会有任何错误，但是，也没有任何效果.
 
-#### toUpperCase
-`toUpperCase()`返回一个全大写的字符串
-
-#### toLowerCase
-`toLowerCase()`f返回一个全小写的字符串
+字符串相当于是一个不能改变的数组。
 
 #### indexOf
 `indexOf()`会搜索指定字符串出现的位置:
@@ -187,25 +167,6 @@ var arr = [1, 2, 3.14, 'Hello', null, true];
 arr.length; // 6
 ```
 
-**请注意**，直接给`Array`的`length`赋一个新的值会导致`Array`大小的变化：
-```javascript
-var arr = [1, 2, 3];
-arr.length; // 3
-arr.length = 6;
-arr; // arr变为[1, 2, 3, undefined, undefined, undefined]
-arr.length = 2;
-arr; // arr变为[1, 2]
-```
-
-**请注意**，如果通过索引赋值时，索引超过了范围，同样会引起`Array`大小的变化：
-```javascript
-var arr = [1, 2, 3];
-arr[5] = 'x';
-arr; // arr变为[1, 2, 3, undefined, undefined, 'x']
-```
-
-**大多数其他编程语言不允许直接改变数组的大小，越界访问索引会报错。然而，JavaScript的Array却不会有任何错误。在编写代码时，不建议直接修改Array的大小，访问索引时要确保索引不会越界。**
-
 #### indexOf
 与`String`类似，`Array`也可以通过`indexOf()`来搜索一个指定的元素的位置：
 ```javascript
@@ -226,77 +187,7 @@ arr.slice(3); // 从索引3开始到结束: ['D', 'E', 'F', 'G']
 
 如果不给`slice()`传递任何参数，它就会从头到尾截取所有元素。利用这一点，我们可以很容易地复制一个`Array`
 
-#### push和pop
-`push()`向`Array`的末尾添加**若干**元素，`pop()`则把`Array`的最后一个元素删除掉：
-```javascript
-var arr = [1, 2];
-arr.push('A', 'B'); // 返回Array新的长度: 4
-arr; // [1, 2, 'A', 'B']
-arr.pop(); // pop()返回'B'
-arr; // [1, 2, 'A']
-arr.pop(); arr.pop(); arr.pop(); // 连续pop 3次
-arr; // []
-arr.pop(); // 空数组继续pop不会报错，而是返回undefined
-arr; // []
-```
 
-#### unshift和shift
-如果要往`Array`的头部添加若干元素，使用`unshift()`方法，`shift()`方法则把`Array`的第一个元素删掉：
-```javascript
-var arr = [1, 2];
-arr.unshift('A', 'B'); // 返回Array新的长度: 4
-arr; // ['A', 'B', 1, 2]
-arr.shift(); // 'A'
-arr; // ['B', 1, 2]
-arr.shift(); arr.shift(); arr.shift(); // 连续shift 3次
-arr; // []
-arr.shift(); // 空数组继续shift不会报错，而是返回undefined
-arr; // []
-```
-
-#### sort
-`sort()`可以对当前`Array`进行排序，它会直接修改当前`Array`的元素位置，直接调用时，按照默认顺序排序：
-
-#### reverse
-reverse()把整个Array的元素给掉个个，也就是反转.
-
-#### splice
-`splice()`方法是修改`Array`的“万能方法”，它可以从指定的索引开始删除若干元素，然后再从该位置添加若干元素：
-````javascript
-var arr = ['Microsoft', 'Apple', 'Yahoo', 'AOL', 'Excite', 'Oracle'];
-// 从索引2开始删除3个元素,然后再添加两个元素:
-arr.splice(2, 3, 'Google', 'Facebook'); // 返回删除的元素 ['Yahoo', 'AOL', 'Excite']
-arr; // ['Microsoft', 'Apple', 'Google', 'Facebook', 'Oracle']
-// 只删除,不添加:
-arr.splice(2, 2); // ['Google', 'Facebook']
-arr; // ['Microsoft', 'Apple', 'Oracle']
-// 只添加,不删除:
-arr.splice(2, 0, 'Google', 'Facebook'); // 返回[],因为没有删除任何元素
-arr; // ['Microsoft', 'Apple', 'Google', 'Facebook', 'Oracle']
-````
-
-#### concat
-`concat()`方法把当前的`Array`和另一个`Array`连接起来，并返回一个新的`Array`：
-```javascript
-var arr = ['A', 'B', 'C'];
-var added = arr.concat([1, 2, 3]);
-added; // ['A', 'B', 'C', 1, 2, 3]
-arr; // ['A', 'B', 'C']
-```
-请注意，`concat()`方法并没有修改当前`Array`，而是返回了一个新的`Array`。
-实际上，`concat()`方法可以接收任意个元素和`Array`，并且自动把`Array`拆开，然后全部添加到新的`Array`里：
-```javascript
-var arr = ['A', 'B', 'C'];
-arr.concat(1, 2, [3, 4]); // ['A', 'B', 'C', 1, 2, 3, 4]
-```
-
-#### join
-`join()`方法是一个非常实用的方法，它把当前`Array`的每个元素都用指定的字符串连接起来，然后返回连接后的字符串：
-```javascript
-var arr = ['A', 'B', 'C', 1, 2, 3];
-arr.join('-'); // 'A-B-C-1-2-3'
-```
-如果`Array`的元素不是字符串，将自动转换为字符串后再连接。
 
 ### 对象
 ```javascript
@@ -325,7 +216,7 @@ var xiaoming = {
 };
 
 console.log(xiaoming)
-返回：
+// 返回
 { name: '小明',
   '1weight': '属性名是返回值1weight',
   'function () {\n    return "1weight"\n}': '属性名是整个function' }
@@ -481,6 +372,8 @@ var abs = function (x) {
 
 上述两种定义完全等价，注意第二种方式按照完整语法需要在函数体末尾加一个`;`，表示赋值语句结束。
 
+> Swift 中使用 func 定义函数
+
 #### 调用函数
 由于JavaScript允许传入任意个参数而不影响调用，因此传入的参数比定义的参数多也没有问题，虽然函数内部并不需要这些参数：
 ```javascript
@@ -548,89 +441,6 @@ foo(1);
 如果传入的参数连正常定义的参数都没填满，也不要紧，`rest`参数会接收一个空数组（注意不是`undefined`）。
 
 
-### 变量作用域
-在JavaScript中，用var申明的变量实际上是有作用域的。
-- 如果一个变量在函数体内部申明，则该变量的作用域为整个**函数体**(注意，var的作用域是函数体，不是语句块)，在函数体外不可引用该变量。
-- 由于JavaScript的函数可以嵌套，此时，内部函数可以访问外部函数定义的变量
-- 如果内部函数和外部函数的变量名重名怎么办？JavaScript的函数在查找变量时从自身函数定义开始，从“内”向“外”查找。如果内部函数定义了与外部函数重名的变量，则内部函数的变量将“屏蔽”外部函数的变量。
-
-#### 变量提升
-JavaScript的函数定义有个特点，它会先扫描整个函数体的语句，把所有申明的变量“提升”到函数顶部：
-```javascript
-'use strict';
-
-function foo() {
-    var x = 'Hello, ' + y;
-    alert(x);
-    var y = 'Bob';
-}
-
-foo();
-```
-
-虽然是`strict`模式，但语句`var x = 'Hello, ' + y;`并不报错，原因是变量`y`在稍后申明了。但是`alert`显示`Hello, undefined`，说明变量`y`的值为`undefined`。这正是因为JavaScript引擎自动提升了变量`y`的声明，但不会提升变量`y`的赋值。
-
-#### 全局作用域
-不在任何函数内定义的变量就具有全局作用域。
-
-#### 名字空间
-不同的JavaScript文件如果使用了相同的全局变量，或者定义了相同名字的顶层函数，都会造成命名冲突.减少冲突的一个方法是把自己的所有变量和函数全部绑定到一个全局变量中。例如：
-```javascript
-// 唯一的全局变量MYAPP:
-var MYAPP = {};
-
-// 其他变量:
-MYAPP.name = 'myapp';
-MYAPP.version = 1.0;
-
-// 其他函数:
-MYAPP.foo = function () {
-    return 'foo';
-};
-```
-
-把自己的代码全部放入唯一的名字空间`MYAPP`中，会大大减少全局变量冲突的可能。
-许多著名的JavaScript库都是这么干的：jQuery，YUI，underscore等等。
-
-#### 局部作用域
-由于JavaScript的变量作用域实际上是函数内部，我们在for循环等语句块中是无法定义具有局部作用域的变量的：
-```javascript
-'use strict';
-
-function foo() {
-    for (var i=0; i<100; i++) {
-        //
-    }
-    i += 100; // 仍然可以引用变量i
-}
-```
-
-为了解决块级作用域，ES6引入了新的关键字`let`，用`let`替代`var`可以申明一个块级作用域的变量：
-```javascript
-'use strict';
-
-function foo() {
-    var sum = 0;
-    for (let i=0; i<100; i++) {
-        sum += i;
-    }
-    i += 1; // SyntaxError
-}
-```
-
-#### 常量
-由于var和let申明的是变量，如果要申明一个常量，在ES6之前是不行的，我们通常用全部大写的变量来表示“这是一个常量，不要修改它的值”.
-
-ES6标准引入了新的关键字`const`来定义常量，`const`与`let`都具有块级作用域：
-```javascript
-'use strict';
-
-const PI = 3.14;
-PI = 3; // 某些浏览器不报错，但是无效果！
-PI; // 3.14
-```
-
-注意，一定要加上`use strict`,否则会报错。
 
 ### 方法
 绑定到对象上的函数称为方法:
