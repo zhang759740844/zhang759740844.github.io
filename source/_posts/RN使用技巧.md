@@ -46,9 +46,20 @@ tags:
 
 ### JSX 中的一点小注意事项
 
-在 JSX 中调用外部的 js方法，如果要用到 `this`， 则必须 `bind(this)` 否则无法识别。
+在 JSX 中调用外部的 js方法，如果要用到 `this`， 则必须 `bind(this)` 或者使用箭头函数，否则无法识别。
 
-`render` 里可以写方法，用 `{}`括起来即可，但是` <View   >` 标签里一定不能有 `{}`，就比如你要把 `View` 里的 `style` 注释掉， 一定不能直接用 `cmd+/` 这样会在 ` <>`里加入 `{}`，产生 `SyntaxError xxx.js Unexpected token,expected ...`的错误
+`render` 里可以写方法，用 `{}`括起来即可，但是` <View >` 标签里一定不能有 `{}`，就比如你要把 `View` 里的 `style` 注释掉， 一定不能直接用 `cmd+/` 这样会在 ` <>`里加入 `{}`，产生 `SyntaxError xxx.js Unexpected token,expected ...`的错误
+
+`<View >` 标签里的属性必须要要遵守如下的形式，即必须要用等号，并且要用 `{}` 把对象包裹起来:
+
+```jsx
+<View 
+    style = {{margin}}>
+
+</View>
+```
+
+
 
 ### 如何隐藏一个组件
 
@@ -74,50 +85,7 @@ style 究竟是在父控件里用 `padding` 还是在子控件里用 `margin`。
 
 这样父组件就可以通过 `this.ref.child` 来获取 `Child` 组件的实例，并调用其内部方法了。
 
-### 上拉加载
-RN 中的 ListView 自带了上拉加载的方法：`onEndReached`。使用方法很简单，当下拉到一定阈值 `onEndReachedThreshold` 时，自动回调 `onEndReached` 传入的方法，如果加载的数据不满足一屏，也会自动回调：
-
-```jsx
-<ListView dataSource={this.state.dataSource}
-          renderRow={this._cellForRow.bind(this)}
-          onEndReached={this._pullUpToRefresh.bind(this)}
-          enableEmptySections = {true}
-          onEndReachedThreshold={100}>
-</ListView>
-```
-
-相应的网络请求方法和上拉加载方法如下：
-
-```javascript
-//默认加载数据
-componentDidMount() {
-    this._getRemoteData();
-}
-
-// 上拉加载更多方法
-_pullUpToRefresh() {
-    if (this._canPull) {
-        this._pageNo++;
-        this._getRemoteData();
-    }
-}
-
-// 获取数据
-_getRemoteData(){
-    this._canPull = false;
-    TravelTogether.getTravelTogetherList(this._pageNo,this._pageSize,(data) => {
-        for (let i=0;i<data.list.length;i++){
-            this._dataSources.push(data.list[i]);
-        }
-        this.setState({dataSource:this.state.dataSource.cloneWithRows(this._dataSources)});
-        if (data.list.length === this._pageSize){
-            this._canPull = true;
-        }
-    });
-}
-```
-
-使用的时候是与一些坑的。首先，实践下来 `onEndReached` 方法在第一次加载数据的时候必定会回调，我也不知道为什么。必须要自行设置一个 `_canPull` 的 flag 来控制是否要从服务器获取数据。其次，要注意 `onEndReached` 的调用时机。它的准确调用时机是在网络请求返回执行回调，设置状态 `this.setState()` 的时候。因此，你不能在 `setState()` 前将 `_canPull` 设置为 `true`，必须如上面一样，放在 `setState()` 之后。
+比较典型的用法在于一个 View 里嵌了一个 ListView，现在要调用 ListView 的刷新方法。就可以通过 `ref` 的方式从外部拿到。
 
 
 
