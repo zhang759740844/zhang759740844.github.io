@@ -131,10 +131,8 @@ SSL 劫持也就是 SSL 证书欺骗攻击，攻击者为了获得 HTTPS 传输�
 mitmproxy 是一款命令行抓包工具，它除了可以抓包查看 http/https 请求，还可以拦截并修改 request 或者 response。
 
 ### 安装
-首先需要安装 python 的包管理工具 pip。 OSX El Capitan 及以上的系统版本在安装时会出现 six 模块依赖错误，所以需要执行以下命令进行安装：
-
 ```
-sudo pip install mitmproxy --ignore-installed six
+brew install mitmproxy
 ```
 
 ### 配置
@@ -154,7 +152,7 @@ sudo pip install mitmproxy --ignore-installed six
 - enter: 查看详细请求
 - Tab: 切换顶部导航栏
 - z: 清空列表
-- f: 过滤请求。可以参照帮助中的 Filter expression 对过滤关键字进行编辑。删除过滤就是将过滤关键字清空。
+- f: 过滤请求。可以参照帮助中的 Filter expression 对过滤关键字进行编辑。删除过滤就是将过滤关键字清空。其实还可以有更多过滤方式，包括过滤指定的 header，指定的 body，过滤请求、回复等。具体[参见文档](https://docs.mitmproxy.org/stable/concepts-filters/)
 - d: 删除请求
 - C: 复制请求。直接选中复制可能会复制进空格非常麻烦，可以通过 C 来选择复制的内容。(注意是大写的 C，这个复制很有用，所有请求返回都可以复制下来)
 
@@ -164,4 +162,18 @@ sudo pip install mitmproxy --ignore-installed six
 
 设置拦截后，拦截下来的请求为红色。这时 `Enter` 进入后 再按 `e` 就可以修改 request 或者 response，会先让你选择修改哪一部分，一般都是修改返回的数据对应于里面的 `raw`。修改时是用 vim 进行编辑的，修改完成后按 `a` 将请求放行，如果要放行所有请求输入 `A` 即可。
 
-可以参见[抓包教程](http://ios.jobbole.com/90841/) 获取更多信息。其实可以直接在里面输入 `?` 获得更多快捷键以及正则表达式匹配的文档
+
+
+### iOS 模拟器抓包
+
+为模拟器抓包需要设置网络代理为本机，勾选 HTTP 代理和 HTTPS 代理：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/mitm_1.png?raw=true)
+
+还要为模拟器配置 SSL 证书。配置证书相对麻烦。首先进入 `~/.mitmproxy`目录，这个目录下有五六个证书，其中一个是符合要求的。需要下载[一个 python 脚本](https://github.com/ADVTOOLS/ADVTrustStore#how-to-use-advtruststore) 来导入证书。下载后执行：
+
+```shell
+iosCertTrustManager.py -a 那个目录下的证书名
+```
+
+然后会问你导入那几个模拟器，一般一路 YES 即可。具体参见[文档证书](https://docs.mitmproxy.org/stable/concepts-certificates/)

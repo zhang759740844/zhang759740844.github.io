@@ -9,6 +9,17 @@ tags:
 
 <!--more-->
 
+### 下载字体 Fira
+
+字体 Fira 非常圆润，适合作为代码编辑器的字体，下载也非常简单。但是比较字体包有点大：
+
+```shell
+brew tap caskroom/fonts
+brew cask install font-fira-cod
+```
+
+`brew` 表示 homebrew
+
 ### VSCode 同步方案
 
 VSCode 的插件 Setting Sync 提供了通过 github 的 Gist 完成配置同步的功能。但是由于它的教程不完整，导致同步起来会产生省问题。最常见的问题是无法下载配置，提示信息为：`Sync : Invalid / Expired GitHub Token. Please generate new token with scopes mentioned in readme. Exception Logged in Console.`
@@ -56,7 +67,11 @@ iterm2 最强大的功能就是可以分屏。还有就是可以选中即复制�
 
 #### 下载主题
 
-官方的颜色默认是黑色的，可以去[Iterm2-color-schemes](http://iterm2colorschemes.com/)下载主题。按照上面提供的步骤设置。推荐使用 **Solarized Dark Higher Contrast**
+官方的颜色默认是黑色的，可以去[Iterm2-color-schemes](http://iterm2colorschemes.com/)下载主题，下载 tar.gz 或者 zip 的压缩包，然后会下载非常多的配色。然后按照如下图操作配色：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/iterm_1.png?raw=true)。
+
+推荐使用 **Solarized Dark Higher Contrast**
 
 #### 下载 zsh
 
@@ -66,40 +81,9 @@ zsh 可以提供一个很强的命令补全的功能，反正不太记得的命�
 curl -L https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh | sh
 ```
 
-#### 设置终端字体颜色
+`curl` 是利用URL语法在命令行方式下工作的开源文件传输工具。
 
-下载好主题后，终端颜色并没有很好看，需要进一步设置，在终端输入 `vim ~/.bash_profile`
-
-```shell
-#enables colorin the terminal bash shell export
-export CLICOLOR=1
-
-#setsup thecolor scheme for list export
-export LSCOLORS=gxfxcxdxbxegedabagacad
-
-#sets up theprompt color (currently a green similar to linux terminal)
-export PS1='\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;36m\]\w\[\033[00m\]\$ '
-#enables colorfor iTerm
-export TERM=xterm-256color
-```
-
-终端颜色就能非常漂亮了
-
-> 不确定安装了 oh my zsh 会不会能直接改变字体颜色。如果不能就照着这个设置。
-
-
-
-#### 设置 Vim 颜色
-
-在终端输入 `vim .vimrc`
-
-```shell
- syntax on
- set number
- set ruler
-```
-
-这样 Vim 就能高亮提示了。
+另外，下载之后终端会变得比较好看。
 
 
 
@@ -113,7 +97,7 @@ defaults write com.apple.finder AppleShowAllFiles -bool TRUE
 停止显示隐藏文件：
 defaults write com.apple.finder AppleShowAllFiles -bool FALSE
 ```
-**更好的方式：**
+**新系统中更好的方式：**
 
 可以使用快捷键 **shift+command+.**
 
