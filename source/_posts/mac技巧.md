@@ -9,7 +9,68 @@ tags:
 
 <!--more-->
 
-### 下载字体 Fira
+
+
+### 装机必备
+
+#### 安装 homebrew
+
+```shell
+/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+```
+
+#### 安装 cocoapods
+
+##### 修改 ruby 源
+
+```shell
+//删除默认源
+$gem sources --remove https://rubygems.org/
+//添加新源
+$gem sources -a http://gems.ruby-china.org/
+//查看
+$ gem sources -l
+```
+
+##### 安装 cocoapods
+
+```shell
+$ sudo gem install cocoapods
+```
+
+#### 安装 node
+
+```shell
+brew install node
+```
+
+安装好node自然就安装好 npm 了。
+
+#### 使用 iterm2
+
+iterm2 最强大的功能就是可以分屏。还有就是可以选中即复制，以及按住 command 点击就可以直接跳转到文件夹或者网页。
+
+##### 下载主题
+
+官方的颜色默认是黑色的，可以去[Iterm2-color-schemes](http://iterm2colorschemes.com/)下载主题，下载 tar.gz 或者 zip 的压缩包，然后会下载非常多的配色。然后按照如下图操作配色：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/iterm_1.png?raw=true)。
+
+推荐使用 **Solarized Dark Higher Contrast**
+
+##### 下载 zsh
+
+zsh 可以提供一个很强的命令补全的功能，反正不太记得的命令或者参数，只要按 tab 就行了。下载也比较简单：
+
+```bash
+curl -L https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh | sh
+```
+
+`curl` 是利用URL语法在命令行方式下工作的开源文件传输工具。
+
+另外，下载之后终端会变得比较好看。
+
+#### 下载字体 Fira
 
 字体 Fira 非常圆润，适合作为代码编辑器的字体，下载也非常简单。但是比较字体包有点大：
 
@@ -58,32 +119,6 @@ Gist 可以保存上传的配置文件。拉取配置文件需要配置两个 id
 ```shell
 sudo codesign -f -d -s - /Applications/Alfred\ 3.app/Contents/Frameworks/Alfred\ Framework.framework/Versions/A/Alfred\ Framework
 ```
-
-
-
-### 使用 iterm2
-
-iterm2 最强大的功能就是可以分屏。还有就是可以选中即复制，以及按住 command 点击就可以直接跳转到文件夹或者网页。
-
-#### 下载主题
-
-官方的颜色默认是黑色的，可以去[Iterm2-color-schemes](http://iterm2colorschemes.com/)下载主题，下载 tar.gz 或者 zip 的压缩包，然后会下载非常多的配色。然后按照如下图操作配色：
-
-![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/iterm_1.png?raw=true)。
-
-推荐使用 **Solarized Dark Higher Contrast**
-
-#### 下载 zsh
-
-zsh 可以提供一个很强的命令补全的功能，反正不太记得的命令或者参数，只要按 tab 就行了。下载也比较简单：
-
-```bash
-curl -L https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh | sh
-```
-
-`curl` 是利用URL语法在命令行方式下工作的开源文件传输工具。
-
-另外，下载之后终端会变得比较好看。
 
 
 

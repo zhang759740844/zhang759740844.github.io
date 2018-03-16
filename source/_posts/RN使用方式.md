@@ -17,16 +17,7 @@ AppRegistry.registerComponent('HelloWorldApp', () => HelloWorldApp);
 ```
 
 ### Props
-#### 简介
-组件在创建的时候传入 `Props` 来完成定制，例如：
 
-```jsx
-<Image source={pic} style={{width: 193, height: 110}} />
-```
-
-其中 `source`,`style` 都是传入 image 的 `Props`。其中 `pic` 表示一个js对象，类似后面的 `{width: 193, height: 110}`。
-
-`{pic}` 外面有个括号，表示括号内是一个js变量或者表达式，需要执行后取值，以此**在JSX中嵌入js语句**。
 
 #### 自定义组件的 Props
 自定义组件可以提高复用性。使用时在函数中引用 `this.props.属性名`，例如下面的 `name` 属性：

@@ -34,11 +34,11 @@ tags:
 
 ### View 设置宽高
 
-在 `view` 中的子控件必须要根据主轴方向，分别设置高度或者宽度大小，比如主轴是竖的，那就必须设定 `height`，如果是横的，那就必须设定 `width`，或者直接设置 `flex`，否则要么不显示，要么显示了也有问题。而次轴则不用主动设置,如果有子 `view`，则等于子 `view` 的次轴大小，没有子 `view`，则默认扩展整条长度（如果父控件设置了 `alignItems` 则不会扩展，默认子控件的最小次轴大小）。
+一个视图的显示必须要有宽高。有以下几种情况：
 
-如果 `view` 中有子 `view`，可以先不显式地设定主轴，而是通过子 `view` 来隐式地计算出主轴的大小,不过实践下来做好还是在外部就设置好。次轴同理。需要注意，如果没有必要，不要同时既设置父 `view` 又设置子 `view` ，设置了其中一个，其他的都设置成 `flex`，不然可能造成不易察觉的布局错误。
-
-关于 `view` 的计算，有一个情况要特别说明，就是 `text`。`text` 一般情况下不传大小，但是其本身是有大小的，大小默认是包含内容的最小范围。所以再用 `touchableOpacity` 之类的组件包裹 `text` 的时候，如果本身没有设置大小，那么结合上面的结论可知，`touchableOpacity` 的大小就是 `text` 的大小，这就是按钮的点击响应点只有一小条的原因。因此，对于 `touchOpacity`，一定要设置它的长和宽。
+1. 父子控件都设置了绝对宽高：那么父子控件都按照自己的绝对宽高布局。子控件可能超出父控件
+2. 父控件设置了绝对宽高，子控件使用 `flex`,`margin` 等：子控件按照父控件的宽高进行调整。适用于父控件要经常变换宽高的情况。
+3. 子控件设置了绝对宽高，父控件无宽高设置：父控件正好包裹子控件。适用于子控件要经常变换宽高的情况。
 
 ### 设置 Image
 
@@ -48,14 +48,13 @@ tags:
 
 在 JSX 中调用外部的 js方法，如果要用到 `this`， 则必须 `bind(this)` 或者使用箭头函数，否则无法识别。
 
-`render` 里可以写方法，用 `{}`括起来即可，但是` <View >` 标签里一定不能有 `{}`，就比如你要把 `View` 里的 `style` 注释掉， 一定不能直接用 `cmd+/` 这样会在 ` <>`里加入 `{}`，产生 `SyntaxError xxx.js Unexpected token,expected ...`的错误
+JSX 标签里一定不能有 `{}`，就比如你要把 `View` 里的 `style` 注释掉， 一定不能直接用 `cmd+/` 这样会在 ` <>`里加入 `{}`，产生 `SyntaxError xxx.js Unexpected token,expected ...`的错误
 
-`<View >` 标签里的属性必须要要遵守如下的形式，即必须要用等号，并且要用 `{}` 把对象包裹起来:
+`<View >` 标签里的属性必须要要遵守如下的形式，即必须要用等号，并且**要用 `{}` 把对象或者返回对象的方法包裹起来**:
 
 ```jsx
 <View 
     style = {{margin}}>
-
 </View>
 ```
 
@@ -63,7 +62,48 @@ tags:
 
 ### 如何隐藏一个组件
 
-如果让一个组件隐藏。只需要在必要的时候通过 `state` 的变化，将原来 `return` 的 `view` 变成 `return null` 就可以了
+如果让一个组件隐藏，或者根据不同情况改变组件展示。只需要在必要的时候通过 `state` 的变化，将原来 `return` 的 `view` 变成 `return null` 就可以了
+
+```jsx
+_render() {
+    return(
+    	...
+        {
+  			this.state.drawerOpen ?
+  			<TouchableOpacity style={styles.modalContainer} /> : null
+		}
+    	...
+    )
+}
+```
+
+**注意用 `{}` 包裹的部分，要么就像上面那样的一个二元选择或者是直接的一个 JSX 对象，要么就是下面这样的调用一个返回 JSX 的方法：**
+
+```
+_render() {
+    return(
+    	...
+        {
+			this._renderContent(name, type)
+		}
+    	...
+    )
+}
+
+_renderContent(name, type) {
+	if (type === 1) {
+        return(
+    		<View/>
+    	)
+	} else {
+        return(
+        	<Image/>
+        )
+	}
+}
+```
+
+**不能直接写 js 的逻辑语句，一定会报错**
 
 ### padding 和 margin 使用区别
 
@@ -87,9 +127,24 @@ style 究竟是在父控件里用 `padding` 还是在子控件里用 `margin`。
 
 比较典型的用法在于一个 View 里嵌了一个 ListView，现在要调用 ListView 的刷新方法。就可以通过 `ref` 的方式从外部拿到。
 
+### State
 
 
-### 关于Prop
+
+### Props
+
+#### 简介
+
+组件在创建的时候传入 `Props` 来完成定制，例如：
+
+```jsx
+<Image source={pic} style={{width: 193, height: 110}} />
+```
+
+其中 `source`,`style` 都是传入 image 的 `Props`。其中 `pic` 表示一个js对象，类似后面的 `{width: 193, height: 110}`。
+
+`{pic}` 外面有个括号，表示括号内是一个js变量或者表达式，需要执行后取值，以此**在JSX中嵌入单条js语句**。
+
 #### propTypes
 组件的属性可以接受任意值，字符串、对象、函数等等都可以。有时，我们需要一种机制，验证别人使用组件时，提供的参数是否符合要求。组件类的 `PropTypes` 属性，就是用来验证组件实例的属性是否符合要求。
 
@@ -111,7 +166,7 @@ Greeting.propTypes = {
 
 除了 string 外，还有许多类型的 PropTypes 可以设置。[参见](https://facebook.github.io/react/docs/typechecking-with-proptypes.html) 再举一个设置单一子节点的例子：
 
-```javscript
+```javascript
 class MyComponent extends React.Component {
   render() {
     // This must be exactly one element or it will warn.
@@ -187,12 +242,6 @@ ES6标准发布后，module 成为标准，标准的使用是以 export 指令�
 
 
 
-### 关于编译时 RCTHTTPRequestHandler.m 不存在的问题
-
-升级了一下 React-Native 的版本后（3.2=>3.8），Xcode 编译的时候出现了 `RCTHTTPRequestHandler.m not found` 的编译错误。原因应该是 `RCTHTTPRequestHandler.m` 在后面的版本变为了 `RCTHTTPRequestHandler.mm`。
-
-解决方法很简单，在 React-Native 版本升级，即使用 `npm update` 后，需要重新 `pod install` 一遍。因为 React 作为 pod 中的一项，Xcode 是通过 `pod install` 后生成的索引来定位 React 中的各个文件的。只 `npm update` 而不 `pod install`，Xcode 编译的时候通过 3.2 的文件索引，去 3.8 里找文件，就很有可能因为版本变化导致找不到文件。 
-
 
 ### TextInput 隐藏键盘
 Native 中的 `UITextField` 可以通过 `resignFirstResponder` 或者 `endEditing` 的方式取消第一响应者，从而隐藏虚拟键盘。那么，react 中如何做到隐藏键盘呢？
@@ -221,6 +270,8 @@ Native 中的 `UITextField` 可以通过 `resignFirstResponder` 或者 `endEditi
 
 这个方法很重要。组件内部属性的初始化设置只有一次，所以当组件初始化完成后，外部传入的属性值的变化不会直接引起组件内部属性值的变化，而是会回调这个方法。
 
+> 如果你在组件内部用一个变量去接 props，那么除了在 constructor 里将 props 赋值给变量外，还需要在这个方法里将 props 赋值给变量。
+
 #### boolean shouldComponentUpdate(object nextProps, object nextState)
 返回一个布尔值。在组件的 props 或者 state 改变时被执行。在初始化时或者使用  `forceUpdate` 时不被执行。
 
@@ -234,6 +285,8 @@ Native 中的 `UITextField` 可以通过 `resignFirstResponder` 或者 `endEditi
 
 #### componentWillUnmount()
 主要用来执行一些必要的清理任务。**注意，`Unmount` 的大小写。**
+
+
 
 
 ### 如何判断对象是否有某个属性
@@ -263,12 +316,8 @@ Native 中的 `UITextField` 可以通过 `resignFirstResponder` 或者 `endEditi
   o.y!==undefined; //false
   o.toString!==undefined //true
   ```
-- 在条件语句中直接判断
+  ​
 
-  ```javascript
-  var o={};
-  if(o.x) o.x+=1; //如果x是undefine,null,false," ",0或NaN,它将保持不变
-  ```
 
 
 
@@ -319,11 +368,6 @@ Promise后面括号内跟的是要异步执行的操作，`.then()`里跟的是�
 最后，为什么要用一个辅助的 Promise 去包裹？ 其实用一个类或者一个方法也是能达到同样的效果。这样的设计也很巧妙。将要执行的 Promise 的 `.then()` 作为 辅助的 Promise 的异步执行操作，达到的目的是在 `.then()` 完成后，辅助的 Promise 的异步操作才可能结束。当辅助的 Promise 的异步操作结束后，就可以调用其自己的 `.then()` 来通知要执行的 Promise 已经执行完毕（仔细想了想，其实用辅助 Promise 也没甚屌用，因为 `.then()` 是可以链式调用的如：`.then().then()`，我完全可以直接自己定义一个 `function`，比如：`(callbackLogical,callbackNotify)=>promise.then(()=>flag?执行callbackLogical:不执行callbackLogical).then(callbackNotify)`。只要调用了这个方法，那么不就都搞定了么。
 
 
-
-### 全局变量
-正如 web 中的 `window`，在 RN 中也有一个全局根属性可以挂载各种全局变量：`global`。比如上面推荐的 `react-native-storage` 用到的 `storage`,使用 `global.storage = storage` 就可以在各个地方拿到 `storage` 对象。
-
-但是要注意一点，一定要注意执行顺序，也就是必须要在使用 `global.storage` 前，将 `storage` 赋给 `global.storage`，所以要将这个赋值放到必须执行的文件中。
 
 ### 优化切换动画卡顿的问题
 
