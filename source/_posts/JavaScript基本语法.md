@@ -68,7 +68,7 @@ new Array(1, 2, 3); // 创建了数组[1, 2, 3]
 ```
 然而，出于代码的可读性考虑，强烈建议直接使用`[]`。
 
-数组的元素可以通过索引来访问。请注意，索引的起始值为0：
+数组的元素可以通过索引来访问。索引的起始值为0：
 ```javascript
 var arr = [1, 2, 3.14, 'Hello', null, true];
 arr[0]; // 返回索引为0的元素，即1
@@ -90,13 +90,23 @@ var person = {
 ```
 JavaScript对象的键都是**字符串类型**，值可以是任意数据类型。
 
-要获取一个对象的属性，我们用对象变量.属性名的方式：
+要获取一个对象的属性，可以用一下两种方式：
 ```javascript
 person.name; // 'Bob'
 person.zipcode; // null
+
+function getName() {
+    return 'name'
+}
+person[getName()]
 ```
 
+
+
+
+
 #### 变量与常量
+
 ES6 之前，变量用 `var` 修饰，但是会引起问题，包括作用域问题与变量提升问题。使用 `let` 代替。
 ```javascript
 let b = 1; // 申明了变量$b，同时给$b赋值，此时$b的值为1
@@ -342,6 +352,10 @@ a.forEach(function (element, index, array) {
 ```
 对于`Set`来说，由于没有索引，`index`也是指当前元素。
 对于`Map`来说，`element`和`index`分别对应`Value`和`Key`.
+
+### 变量的解构赋值
+
+
 
 ## 函数
 ### 函数定义和调用
