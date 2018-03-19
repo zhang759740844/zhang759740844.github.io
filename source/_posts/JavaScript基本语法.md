@@ -355,6 +355,50 @@ a.forEach(function (element, index, array) {
 
 ### 变量的解构赋值
 
+有两种解构赋值，分别为数组的解构赋值和对象的解构赋值
+
+#### 数组的解构赋值
+
+多出的部分为 undefined，可以使用展开运算符。
+
+```javascript
+let [a, b, c] = [1, 2];	// a = 1, b = 2, c = undefined
+let [x, ...y] = [1, 2, 3, 4];	// x = 1, y = [2, 3, 4]
+```
+
+解构赋值允许指定默认值，当对应的值为 undefined 时，等于默认值：
+
+```javascript
+let [x, y = 'b'] = ['a']; // x='a', y='b'
+```
+
+#### 对象的解构赋值
+
+```javascript
+let { foo, bar } = { foo: "aaa", bar: "bbb" };
+```
+
+想要改变变量的名字也是可以的，上面其实等效于：
+
+```javascript
+let { foo: foo, bar: bar } = { foo: "aaa", bar: "bbb" };
+```
+
+所以如果我们要改变变量名，可以这样：
+
+```javascript
+let { foo: param1, bar: param2 } = { foo: "aaa", bar: "bbb" };
+// param1 = aaa,	param2 = bbb
+```
+
+对象也是可以指定默认值的：
+
+```javascript
+var {x, y: z = 5} = {x: 1};
+x // 1
+z // 5
+```
+
 
 
 ## 函数
@@ -415,22 +459,8 @@ function abs(x) {
 }
 ```
 
-#### arguments
-JavaScript还有一个免费赠送的关键字`arguments`，它只在函数内部起作用，并且永远指向当前函数的调用者传入的所有参数。`arguments`类似`Array`但它不是一个`Array`：
-```javascript
-function foo(x) {
-    alert(x); // 10
-    for (var i=0; i<arguments.length; i++) {
-        alert(arguments[i]); // 10, 20, 30
-    }
-}
-foo(10, 20, 30);
-```
-利用`arguments`，你可以获得调用者传入的所有参数。也就是说，即使函数不定义任何参数，还是可以拿到参数的值.实际上arguments最常用于判断传入参数的个数。
-
 #### rest参数
-由于JavaScript函数允许接收任意个参数，于是我们就不得不用`arguments`来获取所有参数.
-ES6标准引入了`rest`参数，可以将剩余的参数放在`rest`中：
+由于JavaScript函数允许接收任意个参数，ES6标准引入了`rest`参数，可以将剩余的参数放在`rest`中：
 ```javascript
 function foo(a, b, ...rest) {
     console.log('a = ' + a);
@@ -452,198 +482,28 @@ foo(1);
 ```
 
 `rest`参数只能写在最后，前面用`...`标识，从运行结果可知，传入的参数先绑定`a`、`b`，多余的参数以数组形式交给变量`rest`，所以，不再需要`arguments`我们就获取了全部参数。
-如果传入的参数连正常定义的参数都没填满，也不要紧，`rest`参数会接收一个空数组（注意不是`undefined`）。
+如果传入的参数连正常定义的参数都没填满，`rest`参数会接收一个空数组（注意不是`undefined`）。
 
+### 参数默认值
 
+ES6 给 js 的函数提供了默认值：
+
+```javascript
+function Point(x = 0, y = 0) {
+  this.x = x;
+  this.y = y;
+}
+
+const p = new Point();
+p // { x: 0, y: 0 }
+```
+
+带默认值的参数需要写在末尾。
 
 ### 方法
-绑定到对象上的函数称为方法:
-```javascript
-var xiaoming = {
-    name: '小明',
-    birth: 1990,
-    age: function () {
-        var y = new Date().getFullYear();
-        return y - this.birth;
-    }
-};
-
-xiaoming.age; // function xiaoming.age()
-xiaoming.age(); // 今年调用是25,明年调用就变成26了
-```
-
-> 把 age 想象成 OC 中的一个 block 就好理解了。
-
-和普通函数也没啥区别，但是它在内部使用了一个`this`关键字.
-在一个方法内部，`this`是一个特殊变量，**它始终指向当前对象**，也就是`xiaoming`这个变量。所以，`this.birth`可以拿到`xiaoming`的`birth`属性。
-
-让我们拆开写：
-```javascript
-function getAge() {
-    var y = new Date().getFullYear();
-    return y - this.birth;
-}
-
-var xiaoming = {
-    name: '小明',
-    birth: 1990,
-    age: getAge
-};
-
-xiaoming.age(); // 25, 正常结果
-getAge(); // NaN
-```
-
-单独调用函数`getAge()`怎么返回了`NaN`？请注意，我们已经进入到了JavaScript的一个大坑里。JavaScript的函数内部如果调用了`this`，那么这个`this`到底指向谁？答案是，视情况而定！（如果是在浏览器中执行，那就是 `window`）如果以对象的方法形式调用，比如`xiaoming.age()`，该函数的`this`指向被调用的对象，也就是`xiaoming`，这是符合我们预期的。如果单独调用函数，比如`getAge()`，此时，该函数的`this`指向**全局对象**.
-
-更坑爹的是，如果这么写：
-```javascript
-var fn = xiaoming.age; // 这个表示拿到xiaoming的age函数，而不是拿到上下文
-fn(); // NaN
-```
-也是不行的！要保证`this`指向正确，**必须要给出明确的上下文对象**，必须用`obj.xxx()`的形式调用！谁调用，`this`就是指谁。上面仅仅相当于将`age`方法赋给`fn`.
-
->   在 ES6 之前，function 也可以通过 `new getAge()` 的方式直接创建对象。这样 this 就指向 new 出来的对象。不过 ES6 之后创建对象都使用 class 了，function 仅用来表示函数。
->
->   另外，function 中也能创建 function 的属性，你可以把它理解成闭包中保存的变量值。它的作用以及和 this 的区别在另一篇中介绍。
-
-如果是这种情况：
-```javascript
-var xiaoming = {
-    name: '小明',
-    birth: 1990,
-    age: function () {
-        function getAgeFromBirth() {
-            var y = new Date().getFullYear();
-            return y - this.birth;
-        }
-        return getAgeFromBirth();
-    }
-};
-
-xiaoming.age(); 
-```
-
-> js中允许，函数的嵌套，但是外部无法直接获取嵌套的函数，需要函数返回。**不要以为函数也有属性就把函数当成对象一样**。直接 `xiaoming.age.getAgeFromBirth()` 这是不行的。
-
-又不对了。原因是`this`指针只在`age`方法的函数内指向`xiaoming`，在函数内部定义的函数，`this`又指向`undefined`了！需要这样修改：
-
-```javascript
-var xiaoming = {
-    name: '小明',
-    birth: 1990,
-    age: function () {
-        var that = this; // 在方法内部一开始就捕获this
-        function getAgeFromBirth() {
-            var y = new Date().getFullYear();
-            return y - that.birth; // 用that而不是this
-        }
-        return getAgeFromBirth();
-    }
-};
-
-xiaoming.age(); // 25
-```
-
-用`var that = this`;将`age`中的`this`捕获，就可以放心地在方法内部定义其他函数，而不是把所有语句都堆到一个方法中。
-
-> 我觉得可以这么理解帮助记忆：每个方法里都有一个上下文context，如果用点语法的方式调用，那么就会自动将调用者设置为了上下文 context，然后就用 this 指针获取这个上下文 context。
->
-> 上面的示例中，`return getAgeFromBirth()` 没有用点语法调用，也就是没有设置 `getAgeFromBirth` 方法的上下文，那么方法中**指向上下文的** `this` 指针就是 null，所以必须要在外部再重新声明一个变量，相当于手动获取一下外部的上下文。
-
-#### apply
-我们还是可以控制`this`的指向的！
-
-要指定函数的`this`指向哪个对象，可以用函数本身的`apply`方法，它接收两个参数，第一个参数就是需要绑定的`this`变量，第二个参数是`Array`，表示函数本身的参数。
-
-用`apply`修复`getAge()`调用:
-```javascript
-function getAge() {
-    var y = new Date().getFullYear();
-    return y - this.birth;
-}
-
-var xiaoming = {
-    name: '小明',
-    birth: 1990,
-    age: getAge
-};
-
-xiaoming.age(); // 25
-getAge.apply(xiaoming, []); // 25, this指向xiaoming, 参数为空
-```
-
-再举一个例子：
-
-```javascript
-var numbers = {  
-   numberA: 5,
-   numberB: 10,
-   sum: function() {
-     console.log(this === numbers); // => true
-     function calculate() {
-       // this is window or undefined in strict mode
-       console.log(this === numbers); // => false
-       return this.numberA + this.numberB;
-     }
-     return calculate();
-   }
-};
-numbers.sum(); // => NaN or throws TypeError in strict mode  
-
-var numbers = {  
-   numberA: 5,
-   numberB: 10,
-   sum: function() {
-     console.log(this === numbers); // => true
-     function calculate() {
-       console.log(this === numbers); // => true
-       return this.numberA + this.numberB;
-     }
-     // use .call() method to modify the context
-     return calculate.call(this);
-   }
-};
-numbers.sum(); // => 15
-
-```
-
-
-上面的`call()`与`apply()`是类似的方法，唯一区别是：
-- `apply()`把参数打包成`Array`再传入；
-- `call()`把参数按顺序传入。 
-
-比如调用`Math.max(3, 5, 4)`，分别用`apply()`和`call()`实现如下：
-```javascript
-Math.max.apply(null, [3, 5, 4]); // 5
-Math.max.call(null, 3, 5, 4); // 5
-```
-对普通函数调用，我们通常把this绑定为null。
-
-#### .bind()
-
-对比方法 `.apply()` 和 `.call()`，它俩都立即执行了函数，而 `.bind()` 函数返回了一个新方法，绑定了预先指定好的 `this` ，并可以延后调用。`.bind()` 方法的作用是创建一个新的函数，执行时的上下文环境为 `.bind()` 传递的第一个参数，它允许创建预先设置好 `this` 的函数。
-
-```javascript
-var numbers = {  
-  array: [3, 5, 10],
-  getNumbers: function() {
-    return this.array;    
-  }
-};
-// Create a bound function
-var boundGetNumbers = numbers.getNumbers.bind(numbers);  
-boundGetNumbers(); // => [3, 5, 10]  
-// Extract method from object
-var simpleGetNumbers = numbers.getNumbers;  
-simpleGetNumbers(); // => undefined or throws an error in strict mode  
-```
-
-使用 `.bind()` 时应该注意，`.bind()` 创建了一个永恒的上下文链并不可修改。一个绑定函数即使使用 `.call()` 或者 `.apply()`传入其他不同的上下文环境，也不会更改它之前连接的上下文环境，重新绑定也不会起任何作用。
-
 
 #### 装饰器
-利用`apply()`，我们还可以动态改变函数的行为。
+利用`apply()`，我们可以动态改变函数的行为。
 
 JavaScript的所有对象都是动态的，即使内置的函数，我们也可以**重新指向新的函数**。
 
