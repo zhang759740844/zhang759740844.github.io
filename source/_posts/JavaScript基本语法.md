@@ -171,6 +171,19 @@ s.substring(7); // 从索引7开始到结束，返回'world'
 ```
 
 ### 数组
+
+#### 展开运算符
+
+展开运算符使用 `...` 将一个数组转为用逗号分隔的参数序列：
+
+```javascript
+console.log(1, ...[2, 3, 4], 5)
+// 相当于 =>
+// console.log(1, 2, 3, 4, 5)
+```
+
+#### length
+
 要取得`Array`的长度，直接访问`length`属性：
 ```javascript
 var arr = [1, 2, 3.14, 'Hello', null, true];
@@ -178,6 +191,7 @@ arr.length; // 6
 ```
 
 #### indexOf
+
 与`String`类似，`Array`也可以通过`indexOf()`来搜索一个指定的元素的位置：
 ```javascript
 var arr = [10, 20, '30', 'xyz'];
@@ -197,39 +211,88 @@ arr.slice(3); // 从索引3开始到结束: ['D', 'E', 'F', 'G']
 
 如果不给`slice()`传递任何参数，它就会从头到尾截取所有元素。利用这一点，我们可以很容易地复制一个`Array`
 
+#### map
 
+`map()`方法定义在JavaScript的`Array`中，我们调用`Array`的`map()`方法，传入我们自己的函数，就得到了一个新的`Array`作为结果：
+
+```javascript
+function pow(x) {
+    return x * x;
+}
+
+var arr = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+arr.map(pow); // [1, 4, 9, 16, 25, 36, 49, 64, 81]
+```
+
+`map()`将传入的函数一一作用在数组的每一个元素上。
+
+#### reduce
+
+`Array`的`reduce()`把一个函数作用在这个`Array`的`[x1, x2, x3...]`上，这个函数必须接收两个参数，`reduce()`把结果继续和序列的下一个元素做累积计算，其效果就是：
+
+```javascipt
+[x1, x2, x3, x4].reduce(f) = f(f(f(x1, x2), x3), x4)
+```
+
+比如对`Array`求和：
+
+```javascript
+var arr = [1, 3, 5, 7, 9];
+arr.reduce(function (x, y) {
+    return x + y;
+}); // 25
+```
+
+#### filter
+
+用于把`Array`的某些元素过滤掉，然后返回剩下的元素
+`Array`的`filter()`接收一个函数,把传入的函数依次作用于每个元素，然后根据返回值是`true`还是`false`决定保留还是丢弃该元素。
+
+例如，在一个`Array`中，删掉偶数，只保留奇数，可以这么写：
+
+```javascript
+var arr = [1, 2, 4, 5, 6, 9, 10, 15];
+var r = arr.filter(function (x) {
+    return x % 2 !== 0;
+});
+r; // [1, 5, 9, 15]
+```
+
+#### sort
+
+可以接收一个比较函数来实现自定义的排序
+要按数字大小排序，我们可以这么写：
+
+```javascript
+var arr = [10, 20, 1, 2];
+arr.sort(function (x, y) {
+    if (x < y) {
+        return -1;
+    }
+    if (x > y) {
+        return 1;
+    }
+    return 0;
+}); // [1, 2, 10, 20]
+```
+
+**注意**：`sort()`方法会直接对`Array`进行修改，它返回的结果仍是当前`Array`
 
 ### 对象
+
+**现在 ES6 中有了 class，我觉得现在对象更像是结构体。**
+
+定义方式如下：
+
 ```javascript
 var xiaohong = {
     name: '小红',
-    'middle-school': 'No.1 Middle School'
 };
 ```
-`xiaohong`的属性名`middle-school`不是一个有效的变量，就需要用`''`括起来。访问这个属性也无法使用`.`操作符，必须用`['xxx']`来访问：
+获取分为两种形式，点语法和`[]`语法：
 ```javascript
-xiaohong['middle-school']; // 'No.1 Middle School'
-xiaohong['name']; // '小红'
 xiaohong.name; // '小红'
-```
-
-如果属性名是其他对象，那么需要用`[]`将其括起来，表示对外部对象执行`toString()`操作：
-```javascript
-var weight = function () {
-    return "1weight"
-};
-
-var xiaoming = {
-    name :  "小明",
-    [weight()] :"属性名是返回值1weight",
-    [weight]:"属性名是整个function"
-};
-
-console.log(xiaoming)
-// 返回
-{ name: '小明',
-  '1weight': '属性名是返回值1weight',
-  'function () {\n    return "1weight"\n}': '属性名是整个function' }
+xiaohong['name']; // '小红'
 ```
 
 由于JavaScript的对象是动态类型，你可以自由地给一个对象添加或删除属性：
@@ -247,7 +310,7 @@ xiaoming.name; // undefined
 delete xiaoming.school; // 删除一个不存在的school属性也不会报错
 ```
 
-如果我们要检测`xiaoming`是否拥有某一属性，可以用`in`操作符,不过要小心，如果`in`判断一个属性存在，这个属性不一定是`xiaoming`的，它可能是`xiaoming`继承得到的：
+如果我们要检测`xiaoming`是否拥有某一属性，可以用`in`操作符，自己的和继承的都会返回 true：
 ```javascript
 'name' in xiaoming; // true
 'toString' in xiaoming; // true
@@ -460,7 +523,7 @@ function abs(x) {
 ```
 
 #### rest参数
-由于JavaScript函数允许接收任意个参数，ES6标准引入了`rest`参数，可以将剩余的参数放在`rest`中：
+由于JavaScript函数允许接收任意个参数，ES6标准引入了`rest`参数，可以将剩余的参数放在`rest`中，`rest` 是个数组：
 ```javascript
 function foo(a, b, ...rest) {
     console.log('a = ' + a);
@@ -481,10 +544,11 @@ foo(1);
 // Array []
 ```
 
-`rest`参数只能写在最后，前面用`...`标识，从运行结果可知，传入的参数先绑定`a`、`b`，多余的参数以数组形式交给变量`rest`，所以，不再需要`arguments`我们就获取了全部参数。
+> 其实相当于把 rest 展开，然后和入参对应
+
 如果传入的参数连正常定义的参数都没填满，`rest`参数会接收一个空数组（注意不是`undefined`）。
 
-### 参数默认值
+#### 参数默认值
 
 ES6 给 js 的函数提供了默认值：
 
@@ -500,221 +564,36 @@ p // { x: 0, y: 0 }
 
 带默认值的参数需要写在末尾。
 
-### 方法
+### 特性
 
-#### 装饰器
-利用`apply()`，我们可以动态改变函数的行为。
+#### name 属性
 
-JavaScript的所有对象都是动态的，即使内置的函数，我们也可以**重新指向新的函数**。
-
-现在假定我们想统计一下代码一共调用了多少次`parseInt()`，可以把所有的调用都找出来，然后手动加上`count += 1`，不过这样做太傻了。最佳方案是用我们自己的函数替换掉默认的`parseInt()`：
-```javascript
-var count = 0;
-var oldParseInt = parseInt; // 保存原函数
-
-window.parseInt = function () {
-    count += 1;
-    return oldParseInt.apply(null, arguments); // 调用原函数
-};
-
-// 测试:
-parseInt('10');
-parseInt('20');
-parseInt('30');
-count; // 3
-```
-
-### 高阶函数
-一个可以接收另一个函数作为参的函数，称为高阶函数。
-#### map
-`map()`方法定义在JavaScript的`Array`中，我们调用`Array`的`map()`方法，传入我们自己的函数，就得到了一个新的`Array`作为结果：
-```javascript
-function pow(x) {
-    return x * x;
-}
-
-var arr = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-arr.map(pow); // [1, 4, 9, 16, 25, 36, 49, 64, 81]
-```
-
-`map()`将传入的函数一一作用在数组的每一个元素上。
-
-#### reduce
-`Array`的`reduce()`把一个函数作用在这个`Array`的`[x1, x2, x3...]`上，这个函数必须接收两个参数，`reduce()`把结果继续和序列的下一个元素做累积计算，其效果就是：
-```javascipt
-[x1, x2, x3, x4].reduce(f) = f(f(f(x1, x2), x3), x4)
-```
-
-比如对`Array`求和：
-```javascript
-var arr = [1, 3, 5, 7, 9];
-arr.reduce(function (x, y) {
-    return x + y;
-}); // 25
-```
-
-#### filter
-用于把`Array`的某些元素过滤掉，然后返回剩下的元素
-`Array`的`filter()`接收一个函数,把传入的函数依次作用于每个元素，然后根据返回值是`true`还是`false`决定保留还是丢弃该元素。
-
-例如，在一个`Array`中，删掉偶数，只保留奇数，可以这么写：
-```javascript
-var arr = [1, 2, 4, 5, 6, 9, 10, 15];
-var r = arr.filter(function (x) {
-    return x % 2 !== 0;
-});
-r; // [1, 5, 9, 15]
-```
-
-#### sort
-可以接收一个比较函数来实现自定义的排序
-要按数字大小排序，我们可以这么写：
-```javascript
-var arr = [10, 20, 1, 2];
-arr.sort(function (x, y) {
-    if (x < y) {
-        return -1;
-    }
-    if (x > y) {
-        return 1;
-    }
-    return 0;
-}); // [1, 2, 10, 20]
-```
-
-**注意**：`sort()`方法会直接对`Array`进行修改，它返回的结果仍是当前`Array`
-
-### 闭包
-#### 函数作为返回值
-高阶函数除了可以接受函数作为参数外，还可以把函数作为结果值返回。
-
-比如返回一个求和的函数：
-```javascript
-function lazy_sum(arr) {
-    var sum = function () {
-        return arr.reduce(function (x, y) {
-            return x + y;
-        });
-    }
-    return sum;
-}
-```
-当我们调用`lazy_sum()`时，返回的并不是求和结果，而是求和函数：
-```javascript
-var f = lazy_sum([1, 2, 3, 4, 5]); // function sum()
-```
-调用函数f时，才真正计算求和的结果：
-```javascript
-f(); // 15
-```
-当`lazy_sum`返回函数`sum`时，相关参数和变量都保存在返回的函数中，这种称为“闭包（Closure）”(但是JS中`this`不遵循闭包)
-
-#### 闭包
-需要注意的问题是，返回的函数并没有立刻执行，而是直到调用了f()才执行。我们来看一个例子：
-```javascript
-function count() {
-    var arr = [];
-    for (var i=1; i<=3; i++) {
-        arr.push(function () {
-            return i * i;
-        });
-    }
-    return arr;
-}
-
-var results = count();
-var f1 = results[0];
-var f2 = results[1];
-var f3 = results[2];
-```
-
-上面的例子中，每次循环，都创建了一个新的函数，然后，把创建的3个函数都添加到一个Array中返回了，**或者说返回了三个闭包**。调用的结果全是`16`,因为返回函数都引用了变量`i`，由于闭包性，等到3个函数都返回时，它们所引用的变量i已经变成了`4`。
-
-**这是因为 JS 中的闭包对外部变量都是引用传递。**
-
-> 这和 iOS 中的闭包不同，iOS 中会捕获外部的局部变量，也就是保存值。所以 i 是几就是几，而 js 中应该只是获得了 i 的地址。
-
-那么怎么修改呢？有两种方法，**一种方法是将引用传递变为值传递。还有一种是不要引用同一个变量**。
-
-**方法一**是外部再创建一个函数，由传参的方式把变量传入。这样就是将引用传递变为值传递了。无论该循环变量后续如何更改，已绑定到函数参数的值不变：
+函数的 `name`属性，返回函数的函数名：
 
 ```javascript
-function count() {
-    var arr = [];
-    for (var i=1; i<=3; i++) {
-        arr.push((function (n) {
-            return function () {
-                return n * n;
-            }
-        })(i));
-    }
-    return arr;
-}
-
-var results = count();
-var f1 = results[0];
-var f2 = results[1];
-var f3 = results[2];
-
-f1(); // 1
-f2(); // 4
-f3(); // 9
+function foo() {}
+foo.name // "foo"
 ```
 
-注意这里用了一个“创建一个匿名函数并立刻执行”的语法：
-```javascript
-(function (x) {
-    return x * x;
-})(3); // 9
-```
+#### 箭头函数
 
-**实际上，上面的代码相当于在外层函数拿了一个变量`n`截取了`i`,由于外层函数是立刻执行了的匿名函数(即立刻执行了`var n = i;`)，那么`n`就固定了下来**：
-```javascript
-function count() {
-    var arr = [];
-    for (var i=1; i<=3; i++) {
-        arr.push((function () {
-            var n =i
-            return function () {
-                return n*n;
-            }
-        })());
-    }
-    return arr;
-}
-```
-
-
-> 这里就相当于每个循环都创建了一个独立的 n，上面呢是公用一个 i
-
-更直接的方式就是**方法二**，用 `let` 代替 `var`。因为 `var` 的作用域是函数，所以，循环期间 `i` 是不会回收的。但是如果是 `let`，那么作用域就是循环的循环体。也就是每次循环体执行，都会创建一个新的 `i`，而不是像 `var` 一样公用一个.
-
-```javascript
-function count() {
-    var arr = [];
-    for (let i=1; i<=3; i++) {
-        arr.push((function () {
-            return function () {
-                return i*i;
-            }
-        })());
-    }
-    return arr;
-}
-```
-
-### 箭头函数
 ES6标准新增了一种新的函数：Arrow Function（箭头函数）。
+
 ```javascript
 x => x*x
 ```
+
 相当于一个输入为`x`输出为`x*x`的匿名函数
+
 ```
 function (x) {
     return x * x;
 }
+
 ```
+
 如果参数不是一个，就需要用括号()括起来：
+
 ```javascript
 // 两个参数:
 (x, y) => x * x + y * y
@@ -731,10 +610,12 @@ function (x) {
     return sum;
 }
 ```
-语法糖，类似于python中的lambda函数
+
+> 语法糖，类似于python中的lambda函数
 
 当然，箭头函数还是有点用处的，由于是es6的新特性，**箭头函数内部的this是词法作用域**，由上下文确定。
 试做比较：
+
 ```javascript
 //由于JavaScript函数对this绑定的错误处理，下面的例子无法得到预期结果
 var obj = {
@@ -758,6 +639,7 @@ var obj = {
 };
 obj.getAge(); // 25
 ```
+
 如果使用箭头函数,以前 `var that = this;` 以及 `.apply()` 和 `.call()` 这种写法就不需要了。
 
 **箭头函数并不创建它自身执行的上下文，使得 `this` 取决于它在定义时的外部函数**。
@@ -775,7 +657,43 @@ obj.getAge(); // 25
 >
 > 这里并没有外部函数，所以箭头函数里的 this 永远是 undefined
 
+
+#### 装饰器
+利用`apply()`，我们可以动态改变函数的行为。
+
+JavaScript的所有对象都是动态的，即使内置的函数，我们也可以**重新指向新的函数**。
+
+现在假定我们想统计一下代码一共调用了多少次`parseInt()`，可以把所有的调用都找出来，然后手动加上`count += 1`，不过这样做太傻了。最佳方案是用我们自己的函数替换掉默认的`parseInt()`：
+```javascript
+var count = 0;
+var oldParseInt = parseInt; // 保存原函数
+
+window.parseInt = function () {
+    count += 1;
+    return oldParseInt.apply(null, arguments); // 调用原函数
+};
+
+// 测试:
+parseInt('10');
+parseInt('20');
+parseInt('30');
+count; // 3
+```
+
+`apply()` 接收两个参数，第一个参数表示调用的对象，第二个参数是入参数组。此处的 `arguments` 表示的是外部 function 的入参，是 js 提供的一个参数。
+
+#### 闭包
+
+**这是因为 JS 中的闭包对外部变量都是指针传递，而不是引用传递。**。
+
+iOS 中的闭包都是引用传递，外部变量相当于是以参数的形式传入的，也就是说，闭包内改变外部变量的值，外部变量不会变化。
+
+js 中的闭包，相当于外部变量的地址都获得了。闭包内改变外部变量的值，外部变量的值相应改变。
+
+
+
 ### generator
+
 generator（生成器）是ES6标准引入的新的数据类型，类似于Python的generator的概念和语法。一个generator看上去像一个函数，但可以返回多次。
 
 定义如下：
