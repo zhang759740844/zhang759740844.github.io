@@ -152,7 +152,7 @@ s[7]; // 'w'
 s[12]; // '!'
 ```
 
-字符串相当于是一个不能改变的数组。
+**字符串相当于是一个不能改变的数组。**
 
 #### indexOf
 `indexOf()`会搜索指定字符串出现的位置:
@@ -201,15 +201,33 @@ arr.indexOf(30); // 元素30没有找到，返回-1
 arr.indexOf('30'); // 元素'30'的索引为2
 ```
 
-#### slice
-`slice()`就是对应`String`的`substring()`版本，它截取`Array`的部分元素，然后返回一个新的`Array`：
+#### 万能方法 splice
+
+为数组添加和删除元素有很多方法，包括 push，pop，unshift，shift，slice，concat。这些都可以使用 `splice` 代替：
+
 ```javascript
-var arr = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
-arr.slice(0, 3); // 从索引0开始，到索引3结束，但不包括索引3: ['A', 'B', 'C']
-arr.slice(3); // 从索引3开始到结束: ['D', 'E', 'F', 'G']
+var arr = ['Microsoft', 'Apple', 'Yahoo', 'AOL', 'Excite', 'Oracle'];
+// 从索引2开始删除3个元素,然后再添加两个元素:
+arr.splice(2, 3, 'Google', 'Facebook'); // 返回删除的元素 ['Yahoo', 'AOL', 'Excite']
+arr; // ['Microsoft', 'Apple', 'Google', 'Facebook', 'Oracle']
+// 只删除,不添加:
+arr.splice(2, 2); // ['Google', 'Facebook']
+arr; // ['Microsoft', 'Apple', 'Oracle']
+// 只添加,不删除:
+arr.splice(2, 0, 'Google', 'Facebook'); // 返回[],因为没有删除任何元素
+arr; // ['Microsoft', 'Apple', 'Google', 'Facebook', 'Oracle']
 ```
 
-如果不给`slice()`传递任何参数，它就会从头到尾截取所有元素。利用这一点，我们可以很容易地复制一个`Array`
+第一个元素是起始索引(从0开始)，第二个参数是删除元素个数。后面的参数是要添加的元素。
+
+#### join 
+
+`join` 方法是一个非常实用的方法，用于当前`Array`的每个元素都用指定的字符串连接起来，然后返回连接后的字符串：
+
+```javascript
+var arr = ['A', 'B', 'C', 1, 2, 3];
+arr.join('-'); // 'A-B-C-1-2-3'
+```
 
 #### map
 
@@ -280,6 +298,8 @@ arr.sort(function (x, y) {
 
 ### 对象
 
+#### 基本使用
+
 **现在 ES6 中有了 class，我觉得现在对象更像是结构体。**
 
 定义方式如下：
@@ -324,12 +344,86 @@ xiaoming.hasOwnProperty('name'); // true
 xiaoming.hasOwnProperty('toString'); // false
 ```
 
+#### 属性的简写
+
+ES6 中允许创建对象的时候，简写属性，直接以变量名称作为属性名。比如：
+
+```javascript
+let birth = '2000/01/01';
+
+const Person = {
+
+  name: '张三',
+
+  //等同于birth: birth
+  birth,
+
+  // 等同于hello: function ()...
+  hello() { console.log('我的名字是', this.name); }
+
+};
+```
+
+#### Object.assign()
+
+这个方法是非常有用的一个方法。用于**为对象添加属性，方法，克隆对象，合并对象**。第一个是目标对象，我们可以使用空对象，后面对象的属性会覆盖前面对象的属性：
+
+```javascript
+const target = {};
+
+const source1 = { b: 2, c: 2 };
+const source2 = { c: 3 };
+
+Object.assign(target, source1, source2);
+target // {b:2, c:3}
+```
+
+> 这个和闭包一样，也是指针传递，生成的 target 对象或者源 source 对象，两者任一改动都会触发另外对象的改动。
+>
+> 除了方法是**基本类型是值传递，对象类型是引用传递。**其他都是指针传递。
+>
+> （网上纠结的什么传递地址也是值传递，就当是扯淡吧，理解意思就行）
+
+#### Object.entries()
+
+返回一个数组，成员是参数对象自身的（不含继承的）所有可遍历属性的键值对数组：
+
+```javascript
+const obj = { foo: 'bar', baz: 42 };
+Object.entries(obj)
+// [ ["foo", "bar"], ["baz", 42] ]
+```
+
+配合 `for...of...` 可以拿到所有键值。
+
+> 可以用它来将对象转化为 Map
+
+#### JSON.stringify()
+
+一个对象你在打印log的时候，可能会给你返回 `[object object]`。此时，你需要将对象展开，可以使用 `JSON.stringify()` 方法。
+
+#### 展开运算符
+
+在 ES2018 中，对象也能使用展开运算符 `…`。还是将对象以 `,` 隔开。的方式展开。一般用于对象的复制，类似于 `Object.assign()`
+
+```javascript
+let z = { a: 3, b: 4 };
+let n = { ...z };
+n // { a: 3, b: 4 }
+```
+
+
+
 ### Map和Set
+
 JS中默认对象表达方式`{}`可以视为其他语言中的`Map`或`Dictionary`的数据结构，即一组键值对。
 但是JavaScript的对象有个小问题，就是**键必须是字符串**。但实际上Number或者其他数据类型作为键也是非常合理的。
 为了解决这个问题，最新的ES6规范引入了新的数据类型`Map`。
 
 #### Map
+
+Map 可以接受一个数组，数组元素是键值对的数组：
+
 ```javascript
 var m = new Map([['Michael', 95], ['Bob', 75], ['Tracy', 85]]);
 m.delete('Adam'); // 删除key 'Adam'
@@ -337,7 +431,28 @@ m.get('Michael'); // 95
 m.set('Zachary', 100);
 ```
 
+这个结构是不是很熟悉？`Object.entries()` 返回的就是这样的数组中包含了键值对数组的形式。所以说，可以用 `Object.entries()` 创建 Map。因为直接把返回值作为参数传入 Map 即可。
+
+> 对象可以变为 Map，但是 Map 不一定能变为对象。所以创建 Map 的时候的入参不能以对象的形式。
+
+##### 方法
+
+- `size` 属性返回 Map 结构的成员总数，类似数组的 `length`
+- `set(key, value)`：设置键名`key`对应的键值为`value`，然后返回整个 Map 结构
+- `get(key)`: 读取`key`对应的键值，如果找不到`key`，返回`undefined`。
+- `has(key)`:返回一个布尔值，表示某个键是否在当前 Map 对象之中。
+- `delete(key)`:`delete`方法删除某个键，返回`true`。如果删除失败，返回`false`。
+- `clear()`:清除所有成员，没有返回值。
+- `entries()`:返回所有成员的遍历器。配合 `for...of...`
+
+####  WeakMap
+
+WeakMap 的**键是对象类型**。如果你要往对象上添加数据，又不想干扰垃圾回收机制，就可以使用 WeakMap。
+
+**注意弱引用的是键，而不是值**
+
 #### Set
+
 重复元素在Set中自动被过滤：
 ```javascript
 var s = new Set([1, 2, 3, 3, '3']);
@@ -345,22 +460,18 @@ s; // Set {1, 2, 3, "3"}
 ```
 注意数字`3`和字符串`'3'`是不同的元素。
 
-通过`add(key)`方法可以添加元素到`Set`中，可以重复添加，但不会有效果：
-```javascript
->>> s.add(4)
->>> s
-{1, 2, 3, 4}
->>> s.add(4)
->>> s
-{1, 2, 3, 4}
-```
-通过delete(key)方法可以删除元素：
-```javascript
-var s = new Set([1, 2, 3]);
-s; // Set {1, 2, 3}
-s.delete(3);
-s; // Set {1, 2}
-```
+##### 方法
+
+- `add(value)`：添加某个值。
+- `delete(value)`：删除某个值，返回一个布尔值
+- `has(value)`：返回一个布尔值，表示该值是否为`Set`的成员。
+- `clear()`：清除所有成员。
+
+#### WeakSet
+
+WeakSet 中**只能存对象**。并且都是弱引用。
+
+WeakSet **不能遍历**。因为所有对象都是弱引用，随时可能消失。
 
 ### iterable
 ES6标准引入了新的`iterable`类型，`Array`、`Map`和`Set`都属于`iterable`类型。
@@ -744,198 +855,11 @@ function* next_id() {
 }
 ```
 
-## 标准对象
-一些原则：
-- 不要使用`new Number()`、`new Boolean()`、`new String()`创建包装对象；
-- 用`parseInt()`或`parseFloat()`来转换任意类型到`number`；
-- 用`String()`来转换任意类型到`string`，或者直接调用某个对象的`toString()`方法；
-- 通常不必把任意类型转换为`boolean`再判断，因为可以直接写`if (myVar) {...}`；
-- `typeof`操作符可以判断出`number`、`boolean`、`string`、`function`和`undefined`；
-- 判断`Array`要使用`Array.isArray(arr)`；
-- 判断`null`请使用`myVar === null`；
-- 判断某个全局变量是否存在用`typeof window.myVar === 'undefined'`；
+## 不太常用的ES6特性
 
-### Date
-在JavaScript中，`Date`对象用来表示日期和时间。
+### Proxy
 
-要获取系统当前时间，用：
-```javascript
-var now = new Date();
-now; // Wed Jun 24 2015 19:49:22 GMT+0800 (CST)
-now.getFullYear(); // 2015, 年份
-now.getMonth(); // 5, 月份，注意月份范围是0~11，5表示六月
-now.getDate(); // 24, 表示24号
-now.getDay(); // 3, 表示星期三
-now.getHours(); // 19, 24小时制
-now.getMinutes(); // 49, 分钟
-now.getSeconds(); // 22, 秒
-now.getMilliseconds(); // 875, 毫秒数
-now.getTime(); // 1435146562875, 以number形式表示的时间戳
-```
 
-如果要创建一个指定日期和时间的Date对象，可以用：
-```javascript
-var d = new Date(2015, 5, 19, 20, 15, 30, 123);
-d; // Fri Jun 19 2015 20:15:30 GMT+0800 (CST)
-```
-
-一个非常非常坑爹的地方，就是JavaScript的月份范围用整数表示是`0~11`，`0`表示一月，`1`表示二月……，所以要表示`6`月，我们传入的是`5`！
-
-第二种创建一个指定日期和时间的方法是解析一个符合ISO 8601格式的字符串：
-```javascript
-var d = Date.parse('2015-06-24T19:49:22.875+08:00');
-d; // 1435146562875
-```
-但它返回的不是`Date`对象，而是一个**时间戳**。不过有时间戳就可以很容易地把它转换为一个`Date`：
-```javascript
-var d = new Date(1435146562875);
-d; // Wed Jun 24 2015 19:49:22 GMT+0800 (CST)
-```
-
-时间戳是个什么东西？时间戳是一个自增的整数，它表示从1970年1月1日零时整的GMT时区开始的那一刻，到现在的毫秒数。假设浏览器所在电脑的时间是准确的，那么世界上无论哪个时区的电脑，它们此刻产生的时间戳数字都是一样的，所以，时间戳可以精确地表示一个时刻，并且与时区无关。
-
-要获取当前时间戳，可以用：
-```javascript
-if (Date.now) {
-    alert(Date.now()); // 老版本IE没有now()方法
-} else {
-    alert(new Date().getTime());
-}
-```
-
-### Json
-JSON（JavaScript Object Notation）实际上是JavaScript的一个子集。在JSON中，一共就这么几种数据类型：
-- number：和JavaScript的`number`完全一致；
-- boolean：就是JavaScript的`true`或`false`；
-- string：就是JavaScript的`string`；
-- null：就是JavaScript的`null`；
-- array：就是JavaScript的`Array`表示方式——`[]`；
-- object：就是JavaScript的`{ ... }`表示方式。
-
-#### 序列化
-
-> 这个还是蛮有用的，可以打印出 js 中的对象
-
-先把小明这个对象序列化成JSON格式的字符串：
-```javascript
-var xiaoming = {
-    name: '小明',
-    age: 14,
-    gender: true,
-    height: 1.65,
-    grade: null,
-    'middle-school': '\"W3C\" Middle School',
-    skills: ['JavaScript', 'Java', 'Python', 'Lisp']
-};
-
-JSON.stringify(xiaoming); // '{"name":"小明","age":14,"gender":true,"height":1.65,"grade":null,"middle-school":"\"W3C\" Middle School","skills":["JavaScript","Java","Python","Lisp"]}'
-```
-
-要输出得好看一些，可以加上参数，按缩进输出：
-```javascript
-JSON.stringify(xiaoming, null, '  ');
-```
-结果：
-```javascript
-{
-  "name": "小明",
-  "age": 14,
-  "gender": true,
-  "height": 1.65,
-  "grade": null,
-  "middle-school": "\"W3C\" Middle School",
-  "skills": [
-    "JavaScript",
-    "Java",
-    "Python",
-    "Lisp"
-  ]
-}
-```
-第二个参数用于控制如何筛选对象的键值，如果我们只想输出指定的属性，可以传入`Array`：
-```javascript
-JSON.stringify(xiaoming, ['name', 'skills'], '  ');
-```
-结果:
-```javascript
-{
-  "name": "小明",
-  "skills": [
-    "JavaScript",
-    "Java",
-    "Python",
-    "Lisp"
-  ]
-}
-```
-还可以传入一个函数，这样对象的每个键值对都会被函数先处理：
-```javascript
-function convert(key, value) {
-    if (typeof value === 'string') {
-        return value.toUpperCase();
-    }
-    return value;
-}
-
-JSON.stringify(xiaoming, convert, '  ');
-```
-上面的代码把所有属性值都变成大写：
-
-```javascript
-{
-  "name": "小明",
-  "age": 14,
-  "gender": true,
-  "height": 1.65,
-  "grade": null,
-  "middle-school": "\"W3C\" MIDDLE SCHOOL",
-  "skills": [
-    "JAVASCRIPT",
-    "JAVA",
-    "PYTHON",
-    "LISP"
-  ]
-}
-```
-如果我们还想要精确控制如何序列化小明，可以给`xiaoming`定义一个`toJSON()`的方法，直接返回JSON应该序列化的数据：
-```javascript
-var xiaoming = {
-    name: '小明',
-    age: 14,
-    gender: true,
-    height: 1.65,
-    grade: null,
-    'middle-school': '\"W3C\" Middle School',
-    skills: ['JavaScript', 'Java', 'Python', 'Lisp'],
-    toJSON: function () {
-        return { // 只输出name和age，并且改变了key：
-            'Name': this.name,
-            'Age': this.age
-        };
-    }
-};
-
-JSON.stringify(xiaoming); // '{"Name":"小明","Age":14}'
-```
-
-#### 反序列化
-拿到一个JSON格式的字符串，我们直接用`JSON.parse()`把它变成一个JavaScript对象：
-```javascript
-JSON.parse('[1,2,3,true]'); // [1, 2, 3, true]
-JSON.parse('{"name":"小明","age":14}'); // Object {name: '小明', age: 14}
-JSON.parse('true'); // true
-JSON.parse('123.45'); // 123.45
-```
-`JSON.parse()`还可以接收一个函数，用来转换解析出的属性：
-```javascript
-JSON.parse('{"name":"小明","age":14}', function (key, value) {
-    // 把number * 2:
-    if (key === 'name') {
-        return value + '同学';
-    }
-    return value;
-}); // Object {name: '小明同学', age: 14}
-```
 
 ## 面向对象编程
 JavaScript不区分类和实例的概念，而是通过原型（prototype）来实现面向对象编程。
@@ -1027,3 +951,9 @@ class PrimaryStudent extends Student {
 ```
 
 通过`super(name)`来调用父类的构造函数。`PrimaryStudent`已经自动获得了父类`Student`的`hello`方法，我们又在子类中定义了新的`myGrade`方法。
+
+
+
+## 没有看的
+
+- symbol 部分
