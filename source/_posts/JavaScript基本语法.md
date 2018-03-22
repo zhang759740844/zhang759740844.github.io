@@ -859,6 +859,109 @@ function* next_id() {
 
 ### Proxy
 
+Proxy 就如字面所说的，是 ES6 提供的代理模式的封装。ES6 原生提供 Proxy 构造函数，用来生成 Proxy 实例:
+
+```javascript
+var proxy = new Proxy(target, handler);
+```
+
+第一个参数是被代理对象，第二个参数是要拦截的行为对象。当调用代理对象的被拦截行为时，触发代理方法。常用的拦截行为有以下几种：
+
+#### get(),set()
+
+```javascript
+var obj = new Proxy({}, {
+  get: function (target, key, receiver) {
+    console.log(`getting ${key}!`);
+    return Reflect.get(target, key, receiver);
+  },
+  set: function (target, key, value, receiver) {
+    console.log(`setting ${key}!`);
+    return Reflect.set(target, key, value, receiver);
+  }
+});
+
+obj.count = 1
+//  setting count!
+++obj.count
+//  getting count!
+//  setting count!
+//  2
+```
+
+其中，代理对象是 `obj`，被代理的对象是 `{}` 空对象，拦截的行为是 get，set 方法。也就是说，任何对于 `obj` 的读取写入操作都将执行代理方法。
+
+get，set 方法的参数也很好理解。`target` 表示被代理对象，`key` 表示要进行读写操作的属性，`value` 就是写操作的值。`receiver` 就是代理对象 `obj`。（先不用关 `Reflect`）。
+
+如果`handler`没有设置任何拦截，那就等同于直接通向原对象：
+
+```javascript
+var target = {};
+var handler = {};
+var proxy = new Proxy(target, handler);
+proxy.a = 'b';
+target.a // "b"
+```
+
+#### apply()
+
+`apply` 方法**拦截函数的调用、`call `和 `apply` 操作**。可以**接受三个参数：目标对象(函数）、目标对象上下文对象(this)、目标对象的参数数组**。
+
+```javascript
+var twice = {
+  apply (target, context, args) {
+    return Reflect.apply(...arguments) * 2;
+  }
+};
+function sum (left, right) {
+  return left + right;
+};
+var proxy = new Proxy(sum, twice);
+proxy(1, 2) // 6
+proxy.call(null, 5, 6) // 22
+proxy.apply(null, [7, 8]) // 30
+```
+
+注意这里的 `...arguments` 表示的是 `target`,`context`以及`args`的全部。
+
+#### construct()
+
+`construct` 方法用于**拦截 `new` 命令**。接受两个参数：**目标对象(类对象)，构建函数的参数对象**。
+
+```javascript
+class A {
+    constructor() {
+        this.a = 1
+    }
+}
+
+let Aproxy = new Proxy(A, {
+    construct: function(target, args){
+        return new target(...args)
+    }
+});
+
+let a = new Aproxy()
+console.log(a.a) //1
+```
+
+注意，**拦截的是 `new` 命令，不是拦截的 `constructor` 命令**，所以，拦截方法要返回一个 `target` 创建的新对象。
+
+### Reflect
+
+`Reflect` 提供了一种方式非常规的调用方式。比如上面的 get，set 方法。
+
+```javascript
+Reflect.get(target, key, receiver);
+//等效于 => target[key]
+
+Reflect.set(target, key, value, receiver);
+//等效于 => target[key] = value
+
+Reflect.apply(target, context, args)
+//等效于 => target.apply(context, args)
+```
+
 
 
 ## 面向对象编程
