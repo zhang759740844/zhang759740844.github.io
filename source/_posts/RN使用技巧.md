@@ -12,6 +12,16 @@ tags:
 
 <!--more-->
 
+###  `React/RCTBridgeModule.h` file not found 解决方式
+
+这个问题是因为，Xcode 尝试去**并行编译** RN 的库，导致一些依赖于 React 的库在 React 库编译前编译。
+
+因此，我们要先编译 React，并且取消并行编译。如图：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/RN_Build.png?raw=true)
+
+通过 `Edit Scheme` 然后添加 React 这个 Target，然后取消 `Parallelize Build`。
+
 ### `keyboardShouldPersistTaps` 的使用
 
 `keyboardShouldPersistTaps` 这是 `scrollview` 中的一个属性。
@@ -129,7 +139,16 @@ style 究竟是在父控件里用 `padding` 还是在子控件里用 `margin`。
 
 ### State
 
+state 中存放一些与视图有关的变量。与视图无关的变量，直接在构造器里作为自身属性创建。可以有两种方式便便 state：
 
+```javascript
+// 方式一
+this.state.someProp = 1
+// 方式二
+this.setState({ someProp : 1 })
+```
+
+其中，方式二能在改变 State 的同时刷新视图。
 
 ### Props
 
@@ -288,87 +307,6 @@ Native 中的 `UITextField` 可以通过 `resignFirstResponder` 或者 `endEditi
 
 
 
-
-### 如何判断对象是否有某个属性
-- 使用in关键字 该方法可以判断对象的自有属性和继承来的属性是否存在。
-
-  ```javascript
-  var o={x:1};
-  "x" in o; //true，自有属性存在
-  "y" in o; //false
-  "toString" in o; //true，是一个继承属性
-  ```
-
-- 使用对象的hasOwnProperty()方法 该方法只能判断自有属性是否存在，对于继承属性会返回false。
-
-  ```javascript
-  var o={x:1};
-  o.hasOwnProperty("x"); 　　 //true，自有属性中有x
-  o.hasOwnProperty("y"); 　　 //false，自有属性中不存在y
-  o.hasOwnProperty("toString"); //false，这是一个继承属性，但不是自有属性
-  ```
-
-- 用undefined判断 自有属性和继承属性均可判断。
-
-  ```javascript
-  var o={x:1};
-  o.x!==undefined; //true
-  o.y!==undefined; //false
-  o.toString!==undefined //true
-  ```
-  ​
-
-
-
-
-### 可取消的Promise
-`Promise`是 React Native 开发过程中用于异步操作的最常用的 API，但 Promise 没有提供用于取消异步操作的方法。为了实现可取消的异步操作，我们可以为 Promise 包裹一层可取消的外衣。    
-
-```javascript
-const makeCancelable = (promise) => {
-  let hasCanceled_ = false;
-  const wrappedPromise = new Promise((resolve, reject) => {
-    promise.then((val) =>
-      hasCanceled_ ? reject({isCanceled: true}) : resolve(val)
-    );
-    promise.catch((error) =>
-      hasCanceled_ ? reject({isCanceled: true}) : reject(error)
-    );
-  });
-  return {
-    promise: wrappedPromise,
-    cancel() {
-      hasCanceled_ = true;
-    },
-  };
-};  
-```
-
-然后可以这样使用取消操作：   
-
-```javascript
-const somePromise = new Promise(r => setTimeout(r, 1000));//创建一个异步操作
-const cancelable = makeCancelable(somePromise);//为异步操作添加可取消的功能
-cancelable
-  .promise
-  .then(() => console.log('resolved'))
-  .catch(({isCanceled, ...error}) => console.log('isCanceled', isCanceled));
-// 取消异步操作
-cancelable.cancel();   
-```
-
-Promise后面括号内跟的是要异步执行的操作，`.then()`里跟的是异步操作执行完后的回调函数。取消 Promise 换句话说也就是取消 `.then()` 里的回到函数的执行。
-
-这里通过创建一个辅助的 Promise 来包裹要执行的 Promise，这个设计非常的巧妙。
-
-首先，如何实现取消 `.then()` 里的毁掉函数的执行？那么就不能用 `.then(callback)` 的形式了，而要有一个标识位判断：`.then(()=>flag?执行:不执行)`。
-
-那么 `flag` 定义在哪？肯定不能直接作为一个变量定义在执行 Promise 的类里，因为这个类可能有多个 Promise 任务要处理，创建多个 `flag` 显然不是一个好的选择。那么就可以新建一个 `class`，这个 `class` 里包含 `flag` 以及这个 Promise，这就需要每次创建 Promise 的时候都 `new` 一个对象出来。这个方式可行，但是不够优雅。由于 Js 是弱类型的，我们没有必要专门定义一个 `class`，反正都是 `var`。因此，就应该像上面那样通过一个方法，直接 `return` 一个 `{}` 包裹起来的对象。因为 `return` 的这个对象用到了 `hasCanceled` 这个参数，由于有闭包性，在 `return` 的这个对象被销毁前 `hasCanceled` 都是可触及的。
-
-最后，为什么要用一个辅助的 Promise 去包裹？ 其实用一个类或者一个方法也是能达到同样的效果。这样的设计也很巧妙。将要执行的 Promise 的 `.then()` 作为 辅助的 Promise 的异步执行操作，达到的目的是在 `.then()` 完成后，辅助的 Promise 的异步操作才可能结束。当辅助的 Promise 的异步操作结束后，就可以调用其自己的 `.then()` 来通知要执行的 Promise 已经执行完毕（仔细想了想，其实用辅助 Promise 也没甚屌用，因为 `.then()` 是可以链式调用的如：`.then().then()`，我完全可以直接自己定义一个 `function`，比如：`(callbackLogical,callbackNotify)=>promise.then(()=>flag?执行callbackLogical:不执行callbackLogical).then(callbackNotify)`。只要调用了这个方法，那么不就都搞定了么。
-
-
-
 ### 优化切换动画卡顿的问题
 
 使用API `InteractionManager`，它的作用就是可以使本来 JS 的一些操作在动画完成之后执行，这样就可确保动画的流程性。当然这是在延迟执行为代价上来获得帧数的提高。
@@ -384,7 +322,10 @@ InteractionManager.runAfterInteractions(()=>{
 })
 ```
 
+一般这个方法都放在 `componentDidMount` 里。
+
 ### React-Native 原生模块调用(iOS)
+
 在项目中遇到地图,拨打电话,清除缓存等iOS与Andiorid机制不同的功能,就需要调用原生的界面或模块。
 
 #### 创建原生模块，实现“RCTBridgeModule”协议
@@ -426,7 +367,7 @@ let LoginViewController = NativeModules.LoginViewController;
 LoginViewController.showSVProgressHUDErrorWithStatus('请输入正确的手机号',(callbackString) => {console.log(callbackString);});     
 ```
 
-### React Native 真机调试 
+### React Native 调试 
 开发中真机调试是必不可少的,有些功能和问题模拟器是无法重现的,所以就需要配合真机测试
 
 #### iOS 真机调试
@@ -443,8 +384,28 @@ RCTRootView *rootView = [[RCTRootView alloc] initWithBundleURL:jsCodeLocation
                                                    launchOptions:launchOptions];
 ```
 
+#### VSCode 调试
+
+VSCode 提供了 React-Native-Tool 来进行再 VSCode 中的调试。其实执行了以下命令启动 RN：
+
+```shell
+react-native run-ios --scheme CRM_DEV 
+```
+
+但是 RN 目前有一个 BUG，使用这个命令会编译指定 scheme 对应的 target，但是安装的还是主工程名的 app：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/RN_VSCode.png?raw=true)
+
+每次编译都是编译为 CRM_DEV 但是安装的都是 CRM。**所以你得到这个目录下，把 CRM_DEV 改成 CRM 。**
+
+#### Chrome 调试
+
+Chrome 调试比较麻烦，在打开 remote debug 后，你可以在 chrome 中使用 **cmd+o** 来快速打开文件。
+
+Chrome 比 VSCode 调试的更精确，所有断点都会走。但是 Chrome 调试比较麻烦。
 
 ### React Native 读取本地的json文件  
+
 可以以导入的形式，来读取本地的json文件，导入的文件可以作为一个js对象使用，这样方便调试的时候加载数据。
 
 #### 导入json文件：   
