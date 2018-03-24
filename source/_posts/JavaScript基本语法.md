@@ -855,6 +855,53 @@ function* next_id() {
 }
 ```
 
+## Promise
+
+ES6 提供了原生的 Promise 对象。可以将异步操作以同步的形式表达出来。
+
+### 基本用法
+
+```javascript
+const promise = new Promise(function(resolve, reject) {
+  asyncFunc((success) => {
+    if (success){
+      resolve(value);
+    } else {
+      reject(error);
+    }
+  })
+});
+```
+
+如上所示，Promise 接受一个函数，入参为成功和失败回调，函数内执行异步操作，在必要时执行成功和失败回调。
+
+Promise 实例生成后，可以使用 `then` 方法指定 `resolve` 和 `reject` 的回调函数：
+
+```javascript
+promise.then(function(value) {
+  // success
+}, function(error) {
+  // failure
+});
+```
+
+Promise 的大致原理是通过 then 在 Promise 里注册回调，然后创建 Promise 时传入的函数会调用注册的回调函数。
+
+**注意，创建 Promise 的时候，函数就被执行了。之后 `then` 方法会根据函数执行的是 `resolve` 还是 `reject` 决定执行成功还是失败回调**：
+
+```javascript
+new Promise((resolve, reject) => {
+  resolve(1);
+  console.log(2);
+}).then(r => {
+  console.log(r);
+});
+// 2
+// 1
+```
+
+这是因为，Promise 将 then 注册的回调函数都包裹上了 `setTimeout（resolved，0）`，将回调函数放置到 JS 任务队列末尾。
+
 ## 不太常用的ES6特性
 
 ### Proxy
