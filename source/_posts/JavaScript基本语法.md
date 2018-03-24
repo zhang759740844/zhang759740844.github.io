@@ -5,7 +5,7 @@ tags:
 	- 学习笔记
 ---
 
-参考自[廖雪峰的JavaScript教程](http://www.liaoxuefeng.com/wiki/001434446689867b27157e896e74d51a89c25cc8b43bdb3000)
+JS 的语法，参考了廖雪峰的博客以及阮一峰的ES6
 
 <!--more-->
 
@@ -887,7 +887,7 @@ promise.then(function(value) {
 
 Promise 的大致原理是通过 then 在 Promise 里注册回调，然后创建 Promise 时传入的函数会调用注册的回调函数。
 
-**注意，创建 Promise 的时候，函数就被执行了。之后 `then` 方法会根据函数执行的是 `resolve` 还是 `reject` 决定执行成功还是失败回调**：
+**注意，创建 Promise 的时候，函数就被执行了。但是执行到 resolve 或者 reject 方法时并不立刻执行，而是等到最后**：
 
 ```javascript
 new Promise((resolve, reject) => {
@@ -901,6 +901,42 @@ new Promise((resolve, reject) => {
 ```
 
 这是因为，Promise 将 then 注册的回调函数都包裹上了 `setTimeout（resolved，0）`，将回调函数放置到 JS 任务队列末尾。
+
+### 链式调用`then()`
+
+then 方法除了向 Promise 内注册成功和失败回调，还会创建并返回一个新的 Promise。这样就能形成一个链式调用。
+
+###失败调用 `catch()` 
+
+`catch()` 方法是`.then(null, rejection)`的别名，用于指定发生错误时的回调函数：
+
+```javascript
+getJSON('/posts.json').then(function(posts) {
+  // ...
+}).catch(function(error) {
+  // 处理 getJSON 和 前一个回调函数运行时发生的错误
+  console.log('发生错误！', error);
+});
+```
+
+**注意，Promise 对象的错误具有“冒泡”性质，会一直向后传递，直到被捕获为止。也就是说，错误总是会被下一个`catch`语句捕获。**也就是说，本例中，无论是 `getJSON` 还是 `.then()` 生成的 Promise 产生的错误都会被 `catch()` 捕获。
+
+一般来说不要在 `then()` 方法中定义失败回调。总是使用 `catch()` 方法。
+
+`catch()` 方法返回的还是 Promise 对象，会接着运行后面的 `then()` 方法。
+
+### 永远执行 `finally()`
+
+```javascript
+promise
+.then(result => {···})
+.catch(error => {···})
+.finally(() => {···});
+```
+
+上面代码中，不管`promise`最后的状态，在执行完`then`或`catch`指定的回调函数以后，都会执行`finally`方法指定的回调函数。
+
+
 
 ## 不太常用的ES6特性
 
