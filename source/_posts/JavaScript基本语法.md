@@ -344,9 +344,33 @@ xiaoming.hasOwnProperty('name'); // true
 xiaoming.hasOwnProperty('toString'); // false
 ```
 
-#### 属性的简写
+#### 对象的属性名
 
-ES6 中允许创建对象的时候，简写属性，直接以变量名称作为属性名。比如：
+##### 属性名为方法返回值
+
+JS 中属性必须要是字符串型的，不过你也可以使用方法的返回值动态的设置属性名：
+
+```javascript
+const Birth = {
+    birth: 'birth'
+}
+
+const Person = {
+
+  name: '张三',
+
+  //等同于birth: birth
+  [Birth.birth]: '94-4-15',
+
+  // 等同于hello: function ()...
+  hello() { console.log('我的名字是', this.name); }
+
+};
+```
+
+##### 属性的简写
+
+ES6 中允许创建对象的时候，简写属性，直接**以变量名称作为属性名**。比如：
 
 ```javascript
 let birth = '2000/01/01';
@@ -474,10 +498,10 @@ WeakSet 中**只能存对象**。并且都是弱引用。
 WeakSet **不能遍历**。因为所有对象都是弱引用，随时可能消失。
 
 ### iterable
-ES6标准引入了新的`iterable`类型，`Array`、`Map`和`Set`都属于`iterable`类型。
-具有`iterable`类型的集合可以通过新的`for ... of`循环来遍历。
+ES6标准引入了新的`iterable`类型，`Array`、`Map`和`Set`都属于`iterable`类型。`iterable` 类型其实就是
 
-用`for ... of`循环遍历集合，用法如下：
+具有`iterable`类型的集合可以通过新的`for ... of`循环来遍历。用法如下：
+
 ```javascript
 var a = ['A', 'B', 'C'];
 var s = new Set(['A', 'B', 'C']);
@@ -935,6 +959,35 @@ promise
 ```
 
 上面代码中，不管`promise`最后的状态，在执行完`then`或`catch`指定的回调函数以后，都会执行`finally`方法指定的回调函数。
+
+### 合并多个Promise `all()`
+
+`Promise.all`方法接受一个 Promise 数组，用于将多个 Promise 实例，包装成一个新的 Promise 实例：
+
+```javascript
+const p = Promise.all([p1, p2, p3]);
+p.then(function (posts) {
+  // ...
+}).catch(function(reason){
+  // ...
+});
+```
+
+`p`的状态由`p1`、`p2`、`p3`决定，分成两种情况。
+
+（1）只有`p1`、`p2`、`p3`的状态都变成`fulfilled`，`p`的状态才会变成`fulfilled`，此时`p1`、`p2`、`p3`的**返回值组成一个数组，传递给`p`的回调函数**。
+
+（2）只要`p1`、`p2`、`p3`之中有一个被`rejected`，`p`的状态就变成`rejected`，此时**第一个被`reject`的实例的返回值，会传递给`p`的回调函数**。
+
+### 合并多个Promise `race()`
+
+`Promise.race`方法同样是将多个 Promise 实例，包装成一个新的 Promise 实例：
+
+```javascript
+const p = Promise.race([p1, p2, p3]);
+```
+
+上面代码中，只要`p1`、`p2`、`p3`之中有一个实例率先改变状态，`p`的状态就跟着改变。那个率先改变的 Promise 实例的返回值，就传递给`p`的回调函数。
 
 
 
