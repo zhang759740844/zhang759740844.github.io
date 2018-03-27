@@ -386,7 +386,25 @@ RCTRootView *rootView = [[RCTRootView alloc] initWithBundleURL:jsCodeLocation
 
 #### VSCode 调试
 
-VSCode 提供了 React-Native-Tool 来进行再 VSCode 中的调试。其实执行了以下命令启动 RN：
+VSCode 提供了 React-Native-Tool 来进行再 VSCode 中的调试。
+
+```json
+        {
+            "name": "Debug iOS",
+            "program": "${workspaceRoot}/.vscode/launchReactNative.js",
+            "type": "reactnative",
+            "request": "launch",
+            "platform": "ios",
+            "sourceMaps": true,
+            "outDir": "${workspaceRoot}/.vscode/.react",
+            "runArguments": [
+                "--scheme",
+                "CRM_DEV"
+            ]
+        },
+```
+
+其实执行了以下命令启动 RN：
 
 ```shell
 react-native run-ios --scheme CRM_DEV 
