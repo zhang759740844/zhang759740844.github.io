@@ -229,6 +229,8 @@ var arr = ['A', 'B', 'C', 1, 2, 3];
 arr.join('-'); // 'A-B-C-1-2-3'
 ```
 
+### 数组的高阶函数
+
 #### map
 
 `map()`方法定义在JavaScript的`Array`中，我们调用`Array`的`map()`方法，传入我们自己的函数，就得到了一个新的`Array`作为结果：
@@ -426,18 +428,6 @@ Object.entries(obj)
 
 一个对象你在打印log的时候，可能会给你返回 `[object object]`。此时，你需要将对象展开，可以使用 `JSON.stringify()` 方法。
 
-#### 展开运算符
-
-在 ES2018 中，对象也能使用展开运算符 `…`。还是将对象以 `,` 隔开。的方式展开。一般用于对象的复制，类似于 `Object.assign()`
-
-```javascript
-let z = { a: 3, b: 4 };
-let n = { ...z };
-n // { a: 3, b: 4 }
-```
-
-
-
 ### Map和Set
 
 JS中默认对象表达方式`{}`可以视为其他语言中的`Map`或`Dictionary`的数据结构，即一组键值对。
@@ -455,7 +445,7 @@ m.get('Michael'); // 95
 m.set('Zachary', 100);
 ```
 
-这个结构是不是很熟悉？`Object.entries()` 返回的就是这样的数组中包含了键值对数组的形式。所以说，可以用 `Object.entries()` 创建 Map。因为直接把返回值作为参数传入 Map 即可。
+这个结构是不是很熟悉？**`Object.entries()` 返回的就是这样的数组中包含了键值对数组的形式。**所以说，可以用 `Object.entries()` 创建 Map。因为直接把返回值作为参数传入 Map 即可。
 
 > 对象可以变为 Map，但是 Map 不一定能变为对象。所以创建 Map 的时候的入参不能以对象的形式。
 
@@ -537,19 +527,6 @@ undefined
 D
 ```
 `name`由于不是正常`Array`该有的，所以在`for ... of`循环时，其对应的值不会被输出。
-
-然而，更好的方式是直接使用`iterable`内置的`forEach`方法，它接收一个函数，每次迭代就自动回调该函数。以`Array`为例：
-```javascript
-var a = ['A', 'B', 'C'];
-a.forEach(function (element, index, array) {
-    // element: 指向当前元素的值
-    // index: 指向当前索引
-    // array: 指向Array对象本身
-    alert(element);
-});
-```
-对于`Set`来说，由于没有索引，`index`也是指当前元素。
-对于`Map`来说，`element`和`index`分别对应`Value`和`Key`.
 
 ### 变量的解构赋值
 
@@ -658,7 +635,7 @@ function abs(x) {
 ```
 
 #### rest参数
-由于JavaScript函数允许接收任意个参数，ES6标准引入了`rest`参数，可以将剩余的参数放在`rest`中，`rest` 是个数组：
+由于JavaScript函数允许接收任意个参数，ES6标准引入了`rest`参数，可以将剩余的参数放在`rest`中，`rest` 是个数组（不是一定要叫 rest，任何名称都可以）：
 ```javascript
 function foo(a, b, ...rest) {
     console.log('a = ' + a);
@@ -1190,6 +1167,71 @@ class PrimaryStudent extends Student {
 ```
 
 通过`super(name)`来调用父类的构造函数。`PrimaryStudent`已经自动获得了父类`Student`的`hello`方法，我们又在子类中定义了新的`myGrade`方法。
+
+## 归类
+
+### … 的使用场景
+
+`…` 一般用在数组前，**把数组转为用逗号隔开的一个个值**。可以正用逆用都是等价的：
+
+```javascript
+...[a, b, c] => a, b, c
+a, b, c => ...[a, b, c]
+```
+
+一般用于：
+
+1. 将数组拆开作为入参
+2. 将入参合并为数组
+3. 数组解构赋值
+
+```javascript
+// 1. 做入参
+someFunc(1, ...[2, 3, 4])    => someFunc(1, 2, 3, 4)
+// 2. 合并入参
+function someFunc(1, ...args) {}	=> args = [2, 3, 4]
+// 3. 数组解构 类似于合并入参
+let [1, ...args] = [1, 2, 3, 4]		=> args = [2, 3, 4]
+```
+
+另外，在 JSX 中，`...` 可以把对象中的键值对拿出来，以等号连接。
+
+### 对象和 Map
+
+对象和 Map 初步的不同就在于键是否是字符串。
+
+#### 创建与增减键值对
+
+对象：
+
+```javascript
+let obj = {}
+obj.haha = '123'
+delete obj.haha
+```
+
+Map：
+
+```javascript
+let map = new Map()
+map.set('haha','123')
+map.get('haha')
+map.delete('haha')
+```
+
+#### 遍历
+
+对象：
+
+```javascript
+Object.entries(obj) => [['haha', '123'], ['lala', '234']]
+```
+
+Map：
+
+```javascript
+map.entries() => [['haha', '123'], ['lala', '234']]
+```
 
 
 
