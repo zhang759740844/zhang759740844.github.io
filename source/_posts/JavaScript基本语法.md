@@ -229,9 +229,9 @@ var arr = ['A', 'B', 'C', 1, 2, 3];
 arr.join('-'); // 'A-B-C-1-2-3'
 ```
 
-### 数组的高阶函数
+#### 数组的高阶函数
 
-#### map
+##### map
 
 `map()`方法定义在JavaScript的`Array`中，我们调用`Array`的`map()`方法，传入我们自己的函数，就得到了一个新的`Array`作为结果：
 
@@ -246,7 +246,7 @@ arr.map(pow); // [1, 4, 9, 16, 25, 36, 49, 64, 81]
 
 `map()`将传入的函数一一作用在数组的每一个元素上。
 
-#### reduce
+##### reduce
 
 `Array`的`reduce()`把一个函数作用在这个`Array`的`[x1, x2, x3...]`上，这个函数必须接收两个参数，`reduce()`把结果继续和序列的下一个元素做累积计算，其效果就是：
 
@@ -263,7 +263,7 @@ arr.reduce(function (x, y) {
 }); // 25
 ```
 
-#### filter
+##### filter
 
 用于把`Array`的某些元素过滤掉，然后返回剩下的元素
 `Array`的`filter()`接收一个函数,把传入的函数依次作用于每个元素，然后根据返回值是`true`还是`false`决定保留还是丢弃该元素。
@@ -278,7 +278,7 @@ var r = arr.filter(function (x) {
 r; // [1, 5, 9, 15]
 ```
 
-#### sort
+##### sort
 
 可以接收一个比较函数来实现自定义的排序
 要按数字大小排序，我们可以这么写：
@@ -1002,62 +1002,11 @@ console.log(a.a) //1
 
 注意，**拦截的是 `new` 命令，不是拦截的 `constructor` 命令**，所以，拦截方法要返回一个 `target` 创建的新对象。
 
-## 面向对象编程
-JavaScript不区分类和实例的概念，而是通过原型（prototype）来实现面向对象编程。
+## class
+### 基本用法
 
-prototype有点类似于继承，`A`的原型是`B`，意味着，`A`拥有`B`的全部属性。
-```javascript
-// 原型对象:
-var Student = {
-    name: 'Robot',
-    height: 1.2,
-    run: function () {
-        console.log(this.name + ' is running...');
-    }
-};
+#### 创建和使用
 
-function createStudent(name) {
-    // 基于Student原型创建一个新对象:
-    var s = Object.create(Student);
-    // 初始化新对象:
-    s.name = name;
-    return s;
-}
-
-var xiaoming = createStudent('小明');
-xiaoming.run(); // 小明 is running...
-xiaoming.__proto__ === Student; // true
-```
-
-### 创建对象
-JavaScript对每个创建的对象都会设置一个原型，指向它的原型对象。当我们用`obj.xxx`访问一个对象的属性时，JavaScript引擎先在当前对象上查找该属性，如果没有找到，就到其原型对象上找，如果还没有找到，就一直上溯到`Object.prototype`对象，最后，如果还没有找到，就只能返回`undefined`。
-
-例如，创建一个`Array`对象：
-```javascript
-var arr = [1, 2, 3];
-```
-其原型链是：
-```javascript
-arr ----> Array.prototype ----> Object.prototype ----> null
-```
-`Array.prototype`定义了`indexOf()`、`shift()`等方法，因此你可以在所有的`Array`对象上直接调用这些方法。
-
-当我们创建一个函数时：
-```javascript
-function foo() {
-    return 0;
-}
-```
-函数也是一个对象，它的原型链是：
-```javascript
-foo ----> Function.prototype ----> Object.prototype ----> null
-```
-由于`Function.prototype`定义了`apply()`等方法，因此，所有函数都可以调用`apply()`方法。
-
-#### 构造函数
-即用一个 `function` 来构造一个对象。相关的还需要学习 `prototype` 不过 ES6 后，都是用 class 了。
-
-### class继承
 新的关键字`class`从ES6开始正式被引入到JavaScript中。`class`的目的就是让定义类更简单。
 
 如果用新的`class`关键字来编写`Student`，可以这样写：
@@ -1076,7 +1025,89 @@ var xiaoming = new Student('小明');
 xiaoming.hello();
 ```
 
-#### class继承
+#### name 属性
+
+上面说到，函数有 name 属性，可以返回函数的名字。ES6 的 class 其实就是 ES5 函数的包装。所以 Class 也包含 name 属性：
+
+```javascript
+class Point {}
+Point.name // "Point"
+```
+
+#### get set 方法
+
+在“类”的内部可以使用`get`和`set`关键字，对某个属性设置存值函数和取值函数，拦截该属性的存取行为：
+
+```javascript
+class MyClass {
+  constructor() {
+    // ...
+  }
+  get prop() {
+    return 'getter';
+  }
+  set prop(value) {
+    console.log('setter: '+value);
+  }
+}
+
+let inst = new MyClass();
+
+inst.prop = 123;
+// setter: 123
+
+inst.prop
+// 'getter'
+```
+
+#### static 方法
+
+如果在一个方法前，加上`static`关键字，表示类方法:
+
+```javascript
+class Foo {
+  static classMethod() {
+    return 'hello';
+  }
+}
+
+Foo.classMethod() // 'hello'
+
+var foo = new Foo();
+foo.classMethod()
+// TypeError: foo.classMethod is not a function
+```
+
+> ES6 明确规定，Class 内部只有静态方法，没有静态属性。
+
+#### new.target 属性
+
+ES6 为`new`命令引入了一个`new.target`属性，该属性一般用在构造函数之中，返回`new`命令作用于的那个构造函数。需要注意的是，子类继承父类时，`new.target`会返回子类。利用这个特点，可以写出不能独立使用、必须继承后才能使用的**接口**：
+
+```javascript
+class Shape {
+  constructor() {
+    if (new.target === Shape) {
+      throw new Error('本类不能实例化');
+    }
+  }
+}
+
+class Rectangle extends Shape {
+  constructor(length, width) {
+    super();
+    // ...
+  }
+}
+
+var x = new Shape();  // 报错
+var y = new Rectangle(3, 4);  // 正确
+```
+
+
+
+### class继承
+
 用`class`定义对象的另一个巨大的好处是继承更方便了,直接通过`extends`来实现：
 ```javascript
 class PrimaryStudent extends Student {
@@ -1092,6 +1123,59 @@ class PrimaryStudent extends Student {
 ```
 
 通过`super(name)`来调用父类的构造函数。`PrimaryStudent`已经自动获得了父类`Student`的`hello`方法，我们又在子类中定义了新的`myGrade`方法。
+
+## export 与 import
+
+### 基本用法
+
+```javascript
+export let name = 'zachary'
+export function getName() {
+    return 'zachary'
+}
+
+等价于=> export {name, getName}
+```
+
+注意，不能直接写`export name`
+
+```javascript
+import {name, getName} from './myName'
+```
+
+其实相当于对象的解构赋值。
+
+### 重命名 as
+
+导出导入的名字有时候可能需要改变，所以提供了 as 这个关键字：
+
+```javascript
+export {name as yourName, getName as getYourName}
+import {yourName as myName, getYourName as getMyName} from './myName'
+```
+
+导出的时候用 `yourName` 作为内部 `name` 的别名。导入的时候用 `myName` 作为 `youName` 的别名。
+
+### default
+
+有时候，我们不需要知道导出的叫什么，可以使用 default ：
+
+```javascript
+export default name
+import myName from './myName'
+
+相当于 =>
+export {name as default}
+import {default as myName} from './myName'
+```
+
+其实就是 as 的语法糖。注意，import 的时候就不需要大括号了。
+
+### 与 CommonJS 中 require()，module.exports 的不同
+
+`module.exports = {}` 直接导出一个对象。`let a = require('../module.js')`直接从路径获取导出的对象。
+
+> 这种方式导出的是一个整的对象，如果要导出多个，需要作为对象的各个属性。而 ES6 的导出相当于直接将导出对象解构赋值了。
 
 ## 归类
 
