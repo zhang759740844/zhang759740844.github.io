@@ -98,6 +98,66 @@ Gist 可以保存上传的配置文件。拉取配置文件需要配置两个 id
 3. 在Terminal中输入`csrutil disable` 关闭SIP
 4. 重启reboot OSX
 
+### shell 脚本 sudo 命令不输入密码
+
+#### expect
+
+expect 可以在需要密码的时候输入密码。安装 expect 非常简单：
+
+```shell
+brew install expect
+```
+
+```bash
+#!/usr/bin/expect
+set timeout 30
+spawn bash "./Untitled-1.sh"
+expect {
+  Password: { send xxxx\r }
+  Password: { send xxxx\r }
+  Password: { send xxxx\r }
+}
+interact
+```
+
+`#!/usr/bin/expect` 表示到 `interact` 为止，都使用 expect 执行
+
+`spawn` 该命令用于启动一个子进程，执行后续命令.
+
+`expect` 从进程接受字符串，如果接受的字符串和期待的字符串不匹配，则一直阻塞，直到匹配上或者等待超时才继续往下执行。上面的 `Password：` 就是执行 `sudo` 命令是会出现的。 这里模拟了三个会出现 `Password:` 输入密码的场景。
+
+`send` 向进程发送字符串，与手动输入内容等效，通常字符串需要以’\r’结尾。
+
+`interact` 该命令将控制权交给控制台，之后就可以进行人工操作了。通常用于使用脚本进行自动化登录之后再手动执行某些命令。如果脚本中没有这一条语句，脚本执行完将自动退出。
+
+#### sudo 不要密码
+
+除了用 expect 在需要密码的时候输入外，还可以设置 sudo 不需要密码。虽然不安全，但是一般个人使用也不会有什么问题。
+
+输入 `sudo visudo` 会打开 `/etc/sudoers` 文件，这就是要修改的配置文件。
+
+然后再最后输入：
+
+```
+zachary ALL=(ALL) NOPASSWD: ALL
+```
+
+保存并推出。此时 sudo 就不会再需要密码了。
+
+那么这句话是什么意思呢？
+
+第一个字段 `zachary` 表示使用 sudo 命令的用户为 zachary
+
+第二个字段，等号左边的 `ALL` 表示允许使用 sudo 的主机。这里是所有主机。
+
+第三个字段，等号右边的 `(ALL)` 表示使用 sudo 后一什么身份来执行命令。
+
+最后一个字段 `NOPASSWD: ALL` 表示所有命令，都不需要密码。
+
+
+
+
+
 ### 自制一个搜索 Markdown 文件的 workflow
 
 可以自制一个 workflow 而不是使用 `open` 打开 markdown 文件。

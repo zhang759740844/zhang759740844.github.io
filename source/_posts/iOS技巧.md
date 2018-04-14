@@ -11,6 +11,16 @@ tags:
 
 <!--more-->
 
+### copy groups 和 copy folder reference 的区别
+
+Group 其实是 Xcode 中用来组织文件的一种方式, **它对文件系统没有任何影响**, 无论你创建或者删除一个 Group, 都不会导致 folder 的增加或者移除。在 Group 中的文件的关系, 不会与 folder 中的有什么冲突, 它只是 Xcode 为你提供的一种分离关注的方式而已. 但是, 我一般会在开发过程中将不同的模块分到不同的 Group 和 folder 中便于整理.Group 之间的关系, 也是在 `project.pbxproj` 中定义的, 这个文件中包含了 Xcode 工程中所有 File 和 Group 的关系。
+
+但是当你引入文件时的 `copy groups` 和 `copy folder reference` 就有区别了。以 `folder reference` 引入文件不会加入到 `Build Phases` 的 `Compile Sources` 中去。也就是说，`folder refernece` 引入的文件不会被编译，适合于图片等资源文件。而 `copy groups` 引入的文件则会被编译，适合于拖代码文件或者 framework 等(framework 被拖进来时，会自动设置 `framework search path` 路径)。
+
+**Group 在我们的工程中就是黄色的文件夹, 而 Folder 是蓝色的文件夹(一般在 Xcode 工程中, 我们不会使用 Folder).**
+
+
+
 ### 基本类型的指针
 
 我们知道，基本类型的变量作为入参传入函数产生改变时不会影响外部的变量值。所以如果不能返回的话，就需要传入一个基本类型的指针：
