@@ -11,6 +11,12 @@ tags:
 
 <!--more-->
 
+### Image.Assets 存放图片和在文件夹里存放的区别
+
+Assets.xcassets 一般是以蓝色文件夹形式在工程中，以Image Set的形式管理。当一组图片放入的时候同时会生成描述文件Contents.json。**且在打包后以Assets.car的形式存在，以此方式放入的图片并不在mainBundle中**，不能使用 contentOfFile 这样的API来加载图片（因为这个方法相当于是去mainBundle里面找图片，但是这些图片都被打包进了Assets.car文件），interface builder中使用图片时不需要后缀和倍数标识（@2x这样的）优点是性能好，节省Disk。
+
+直接拖到文件夹里的图片，都是存在 mainBundle 中的。所以可以使用 contentOfFile 来加载图片。另外我们也可以把资源文件打成一个 bundle，放在主工程下（mainBundle 下）。 
+
 ### copy groups 和 copy folder reference 的区别
 
 Group 其实是 Xcode 中用来组织文件的一种方式, **它对文件系统没有任何影响**, 无论你创建或者删除一个 Group, 都不会导致 folder 的增加或者移除。在 Group 中的文件的关系, 不会与 folder 中的有什么冲突, 它只是 Xcode 为你提供的一种分离关注的方式而已. 但是, 我一般会在开发过程中将不同的模块分到不同的 Group 和 folder 中便于整理.Group 之间的关系, 也是在 `project.pbxproj` 中定义的, 这个文件中包含了 Xcode 工程中所有 File 和 Group 的关系。
