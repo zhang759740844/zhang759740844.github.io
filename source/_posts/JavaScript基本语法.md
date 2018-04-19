@@ -912,6 +912,53 @@ const p = Promise.race([p1, p2, p3]);
 
 上面代码中，只要`p1`、`p2`、`p3`之中有一个实例率先改变状态，`p`的状态就跟着改变。那个率先改变的 Promise 实例的返回值，就传递给`p`的回调函数。
 
+## async 函数
+
+async 函数式 Generator 函数的语法糖.
+
+`async`函数返回一个 Promise 对象，可以使用`then`方法添加回调函数。当函数执行的时候，一旦遇到`await`就会先返回，等到异步操作完成，再接着执行函数体内后面的语句:
+
+```javascript
+async function getStockPriceByName(name) {
+  const symbol = await getStockSymbol(name);
+  const stockPrice = await getStockPrice(symbol);
+  return stockPrice;
+}
+
+getStockPriceByName('goog').then(function (result) {
+  console.log(result);
+});
+```
+
+上面代码是一个获取股票报价的函数，函数前面的`async`关键字，表明该函数内部有异步操作。调用该函数时，会立即返回一个`Promise`对象。
+
+正常情况下，`await`命令后面是一个 Promise 对象。如果不是，会被转成一个立即`resolve`的 Promise 对象:
+
+```javascript
+async function f() {
+  return await 123;
+}
+
+f().then(v => console.log(v))
+// 123
+```
+
+上面代码中，`await`命令的参数是数值`123`，它被转成 Promise 对象，并立即`resolve`。
+
+如果确实希望多个请求并发执行，可以使用`Promise.all`方法:
+
+```javascript
+async function dbFuc(db) {
+  let docs = [{}, {}, {}];
+  let promises = docs.map((doc) => db.post(doc));
+
+  let results = await Promise.all(promises);
+  console.log(results);
+}
+```
+
+
+
 ## Proxy
 
 Proxy 就如字面所说的，是 ES6 提供的代理模式的封装。ES6 原生提供 Proxy 构造函数，用来生成 Proxy 实例:
