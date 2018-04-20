@@ -1192,6 +1192,8 @@ import {name, getName} from './myName'
 
 其实相当于对象的解构赋值。
 
+> import 和 require 都不需要写 .js 后缀！！！
+
 ### 重命名 as
 
 导出导入的名字有时候可能需要改变，所以提供了 as 这个关键字：
@@ -1220,9 +1222,41 @@ import {default as myName} from './myName'
 
 ### 与 CommonJS 中 require()，module.exports 的不同
 
-`module.exports = {}` 直接导出一个对象。`let a = require('../module.js')`直接从路径获取导出的对象。
+`module.exports = {}` 直接导出一个对象。`let a = require('../module')`直接从路径获取导出的对象。
 
 > 这种方式导出的是一个整的对象，如果要导出多个，需要作为对象的各个属性。而 ES6 的导出相当于直接将导出对象解构赋值了。
+
+### 模块加载
+
+不论是 ES6 或者 CommonJS，加载模块一般有两种方式。无相对路径，有相对路径：
+
+```javascript
+// 无相对路径的
+import JPush from 'react-native-jpush'
+import { Actions } from 'hanzojs/router/mobile'
+
+// 有相对路径的
+import { App } from './app'
+import { Card} from '../../componects/comp/card'
+```
+
+#### 无相对路径
+
+对于无相对路径的加载，**都是 node_module 中的文件**。一般要根据模块所在父模块，确定可能安装的目录。
+
+首先在当前**文件 X** 的父目录下的 `node_modules` 文件夹中，尝试**加载 X.js**，如果没有，尝试将其当做文件夹，寻找文件夹下的 `index.js` 文件。
+
+如果没有，则到父目录的父目录中的 `node_modules` 文件夹中继续寻找。直到全局的 `node_modules` 中。如果都没有，则抛出找不到文件。
+
+[具体可见例子](http://www.ruanyifeng.com/blog/2015/05/require.html)
+
+#### 有相对路径
+
+有相对路径省去了找安装目录的过程，直接在相对路径中寻找**文件名或者目录名**。
+
+还是先将其当成文件名，找对应文件，如果没有文件，则将其当成目录，找对应目录下的 `index.js` 文件。
+
+
 
 ## 归类
 
