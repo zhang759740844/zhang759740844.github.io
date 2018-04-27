@@ -154,11 +154,11 @@ brew install mitmproxy
 - z: 清空列表
 - f: 过滤请求。可以参照帮助中的 Filter expression 对过滤关键字进行编辑。删除过滤就是将过滤关键字清空。其实还可以有更多过滤方式，包括过滤指定的 header，指定的 body，过滤请求、回复等。具体[参见文档](https://docs.mitmproxy.org/stable/concepts-filters/)
 - d: 删除请求
-- C: 复制请求。直接选中复制可能会复制进空格非常麻烦，可以通过 C 来选择复制的内容。(注意是大写的 C，这个复制很有用，所有请求返回都可以复制下来)
+- h: 显示所有帮助
 
 ### 拦截
 
-输入 `i` 设置拦截，再输入 `~s` 进入 response 拦截模式，`~q` 进入 request 拦截模式。如果不想拦截了。再次输入 `i` 将刚才设置的参数清空即可。
+输入 `i` 设置拦截，再输入 `~s` 进入 response 拦截模式，`~q` 进入 request 拦截模式。如果不想拦截了。再次输入 `i` 将刚才设置的参数清空即可。也可以键入 `I` 表示暂停拦截。
 
 设置拦截后，拦截下来的请求为红色。这时 `Enter` 进入后 再按 `e` 就可以修改 request 或者 response，会先让你选择修改哪一部分，一般都是修改返回的数据对应于里面的 `raw`。修改时是用 vim 进行编辑的，修改完成后按 `a` 将请求放行，如果要放行所有请求输入 `A` 即可。
 
@@ -173,7 +173,7 @@ brew install mitmproxy
 还要为模拟器配置 SSL 证书。配置证书相对麻烦。首先进入 `~/.mitmproxy`目录，这个目录下有五六个证书，其中一个是符合要求的。需要下载[一个 python 脚本](https://github.com/ADVTOOLS/ADVTrustStore#how-to-use-advtruststore) 来导入证书。下载后执行：
 
 ```shell
-iosCertTrustManager.py -a 那个目录下的证书名
+iosCertTrustManager.py -a mitmproxy-ca-cert.pem
 ```
 
-然后会问你导入那几个模拟器，一般一路 YES 即可。具体参见[文档证书](https://docs.mitmproxy.org/stable/concepts-certificates/)
+这个脚本只能导入 pem  格式的证书。执行时会问你是否将其添加到某个模拟器中，按 y 即可。添加成后需要重启模拟器就能够抓取 https 的包了。

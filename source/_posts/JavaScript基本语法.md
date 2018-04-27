@@ -930,7 +930,7 @@ getStockPriceByName('goog').then(function (result) {
 });
 ```
 
-上面代码是一个获取股票报价的函数，函数前面的`async`关键字，表明该函数内部有异步操作。调用该函数时，会立即返回一个`Promise`对象。
+上面代码是一个获取股票报价的函数，函数前面的`async`关键字，表明该函数内部有异步操作。调用该函数时，会立即返回一个`Promise`对象**不是说 stockPrice 是一个 Promise 而是说 async 修饰的这个方法最终返回一个 Promise，stockPrice 只是作为 resolve 的 input 而已**。
 
 正常情况下，`await`命令后面是一个 Promise 对象。如果不是，会被转成一个立即`resolve`的 Promise 对象:
 

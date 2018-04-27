@@ -423,7 +423,7 @@ react-native run-ios --scheme CRM_DEV
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/RN_VSCode.png?raw=true)
 
-每次编译都是编译为 CRM_DEV 但是安装的都是 CRM。**所以你得到这个目录下，把 CRM_DEV 改成 CRM 。**
+每次编译都是编译为 CRM_DEV 但是安装的都是 CRM。**所以你得到这个目录下，把 CRM_DEV.app 改成 CRM.app 。 然后关掉模拟器，重新启动 VSCode 调试。**
 
 #### Chrome 调试
 

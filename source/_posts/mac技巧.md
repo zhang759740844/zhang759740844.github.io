@@ -76,7 +76,7 @@ curl -L https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh | 
 
 ```shell
 brew tap caskroom/fonts
-brew cask install font-fira-cod
+brew cask install font-fira-code
 ```
 
 `brew` 表示 homebrew
@@ -178,6 +178,16 @@ zachary ALL=(ALL) NOPASSWD: ALL
 
 ```shell
 sudo codesign -f -d -s - /Applications/Alfred\ 3.app/Contents/Frameworks/Alfred\ Framework.framework/Versions/A/Alfred\ Framework
+```
+
+### 安装的Mac应用显示已损坏无法打开
+
+设置 => 安全性与隐私 => 通用 => 允许从以下位置下载的应用 => 任何来源
+
+如果没有 任何来源 这个选项，需要执行命令：
+
+```shell
+sudo spctl --master-disable
 ```
 
 
