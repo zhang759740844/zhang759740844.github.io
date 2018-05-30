@@ -12,7 +12,47 @@ tags:
 
 <!--more-->
 
+### 如何将图片字体资源自动添加到工程
+
+RN 项目中，会用到很多第三方的组件。这些组件在 `react-native link` 的时候会作为 library 链接到主工程下。但是存在一个问题，如果组件中包含了一些图片或者字体资源，这些资源不会在 link 的过程中被主动添加到工程中。那么我们需要手动添加。这是非常麻烦的一件事。
+
+因此，我们需要一个自动化的将资源文件添加到工程的方法：`rnpm`。`rnpm` 是一个 RN 包管理工具，现在已经被纳入到 RN 中。
+
+#### 添加
+
+1. 将要加入到 iOS 以及 Android 的资源文件的路径确认。比方说在 `./assets` 文件夹下。
+
+2. 在 `package.json` 中添加配置：
+
+   ```json
+   "rnpm": {
+      “assets”: ["./assets"]
+   }
+   ```
+
+   这里就是资源文件放置的路径。这里是一个路径的数组，可以放任意多个路径。
+
+3. 终端中输入 `react-native link`。通过 link 命令就把相关资源链接到工程中去了。你会看到如下提示信息：
+
+   ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/RN_link.png?raw=true) 
+
+#### 删除
+
+没有命令可以直接删除。需要手动执行。
+
+##### Android
+
+安卓直接将资源文件删除即可。（我不是十分确定）
+
+##### iOS
+
+在 `Build Phases > Copy Bundle Resources` 中删除相关文件索引即可。
+
+
+
 ### setState 的坑
+
+#### 坑1
 
 `setState` 可以将控件刷星。但是这个操作不是立刻执行的而且在某个时间一并执行的。所以当你如果改变了 state 并且要用这个 state 作为参数进行网络请求的时候，不能直接使用 `setState` 给出的值，而要先将 state 改变，然后再 `setState`:
 
@@ -23,27 +63,51 @@ this.setState({
 })
 ```
 
+#### 坑2
 
+一定不能在 `setState` 的时候改变 state 的原来值。否则 state 会变成意想不到的值。比如一个数组，你**不能直接在 setState 的时候往里 push值**。你可以将数组复制，然后push 好之后再 setState，或者**先设置好 state，然后再 setState。**
 
 ### Text 控件
 
 #### 对齐
 
-text 无法控制内部文件的对齐方式，比如要让文字居中。只有外部再包裹一层 View，然后设置    ` justifyContent: 'center',alignItems: 'center'`
+设置了宽高的 Text 控件只会在左上角显示。可以使用 `text-align` 设置文字的位置，比如 center。但是显示的时候你会发现只是水平居中。你必须再使用 `line-height` 设置高度为控件高度才能够竖直居中。
 
 #### 宽高
 
-Text 控件的默认宽高是正好包裹文字的，因此可以不设置宽高。但是这样的 Text 是不会折行的，如果想要 Text 折行，必须添加宽度。
+Text 控件的默认宽高是正好包裹文字的，因此可以不设置宽高。但是这样的 Text 是不会折行的，如果想要 Text 折行，必须添加宽度。所以**包含 Text 的控件最好不要设置 flex 来自适应，而是设置具体的宽度**。
+
+
+
+
 
 ###  `React/RCTBridgeModule.h` file not found 解决方式
 
-这个问题是因为，Xcode 尝试去**并行编译** RN 的库，导致一些依赖于 React 的库在 React 库编译前编译。
+这个问题出现在 RN 从 0.40 版本前升级到 0.40 版本后的情况下。0.40 前 react 的头文件都是以 `Header Search Paths` 加入的。使用 React 的组件都需要添加头文件查找路径。当组件需要使用 React 的时候，如果在组件所在的目录下没有找到，那么就会到 `Header Search Paths` 指定的路径中查找：
 
-因此，我们要先编译 React，并且取消并行编译。如图：
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/RN_0.39.png?raw=true)
+
+这样带来一个问题，就是每一个第三方的组件都需要设置一下 `Header Search Paths` 的路径。使用者会非常不方便。
+
+所以 FB 想要把 React 头文件的链接统一起来。于是就有了 0.40 版本的变化：通过 `Edit Scheme` 然后添加 React 这个 Target，然后取消 `Parallelize Build`。
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/RN_Build.png?raw=true)
 
-通过 `Edit Scheme` 然后添加 React 这个 Target，然后取消 `Parallelize Build`。
+这样，在编译项目之前，就先把 React 编译好了。也就不再需要在 Header Search Paths 中设置了。
+
+这样带来的改变就是原来引入头文件是相当于头文件在项目中了，使用：
+
+```objective-c
+#import "RCTBridgeModule.h"
+```
+
+现在引入头文件是引入的外部的头文件，所以要使用尖括号：
+
+```objective-c
+#import <React/RCTBridgeModule.h>
+```
+
+
 
 ### `keyboardShouldPersistTaps` 的使用
 
@@ -59,7 +123,23 @@ Text 控件的默认宽高是正好包裹文字的，因此可以不设置宽高
 
 
 
-### `cloneWithRows` 使用的注意事项
+### ListView 使用的问题
+
+#### ListView 的宽高
+
+ListView 在父视图的 flex 方向上默认是铺满的。flex 方向上设置的宽或者高是无效的，非 flex 方向上设置的宽或者高是有效的。
+
+所以最好在 ListView 外面套一个 View，保证 ListView 填充满整个父 View
+
+#### `renderRow` 方法的坑
+
+renderRow 方法的几个参数为，`rowData`, `sectionID`, `rowID` 这几个值为**字符串类型**。 所以根据 id 采取不同行为的时候，要把 id 转化为 number 再比较。或者不要用 `===` ，否则肯定返回的是 false。
+
+#### 初始渲染数量
+
+ListView 为了保证渲染的性能，在最开始的时候只会部分渲染，所以需要设置 `initialListSize` 属性，设置首屏的渲染个数。否则很可能首屏需要加载的元素很多，但是实际渲染出来的元素很少。
+
+#### `cloneWithRows` 使用的注意事项
 
 我们知道 `cloneWithRows` 是在 `listview` 中保存列表数组时使用的方法。使用的时候要注意一点：数组在 `cloneWithRows` 之后会变成一个特殊的数据结构，数据数组只是这个数据结构中的一个属性。
 
@@ -67,11 +147,34 @@ Text 控件的默认宽高是正好包裹文字的，因此可以不设置宽高
 
 ### View 设置宽高
 
-一个视图的显示必须要有宽高。有以下几种情况：
+**一个视图的显示必须要有宽高**。以下是几个注意点：
 
-1. 父子控件都设置了绝对宽高：那么父子控件都按照自己的绝对宽高布局。子控件可能超出父控件
-2. 父控件设置了绝对宽高，子控件使用 `flex`,`margin` 等：子控件按照父控件的宽高进行调整。适用于父控件要经常变换宽高的情况。
-3. 子控件设置了绝对宽高，父控件无宽高设置：父控件正好包裹子控件。适用于子控件要经常变换宽高的情况。
+- 父控件设置绝对宽高，子控件也设置了绝对宽高。这种情况是最简单的情况，注意子控件可能会超过父控件。
+
+
+- 父视图设置了绝对宽高，子控件是 flex 布局：
+  - flex-direction 方向上的子视图必须设置明确的长度，即**主轴必须明确设置多长。否则就默认为 0**
+  - 非 flex-direction 方向上的子视图默认为填充满父视图，即 **`align-items` 默认为 `sketch`**。所以这里有一个坑点，**如果你在父视图中设置 `align-items: center` 居中对齐，那么就取消了默认填充满父视图次轴这一设定，子视图一定要设置次轴上相应的长度，否则就是 0，显示不出了。** 
+- 子控件设置了绝对宽高，父控件可以不设置宽高，父控件正好包裹子控件。
+- 父子控件都是 flex 布局，都没有设置宽高。那么这种情况下很有可能显示不出。因为父控件需要一个 `flex-direction` 方向上的长度，但是并不能通过子控件推测出。那么就会不显示了。
+
+### 布局方式
+
+一般布局如果是一个给定的布局，使用 flex 布局非常的直观。但是如果布局中的元素个数会变化的时候，就需要考虑一下了。比如下面这个图。中间的部分可能按情况不同会有增减：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/flex_3.png?raw=true)
+
+一般有两种方式：
+
+1. 考虑父级 `align-items` 设置为 sketch，块1此时和父级一样高。这个然后设置块1，`flex-direction` 为 space-between。这样块1的子级就会均匀的分布在块1内了，不论有多少元素。所以你需要设置第一个子元素和最后一个子元素相对于块1的上边和下边的距离。
+
+   ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/flex_1.png?raw=true)
+
+2. 考虑父级 `align-items` 设置为 center，块1的高度取决于内部元素的高度，块1内的元素会居中。所以需要设置子元素之间的距离。
+
+   ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/flex_2.png?raw=true)
+
+**一般来说用 center 会比较好一些**
 
 ### 设置 Image
 

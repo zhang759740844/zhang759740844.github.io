@@ -11,6 +11,25 @@ tags:
 
 <!--more-->
 
+### 为什么不在 iOS 项目中使用 redux
+
+redux 将所有状态组合在一起，配合 react 食用更佳，那么我们为什么不把他使用子啊 iOS 中呢？我想到了两个理由：
+
+1. oc 或者 swift 是强类型语言。如果把状态都放在 store 里维护，意味着 store 里需要 import 各种 model 类。产生强耦合。而 js 则是弱类型。不用在意 store 里的某个属性究竟是什么类型，也就不需要 import 那么多 model。
+2. react 是相应式的，store 里的属性修改了就能反映到 UI 上，但是 iOS 编程不是响应式的，即使 store 里的实行改变了，你还是要使用 `setText` 等类似方法，刷新 UI。所以即使使用也最好配合 RxSwift
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/redux_ios.png?raw=true)
+
+
+
+### 封装原则
+
+- 明确目标：首先靠考虑好，封装要做什么，不要写着写着换目标。
+- 单一功能原则：其次，要将一个大目标分解成若干步小目标分别实现。然后串联起来
+- 外界知道最少：找出外界必须知道的，作为封装输出
+- 重复代码复用：找出重复代码，塞到封装内
+- 写伪代码：逻辑复杂，不要想着一步到位。先写伪代码，然后把相同的部分归类。
+
 ### Image.Assets 存放图片和在文件夹里存放的区别
 
 Assets.xcassets 一般是以蓝色文件夹形式在工程中，以Image Set的形式管理。当一组图片放入的时候同时会生成描述文件Contents.json。**且在打包后以Assets.car的形式存在，以此方式放入的图片并不在mainBundle中**，不能使用 contentOfFile 这样的API来加载图片（因为这个方法相当于是去mainBundle里面找图片，但是这些图片都被打包进了Assets.car文件），interface builder中使用图片时不需要后缀和倍数标识（@2x这样的）优点是性能好，节省Disk。
@@ -19,11 +38,17 @@ Assets.xcassets 一般是以蓝色文件夹形式在工程中，以Image Set的�
 
 ### copy groups 和 copy folder reference 的区别
 
-Group 其实是 Xcode 中用来组织文件的一种方式, **它对文件系统没有任何影响**, 无论你创建或者删除一个 Group, 都不会导致 folder 的增加或者移除。在 Group 中的文件的关系, 不会与 folder 中的有什么冲突, 它只是 Xcode 为你提供的一种分离关注的方式而已. 但是, 我一般会在开发过程中将不同的模块分到不同的 Group 和 folder 中便于整理.Group 之间的关系, 也是在 `project.pbxproj` 中定义的, 这个文件中包含了 Xcode 工程中所有 File 和 Group 的关系。
+#### 什么是 Group
 
-但是当你引入文件时的 `copy groups` 和 `copy folder reference` 就有区别了。以 `folder reference` 引入文件不会加入到 `Build Phases` 的 `Compile Sources` 中去。也就是说，`folder refernece` 引入的文件不会被编译，适合于图片等资源文件。而 `copy groups` 引入的文件则会被编译，适合于拖代码文件或者 framework 等(framework 被拖进来时，会自动设置 `framework search path` 路径)。
+Group 其实是仅在 Xcode 中虚拟的用来组织文件的一种方式, **它对文件系统没有任何影响**, 无论你创建或者删除一个 Group, 都不会导致实际的文件的增加或者移除。
 
-**Group 在我们的工程中就是黄色的文件夹, 而 Folder 是蓝色的文件夹(一般在 Xcode 工程中, 我们不会使用 Folder).**
+#### 两者区别
+
+打包的时候， xode 目录下的所有文件，除了 Image.Assets 以及动态库，都会保存到 mainBundle 中去（静态库是在 mainBundle 中的）。以 `copy groups` 引入的文件，没有文件层级，就**相当于直接把 group 里的文件扔到了 mainBundle 中去**，而以 `copy folder reference` 引入的文件会保持文件层级。
+
+Group 在我们的工程中就是黄色的文件夹, 而 Folder 是蓝色的文件夹。
+
+
 
 
 

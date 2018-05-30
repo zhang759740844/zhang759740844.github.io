@@ -154,9 +154,56 @@ zachary ALL=(ALL) NOPASSWD: ALL
 
 最后一个字段 `NOPASSWD: ALL` 表示所有命令，都不需要密码。
 
+### 管道与 xargs
 
+#### 管道
 
+管道的作用就是把前一个命令的标准输出作为后一个命令的标准输入，比如：
 
+```shell
+ls -a | grep myfile
+```
+
+上面的命令就是把列出所有文件的输出，作为正则匹配查找的输入。
+
+但是很多程序是不处理标准输入的，例如 kill , rm 这些程序如果命令行参数中没有指定要处理的内容则不会默认从标准输入中读取，所以：
+
+```shell
+ls -a | grep myfile | rm -f
+```
+
+这个命令是无法删除 myfile 相关的文件的。这时候就需要使用 xargs
+
+#### xargs
+
+xargs 和管道有什么不同可以看下面这个例子：
+
+```shell
+echo '--help' | cat 
+输出：
+--help
+
+echo '--help' | xargs cat 
+输出同 cat --help
+```
+
+可以发现，xargs 将其接受的字符串 `—help` 做成cat的一个命令参数来运行cat命令。
+
+所以上面的删除方法要改成如下，就是可以达到目的的：
+
+```shell
+ls -a | grep myfile | xargs rm -f
+```
+
+xargs 还有许多参数，可以用在需要多个参数的情况，如果有需求，可以查阅使用。
+
+### 使用 npmrc 登录 npm
+
+我们要发布自己的 npm 包的时候，需要先登录到 npm。那么，npm 怎么验证发布的是本人呢？当我们在 shell 里登录到 npm 的时候，在 home 目录下会生成一个 `.npmrc` 文件。这个文件里有个 `authToken` ，同时，你的 npm 账户里的 token 列表里也会产生一个相应的 token。当你要发布代码的时候，npm 就会比较账户里的 token 是否包含这个 `authToken`。如果你手动删除了 npm 账户里的 token，那么之后也就无法通过该 `authToken` 登录了。
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/auth_token.png?raw=true)
+
+另外，每个项目里都可以有一个 `.npmrc` 使用不同的 token。项目里没有 token 的情况下才回去 home 下查找 `.npmrc`
 
 ### 自制一个搜索 Markdown 文件的 workflow
 

@@ -1184,7 +1184,7 @@ export function getName() {
 等价于=> export {name, getName}
 ```
 
-注意，不能直接写`export name`
+注意，不能直接写`export name`,要写也要写成 `export {name}`
 
 ```javascript
 import {name, getName} from './myName'
@@ -1331,4 +1331,4 @@ map.entries() => [['haha', '123'], ['lala', '234']]
 - reflect 部分(感觉可以直接调用，不需要使用 reflect)
 - generator 部分(习惯于用promise的回调写法，不习惯这种写法)
 - async 部分(同 generator)
-- ​
+- port

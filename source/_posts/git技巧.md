@@ -9,7 +9,27 @@ tags: [Git]
 
 <!--more-->
 
+### 自定义 git config
+
+给自己的项目提交代码的时候，有些时候虽然提交成功，但是 github 提交记录的小绿块上并没有记录。这是因为你的项目可能有很多人能提交代码，github 区分不同的人需要靠提交代码的人的邮箱，而这个邮箱你可能没有配置或者配置错了。
+
+比如 sourcetree 会有一个统一的配置：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/git_config.png?raw=true)
+
+也就是说所有使用 sourcetree 的提交，用户名和邮箱都是这个。但是如果你公司有另外一个 gitlab 的账号呢？还是使用这个账号的邮箱提交就不会记入你 gitlab 账号的提交记录上。所以你需要配置 git config。
+
+配置非常简单：
+
+```shell
+$ git config user.name "zachary"
+$ git config user.email 759740844@qq.com
+```
+
+
+
 ### git rm
+
 ios中pod的第三方库经常会被`gitignore`掉，让使用者自己下载。
 
 想要达到一个效果：使文件脱离git的版本管理，但不是会删除它.
