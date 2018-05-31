@@ -42,9 +42,9 @@ global.webpackJsonp([1],[/* 各种模块 */]);
 global.webpackJsonp([2],[/* 各个app级的模块 */],[2]);
 ```
 
-## App 初始化——模块二
+## 小程序初始化——模块二
 
-模块二代表着小程序 App 的初始化过程。代码如下:
+模块二代表着小程序的初始化过程。代码如下:
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/mpvue_1.png?raw=true)
 
@@ -88,7 +88,19 @@ import Vue from 'vue'
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_vue__);
 ```
 
-模块一就是 node_module 中的 mpvue。这是一个 5000+ 行的长文件。它的作用就是
+模块一就是 node_module 中的 mpvue。这是一个 5000+ 行的长文件。它的作用就是设置 `Vue$3` 这个类对象。主要调用了几个方法，如下图所示，具体方法使用的时候再说：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/mpvue_3.png?raw=true)
+
+### App 初始化
+
+Vue 初始化好之后，接着就是初始化 App。`import App from './App'` 被打包成了 `__WEBPACK_IMPORTED_MODULE_1__App__`，需要引入模块 4：
+
+```javascript
+import App from './App'
+=>
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__App__ = __webpack_require__(4);
+```
 
 
 
