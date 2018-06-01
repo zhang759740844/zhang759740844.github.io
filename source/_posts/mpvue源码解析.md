@@ -102,5 +102,8 @@ import App from './App'
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__App__ = __webpack_require__(4);
 ```
 
+模块四的代码如下：
 
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/mpvue_4.png?raw=true)
 
+需要引入模块一的 `normalizeComponent` 
