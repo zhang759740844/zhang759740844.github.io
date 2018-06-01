@@ -42,7 +42,7 @@ global.webpackJsonp([1],[/* 各种模块 */]);
 global.webpackJsonp([2],[/* 各个app级的模块 */],[2]);
 ```
 
-## 小程序初始化——模块二
+## 小程序初始化
 
 模块二代表着小程序的初始化过程。代码如下:
 
@@ -88,9 +88,19 @@ import Vue from 'vue'
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_vue__);
 ```
 
-模块一就是 node_module 中的 mpvue。这是一个 5000+ 行的长文件。它的作用就是设置 `Vue$3` 这个类对象。主要调用了几个方法，如下图所示，具体方法使用的时候再说：
+模块一就是 node_module 中的 mpvue。这是一个 5000+ 行的长文件。它的作用就是设置 `Vue$3` 这个类对象。主要调用了几个方法，如下图所示：
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/mpvue_3.png?raw=true)
+
+其中 `initGlobalAPI` 设置的这些属性是在 `Vue.construcotr` 上设置的，也就是图上黄色部分的属性。其余的方法都是在 `Vue.prototype` 上设置的。
+
+需要注意的是设置中有一句代码：
+
+```javascript
+Vue.options._base = Vue;
+```
+
+它将 `Vue.constructor` 上的属性都设置到 `VUe.options._base` 下。
 
 ### App 初始化
 
@@ -106,4 +116,41 @@ import App from './App'
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/mpvue_4.png?raw=true)
 
-需要引入模块一的 `normalizeComponent` 
+需要引入模块0的 `normalizeComponent`，不过这个不重要。可以看到，打包后，vue 文件中的 `<template>` `<styles>` `<script>` 标签都拿出来了（`<script>` 标签就是图片中的模块7）。
+
+模块4最终 export 的是包含了 `<script>` 标签方法的一个对象，如图所示：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/mpvue_5.png?raw=true)
+
+### 创建 Vue 实例
+
+`new Vue(App)` 操作实则就是调用 init 方法。由上面的 Vue 初始化图可知，`_init` 方法在 `initMixin()` 方法中被设置。`_init` 中为 Vue 实例初始化了很多属性，如图：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/mpvue_6.png?raw=true)
+
+其中 `$options` 下包含了模块4 export 的对象以及 `Vue.option` 中的对象。App 级的 Vue 创建没有太多东西。
+
+### 调用 $mount
+
+前面把 Vue 都初始化完了，到这一步开始设置 MP 了。首先会为 Vue 设置一个 `$mp` 属性，所有关于小程序的方法属性都会在之后加到 `$mp` 之下：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/mpvue_8.png?raw=true)
+
+mpvue 会调用了小程序的 `App()` 方法，写入我们在 `<script>` 标签中的各种回调：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/mpvue_7.png?raw=true)
+
+可以看到，`globalData` 是在此时初始化的，所以印证了上面说的全局变量要在 `$mount` 方法后设置。
+
+另外，`onLaunch` 方法和 `onShow` 方法都会带一个 options 属性，包括一些参数啊场景值之类的。所以最好在 `onLaunch` `onLoad` 方法中初始化，这样就不用写冗长的 `this.$root.$mp.query.xxx` 获取参数了。
+
+至此，小程序 App 级的初始化完成了。由于不涉及视图，所以整个流程非常简单。当调用 小程序的 `App()` 后，就是微信的操作了。WXService 在回调 `onLaunch` 等一些列方法后。然后就进入开始加载 Page 了。
+
+## Page 初始化
+
+
+
+
+
+
+
