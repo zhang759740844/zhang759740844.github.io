@@ -116,23 +116,23 @@ import App from './App'
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/mpvue_4.png?raw=true)
 
-需要引入模块0的 `normalizeComponent`，不过这个不重要。可以看到，打包后，vue 文件中的 `<template>` `<styles>` `<script>` 标签都拿出来了（`<script>` 标签就是图片中的模块7）。
+需要引入模块0的 `normalizeComponent`，这个方法用来将 `<template>` 和 `<script>` 保存到一个对象中去。可以看到，打包后，vue 文件中的 `<template>` `<styles>` `<script>` 标签都拿出来了（`<script>` 标签就是图片中的模块7）。
 
-模块4最终 export 的是包含了 `<script>` 标签方法的一个对象，如图所示：
+模块4最终 export 的是  `normalizeComponent` 创建的，包含了 `<script>` 标签内各个属性方法的一个对象（还应该包含 `<template>` 标签下的对象的，但是 App 没有视图），如图所示：
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/mpvue_5.png?raw=true)
 
 ### 创建 Vue 实例
 
-`new Vue(App)` 操作实则就是调用 init 方法。由上面的 Vue 初始化图可知，`_init` 方法在 `initMixin()` 方法中被设置。`_init` 中为 Vue 实例初始化了很多属性，如图：
+`new Vue(App)` 操作实则就是调用 init 方法。上面的 Vue 初始化图设置的属性和方法都在 `__proto__` 下，此处调用的 `_init` 方法为 Vue 实例初始化了很多属性，如图：
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/mpvue_6.png?raw=true)
 
-其中 `$options` 下包含了模块4 export 的对象以及 `Vue.option` 中的对象。App 级的 Vue 创建没有太多东西。
+其中 `$options` 下包含了模块4 export 的自己写的 `<script>` 下的对象以及 `Vue.option` 中的对象。App 级的 Vue 创建没有太多东西，大多数属性都是空的。
 
 ### 调用 $mount
 
-前面把 Vue 都初始化完了，到这一步开始设置 MP 了。首先会为 Vue 设置一个 `$mp` 属性，所有关于小程序的方法属性都会在之后加到 `$mp` 之下：
+前面把 Vue 都初始化完了，到这一步开始设置 MP 了。首先会为 Vue 设置一个 `$mp` 属性，之后关于小程序的方法属性都会在之后加到 `$mp` 之下：
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/mpvue_8.png?raw=true)
 
@@ -144,13 +144,47 @@ mpvue 会调用了小程序的 `App()` 方法，写入我们在 `<script>` 标�
 
 另外，`onLaunch` 方法和 `onShow` 方法都会带一个 options 属性，包括一些参数啊场景值之类的。所以最好在 `onLaunch` `onLoad` 方法中初始化，这样就不用写冗长的 `this.$root.$mp.query.xxx` 获取参数了。
 
+ `onLaunch`  方法中的 `this` 就是小程序提供的 `getApp()` 方法的返回值。mpvue 将其设置为 `$mp` 的 app 属性下，并把 `onLaunch` 的入参保存在了 `$mp` 的 `appOptions` 以及 `getApp()` 的 `globalData` 下。
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/mpvue_9.png?raw=true)
+
 至此，小程序 App 级的初始化完成了。由于不涉及视图，所以整个流程非常简单。当调用 小程序的 `App()` 后，就是微信的操作了。WXService 在回调 `onLaunch` 等一些列方法后。然后就进入开始加载 Page 了。
 
-## Page 初始化
+## 页面初始化
+
+微信会根据 `app.json` 中定义的 pages 数组的第一个元素作为首页显示。mpvue 会在打包生成 `app.json` 的时候将 `main.js` 中带有 `^` 的页面设置为 pages 数组的第一个元素。 `main.js` 中只要写一个首页信息就可以了。其余页面都是打包的时候，webpack 分析项目目录结构生成的。
+
+Page 涉及到具体的视图的展示，会比 App 初始化复杂很多。先来看首页 page 的 `main.js`：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/mpvue_10.png?raw=true)
+
+这里虽然也叫 app，其实是初始化 page。`import vue` 其实都是一样的。直接看 `import App from './index'`
+
+### page 初始化
+
+同之前一样，也是通过 `normalizeComponent` 方法创建 Component。但是 Page 的 `<script>` 和 `<template>` 要比之前复杂很多。
+
+`<script>` 标签中生成的代码如下:
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/mpvue_11.png?raw=true)
+
+`components` 中会把子组件通过 `normalizeComponent` 创建的 Component 对象保存起来。
+
+`<template>` 标签在打包后会根据 dom 结构生成一个 `render` 方法：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/mpvue_12.png?raw=true)
+
+其中 `_c` 就是 `$createElement` 方法，用于创建节点，这个后面再说。
+
+最后生成的 page 中的属性方法如下图：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/mpvue_13.png?raw=true)
+
+### 创建 Vue 实例
+
+创建爱你 vue 主要就是创建了 computed 和 watch
 
 
 
-
-
-
+### $mount
 
