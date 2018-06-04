@@ -182,9 +182,4 @@ Page 涉及到具体的视图的展示，会比 App 初始化复杂很多。先�
 
 ### 创建 Vue 实例
 
-创建爱你 vue 主要就是创建了 computed 和 watch
-
-
-
-### $mount
-
+关于 watch 的东西太多。后面再看吧
