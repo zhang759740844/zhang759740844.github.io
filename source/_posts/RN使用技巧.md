@@ -54,7 +54,7 @@ RN 项目中，会用到很多第三方的组件。这些组件在 `react-native
 
 #### 坑1
 
-`setState` 可以将控件刷星。但是这个操作不是立刻执行的而且在某个时间一并执行的。所以当你如果改变了 state 并且要用这个 state 作为参数进行网络请求的时候，不能直接使用 `setState` 给出的值，而要先将 state 改变，然后再 `setState`:
+`setState` 可以将控件刷新。但是这个操作不是立刻执行的而且在某个时间一并执行的。所以当你如果改变了 state 并且要用这个 state 作为参数进行网络请求的时候，不能直接使用 `setState` 给出的值，而要先将 state 改变，然后再 `setState`:
 
 ```javascript
 this.state.a = '1'
@@ -66,6 +66,41 @@ this.setState({
 #### 坑2
 
 一定不能在 `setState` 的时候改变 state 的原来值。否则 state 会变成意想不到的值。比如一个数组，你**不能直接在 setState 的时候往里 push值**。你可以将数组复制，然后push 好之后再 setState，或者**先设置好 state，然后再 setState。**
+
+##### 坑3
+
+同一个函数中的多个 `setState`  不是分别调用的，而是等到某个时刻合并执行的。所以如果 `setState` 多次设置 state 中的某个值，前面的值的设置会被后面的覆盖掉。
+
+比如：
+
+```javascript
+setState({
+    obj: {
+        ...this.state.obj
+        key1: value1
+    }
+})
+setState({
+    obj: {
+        ...this.state.obj
+        key2: value2
+    }
+})
+```
+
+注意，这里虽然设置的事不同的 `key1` 和 `key2`,看似没有问题。其实我们设置的是 `obj`。`key1` 被覆盖无法设置成功。
+
+可以改成先改变 state，然后再 `setState` 刷新视图：
+
+```javascript
+this.state.obj.key1 = value1
+this.state.obj.key2 = value2
+setState({
+    obj
+})
+```
+
+当然最推荐的还是在设置 state 中同一个值时，在一起设置。 
 
 ### Text 控件
 

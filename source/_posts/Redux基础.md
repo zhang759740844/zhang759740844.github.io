@@ -1,29 +1,29 @@
 title: Redux 基础
-date: 2017/2/3 11:07:12
-categories: iOS
+date: 2018/6/5 11:07:12
+categories: React-Native
 tags:
 
 	- 学习笔记
 ---
 
-这篇将研究一下 Redux 的基本原理
+记录一下 redux 文档的一些要点。以及学习 redux 中的一些经验。
 
 <!--more-->
 
 ## 介绍
 ### 动机
 
-因为单页应用变得复杂，JavaScript 要管理比任何时候都要多的 state。state 在什么时候，由于什么原因，如何变化变得不受控制。Redux 视图让 state 的变化变得可预测。
+因为单页应用变得复杂，JavaScript 要管理比任何时候都要多的 state。state 在什么时候，由于什么原因，如何变化变得不受控制。这里产生了矛盾：组件之间需要共享数据，和数据可能被任意修改导致不可预料的结果之间的矛盾。Redux 试图让 state 的变化变得可预测。
 
 ### 三大原则
 
 #### 单一数据源
 
-整个应用的 state 被存储在一棵 object tree 中，并且这个 object tree 只存在于唯一一个 store 中。这样让同构应用开发变得容易。来自服务端的 state 可以更容易注入到客户端中。
+整个应用的 state 被存储在一棵 object tree 中，并且这个 object tree 只存在于唯一一个 store 中。
 
 #### State 是只读的
 
-唯一改变 state 的方法就是触发 action，action 是一个用于描述已发生事件的普通对象。这样确保了视图和网络请求不能直接修改 state。
+唯一改变 state 的方法就是触发 action，action 是一个用于描述已发生事件的普通对象。确保视图和网络请求不能直接修改 state。
 
 #### 使用纯函数来执行修改
 
@@ -39,23 +39,42 @@ Action 是把数据从应用传到 store 的有效载荷。一般你会通过 `s
 
 Action 本质上是 JS 普通对象。约定 action内必须使用一个字符串类型的 `type` 字段来表示将要执行的动作。
 
+最简单的 Action 如：
+
+```javascript
+const ADD_TODO = 'ADD_TODO'
+{
+    type: ADD_TODO,
+    text: 'build my first redux app'
+}
+```
+
 #### Action 创建函数
 
-在 Redux 中的 action 创建函数只是简单的返回一个 action。这样做将使 action 创建函数更容易被移植和测试。
+在 Redux 中的 action 创建函数只是简单的返回一个 action。这样做将使 action 创建函数更容易被移植和测试，如：
 
-Action 创建函数也可以是异步非纯函数。
+```javascript
+function addTodo (text) {
+    return {
+        type: ADD_TODO,
+        text
+    }
+}
+```
+
+Action 创建函数也可以是异步非纯函数。后面会讨论到。
 
 ### Reducer
 
-Action 只是描述了有事情发生了这一事实，并没有指明应用如何更新 state。
-
-#### 设计 State 结构
-
-在 Redux 应用中，所有的 state 都被保存在一个单一的对象中。
+Action 只是描述了有事情发生了这一事实，并没有指明应用如何更新 state。Reducer 则是用来更新 state
 
 #### Action 的处理
 
-reducer 就是一个纯函数，接受旧的 state 和 action，返回新的 state。
+reducer 就是一个纯函数，接受旧的 state 和 action，返回新的 state：
+
+```javascript
+(previousState, action) => newState
+```
 
 永远不要再 reducer 中执行这些操作：
 
@@ -80,20 +99,14 @@ function todoApp(state = initialState, action) {
 
 需要注意：
 
-1. 不要直接修改 state。所以这里用 `Object.assign()` 新建了一个副本(`Object.assign()` 会把后面的 set 到第一个参数里，所以这里要放一个空对象)。
-2. default 的情况下，返回旧的 state。遇到未知的 action 时，也要返回就的 state。
-
-我们需要修改数组中指定的数据项而又不希望导致突变，因此我们的做法是在创建一个新的数组后，将那些无需修改的项原封不动的移入，接着对需要修改的项用新生成的对象替换。
-
-
+1. 强烈不推荐直接修改 state。所以这里用 `Object.assign()` 新建了一个副本(`Object.assign()` 会把后面的 set 到第一个参数里，所以这里要放一个空对象)。
+2. default 的情况下，返回旧的 state。遇到未知的 action 时，也要返回旧的 state。
 
 #### 拆分 Reducer
 
-Reducer 合成是 Redux 应用最基础的模式，可以把一个复杂的 reducer 逻辑拆分到一个单独的函数里。
+Reducer 合成是 Redux 应用最基础的模式，可以把一个复杂的 reducer 逻辑拆分到一个个单独的函数里。每个 reducer 只负责管理全局 state 中它负责的那一部分。每个 reducer 的 state 参数都不同，分别对应它管理的那部分 state 数据。
 
-每个 reducer 只负责管理全局 state 中它负责的那一部分。每个 reducer 的 state 参数都不同，分别对应它管理的那部分 state 数据。
-
-> 其实就是本来有很多 switch…case，判断不同的 action.type 来对 state 的某个部分做不同的操作嘛。每个 state 的部分，可能会在多个 action.type 中都会被修改。
+> 其实就是本来有很多 switch…case，判断不同的 action.type 来对 state 的某个部分做不同的操作。每个 state 的部分，可能会在多个 action.type 中都会被修改。
 >
 > 现在就把处理相同的 state 的部分的操作都拿出来，单独作为一个 reducer。所有会操作这个 state 部分的 action.type 都会调用这个 reducer。然后在这个小的 reducer 中判断到底是那个 action.type 对应怎么处理这部分 state。
 
@@ -102,17 +115,36 @@ Redux 提供了 `combineReducers()` 工具类来完成各个小 reducer 的调�
 ```javascript
 import { combineReducers } from 'redux'
 
+// 注意，拆分的 reducer 的 state 不是完整的 state，而是 state 中的属性，和方法名相同，此处就是 visibilityFilter。返回的也不是完整的 state，而只是 visibilityFilter
+function visibilityFilter(state = '', action) {
+    switch (action.type) {
+        case VISIBILITY_FILTER:
+            return action.filter
+        defaykt:
+            return state
+    }
+}
+
 const todoApp = combineReducers({
-  visibilityFilter,
-  todos
+  visibilityFilter,		// visibilityFilter 是 state 中的一个属性
+  todos					// todos 是 state 中的一个属性
 })
 
 export default todoApp
+
+// 调用
+todoApp(state = initialState, action) {
+    ...
+}
 ```
 
 
 
-`combineReducers()` 所做的只是生成一个函数，这个函数来调用你的一些列的 reducer。每个 reducer 会根据它们的 key 来筛选出 state 中的一部分数据并处理。然后这个生成的函数再将所有的 reducer 的结果合并为一个大的对象。
+`combineReducers()` 所做的只是生成一个函数，这个函数来调用你的一系列的 reducer。**每个 reducer 会根据它们的 key（reducer 名） 来筛选出 state 中的一部分数据并处理。然后这个生成的函数再将所有的 reducer 的结果合并为一个大的对象。**(每个小 reducer 拿到的不是整个的 state，而是这个 reducer 对应的 state 中的部分属性。一个 action 的 type 可以影响多个 reducer，最后每个 reducer 生成的 state 中的属性会被合并到 state 中。)
+
+> 没有拆分前是横向的，以 action.type 为基准的。一次 reducer 处理中，能处理多个 state 中的属性。
+>
+> 拆分之后是纵向的，是以 state 中属性为基准的。一次 reducer 处理只能处理 state 中的一个属性。多次处理后，合成一个完整的 state。
 
 ### Store
 
@@ -141,6 +173,8 @@ redux 的生命周期遵循下面四步：
 
 ### 搭配 react
 
+通过 react-redux 将 react 和 redux 融合。组件将被分为展示组件和容器组件。展示组件仅仅是用来展示，它的所有数据都是从 props 中获得。而容器组件则是展示组件的外层封装，用来和 redux 打交道，把 state 传入展示组件。
+
 #### 展示组件
 
 展示组件值定义外观并不涉及数据从哪里来，如何改变它。传入什么就渲染什么。如果把代码从 redux 迁移到其他架构，这些组件可以直接使用。他们并不依赖于 redux。
@@ -149,9 +183,9 @@ redux 的生命周期遵循下面四步：
 
 容器组件将展示组件连接到 redux（相当于一个适配器）。例如，展示型的 `TodoList` 组件需要一个类似 `VisibleTodoList` 的容器组件来监听 Redux store 变化并处理如何过滤出要显示的数据。
 
-技术上讲，容器组件就是使用 `store.subscribe()` 从 Redux state 树中读取部分数据，并通过 props 来吧这些数据提供给要渲染的组件。可以手工开发容器组件，但是建议使用 React Redux 库的 `connect()` 方法来生成，这个方法做了性能优化来避免许多不必要的重复渲染（这样就不用手动实现 React 性能优化建议中的 `shouldComponentUpdate` 方法了）。
+技术上讲，容器组件就是使用 `store.subscribe()` 从 Redux state 树中读取部分数据，并通过 props 来把这些数据提供给要渲染的组件。可以手工开发容器组件，但是建议使用 React Redux 库的 `connect()` 方法来生成，这个方法做了性能优化来避免许多不必要的重复渲染（这样就不用手动实现 React 性能优化建议中的 `shouldComponentUpdate` 方法了）。
 
-因为容器组件是 state 和展示组件的中间件嘛。所以可以在这里按需先处理一下 state，然后再把处理过的 state 传给展示组件。所以可以定义 `mapStateToProps` 函数来指定如何把当前 Redux store state 映射到展示组件中的 props 中。
+因为容器组件是 state 和展示组件的中间件，所以可以在这里按需先处理一下 state，然后再把处理过的 state 传给展示组件。所以可以定义 `mapStateToProps` 函数来指定如何把当前 Redux store state 映射到展示组件中的 props 中。
 
 例如，`VisibleTodiList` 需要计算传到 `Todolist` 中的 `todos` ，所以定义了根据 `state.visibilityFilter` 来过滤 `state.todos` 的方法，并在 `mapStateToProps` 中使用：
 
@@ -176,9 +210,9 @@ const mapStateToProps = (state) => {
 
 ```
 
-这个在 return 中的 `todos` 就直接成为了该容器组件的 `this.props` 的一员，可以直接通过 `const {todos} = this.props` 获取。
+这个在 return 中的 `todos` 就直接成为了该显示组件的 `this.props` 的一员，可以直接通过 `const {todos} = this.props` 获取。
 
-除了读取 state，容器组件还能分发 action。类似的，可以定义 `mapDispatchToProps()` 方法接收 `dispatch()` 方法并返回期望注入到展示组件的 props 中的回调方法。例如，我们希望 `VisibleTodoList` 向 `TodoList` 组件中注入一个叫 `onTodoClick` 的 props 中，还希望 `onTodoClick` 能分发 `TOGGLE_TODO` 这个 action:
+除了显示的数据作为 props 传入，显示组件还需要外部容器组件传入一些事件处理方法。类似的，可以定义 `mapDispatchToProps()` 方法接收 `dispatch` 方法并返回希望被注入到展示组件的 props 中的回调方法。例如，我们希望 `VisibleTodoList` 向 `TodoList` 组件中注入一个叫 `onTodoClick` 的方法到 props 中，这个 `onTodoClick` 能 dispatch  一个 action:
 
 ```javascript
 const mapDispathToProps = (dispatch) => {
@@ -190,7 +224,7 @@ const mapDispathToProps = (dispatch) => {
 }
 ```
 
-也就是说，不仅可以把 state 修改好了传进去，也可以把响应时间设置好，再传进去。同样，可以直接通过 `const {onTodoClick} = this.props` 获取这个响应事件。
+也就是说，不仅可以把 state 修改好了传进去，也可以把响应事件设置好，再传进去。同样，可以直接通过 `const {onTodoClick} = this.props` 获取这个响应事件。
 
 最后，使用 `connect()` 创建 `VisibleTodoList`,将两个参数传入：
 
@@ -204,6 +238,8 @@ const VisibleTodoList = connect(
 
 export default VisibleTodoList
 ```
+
+然后外部就可以直接使用 `VisibileTodoList` 组件了。
 
 容器组件实例：
 
