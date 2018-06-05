@@ -247,7 +247,7 @@ export default VisibleTodoList
 
 #### 传入 Store
 
-所有容器组件都可以访问 Redux Store。可以手动监听 store，但是推荐使用 React Redux 组件 `<Provider>` 来让所有容器组件都可以访问 store，而不必显示的传递它。只需要在渲染根组件时使用即可。
+所有容器组件都可以访问 Redux Store，可以手动监听 store（虽然直接访问会多很多重复代码），但是推荐使用 React Redux 组件 `<Provider>` 来让所有容器组件都可以访问 store，而不必显示的传递它。只需要在渲染根组件时使用即可。
 
 ```javascript
 import React from 'react'
@@ -265,6 +265,19 @@ render(
 	</Provider>
 )
 ```
+
+#### 关于 react-redux
+
+react 中的每个属性都要通过 props 一层层传递。如果层级很多，会比较麻烦。所以 react 引入了 `context`。某个组件只要往自己的 context 里面放了某些状态，这个组件之下的所有子组件都直接访问这个状态而不需要通过中间组件的传递。
+
+也就是说父组件中设置了 `context`，子组件就可以通过 `this.context.xxx ` 拿到相应属性使用并修改。这就导致了第一个问题，使用 `context` 是非常危险的，子组件可以随意修改。还有另一个问题是，如果每个子组件都是用 `context`，那么组件复用将变得非常困难。
+
+针对问题一， `context` 和 `store` 结合的就非常的完美。`context` 会担心其中数据被随意修改。而 `store` 中的数据只能通过 `dispatch` 修改。
+所以可以把 `store` 方到 `context` 中去。
+
+针对问题二，便有了上面的 `connect` 方法，通过显示组件生成容器组件的过程。显示组件只负责根据传入的 `props` 显示，和纯函数一样，便于复用。`connect` 方法生成的容器组件要做的就是获取 `this.context` 中的 `store` 进而 `store.getState()` ,把 map 过的 state 传给显示组件。
+
+这样展示组件中获取 `context` 都的操作都消失了。但是在最外层组件里还有设置 `context` 的操作。为了将这部分脏代码消除。就 react-redux 提供了一个 `Provider` 组件。你只要传入一个 `store`，它就会把它放到 `context` 中去。
 
 ## 高级
 
@@ -293,32 +306,6 @@ const store = createStore(
 
 store.dispatch(fetchPosts('reactjs')).then(() => console.log(store.getState()))	// fetchPosts 函数是一个自定义的函数，在里面会进行网络请求
 ```
-
-
-
-### TO BE CONTINUED
-
-暂时先看到这，涵盖了基本的 redux 的原理。后面要用到的继续看。不然太容易忘了。
-
-
-
-
-
-## 问题
-
-- 为什么要用 redux？
-- redux 的三大原则（即特点）是什么？
-- 什么是 action？什么是 action创建函数？
-- Reducer 是个什么样的函数？基本作用是什么？返回 state 的时候要注意什么？
-- `combineReducer` 有什么用？怎么用的？
-- `createStore` 需要传入什么？
-- redux 的设计核心是什么？有什么好处
-- redux 的生命周期是怎样的？
-- 什么是展示组件？
-- 什么是容器组件？容器组件的作用什么？
-- 如何使用 `mapStateToProps` 以及 `mapDispatchToProps`和 `connect` 配合容器组件?
-- 为什么要用 `<Provider>`，怎么使用?
-- 如何执行异步 action？ 
 
 
 
