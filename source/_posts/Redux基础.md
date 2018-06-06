@@ -307,7 +307,13 @@ const store = createStore(
 store.dispatch(fetchPosts('reactjs')).then(() => console.log(store.getState()))	// fetchPosts 函数是一个自定义的函数，在里面会进行网络请求
 ```
 
+> 并不是说 thunk 是唯一解决方式，还可以使用 redux-promise，redux-promise-middleware。
+>
+> 需要了解的是这种处理异步的方式。
 
+### Middleware
+
+中间件提供的是从 `store.dispatch(action)` 到达 `reducer` 之前的拓展。
 
 
 

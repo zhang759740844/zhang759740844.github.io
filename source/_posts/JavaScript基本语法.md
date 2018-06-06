@@ -820,7 +820,7 @@ const promise = new Promise(function(resolve, reject) {
 });
 ```
 
-如上所示，Promise 接受一个函数，入参为成功和失败回调，函数内执行异步操作，在必要时执行成功和失败回调。
+如上所示，Promise 接受一个函数，入参为成功和失败回调，函数内执行异步操作，在必要时执行成功和失败回调。**Promise 不需要返回值**。
 
 Promise 实例生成后，可以使用 `then` 方法指定 `resolve` 和 `reject` 的回调函数：
 
@@ -851,7 +851,29 @@ new Promise((resolve, reject) => {
 
 ### 链式调用`then()`
 
-then 方法除了向 Promise 内注册成功和失败回调，还会创建并返回一个新的 Promise。这样就能形成一个链式调用。
+每一个 promise 就是一个异步调用。多个异步调用串行可以使用链式 `.then()` 的方式。
+
+这个时候 `then` 方法向调用的 Promise 注入成功回调的时候需要返回一个新的 Promise
+
+```javascript
+new Promise((resolve, reject) => {
+    ...异步操作回调 {
+        let data = xxx
+        resolve(data)
+    }
+}.then((res) => {
+    return Promise((resolve, reject) => {
+        ...异步操作回调 {
+        	let data = xxx
+        	resolve(data)
+    	}
+    })
+}).then((res) => {
+    ...最终对 res 处理。
+})
+```
+
+
 
 ###失败调用 `catch()` 
 
