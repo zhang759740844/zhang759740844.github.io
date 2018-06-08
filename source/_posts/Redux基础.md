@@ -313,9 +313,59 @@ store.dispatch(fetchPosts('reactjs')).then(() => console.log(store.getState()))	
 
 ### Middleware
 
-中间件提供的是从 `store.dispatch(action)` 到达 `reducer` 之前的拓展。
+我们知道，我们 `store.dispatch(action)` 后，` dispatch` 方法中会调用 `reducer` 。但是我们很多时候希望在执行 `reducer` 之前或者之后做一些其他的操作，比如记录日志等，这个时候就需要使用 middleware。
 
+middleware 所做的就是替换 redux 提供的 `dispatch` 方法:
 
+```javascript
+let next = store.dispatch
+store.dispatch = function dispatchAndLog(action) {
+    console.log(action)
+    let result = next(action)
+    console.log(store.getState())
+    return result
+}
+```
+
+可以看到，现在 `store.dispatch` 一个 action 的前后都会执行 log。并且现在的 `dispatch` 还会返回原本的 dispatch 的返回值(虽然这里原本的 dispatch 是 redux 的 dispatch ，不反回任何，但是如果 middleware 修改过的 dispatch 可能会返回 result，所以还是需要 return 的)
+
+现在我们考虑有多个 middleware 需要应用。我们需要把上一个 middleware 修改过的 `dispatch` 传入 下一个 middleware。那么考虑这个中间件方法需要几个参数：`store`，上一个中间件修改过的 `dispatch`，`action`。所以我们可以采用函数式：
+
+```javascript
+const logger = store => next => action => {
+    console.log(action)
+    let result = next(action)
+    console.log(store.getState())
+    return result
+}
+
+const thunk = store => next => action => {
+    typeof action === 'function'
+    	? action(store.dispatch, store.getState)
+    	: next(action)
+}
+```
+
+这样，在 `createStore()` 的时候，不只是传入一个 `reducer`，还包括一个中间件参数：
+
+```javascript
+let store = createStore(
+	todoApp,
+    applyMiddleware(
+    	logger,
+        thunk,
+    )
+)
+```
+
+`applyMiddleware` 应该做的是这样一个操作：
+
+```javascript
+let dispatch = store.dispatch
+for temp in middlewares {
+    dispatch = temp(store)(dispatch)
+}
+```
 
 
 
