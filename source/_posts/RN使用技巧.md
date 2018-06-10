@@ -88,7 +88,7 @@ setState({
 })
 ```
 
-注意，这里虽然设置的事不同的 `key1` 和 `key2`,看似没有问题。其实我们设置的是 `obj`。`key1` 被覆盖无法设置成功。
+注意，这里虽然设置的是不同的 `key1` 和 `key2`,看似没有问题。其实我们设置的是 `obj`。`key1` 被覆盖无法设置成功。
 
 可以改成先改变 state，然后再 `setState` 刷新视图：
 
@@ -102,11 +102,43 @@ setState({
 
 当然最推荐的还是在设置 state 中同一个值时，在一起设置。 
 
+#### setState 的与 redux 中的 reducer
+
+当你在一个组件上调用`setState`时，React将其标记为脏的。当循环结束时，React查询所有脏的组件，并且重新渲染他们。
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/setState_1.png?raw=true)
+
+所以我们**不能**像下面这样写，这样会把整个页面重新渲染的：
+
+```javascript
+this.setState({
+    ...this.state,
+    obj: obj
+})
+```
+
+上面的写法其实也很眼熟。一般用在 redux 的 `reducer` 中:
+
+```
+function someReducer(state = initialState, action) {
+    switch (action.type) {
+        case SOME_TYPE:
+        	return Object.assign({}, state, {
+                someObj: someObj
+        	})
+    }
+}
+```
+
+redux 中返回的一定是一个新的 state，redux 会根据 state 中各个属性的地址判断属性是否改变，来控制 `shouldComponentUpdate` 是否重绘视图。
+
 ### Text 控件
 
 #### 对齐
 
 设置了宽高的 Text 控件只会在左上角显示。可以使用 `text-align` 设置文字的位置，比如 center。但是显示的时候你会发现只是水平居中。你必须再使用 `line-height` 设置高度为控件高度才能够竖直居中。
+
+> 对于 text 控件，设置 height 是没用的，默认是 text 的高度。必须要设置 `line-height` 
 
 #### 宽高
 
