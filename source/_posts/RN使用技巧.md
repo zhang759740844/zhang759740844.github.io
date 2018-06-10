@@ -108,6 +108,8 @@ setState({
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/setState_1.png?raw=true)
 
+> 其实完整的应该是 
+
 所以我们**不能**像下面这样写，这样会把整个页面重新渲染的：
 
 ```javascript
@@ -130,7 +132,26 @@ function someReducer(state = initialState, action) {
 }
 ```
 
-redux 中返回的一定是一个新的 state，redux 会根据 state 中各个属性的地址判断属性是否改变，来控制 `shouldComponentUpdate` 是否重绘视图。
+redux 中返回的一定是一个新的 state。
+
+### 何时重绘
+
+触发重绘有两种方式：
+
+- `setState` 调用的时候。
+- `props` 变化的时候。
+
+`setState` 会触发 `render` 方法，`render` 方法生成的新的 DOM 会和老的 DOM 比较，然后渲染差异的部分
+
+针对有子组件的视图，每次父组件 `render` 的时候，都会传入一些属性。这些属性构成了**新的 props**。所以，**父组件每次 `render` 的时候，即使子组件的各个属性值没变，子组件默认也是要重绘的，因为承载属性值的 `props` 变化了**。所以我们创建子组件的时候，最好重写 `shouldComponentUpdate` 方法，去判断 props 中的各个属性是否变化。
+
+### 性能优化
+
+因为 props 值变化的时候，整个组件都会重绘。所以我们可以重写组件的 `shouldComponentUpdate` 方法，去判断 props 中的各个属性是否变化。这是在控制组件是否重绘的角度进行优化。react-redux 默认为每个组件都做了上面所说的判断。
+
+使用 react-redux 的时候，还经常搭配另一个常用的库 Reselect。因为 store 中的 state 变化的时候，会默认为每一个注册了的组件调用 `mapStateToProps` 方法，即使组件想要的 state 中的属性并没有变化。所以使用 Reselect 可以提前判断当前组件需要的 state 是否变化，来提前终止 `mapStateToProps` 的调用。
+
+> react-redux 和 reselect  都是使用数据的地址是否变化来判断属性是否变化的。所以当数据更新的时候，要保证数据的地址也变化了。
 
 ### Text 控件
 
