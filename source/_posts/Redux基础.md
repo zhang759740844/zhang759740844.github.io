@@ -367,15 +367,188 @@ for temp in middlewares {
 }
 ```
 
+### 组织 reducer
 
+对于单个的 reducer，项目复杂后，reducer 可能会变得非常的长：
 
+```javascript
+function appReducer(state = {}, action) {
+    switch(action.type) {
+        case 'ADD_TODO' : {
+            return Object.assign({}, state, {
+                todos: state.todos + action.add
+            })
+        }
+        case 'TOGGLE_TODO' : {
+            return Object.assgin({}, state, {
+                todos: state.todos + action.toggle
+            })
+        }
+        case 'SET_VISIBILITY_FILTER' : {
+            return Object.assign({}, state, {
+                visibilityFilter: action.filter
+            })
+        }
+        ...
+    }
+}
+```
 
+可以看到，这样的代码含有两个问题：
 
+- 多个字段的处理逻辑都放在一个方法里，不够清晰
+- 会包含非常多的 switch...case... 方法，很多冗余代码
 
+#### 分离字段
 
+针对第一个问题我们可以为每个字段都实现一个子 reducer，然后把各部分返回的结果组合：
 
+```javascript
+function setVisibilityFilter(visibilityState, action) {
+    return action.filter
+}
 
+function addTodo(todoState, action) {
+    return todoState + action.add
+}
 
+function toggleTodo(todoState, action) {
+    return todoState + action.toggle
+}
+
+function visibilityReducer(visibilityState = 'SHOW_ALL', action) {
+    switch(action.type) {
+        case 'SET_VISIBILITY_FILTER' : return setVisibilityFilter(visibilityState, action)
+        default : return visibilityState
+    }
+}
+
+function todosReducer(todoState, action) {
+    switch(action.type) {
+        case 'ADD_TODO' : return addTodo(todoState, action)
+        case 'TOGGLE_TODO': return toggleTodo(todoState, action)
+		default : return todosState
+    }
+}
+
+function appReducer (state = {}, action) {
+    return {
+        todos: todosReducer(state.todos, action)
+        visibilityFilter: visibilityReducer(state.visibilityFilter, action)
+    }
+}
+```
+
+这样的写法把各个字段分别处理，逻辑就清晰了很多。
+
+#### 减少样板代码
+
+针对问题二提到的 `switch...case…` 产生的样板代码，js 的语言特性可以很好地消除：
+
+```javascript
+// 消除样板代码的主要方法
+function createReducer(initialState, handlers) {
+    return function reducer(state = initialState, action) {
+        if (handlers.hasOwnProperty(action.type)) {
+            return handlers[action.type](state, action)
+        } else {
+            return state
+        }
+    }
+}
+
+const todoReducer = createReducer({}, {
+    'ADD_TODO' : addTodo,
+    'TOGGLE_TODO' : toggleTodo,
+})
+
+function appReducer (state = {}, action) {
+    return {
+        todos: todosReducer(state.todos, action)
+        visibilityFilter: visibilityReducer(state.visibilityFilter, action)
+    }
+}
+```
+
+用一个对象的键来替代 case，判断 `hasOwnProperty` 来替代是否命中 case。
+
+这里就已经非常像 redux 提供的  `combineReducer`  方法的实现了
+
+## 常见问题
+
+### Redux 只能搭配 React？
+
+Redux 可以作为任何 UI 层的 store。但是一般在结合 UI 随 state 变化时，Redux 能发挥最大的作用。
+
+### Reducer
+
+#### 如何在 reducer 间共享 state？`combineReducers` 是必须的吗？
+
+redux store 推荐结构是将 state 分成"层"，并提供独立的 reducer 方法管理各自的数据层。
+
+许多用户想要在 reducer 之间共享数据，但是 `combineReducers`不允许此种行为。如果一定要这样做，你需要：
+
+- 重构 state 层，让单独的 reducer 处理更多的数据。
+- 自定义方法处理这些 action，用自定义的顶层 reducer 方法替换 `combineReducers` 。使用 `combineReducers` 处理尽可能多的 action，同时为存在 state 交叉部分的 action 执行更专用的 reducer。
+- 类似于 redux-thunk 的异步 action 创建函数可以通过 `getState()` 方法获取所有的 state。action 创建函数能从 state 中检索到额外的数据并传入 action。所以 reducer 有足够的信息去更新 state 层。
+
+#### 处理 action 必须使用 switch 语句嘛？
+
+不必要，但是 switch 是最常用的方式。也可以用 if 或者上面组织 reducer 中使用的方式。
+
+### State
+
+#### 是否所有 state 都维护在 redux 中？
+
+一般来说业务数据放在 redux 中，页面数据则不必要。
+
+### Store
+
+#### 可以创建多个 store 嘛？
+
+最好不要创建多个 store，而是尝试组合 reducer。
+
+#### 能在组建里直接使用 store 并使用吗？
+
+最好不要直接获取 store 实例。借助 react-redux，由 `connect()` 将 `<Provider store={store}>` 传入的 store 通过 `mapStateToProps` 传入子组件。 
+
+### 性能
+
+#### 每个 action 都调用所有的 reducer 会不会很慢？
+
+不会
+
+#### reducer 中必须对 state 进行深拷贝么？
+
+你需要创建一个 state 的副本，但是 state 中的没有变化的数据，还是使用浅拷贝，变化的才会创建新的引用。
+
+### react redux
+
+#### 为何组件没有被重新渲染，或者 `mapStateToProps` 没有运行？
+
+action 分发后没有重新渲染，最主要的原因是对 state 进行了直接修改。React Redux 会在 `shouldComponentUpdate` 中对新的 props 进行浅层的判等检查。如果所有的引用都是相同的，那么返回 false 从而跳过此次组价你的更新。
+
+所以，要注意，不管何时更新了一个嵌套值，都必须返回上层的数据的副本给 state 树。即如果数据是 `state.a.b.c.d` 中的 `d` 变化，你也必须返回 `c`,`b`,`a`,`state` 的拷贝。 
+
+#### 为何组件频繁重新渲染？
+
+react redux 做了优化，会对 `mapStateToProps` 传入的 props 判等。但是如果每次 `mapStateToProps` 都生成新的对象实例的话，这种判等就没有用处了。比如：
+
+```javascript
+const mapStateToProps = (state) => {
+    return {
+        objects: state.objectIds.map(id => state.objects[id])
+    }
+}
+```
+
+通过 `map` 会生成新的实例。所以判等也就不可能成功了。
+
+这种可以使用 Reselect，在 `mapStateToProps` 前就进行判断是否需要 map state。
+
+#### redux 应该只连接到顶层组件嘛？
+
+并不是。当你感觉到你是在父组件里通过复制代码为某些子组件提供数据时，就可以抽出一个容器组件了。只要你认为父组件过多了解子组件的数据或者 action，就可以抽取容器。
 
 
 
