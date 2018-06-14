@@ -552,7 +552,62 @@ const mapStateToProps = (state) => {
 
 
 
+## Hanzo 
 
+Hanzo.js 是一个借鉴了 Dva.js  react 框架。集成了路由以及 redux。这里主要讨论 redux 相关部分的 RN 中的实现。
+
+首先在 RN 的入口 index.ios.js 中：
+
+```javascript
+import Hanzo from 'hanzojs/mobile'
+import React, { Component } from 'react'
+
+const App = new Hanzo()
+App.registerModule(require('./modules/properties'))
+App.registerModule(require('./modules/todoApp'))
+
+const AppComponent = App.start()
+
+class CRM extends Component {
+  constructor(props) {
+    super(props);
+  }
+
+  render() {
+    return <AppCompinent />
+  }
+}
+    
+React.AppRegistry.registerComponent('reactNativeCrm', () => CRM);
+```
+
+通过 hanzo 提供的初始化方法，可以创建一个包含所有信息的实例，相当于是之后所有视图以及逻辑的根：
+
+```javascript
+const app = {
+  // properties
+  _models: [],
+  _reducers: {},
+  _views: {},
+  _router: null,
+  _routerProps: {},
+  _routes: null,
+  _store: null,
+  _history: null,
+  _isomorphic: hooks.isomorphic || false, // server-render options
+
+  // methods
+  use, // add redux-middlewares, extra-reducers, etc
+  registerModule, // register a module
+  router, // config router
+  start, // start hanzo instance
+  getStore, // get redux store
+  getRoutes, // get router config
+  getModule, // get the register module
+};
+```
+
+通过 `registerModule` 将各个
 
 
 
