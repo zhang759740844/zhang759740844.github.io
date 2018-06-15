@@ -115,7 +115,7 @@ Redux 提供了 `combineReducers()` 工具类来完成各个小 reducer 的调�
 ```javascript
 import { combineReducers } from 'redux'
 
-// 注意，拆分的 reducer 的 state 不是完整的 state，而是 state 中的属性，和方法名相同，此处就是 visibilityFilter。返回的也不是完整的 state，而只是 visibilityFilter
+// 注意，拆分出来的 reducer 中的 state 不是完整的 state，而是 state 中的属性，和方法名相同，此处就是 visibilityFilter。返回的也不是完整的 state，而只是 visibilityFilter
 function visibilityFilter(state = '', action) {
     switch (action.type) {
         case VISIBILITY_FILTER:
@@ -446,6 +446,8 @@ function appReducer (state = {}, action) {
 针对问题二提到的 `switch...case…` 产生的样板代码，js 的语言特性可以很好地消除：
 
 ```javascript
+
+
 // 消除样板代码的主要方法
 function createReducer(initialState, handlers) {
     return function reducer(state = initialState, action) {
@@ -550,11 +552,35 @@ const mapStateToProps = (state) => {
 
 并不是。当你感觉到你是在父组件里通过复制代码为某些子组件提供数据时，就可以抽出一个容器组件了。只要你认为父组件过多了解子组件的数据或者 action，就可以抽取容器。
 
-
-
 ## Hanzo 
 
-Hanzo.js 是一个借鉴了 Dva.js  react 框架。集成了路由以及 redux。这里主要讨论 redux 相关部分的 RN 中的实现。
+Hanzo.js 是一个借鉴了 Dva.js  react 框架。集成了 router 以及 redux。这里主要讨论 redux 相关部分的 RN 中的实现。
+
+### 需求分析
+
+在分析一个框架的时候，我们需要思考，这个框架需要帮助使用者完成那些步骤，以及需要使用者提供哪些东西。
+
+通过前面 redux 的学习，我们可以发现，用户没有必要知道 Store 是如何创建的（`createStore`），没有必要知道 reducer 是如何合成的(`combineReducer`)，没有必要知道 redux 分发事件  `dispatch`,没有必要知道根视图 `Provider`，没有必要知道 `state` 树如何形成的，没有必要知道 `reducer` 对应于  `state` 中相应属性，没有必要知道 `mapStateToProps` 以及 `mapDispatchToProps`，没必要知道 `applyMiddleware`，没必要知道 `action.type` 判断的 switch...case...。 
+
+需要使用者提供的是，哪些方法以及哪些属性是需要作为 props 传入模块的，以及 props 中的方法需要执行什么异步操作(`action`)，以及如何如何影响 props 中的属性的(`state`)。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### 使用
 
 首先在 RN 的入口 index.ios.js 中：
 
@@ -574,12 +600,61 @@ class CRM extends Component {
   }
 
   render() {
-    return <AppCompinent />
+    return <AppComponent />
   }
 }
     
 React.AppRegistry.registerComponent('reactNativeCrm', () => CRM);
 ```
+
+通过 Hanzo 实例的 `registerModule` 方法可以注册模块。模块示例如下：
+
+```javascript
+import { connect } from 'hanzojs'
+import model from './model'
+
+module.exports = {
+  models: model,
+  views: {
+    TodoApp: connect((state) => {
+      return {
+        ...state.todoApp,
+        todos: state.todoApp.todos.filter(todo => {
+          if (state.todoApp.filter === VisibilityFilters.ALL) {
+            return true;
+          } else if (state.todoApp.filter === VisibilityFilters.COMPLETED) {
+            return todo.completed;
+          } else if (state.todoApp.filter === VisibilityFilters.INCOMPLETE) {
+            return !todo.completed;
+          }
+        })
+      }
+    }, model)(require('./views/index.js'))
+  }
+}
+```
+
+引入了方法相关的 model 以及视图相关的 view，最后通过 hanzo 提供的 connect 把两者组合。
+
+一个标准的 model 写法如下：
+
+```javascript
+module.exports = {
+  namespace: '',
+  state: {
+  },
+  handlers: [
+  ],
+  reducers: {
+  },
+}
+```
+
+其中，namespace 为当前模块的字符串，state 为当前模块的初始状态，handlers 为当前模块能调用的方法，reducers 等同于 redux 中的 reducer。
+
+注册完模块，通过 hanzo 实例的 start 方法，返回一个视图，作为 RN 的根视图。
+
+### 原理
 
 通过 hanzo 提供的初始化方法，可以创建一个包含所有信息的实例，相当于是之后所有视图以及逻辑的根：
 
@@ -607,7 +682,51 @@ const app = {
 };
 ```
 
-通过 `registerModule` 将各个
+随后我们会调用 `registerModule` 方法注册模块。注册模块的主要逻辑如下：
+
+```javascript
+this._views = {
+  ...this._views,
+  ...module.views
+}
+
+if (isPlainObject(module.models)) {
+  let Actions = {}
+  let namespace = module.models.namespace.replace(/\/$/g, ''); // events should be have the namespace prefix
+  Object.keys(module.models.reducers).map((key) => {
+    if (key.startsWith('/')) { // starts with '/' means global events
+      Actions[key.substr(1)] = module.models.reducers[key];
+    } else {
+      Actions[namespace + '/' + key] = module.models.reducers[key];
+    }
+  })
+  let _temp = handleActions(Actions, module.models.state)
+  let _arr = namespace.split('/')
+  _mergeReducers(this._reducers, _arr, _temp)
+}
+
+if (module.publicHandlers && Array.isArray(module.publicHandlers)) {
+  module.publicHandlers.map((item) => {
+    GlobalContext.registerHandler(namespace.replace(/\//g, '.') + '.' + item.name, item.action)
+  })
+}
+
+function _mergeReducers(obj, arr, res) {
+  if(arr.length > 1) {
+    let hierachy = arr.splice(0,1)[0]
+    obj[hierachy] = obj[hierachy] || {}
+    _mergeReducers(obj[hierachy], arr, res)
+  } else {
+    obj[arr[0]] =  res || {}
+  }
+}
+```
+
+首先把模块中的 `views` 中的所有 view 都保存到 `_views` 中。
+
+之后处理模块中的 `models`。找到 models 中的 `reducers` 数组，为其中的每个方法都添加上 `namespace`，然后通过 `_mergeReducers` 方法每个 reducer 方法放到 `_reducers` 的各个命名空间下。比如 `namespace` 为 `order/newOrder` 的模块，它的 reducer 就放在 hanzo 实例对象的 `_reducers.order.newOrder` 下。
+
+最后
 
 
 
