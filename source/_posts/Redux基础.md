@@ -560,25 +560,17 @@ Hanzo.js 是一个借鉴了 Dva.js  react 框架。集成了 router 以及 redux
 
 在分析一个框架的时候，我们需要思考，这个框架需要帮助使用者完成那些步骤，以及需要使用者提供哪些东西。
 
-通过前面 redux 的学习，我们可以发现，用户没有必要知道 Store 是如何创建的（`createStore`），没有必要知道 reducer 是如何合成的(`combineReducer`)，没有必要知道 redux 分发事件  `dispatch`,没有必要知道根视图 `Provider`，没有必要知道 `state` 树如何形成的，没有必要知道 `reducer` 对应于  `state` 中相应属性，没有必要知道 `mapStateToProps` 以及 `mapDispatchToProps`，没必要知道 `applyMiddleware`，没必要知道 `action.type` 判断的 switch...case...。 
+通过前面 redux 的学习，我们可以发现，用户没有必要知道 Store 是如何创建的（`createStore`），没有必要知道 reducer 是如何合成的(`combineReducer`)，没有必要知道 redux 分发事件  `dispatch`,没有必要知道根视图 `Provider`，没有必要知道 `state` 树如何形成的，没有必要知道 `reducer` 和  `state` 中属性一一对应，没有必要知道 `mapStateToProps` 以及 `mapDispatchToProps`，没必要知道 `applyMiddleware`，没必要知道 `action.type` 判断的 switch...case...。 
 
-需要使用者提供的是，哪些方法以及哪些属性是需要作为 props 传入模块的，以及 props 中的方法需要执行什么异步操作(`action`)，以及如何如何影响 props 中的属性的(`state`)。
+需要使用者提供的是，哪些方法以及哪些属性是需要作为 props 传入模块的， props 中的方法需要执行什么异步操作(`action`)，以及如何影响 props 中的属性的(`state`)。
 
+带着上面的想法，我们可以大概推测一下 hanzo 做了什么。
 
+对于每一个模块，或者说每一个页面为单位，设置一个 `state`，这个 `state` 就是 `store` 中 `state` 的一个属性。然后创建与之相应的 reducer。reducer 会针对 action 的不同 type 创建多个方法。
 
+接着还需要把每个模块的 `state` 组合成大的 state 树，`reducer` 也组合成大的 reducer 树，用来创建 `store`。
 
-
-
-
-
-
-
-
-
-
-
-
-
+最后把页面和 state 以及 action 通过 *react-redux* 结合起来。
 
 ### 使用
 
@@ -634,7 +626,7 @@ module.exports = {
 }
 ```
 
-引入了方法相关的 model 以及视图相关的 view，最后通过 hanzo 提供的 connect 把两者组合。
+引入了和方法相关的 model 以及和视图相关的 view。导出 models 主要是为了导出模块的 `state` 以及 `reducer`，以此创建 `store`。导出 view 的时候，使用了 hanzo 提供的 connect 把两者组合，其实就是相当于设置里 `mapStateToProps` 和 `mapDispatchToProps`。
 
 一个标准的 model 写法如下：
 
@@ -645,12 +637,14 @@ module.exports = {
   },
   handlers: [
   ],
+  publicHandlers: [
+  ],
   reducers: {
   },
 }
 ```
 
-其中，namespace 为当前模块的字符串，state 为当前模块的初始状态，handlers 为当前模块能调用的方法，reducers 等同于 redux 中的 reducer。
+其中，namespace 就是当前模块名，其实就是当前模块的在全局的 `state` 树的名字，以及相对应的 `reducer` 的名字。state 为当前模块的初始状态，也就是在 `state` 树中属性的具体值。handlers 为当前模块能调用的方法，会以 `mapDispatchToProps` 的形式传入 view。publicHandlers 为全局都能调用的方法，所以会加入到每一个模块的 `mapDispatchToProps` 中去。reducers 中的各个方法分别对应 `action` 的不同 type。
 
 注册完模块，通过 hanzo 实例的 start 方法，返回一个视图，作为 RN 的根视图。
 
@@ -711,6 +705,11 @@ if (module.publicHandlers && Array.isArray(module.publicHandlers)) {
   })
 }
 
+/**
+ * private method
+ * merge reducers by hierachy
+ * user/login, user/info -> user:{ login, info }
+ */
 function _mergeReducers(obj, arr, res) {
   if(arr.length > 1) {
     let hierachy = arr.splice(0,1)[0]
@@ -724,9 +723,88 @@ function _mergeReducers(obj, arr, res) {
 
 首先把模块中的 `views` 中的所有 view 都保存到 `_views` 中。
 
-之后处理模块中的 `models`。找到 models 中的 `reducers` 数组，为其中的每个方法都添加上 `namespace`，然后通过 `_mergeReducers` 方法每个 reducer 方法放到 `_reducers` 的各个命名空间下。比如 `namespace` 为 `order/newOrder` 的模块，它的 reducer 就放在 hanzo 实例对象的 `_reducers.order.newOrder` 下。
+之后处理模块中的 `models`。找到 models 中的 `reducers` 数组，为其中的每个方法都添加上 `namespace`，然后通过 `_mergeReducers` 方法每个 reducer 方法放到 `_reducers` 的各个命名空间下。比如 `namespace` 为 `order/newOrder` 的模块，它的 reducer 就放在 hanzo 实例对象的 `_reducers.order.newOrder` 下。这好像和之前说的 `reducers` 数组中的方法代表着 swith...case 的不同 `action.type` 的说法不太一致。别急，这还没到 `combineReducers` 方法呢。
 
-最后
+最后，把 `publicHandlers` 中的所有方法保存到 `GlobalContext` 中去。
+
+注册模块的逻辑就是这样。现在需要把各个部分糅合到一起。hanzo 提供了 `start` 方法：
+
+```javascript
+/**
+ * start the whole hanzo instance
+ * return React.Component
+ */
+function start(container) {
+  const me = this
+  const AppNavigator = me._router; // react-navigation
+  let store = getStore.call(me)
+  const isomorphic = me._isomorphic
+  const App = ({ dispatch, nav }) => (
+    <AppNavigator navigation={addNavigationHelpers({ dispatch, state: nav })} />
+  );
+  const mapStateToProps = state => ({
+    nav: state.nav,
+  });
+
+  const AppWithNavigationState = connect(mapStateToProps)(App);
+
+  return class extends Component {
+    render() {
+      isomorphic ? store = getStore.call(me) : null
+      return (
+        <Provider store={store}>
+          <AppWithNavigationState />
+        </Provider>
+      ) 
+    }
+  } 
+}
+```
+
+`start` 把整合了 redux-react 的功能。主要创建了 store 以及提供了 `Provider`。
+
+至于关于 navigation 的部分。`App` 是一个显示组件，至于这种写法，其实就相当于传入 props 为 `dispatch` 和 `nav` 分别是方法和状态。 然后又通过 `connect` 创建了一个容器组件 `AppWithNavigationState` 并把 router 相关状态传入。然后将其作为 `Provider` 的子组件。
+
+再回到创建 store 的过程：
+
+```javascript
+/**
+ * create the redux-store
+ */
+function getStore() {
+  let middlewares = plugin.get('onAction');
+
+  let enhancer = applyMiddleware(...middlewares)
+  if (typeof __DEV__ !== 'undefined' && __DEV__) { // dev mode
+    const devTools = plugin.get('dev') || ((noop) => noop)
+    if(devTools.apply) {
+      enhancer = compose(
+        applyMiddleware(...middlewares),
+        devTools
+      )
+    }
+  }
+
+  const createAppStore = enhancer(createStore);
+  
+  this._store = Object.assign(this._store || {}, createAppStore(getReducer.call(this), initialState));
+  return this._store
+}
+```
+
+可以看到，先用 `applyMiddleware` 生成了中间件，中间件可以通过 hanzo 的 `use` 方法注册。
+
+这里 `initialState` 需要在创建 hanzo 实例的时候传入，一般是 `{}`。坦白说，我觉得这里的做法并不好。对于使用者来说，并不知道 hanzo 创建的时候整个 `state` 树是什么样的，应该在框架内，获取每个模块的 state，组合为 `initialState`。现在这种情况下，hanzo 无法支持有初始值的 state。
+
+不过这段的重点应该是 `getReducer` 方法：
+
+```javascript
+
+```
+
+
+
+
 
 
 
