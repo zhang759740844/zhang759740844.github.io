@@ -554,7 +554,7 @@ const mapStateToProps = (state) => {
 
 ## Hanzo 
 
-Hanzo.js 是一个借鉴了 Dva.js  react 框架。集成了 router 以及 redux。这里主要讨论 redux 相关部分的 RN 中的实现。
+Hanzo.js 是一个借鉴了 Dva.js  的框架。集成了 router 以及 redux。这里主要讨论 redux 相关部分的 RN 中的实现。
 
 ### 需求分析
 
@@ -644,11 +644,19 @@ module.exports = {
 }
 ```
 
-其中，namespace 就是当前模块名，其实就是当前模块的在全局的 `state` 树的名字，以及相对应的 `reducer` 的名字。state 为当前模块的初始状态，也就是在 `state` 树中属性的具体值。handlers 为当前模块能调用的方法，会以 `mapDispatchToProps` 的形式传入 view。publicHandlers 为全局都能调用的方法，所以会加入到每一个模块的 `mapDispatchToProps` 中去。reducers 中的各个方法分别对应 `action` 的不同 type。
+其中，namespace 就是当前模块名，对于多层级的 namespace，hanzo 会将其转为多层级的对象结构。namespace 会被作为当前模块的在全局的 `state` 树的名字，以及相对应的 `reducer` 的名字。
+
+state 为当前模块的初始状态，也就是在 `state` 树中属性的具体值。
+
+handlers 为当前模块能调用的方法，会以 `mapDispatchToProps` 的形式传入 view。publicHandlers 为全局都能调用的方法，所以会加入到每一个模块的 `mapDispatchToProps` 中去。
+
+reducers 会被 hanzo 做进一步处理。这里的各个方法分别对应 `action` 的不同 type。
 
 注册完模块，通过 hanzo 实例的 start 方法，返回一个视图，作为 RN 的根视图。
 
 ### 原理
+
+#### 注册相关
 
 通过 hanzo 提供的初始化方法，可以创建一个包含所有信息的实例，相当于是之后所有视图以及逻辑的根：
 
@@ -679,16 +687,13 @@ const app = {
 随后我们会调用 `registerModule` 方法注册模块。注册模块的主要逻辑如下：
 
 ```javascript
-this._views = {
-  ...this._views,
-  ...module.views
-}
-
 if (isPlainObject(module.models)) {
   let Actions = {}
   let namespace = module.models.namespace.replace(/\/$/g, ''); // events should be have the namespace prefix
   Object.keys(module.models.reducers).map((key) => {
     if (key.startsWith('/')) { // starts with '/' means global events
+      // 如果reducer 以 '/' 开头，那么表示是全局事件
+      // 其实就是说
       Actions[key.substr(1)] = module.models.reducers[key];
     } else {
       Actions[namespace + '/' + key] = module.models.reducers[key];
@@ -721,9 +726,15 @@ function _mergeReducers(obj, arr, res) {
 }
 ```
 
-首先把模块中的 `views` 中的所有 view 都保存到 `_views` 中。
 
-之后处理模块中的 `models`。找到 models 中的 `reducers` 数组，为其中的每个方法都添加上 `namespace`，然后通过 `_mergeReducers` 方法每个 reducer 方法放到 `_reducers` 的各个命名空间下。比如 `namespace` 为 `order/newOrder` 的模块，它的 reducer 就放在 hanzo 实例对象的 `_reducers.order.newOrder` 下。这好像和之前说的 `reducers` 数组中的方法代表着 swith...case 的不同 `action.type` 的说法不太一致。别急，这还没到 `combineReducers` 方法呢。
+
+之后处理模块中的 `models`。找到 models 中的 `reducers` 数组，为其中的每个方法都添加上 `namespace`。 我们知道，一个模块应该是只有一个 reducer 的，为什么这里的 `reducers`是个数组呢？因为数组中的方法其实对应的不是不同的 reducer，而是 reducer 中不同的 `action.type`（创建不同的方法来替代 Switch...case...，前面说过）。加上 `namespace` 也是为了保证 `action.type` 的全局唯一性。
+
+> reducers 中写的代表着不同 `action.type` 的处理方法。
+
+随后将处理好的 `reducers` 通过 redux-actions 的 `handleActions` 方法，将其转化为一个 reducer。相当于把一个个独立的方法转化为 switch...case... 了。
+
+之后通过 `_mergeReducers` 方法把上面生成的各个 reducer 放到 hanzo 实例的 `_reducers` 的各个命名空间下。比如 `namespace` 为 `order/newOrder` 的模块，它的 reducer 就放在 hanzo 实例对象的 `_reducers.order.newOrder` 下，等待最后的 `combineReducer`。
 
 最后，把 `publicHandlers` 中的所有方法保存到 `GlobalContext` 中去。
 
@@ -761,9 +772,9 @@ function start(container) {
 }
 ```
 
-`start` 把整合了 redux-react 的功能。主要创建了 store 以及提供了 `Provider`。
+`start` 整合了 redux-react 的功能。主要创建了 store 以及提供了 `Provider`。
 
-至于关于 navigation 的部分。`App` 是一个显示组件，至于这种写法，其实就相当于传入 props 为 `dispatch` 和 `nav` 分别是方法和状态。 然后又通过 `connect` 创建了一个容器组件 `AppWithNavigationState` 并把 router 相关状态传入。然后将其作为 `Provider` 的子组件。
+这里有一部分 navigation 相关功能。`App` 是一个显示组件，至于这种写法，其实就相当于router 组件需要 store 的 `dispatch` 方法以及 state 的 `nav` 属性作为 props 传入。然后的 `connect` 方法也确实是这样做的。`connect` 方法创建了一个容器组件 `AppWithNavigationState` ，然后将其作为 `Provider` 的子组件。
 
 再回到创建 store 的过程：
 
@@ -792,15 +803,363 @@ function getStore() {
 }
 ```
 
-可以看到，先用 `applyMiddleware` 生成了中间件，中间件可以通过 hanzo 的 `use` 方法注册。
+可以看到，先用 `applyMiddleware` 生成了中间件，中间件可以通过 hanzo 的 `use` 方法注册，一般会注册的中间件有： 
+
+- redux-thunk：用来处理异步 action
+- redux-promise-middleware：为异步请求的 `action.type` 加上后缀。例如：`Loading`,`Success`,`Error` 等。
 
 这里 `initialState` 需要在创建 hanzo 实例的时候传入，一般是 `{}`。坦白说，我觉得这里的做法并不好。对于使用者来说，并不知道 hanzo 创建的时候整个 `state` 树是什么样的，应该在框架内，获取每个模块的 state，组合为 `initialState`。现在这种情况下，hanzo 无法支持有初始值的 state。
 
 不过这段的重点应该是 `getReducer` 方法：
 
 ```javascript
+function getReducer() {
+  // extra reducers
+  const extraReducers = plugin.get('extraReducers');
 
+  const mergeReducers = deepmerge.all([this._reducers, extraReducers])
+  for(let k in mergeReducers) {
+    if(typeof mergeReducers[k] === 'object') {
+      mergeReducers[k] = combineReducers(mergeReducers[k])
+    }
+  }
+
+  const navInitialState = this._router.router.getStateForAction(
+    this._router.router.getActionForPathAndParams(this._router.initialRouteName)
+  );
+
+  const navReducer = (state = navInitialState, action) => {
+    const nextState = this._router.router.getStateForAction(action, state);
+
+    // Simply return the original `state` if `nextState` is null or undefined.
+    return nextState || state;
+  };
+
+  const appReducer = combineReducers({
+    nav: navReducer,
+    ...initialReducer,
+    ...mergeReducers,
+  });
+  return appReducer
+}
 ```
+
+最终返回的 `appReducer` 中，包含了 router 的 reducer `navReducer` 还有用户的  `mergeReducers` 。
+
+这里 `mergeReducers` 的生成非常有意思。之前我们保存在 hanzo 实例的 `_reducer`里的 reducer 结构是两层的：`_reducers.order.newOrder`. 但是 `combineReducer` 只能把一层的 reducer 转化为一个大的 reducer。因此，这里使用了两次 `combineReducer`。比如刚才的例子，第一次将 `order` 下的各个 reducer `combineReducer` 后得到一个 `order` 的 `mergeReducers['order']`。然后再把 `order` 同一层级的 reducer `combineReducer` 到 `appReducer` 下。
+
+这样 reducer 的层次结构就和 state 一致了。
+
+> **多层级的 state，可以多次使用 combineReducer 来达到将多层级 reducer 合并的目的。**
+
+#### connect 相关
+
+前面已经成功隐藏了 `createStore`,`combineReducer`,`Provider`,`applymiddleware` 等方法，不过这还不够。对于用户来说，`dispatch(action)` 也没有必要让用户知道。所以需要使用 hanzo 提供的 `connect` 方法：
+
+```javascript
+module.exports.connect = function(state, model) {
+  const actionCreators = {}
+  let _handlers = []
+  if(model) {
+      if(model.handlers && Array.isArray(model.handlers)) {
+        _handlers = _handlers.concat(model.handlers)
+      }
+      if(model.publicHandlers && Array.isArray(model.publicHandlers)) {
+        _handlers = _handlers.concat(model.publicHandlers)
+      }
+  }
+  if(_handlers.length > 0) {
+    _handlers.map((key) => {
+      if(key.action) {
+        if(key.validate) {
+          actionCreators[key.name] = createAction(model.namespace + '/' + key.name, key.action, key.validate)
+        } else {
+          actionCreators[key.name] = createAction(model.namespace + '/' + key.name, key.action)
+        }
+      } else if(key.handler) {
+        let globalHandler = GlobalContext.getHandler(key.handler)
+        if(globalHandler) {  
+          if(key.validate) {
+            actionCreators[key.name] = createAction(model.namespace + '/' + key.name, globalHandler, key.validate)
+          } else {
+            actionCreators[key.name] = createAction(model.namespace + '/' + key.name, globalHandler)
+          }
+        }
+      } else {
+        actionCreators[key] = createAction(model.namespace + '/' + key)
+      }
+    })
+    const mapDispatchToProps = (dispatch) => bindActionCreators(actionCreators, dispatch)
+    return connect(state, mapDispatchToProps)
+  } else {
+    return connect(state)
+  }
+}
+```
+
+关于 `mapStateToProps` 的部分我就不说了，主要看看 handler 如何变为 `mapDispatchToProps` 的过程。
+
+hanlder 有三种用法：
+
+```javascript
+handlers: [
+  'justAString',
+  { name: 'handlerName', action: 'handlerActionFromActionJS' },
+  { name: 'handlerName2', handler: 'handlerFromAnotherModule' }
+]
+```
+
+
+
+## Vuex 使用
+
+Vue 提供了 Vuex 作为 redux 的解决方式。来看一下它的使用方式。
+
+### 基本使用
+
+#### store
+
+```javascript
+import Vue from 'vue'
+import Vuex from 'vuex'
+
+Vue.use(Vuex)
+
+export default store = new Vuex.Store({
+  state: {
+    count: 0,
+    todos: [
+      { id: 1, text: '...', done: true },
+      { id: 2, text: '...', done: false }
+    ]
+  },
+  mutations: {
+    increment (state) {
+      state.count++
+    }
+  },
+  actions: {
+    increment (context) {
+      context.commit('increment')
+    }
+  }
+  getter: {
+	doneTodos: state => {
+      return state.todos.filter(todo => todo.done)
+    }
+  },
+
+})
+```
+
+需要使用 `Vue.use(Vuex)` 像 Vue 注册插件 Vuex。**在 Vue 中，由于没有 react-redux 将属性传入展示组件，所以要在需要使用的地方 import 这个 store。**
+
+#### state
+
+通过 store 获取 state ：
+
+```javascript
+store.state.count		// -> 0
+```
+
+一般将 state 用在计算属性上：
+
+```javascript
+// 创建一个 Counter 组件
+const Counter = {
+  template: `<div>{{ count }}</div>`,
+  computed: {
+    count () {
+      return store.state.count
+    }
+  }
+}
+```
+
+#### getter
+
+getter 用于简化 store 中 state 的计算：
+
+```javascript
+getters: {
+  doneTodos: state => {
+    return state.todos.filter(todo => todo.done)
+  }
+}
+```
+
+可以通过 `store.getters.xxx` 获取相关属性值。比如：
+
+```javascript
+store.getters.doneTodos // -> [{ id: 1, text: '...', done: true }]
+```
+
+#### mutation
+
+根据 redux 所倡导的，改变 store 的唯一方式还是通过 dispatch 一个 action，而不是直接修改 store。Redux 中，reducer 是一个纯函数，用于修改 state。Vuex 也提供了相应方式 `mutation` 。
+
+`mutation` 的写法和 `reducer` 不同，reducer 接收一个 `initialState` 和  `action`。而 mutation 接收 `initialState` 和一个值，即 `action.payload`。为什么不需要 `action.type` 了呢？因为 `mutation` 中的方法名就是 type。比如下面的 `increment` 方法，就代表着这个 reducer 的 `action.type`
+
+```javascript
+mutations: {
+  increment (state, n) {
+    state.count += n
+  }
+}
+```
+
+另外，`reducer` 中不能直接修改 state 值，而要返回一个新的 state。而 `mutation` 中直接修改 state。这种差异是由于 react 和 vue 响应式机制的不同而产生的。react 要通过比较 state 变化前后的不同，来找出需要重新渲染的组件。Vue 则是 state 的 set 方法通知页面中计算属性的改变。
+
+触发方式上，Redux 中通过 `store.dispatch(action)` 依次触发所有 reducer。Vuex 中通过 `commit` 方法触发某一个 mutation，相当于把 `action` 拆成了 `action.type` 和 `action.payload` 分别传入：
+
+```javascript
+store.commit('increment', 10) 
+```
+
+#### action
+
+关于异步操作。Vuex 提供了action。
+
+```javascript
+actions: {
+  incrementAsync (context, product) {
+    setTimeout(() => {
+      context.commit('increment', product.amount)
+    }, 1000)
+  }
+}
+```
+
+其实还是相当于是在异步操作完了之后，触发一个 `mutation`。这里的 `context` 相当于当前模块的 store。即只能拿到当前模块的 `commit` 方法和 `state`。
+
+action 的触发使用 `dispatch` 方法。同样的，也是把 `action.type` 单独拿了出来：
+
+```javascript
+store.dispatch('incrementAsync', {
+  amount: 10
+})
+```
+
+### 模块化
+
+#### 基本使用
+
+当工程变大后，所有状态和方法都写在 store 中是不明智的。所以 react 中才有了 hanzo 之类的框架。Vuex 提供了专门的模块化方式：
+
+```javascript
+const moduleA = {
+  state: { ... },
+  mutations: { ... },
+  actions: { ... },
+  getters: { ... }
+}
+
+const moduleB = {
+  state: { ... },
+  mutations: { ... },
+  actions: { ... }
+}
+
+const store = new Vuex.Store({
+  modules: {
+    a: moduleA,
+    b: moduleB
+  }
+})
+
+store.state.a // -> moduleA 的状态
+store.state.b // -> moduleB 的状态
+```
+
+只创建一个 Store，把不同的模块以 module 的形式传入。通过 `store.state` 拿到去全局的 state，`store.state.a` 拿到相应模块的 state。
+
+#### 模块的局部状态
+
+模块化后模块内部的 `mutation` 和 `getter`。接收的第一个参数是模块的局部状态对象：
+
+```javascript
+const moduleA = {
+  state: { count: 0 },
+  mutations: {
+    increment (state) {
+      // 这里的 `state` 对象是模块的局部状态
+      state.count++
+    }
+  },
+
+  getters: {
+    doubleCount (state) {
+      return state.count * 2
+    }
+  }
+}
+```
+
+对于模块内部的 action，局部状态通过 `context.state` 暴露，根节点状态为 `context.rootState`:
+
+```javascript
+const moduleA = {
+  // ...
+  actions: {
+    incrementIfOddOnRootSum ({ state, commit, rootState }) {
+      if ((state.count + rootState.count) % 2 === 1) {
+        commit('increment')
+      }
+    }
+  }
+}
+```
+
+#### 命名空间
+
+默认情况下，模块内部的 action、mutation 和 getter 是注册在**全局命名空间**的——这样使得多个模块能够对同一 mutation 或 action 作出响应。
+
+可以通过添加 `namespaced: true` 的方式使其成为带命名空间的模块。当模块被注册后，它的所有 getter、action 及 mutation 都会自动根据模块注册的路径调整命名。例如：
+
+```javascript
+const store = new Vuex.Store({
+  modules: {
+    account: {
+      namespaced: true,
+
+      // 模块内容（module assets）
+      state: { ... }, // 模块内的状态已经是嵌套的了，使用 `namespaced` 属性不会对其产生影响
+      getters: {
+        isAdmin () { ... } // -> getters['account/isAdmin']
+      },
+      actions: {
+        login () { ... } // -> dispatch('account/login')
+      },
+      mutations: {
+        login () { ... } // -> commit('account/login')
+      },
+
+      // 嵌套模块
+      modules: {
+        // 继承父模块的命名空间
+        myPage: {
+          state: { ... },
+          getters: {
+            profile () { ... } // -> getters['account/profile']
+          }
+        },
+
+        // 进一步嵌套命名空间
+        posts: {
+          namespaced: true,
+
+          state: { ... },
+          getters: {
+            popular () { ... } // -> getters['account/posts/popular']
+          }
+        }
+      }
+    }
+  }
+})
+```
+
+
 
 
 
