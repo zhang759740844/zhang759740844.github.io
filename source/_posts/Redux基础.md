@@ -120,7 +120,7 @@ function visibilityFilter(state = '', action) {
     switch (action.type) {
         case VISIBILITY_FILTER:
             return action.filter
-        defaykt:
+        default:
             return state
     }
 }
@@ -439,14 +439,20 @@ function appReducer (state = {}, action) {
 }
 ```
 
-这样的写法把各个字段分别处理，逻辑就清晰了很多。
+这样的写法把各个字段分别处理，逻辑就清晰了很多。`combineReducers` 其实做的就是同样的事。
 
 #### 减少样板代码
 
 针对问题二提到的 `switch...case…` 产生的样板代码，js 的语言特性可以很好地消除：
 
 ```javascript
+function addTodo(todoState, action) {
+    return todoState + action.add
+}
 
+function toggleTodo(todoState, action) {
+    return todoState + action.toggle
+}
 
 // 消除样板代码的主要方法
 function createReducer(initialState, handlers) {
@@ -460,8 +466,8 @@ function createReducer(initialState, handlers) {
 }
 
 const todoReducer = createReducer({}, {
-    'ADD_TODO' : addTodo,
-    'TOGGLE_TODO' : toggleTodo,
+    addTodo,
+    toggleTodo,
 })
 
 function appReducer (state = {}, action) {
@@ -472,9 +478,14 @@ function appReducer (state = {}, action) {
 }
 ```
 
-用一个对象的键来替代 case，判断 `hasOwnProperty` 来替代是否命中 case。
+用方法名来替代 case，也就是替代 `action.type`。然后把这些方法合在一起生成一个 reducer。这种方式就是类似 redux-actions 中 `handleActions` 的实现方式。
 
-这里就已经非常像 redux 提供的  `combineReducer`  方法的实现了
+> 这一小节其实是非常重要的。介绍了两个 reducer 的处理方式
+>
+> 1. 将一个 reducer 拆分成多个小 reducer，每一个 reducer 只负责 state 中相对应的一部分。这样的拆分可以是多层级的，即小 reducer 可以拆分成很多很多小小 reducer。具体见下图
+> 2. 在每一个最小粒度的 reducer 中，又根据不同的 `action.type` 拆分出许多与之对应的方法。这些方法组合成 reducer。redux 会遍历所有的 reducer 找出对应 `action.type` 的处理方法，所以不同模块一般要在这些方法前加上 namespace 的前缀，否则容易一个 action 触发多个同名(`action.type` 相同)方法。
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/redux_1.png?raw=true)
 
 ## 常见问题
 
@@ -566,11 +577,8 @@ Hanzo.js 是一个借鉴了 Dva.js  的框架。集成了 router 以及 redux。
 
 带着上面的想法，我们可以大概推测一下 hanzo 做了什么。
 
-对于每一个模块，或者说每一个页面为单位，设置一个 `state`，这个 `state` 就是 `store` 中 `state` 的一个属性。然后创建与之相应的 reducer。reducer 会针对 action 的不同 type 创建多个方法。
-
-接着还需要把每个模块的 `state` 组合成大的 state 树，`reducer` 也组合成大的 reducer 树，用来创建 `store`。
-
-最后把页面和 state 以及 action 通过 *react-redux* 结合起来。
+1. 为每一个模块设置一个 reducer。这个 reducer 应该和 state 中相应属性同名。每个 reducer 中应该包含很多的方法，这些方法代表着不同的 `action.type`  的处理方法。为了和其他模块的 `action.type` 的处理方法不重名，还需要为这些方法添加模块特有的前缀。在 `dispatch(action)` 的时候，`type` 就要是包含前缀的方法名。
+2. 隐藏任何关于 redux 的东西。state 不需要从 store 中取。设置 state 的时候，也不要出现 `dispatch` 方法。
 
 ### 使用
 
@@ -650,13 +658,19 @@ state 为当前模块的初始状态，也就是在 `state` 树中属性的具�
 
 handlers 为当前模块能调用的方法，会以 `mapDispatchToProps` 的形式传入 view。publicHandlers 为全局都能调用的方法，所以会加入到每一个模块的 `mapDispatchToProps` 中去。
 
-reducers 会被 hanzo 做进一步处理。这里的各个方法分别对应 `action` 的不同 type。
+reducers 会被 hanzo 做进一步处理。先将数组中的各个方法组合成该模块的 reducer，然后将这些 reducer `combineReducer` 为一个大的 reducer。**这里 reducers 里的各个方法分别对应 `action` 的不同 type。**
 
 注册完模块，通过 hanzo 实例的 start 方法，返回一个视图，作为 RN 的根视图。
 
+另外还有一块关于 middlerware 的方面。使用 hanzo 实例的 `use` 方法注册中间件：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/redux_2.png?raw=true)
+
+
+
 ### 原理
 
-#### 注册相关
+#### 注册相关（主要是设置 reducer）
 
 通过 hanzo 提供的初始化方法，可以创建一个包含所有信息的实例，相当于是之后所有视图以及逻辑的根：
 
@@ -692,8 +706,7 @@ if (isPlainObject(module.models)) {
   let namespace = module.models.namespace.replace(/\/$/g, ''); // events should be have the namespace prefix
   Object.keys(module.models.reducers).map((key) => {
     if (key.startsWith('/')) { // starts with '/' means global events
-      // 如果reducer 以 '/' 开头，那么表示是全局事件
-      // 其实就是说
+      // 如果reducer 以 '/' 开头，那么就不会添加命名空间，表示用户明确知道需要哪个 type 触发。
       Actions[key.substr(1)] = module.models.reducers[key];
     } else {
       Actions[namespace + '/' + key] = module.models.reducers[key];
@@ -726,17 +739,19 @@ function _mergeReducers(obj, arr, res) {
 }
 ```
 
+前面说过 `reducers` 数组中的方法对应的是不同的 `action.type`。为了区分不同模块的 `action.type`，需要为其中的每个方法都添加上 `namespace`。但是还有一些方法就不需要添加 `namespace`，因为这些方法表示的 `action.type` 是为了响应其他模块发出的 dispatch 而创建的。如下图：
 
-
-之后处理模块中的 `models`。找到 models 中的 `reducers` 数组，为其中的每个方法都添加上 `namespace`。 我们知道，一个模块应该是只有一个 reducer 的，为什么这里的 `reducers`是个数组呢？因为数组中的方法其实对应的不是不同的 reducer，而是 reducer 中不同的 `action.type`（创建不同的方法来替代 Switch...case...，前面说过）。加上 `namespace` 也是为了保证 `action.type` 的全局唯一性。
-
-> reducers 中写的代表着不同 `action.type` 的处理方法。
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/redux_3.png?raw=true)
 
 随后将处理好的 `reducers` 通过 redux-actions 的 `handleActions` 方法，将其转化为一个 reducer。相当于把一个个独立的方法转化为 switch...case... 了。
 
 之后通过 `_mergeReducers` 方法把上面生成的各个 reducer 放到 hanzo 实例的 `_reducers` 的各个命名空间下。比如 `namespace` 为 `order/newOrder` 的模块，它的 reducer 就放在 hanzo 实例对象的 `_reducers.order.newOrder` 下，等待最后的 `combineReducer`。
 
-最后，把 `publicHandlers` 中的所有方法保存到 `GlobalContext` 中去。
+最后，把 `publicHandlers` 中的所有方法保存到 `GlobalContext` 中去。`publicHandlers` 中的方法所有模块都能通过 `GlobalContext` 获取并使用：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/redux_5.png?raw=true)
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/redux_4.png?raw=true)
 
 注册模块的逻辑就是这样。现在需要把各个部分糅合到一起。hanzo 提供了 `start` 方法：
 
@@ -848,13 +863,17 @@ function getReducer() {
 
 这里 `mergeReducers` 的生成非常有意思。之前我们保存在 hanzo 实例的 `_reducer`里的 reducer 结构是两层的：`_reducers.order.newOrder`. 但是 `combineReducer` 只能把一层的 reducer 转化为一个大的 reducer。因此，这里使用了两次 `combineReducer`。比如刚才的例子，第一次将 `order` 下的各个 reducer `combineReducer` 后得到一个 `order` 的 `mergeReducers['order']`。然后再把 `order` 同一层级的 reducer `combineReducer` 到 `appReducer` 下。
 
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/redux_1.png?raw=true)
+
 这样 reducer 的层次结构就和 state 一致了。
 
 > **多层级的 state，可以多次使用 combineReducer 来达到将多层级 reducer 合并的目的。**
 
-#### connect 相关
+#### connect 相关(主要是设置 action)
 
-前面已经成功隐藏了 `createStore`,`combineReducer`,`Provider`,`applymiddleware` 等方法，不过这还不够。对于用户来说，`dispatch(action)` 也没有必要让用户知道。所以需要使用 hanzo 提供的 `connect` 方法：
+前面已经成功隐藏了 `createStore`,`combineReducer`,`Provider`,`applymiddleware` 等方法，不过这还不够。对于用户来说，`dispatch(action)` 也没有必要让用户知道。使用者应该只需要提供一个方法，返回数据 `action.payload` 就行了，连 `action.type` 是什么用户都可以不必知道，由框架通过获取方法名推断得到。
+
+所以需要使用 hanzo 提供的 `connect` 方法：
 
 ```javascript
 module.exports.connect = function(state, model) {
@@ -909,7 +928,46 @@ handlers: [
 ]
 ```
 
+第一种对应上面的 `else`:
 
+```javascript
+actionCreators[key] = createAction(model.namespace + '/' + key)
+```
+
+通过 redux-action 的 `createAction` 生成一个 **action 创建方法**，直接在方法名前加上 `namespace` 作为 `action.type` 传入。这样 `action.type` 就和前面处理 reducers 时添加 `namespace` 的做法一致了。调用这个 action 创建方法的话只需要传入一个 payload 就可以生成一个 action：
+
+```javascript
+let action = createAction(model.namspace + '/someaction')('payload')
+```
+
+第二种对应 `if(key.action)` 的情况：
+
+```javascript
+actionCreators[key.name] = createAction(model.namespace + '/' + key.name, key.action)
+```
+
+还是通过 `createAction`，不过这里第二个参数传入了一个 action 方法。`createAction` 会把它直接做为 `action.payload` 保存。
+
+之后的部分前面说 redux的时候说到过，使用 `redux-thunk` 这个中间件，在 dispatch 的时候发现 `action.payload` 时候函数的时候，把 dispatch 时传入的参数作为这个函数的参数，调用这个函数。
+
+同时还需要配合 `redux-promise-middleware`。因为 `redux-thunk` 只负责调用方法，对于一个异步的网络请求来说，获取到数据后还需要自己 dispatch 把数据设置到 state 中去。 `redux-promise-middleware` 就做了这样一个事情。它会检查 `action.payload` 调用后返回的是不是一个 promise。如果是一个 promise，它会在 `.then()` 方法中，替代使用者执行 dispatch 方法。它还能检查网络请求是成功还是失败，为原本的 `action.type` 添加相应的成功或者失败的后缀。
+
+第三种对应 `else if(key.handler)` 的情况：
+
+```javascript
+let globalHandler = GlobalContext.getHandler(key.handler)
+actionCreators[key.name] = createAction(model.namespace + '/' + key.name, globalHandler)
+```
+
+其实和第二种差不多，只是它不是从模块的 action 中获取方法，而是从 `globalHandler` 中找到对应的方法。
+
+通过以上方法得到 `actionCreators` 之后，就要创建 `mapDispatchToProps` 了。由于使用者不需要知道 dispatch，所以这里使用 redux 提供的  `bindActionCreators`  方法，其实也没什么魔法，就是生成一个调用 dispatch 方法的方法：
+
+```javascript
+function bindActionCreator(actionCreator, dispatch) {
+ 	return (...args) => dispatch(actionCreator(...args))   
+}
+```
 
 ## Vuex 使用
 
@@ -998,7 +1056,7 @@ store.getters.doneTodos // -> [{ id: 1, text: '...', done: true }]
 
 根据 redux 所倡导的，改变 store 的唯一方式还是通过 dispatch 一个 action，而不是直接修改 store。Redux 中，reducer 是一个纯函数，用于修改 state。Vuex 也提供了相应方式 `mutation` 。
 
-`mutation` 的写法和 `reducer` 不同，reducer 接收一个 `initialState` 和  `action`。而 mutation 接收 `initialState` 和一个值，即 `action.payload`。为什么不需要 `action.type` 了呢？因为 `mutation` 中的方法名就是 type。比如下面的 `increment` 方法，就代表着这个 reducer 的 `action.type`
+`mutation` 的写法非常类似 hanzo 中 `reducers` 的写法。mutation 中包含了很多的方法。方法接收 `initialState` 和一个值，即 `action.payload`。为什么不需要 `action.type` 了呢？因为方法名就是 type。比如下面的 `increment` 方法，就代表着这个 reducer 的 `action.type`
 
 ```javascript
 mutations: {
@@ -1008,12 +1066,18 @@ mutations: {
 }
 ```
 
-另外，`reducer` 中不能直接修改 state 值，而要返回一个新的 state。而 `mutation` 中直接修改 state。这种差异是由于 react 和 vue 响应式机制的不同而产生的。react 要通过比较 state 变化前后的不同，来找出需要重新渲染的组件。Vue 则是 state 的 set 方法通知页面中计算属性的改变。
+不同的是，hanzo 中每个方法不能直接修改 state 值，要返回一个新的 state。而 `mutation` 的方法中直接修改 state。这种差异是由于 react 和 vue 响应式机制的不同而产生的。react 要通过比较 state 变化前后的不同，来找出需要重新渲染的组件。Vue 则是 state 的 set 方法通知页面中计算属性的改变。
 
-触发方式上，Redux 中通过 `store.dispatch(action)` 依次触发所有 reducer。Vuex 中通过 `commit` 方法触发某一个 mutation，相当于把 `action` 拆成了 `action.type` 和 `action.payload` 分别传入：
+触发方式上，Redux 中通过 `store.dispatch(action)` 依次触发所有 reducer。Vuex 中通过 `commit` 方法依次触发所有模块的 mutation，相当于把 `action` 拆成了 `action.type` 和 `action.payload` 分别传入：
 
 ```javascript
 store.commit('increment', 10) 
+```
+
+这里与 hanzo 不同的是，hanzo 把与 commit 相对应的 dispatch 封装在 handler 中的相关方法里。而 Vuex 还需要自己调用。如果模块存在命名空间，那么写起来会比较冗长，而 hanzo 会自动为方法添加命名空间的前缀：
+
+```javascript
+store.commit('order/newOrder/increment', 10)
 ```
 
 #### action
@@ -1030,7 +1094,7 @@ actions: {
 }
 ```
 
-其实还是相当于是在异步操作完了之后，触发一个 `mutation`。这里的 `context` 相当于当前模块的 store。即只能拿到当前模块的 `commit` 方法和 `state`。
+其实还是相当于是在异步操作完了之后，触发一个 `mutation`。这里的 `context` 相当于当前模块的 store。即,只能拿到当前模块的 `commit` 方法和 `state`。
 
 action 的触发使用 `dispatch` 方法。同样的，也是把 `action.type` 单独拿了出来：
 
@@ -1039,6 +1103,8 @@ store.dispatch('incrementAsync', {
   amount: 10
 })
 ```
+
+vue 里通过 `dispatch` 和 `commit` 手动替代了 redux-thunk 的功能。
 
 ### 模块化
 
@@ -1133,35 +1199,16 @@ const store = new Vuex.Store({
       mutations: {
         login () { ... } // -> commit('account/login')
       },
-
-      // 嵌套模块
-      modules: {
-        // 继承父模块的命名空间
-        myPage: {
-          state: { ... },
-          getters: {
-            profile () { ... } // -> getters['account/profile']
-          }
-        },
-
-        // 进一步嵌套命名空间
-        posts: {
-          namespaced: true,
-
-          state: { ... },
-          getters: {
-            popular () { ... } // -> getters['account/posts/popular']
-          }
-        }
-      }
     }
   }
 })
 ```
 
+### 总结
 
+Vuex 在 reducer 部分的处理和 hanzo 非常相似，都是将 `action.type` 转化为一个个方法，都可以为每一个 `action.type` 的方法添加命名空间。都可以在每一个模块的 reducer 中获取到当前模块的 state。
 
-
+但是在 dispatch 方法的几乎没有做太多的处理，还是需要使用者根据实际情况，去获取 store 调用 `store.dispatch` 或者 `store.commit` 方法，可以做进一步的封装，尤其是使用命名空间的情况下。
 
 
 
