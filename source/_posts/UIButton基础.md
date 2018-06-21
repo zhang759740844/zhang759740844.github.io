@@ -274,6 +274,22 @@ Target-action 是一种设计模式，直译过来就是”目标-行为”。�
 
 ## 一些点
 
+### 设置颜色
+
+准确的说，这是关于 UIColor 的。不过我们多数情况下使用 UIColor 都是设置 UIButton。UIColor 提供了一个方法用于将 RGB 转为 UIColor
+
+```objc
+[UIColor colorWithRed:(float)98/255 green:(float)138/255 blue:(float)252/255 alpha:1]
+```
+
+注意，这里的 RGB 都是在 0-1 之间的数，且需要在计算的时候转化为 float，否则得到的就是 0。
+
+另外，设置 UIButton 的 borderColor 的时候，其类型为 CGColor，需要从 UIColor 中获取，切记不能通过强转：
+
+```objc
+[self.btn.layer setBorderColor:[UIColor colorWithRed:98 green:138 blue:252 alpha:1].CGColor];
+```
+
 ### UIButton 无法修改文字和文字颜色
 
 设置的错误示例：

@@ -48,7 +48,10 @@ self.iconView.layer.transform=CATransform3DMakeTranslation(100, 20, 0);
 self.iconView.layer.transform=CATransform3DMakeRotation(M_PI_4, 1, 1, 0.5);
 ```
 
+> 注意，这里的颜色不是 UIColor 类型，而是 CGColor 类型。需要使用 [UIColor redColor].CGColor 的方式获取，而不是使用强制转型把 UIColor 转为 CGColor。
+
 ## 创建图层
+
 ### 基本方法
 ```objc
 - (void)viewDidLoad

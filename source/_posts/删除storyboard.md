@@ -44,3 +44,7 @@ storyboard的入口在**targets->General->Deployment Info->Main Interface**，�
 ```
 
 至此，app就可以显示新建的xib文件的布局了
+
+题外话，记得把你的 ViewController.xib 的 File Owner 的 Class 设置为相关的 ViewController，并且将 FileOwner 的 View 设置为当前 xib 的视图，否则会在 `makeKeyandAndVisible`  的时候 crash
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/storyboard_new.png?raw=true)
