@@ -268,6 +268,8 @@ ListView 为了保证渲染的性能，在最开始的时候只会部分渲染�
 
 `Image` 图片一定要设置宽高，因为如果图片默认大小是0，加载完图片后，会有个闪烁，可以设置主题的图片模式是 `resizeMode = ‘contain’`  这样图片就能在指定大小内适应缩放。
 
+另外，如果拿一个突破作为背景的时候，一定要同时设置 `Image` 的宽高，以及 `Image` 包含的 View 的宽高。注意，**包含的 View 不会自动填充满 `Image`**。
+
 ### 使用 JSX
 
 #### JSX 中的 this
@@ -503,7 +505,7 @@ Native 中的 `UITextField` 可以通过 `resignFirstResponder` 或者 `endEditi
 在组件完成更新后立即执行。在初始化时不会被执行。一般会在组件完成更新后被使用。例如清除 notification 文字等操作。
 
 #### componentWillUnmount()
-主要用来执行一些必要的清理任务。**注意，`Unmount` 的大小写。**
+主要用来执行一些必要的清理任务。**注意，`Unmount` 的大小写。**写错就无法调用了！！！
 
 
 
@@ -571,56 +573,11 @@ LoginViewController.showSVProgressHUDErrorWithStatus('请输入正确的手机�
 开发中真机调试是必不可少的,有些功能和问题模拟器是无法重现的,所以就需要配合真机测试
 
 #### iOS 真机调试
-首先，**必须** 保证调试用电脑的和你的设备处于相同的 `WiFi` 网络环境中下。然后修改`AppDelegate.m` 文件，设置 `jsLocation` 为本地 ip 即可。
+首先，**必须** 保证调试用电脑的和你的设备处于相同的 `WiFi` 网络环境中下。然后修改`AppDelegate.m` 文件，设置 ip 为电脑 ip 即可。
 
-```objective-c
-NSURL *jsCodeLocation;
-[RCTBundleURLProvider sharedSettings].jsLocation = @"192.168.31.142";
-jsCodeLocation = [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index.ios" fallbackResource:nil];
+然后就可以通过 Chrome 开发工具进行调试。最好不要使用 VSCode 提供的测试工具。不好用。
 
-RCTRootView *rootView = [[RCTRootView alloc] initWithBundleURL:jsCodeLocation
-                                                      moduleName:@"AwesomeProject"
-                                               initialProperties:nil
-                                                   launchOptions:launchOptions];
-```
-
-#### VSCode 调试
-
-VSCode 提供了 React-Native-Tool 来进行再 VSCode 中的调试。
-
-```json
-        {
-            "name": "Debug iOS",
-            "program": "${workspaceRoot}/.vscode/launchReactNative.js",
-            "type": "reactnative",
-            "request": "launch",
-            "platform": "ios",
-            "sourceMaps": true,
-            "outDir": "${workspaceRoot}/.vscode/.react",
-            "runArguments": [
-                "--scheme",
-                "CRM_DEV"
-            ]
-        },
-```
-
-其实执行了以下命令启动 RN：
-
-```shell
-react-native run-ios --scheme CRM_DEV 
-```
-
-但是 RN 目前有一个 BUG，使用这个命令会编译指定 scheme 对应的 target，但是安装的还是主工程名的 app：
-
-![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/RN_VSCode.png?raw=true)
-
-每次编译都是编译为 CRM_DEV 但是安装的都是 CRM。**所以你得到这个目录下，把 CRM_DEV.app 改成 CRM.app 。 然后关掉模拟器，重新启动 VSCode 调试。**
-
-#### Chrome 调试
-
-Chrome 调试比较麻烦，在打开 remote debug 后，你可以在 chrome 中使用 **cmd+o** 来快速打开文件。
-
-Chrome 比 VSCode 调试的更精确，所有断点都会走。但是 Chrome 调试比较麻烦。
+如果想要快速调样式，建议选上 `Enable Hot Reloading` 。可以在你每次保存的时候在本页面重新加载。
 
 ### React Native 读取本地的json文件  
 
