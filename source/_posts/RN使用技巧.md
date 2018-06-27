@@ -570,14 +570,13 @@ LoginViewController.showSVProgressHUDErrorWithStatus('请输入正确的手机�
 ```
 
 ### React Native 调试 
-开发中真机调试是必不可少的,有些功能和问题模拟器是无法重现的,所以就需要配合真机测试
-
-#### iOS 真机调试
 首先，**必须** 保证调试用电脑的和你的设备处于相同的 `WiFi` 网络环境中下。然后修改`AppDelegate.m` 文件，设置 ip 为电脑 ip 即可。
 
 然后就可以通过 Chrome 开发工具进行调试。最好不要使用 VSCode 提供的测试工具。不好用。
 
 如果想要快速调样式，建议选上 `Enable Hot Reloading` 。可以在你每次保存的时候在本页面重新加载。
+
+使用 xcode run 一遍之后，如果没有 native 代码的改动，手机就可以不用再连着电脑了，在项目地址下，使用 `npm start` 开启本地服务。
 
 ### React Native 读取本地的json文件  
 
