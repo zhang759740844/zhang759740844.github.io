@@ -745,6 +745,8 @@ function _mergeReducers(obj, arr, res) {
 
 随后将处理好的 `reducers` 通过 redux-actions 的 `handleActions` 方法，将其转化为一个 reducer。相当于把一个个独立的方法转化为 switch...case... 了。
 
+> 创建 reducer 的时候，其实就已经把 `defaultState` 传进去了。所以后面创建 store 的时候就不需要总的 `initialState` 了
+
 之后通过 `_mergeReducers` 方法把上面生成的各个 reducer 放到 hanzo 实例的 `_reducers` 的各个命名空间下。比如 `namespace` 为 `order/newOrder` 的模块，它的 reducer 就放在 hanzo 实例对象的 `_reducers.order.newOrder` 下，等待最后的 `combineReducer`。
 
 最后，把 `publicHandlers` 中的所有方法保存到 `GlobalContext` 中去。`publicHandlers` 中的方法所有模块都能通过 `GlobalContext` 获取并使用：
@@ -823,7 +825,7 @@ function getStore() {
 - redux-thunk：用来处理异步 action
 - redux-promise-middleware：为异步请求的 `action.type` 加上后缀。例如：`Loading`,`Success`,`Error` 等。
 
-这里 `initialState` 需要在创建 hanzo 实例的时候传入，一般是 `{}`。坦白说，我觉得这里的做法并不好。对于使用者来说，并不知道 hanzo 创建的时候整个 `state` 树是什么样的，应该在框架内，获取每个模块的 state，组合为 `initialState`。现在这种情况下，hanzo 无法支持有初始值的 state。
+这里 `initialState` 需要在创建 hanzo 实例的时候传入，一般是 `{}`。前面已经说了，创建 reducer 的时候，就已经把默认值传给每个 reducer 了。这里就不需要再为 `initialState` 创建值了。
 
 不过这段的重点应该是 `getReducer` 方法：
 
