@@ -12,6 +12,12 @@ tags:
 
 <!--more-->
 
+### 主线程渲染
+
+iOS 中渲染视图要在主线程中，所以 RN 中要调用原生方法，并且渲染视图的时候要通过 `dispatch_async` 到主线程进行。
+
+比如 present 一个页面的时候就要在主线程中，否则 `[self.retryBtn setTitle:@"重试" forState:UIControlStateNormal];` 这种设置按钮 title 的方法在非主线程中执行就无法渲染出 button 的 title
+
 ### 如何将图片字体资源自动添加到工程
 
 RN 项目中，会用到很多第三方的组件。这些组件在 `react-native link` 的时候会作为 library 链接到主工程下。但是存在一个问题，如果组件中包含了一些图片或者字体资源，这些资源不会在 link 的过程中被主动添加到工程中。那么我们需要手动添加。这是非常麻烦的一件事。
