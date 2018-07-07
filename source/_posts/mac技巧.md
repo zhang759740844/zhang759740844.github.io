@@ -11,6 +11,20 @@ tags:
 
 
 
+### 应用程序弹窗选择
+
+有时候应用程序会弹窗，如下图，你只能按回车确定，否则必须使用鼠标选择取消：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/mac_cancel.png?raw=true)
+
+可以通过在命令行下敲如下命令提供键盘的控制方式：
+
+```shell
+defaults write NSGlobalDomain AppleKeyboardUIMode -int 3
+```
+
+就可以通过 tab 切换选中项，space 选中选中项(enter 还是表示默认确定)
+
 ### 装机必备
 
 #### 安装 homebrew
