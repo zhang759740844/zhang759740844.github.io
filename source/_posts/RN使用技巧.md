@@ -393,9 +393,11 @@ this.setState({ someProp : 1 })
 `{pic}` 外面有个括号，表示括号内是一个js变量或者表达式，需要执行后取值，以此**在JSX中嵌入单条js语句**。
 
 #### propTypes
-组件的属性可以接受任意值，字符串、对象、函数等等都可以。有时，我们需要一种机制，验证别人使用组件时，提供的参数是否符合要求。组件类的 `PropTypes` 属性，就是用来验证组件实例的属性是否符合要求。
+组件的属性可以接受任意值，字符串、对象、函数等等都可以。有时，我们需要一种机制，验证别人使用组件时，提供的参数是否符合要求。组件类的 `PropTypes` 属性，就是用来验证组件实例的属性是否符合要求。我们需要引入一个 `prop-types` 库：
 
 ```jsx
+import PropTypes from 'prop-types';
+
 class Greeting extends React.Component {
   render() {
     return (
@@ -405,7 +407,7 @@ class Greeting extends React.Component {
 }
 
 Greeting.propTypes = {
-  name: React.PropTypes.string
+  name: PropTypes.string
 };
 ```
 
@@ -414,6 +416,8 @@ Greeting.propTypes = {
 除了 string 外，还有许多类型的 PropTypes 可以设置。[参见](https://facebook.github.io/react/docs/typechecking-with-proptypes.html) 再举一个设置单一子节点的例子：
 
 ```javascript
+import PropTypes from 'prop-types';
+
 class MyComponent extends React.Component {
   render() {
     // This must be exactly one element or it will warn.
@@ -425,7 +429,7 @@ class MyComponent extends React.Component {
 }
 
 MyComponent.propTypes = {
-  children: React.PropTypes.element.isRequired
+  children: PropTypes.element.isRequired
 };
 ```
 
