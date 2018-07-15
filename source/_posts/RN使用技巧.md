@@ -361,9 +361,26 @@ style 究竟是在父控件里用 `padding` 还是在子控件里用 `margin`。
 <Child ref='child'>haha</Child>
 ```
 
-这样父组件就可以通过 `this.ref.child` 来获取 `Child` 组件的实例，并调用其内部方法了。
+这样父组件就可以通过 `this.refs.child` 来获取 `Child` 组件的实例，并调用其内部方法了。
 
 比较典型的用法在于一个 View 里嵌了一个 ListView，现在要调用 ListView 的刷新方法。就可以通过 `ref` 的方式从外部拿到。
+
+##### ref 属性
+
+上面演示的是 `ref` 接受一个字符串的使用方式，**`ref` 属性还可以是一个回调函数，这个回调函数会在组件被挂载后立即执行**。被引用的组件会被作为参数传递，回调函数可以用立即使用这个组件，或者保存引用以后使用：
+
+```javascript
+  render () {
+    return <TextInput ref={(element) => this._input = element} />;
+  },
+  componentDidMount () {
+    this._input.focus();
+  },
+```
+
+上面的例子中，在 `ref` 回调方法中把节点 TextInput 保存为 `_input` 属性。可以在必要的时候调用。
+
+>我认为最好还是用回调函数，通过回调函数可以把要使用的组件提前声明出来，方便调用。
 
 ### State
 
@@ -392,6 +409,47 @@ this.setState({ someProp : 1 })
 
 `{pic}` 外面有个括号，表示括号内是一个js变量或者表达式，需要执行后取值，以此**在JSX中嵌入单条js语句**。
 
+#### 子组件内获取 props
+
+有时候，我们想要封装一个组件，在容器组件内多定义几个 props，但是并不希望这些 props 传到子组件内，比如容器组件的 children 属性。我们可以这样做：
+
+```javascript
+render () {
+    const {
+		style,
+		children,
+		...restProps,
+	} = this.props;
+    // 删除多余属性
+    [
+      'onOpenChange',
+      'onDrawerOpen',
+      'onDrawerClose',
+      'drawerPosition',
+      'renderNavigationView',
+    ].forEach(prop => {
+      if (restProps.hasOwnProperty(prop)) {
+        delete restProps[prop];
+      }
+    });
+    
+    return (
+        <View style={style}>
+    		<SomeView {...restProps}/>
+        	{...children}
+    	</View>
+    )
+}
+
+```
+
+注意：
+
+1. 通过对象展开符，可以获取到 props 中剩余的属性。
+2. 将一个对象作为组件的属性传入的时候要通过 `{...obj}` 的方式
+3. 通过 `hasOwnProperty` 进一步删除不想传递给子组件的属性
+4. `this.props` 的展开要放在 `render` 方法里，因为 props 可能会变化触发重绘，所以要每次重绘的时候都进行对象展开
+
 #### propTypes
 组件的属性可以接受任意值，字符串、对象、函数等等都可以。有时，我们需要一种机制，验证别人使用组件时，提供的参数是否符合要求。组件类的 `PropTypes` 属性，就是用来验证组件实例的属性是否符合要求。我们需要引入一个 `prop-types` 库：
 
@@ -413,24 +471,59 @@ Greeting.propTypes = {
 
 上面例子中，如果 `name` 不是 string 类型，那么就会产生一个警告。还可以设置 `name: React.PropTypes.string.isRequired` 表示必须传入属性 `name`。
 
-除了 string 外，还有许多类型的 PropTypes 可以设置。[参见](https://facebook.github.io/react/docs/typechecking-with-proptypes.html) 再举一个设置单一子节点的例子：
+除了 string 外，还有许多类型的 PropTypes 可以设置:
 
 ```javascript
-import PropTypes from 'prop-types';
-
-class MyComponent extends React.Component {
-  render() {
-    // This must be exactly one element or it will warn.
-    const children = this.props.children;
-    return (
-        {children}
-    );
-  }
-}
-
 MyComponent.propTypes = {
+  // 可以声明prop是特定的JS基本类型
+  // 默认情况下这些prop都是可选的
+  optionalArray:PropTypes.array,
+  optionalBool: PropTypes.bool,
+  optionalFunc: PropTypes.func,
+  optionalNumber: PropTypes.number,
+  optionalObject: PropTypes.object,
+  optionalString: PropTypes.string,
+  optionalSymbol: PropTypes.symbol,
+
+  // 任何可以被渲染的事物：numbers, strings, elements or an array
+  // (or fragment) containing these types.
+  optionalNode: PropTypes.node,
+
+  // A React element.
+  optionalElement: PropTypes.element,
+
+  // 声明一个prop是某个类的实例，用到了JS的instanceof运算符
+  optionalMessage: PropTypes.instanceOf(Message),
+
+  // 用enum来限制prop只接受特定的值
+  optionalEnum: PropTypes.oneOf(['News', 'Photos']),
+
+  // 指定的多个对象类型中的一个
+  optionalUnion: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.number,
+    PropTypes.instanceOf(Message)
+  ]),
+
+  // 指定类型组成的数组
+  optionalArrayOf: PropTypes.arrayOf(PropTypes.number),
+
+  // 指定类型的属性构成的对象
+  optionalObjectOf: PropTypes.objectOf(PropTypes.number),
+
+  // 一个指定形式的对象
+  optionalObjectWithShape: PropTypes.shape({
+    color: PropTypes.string,
+    fontSize: PropTypes.number
+  }),
+
+  // 你可以用以上任何验证器链接‘isRequired’，来确保prop不为空
+  requiredFunc: PropTypes.func.isRequired,
+
+  // 不可空的任意类型
+  requiredAny: PropTypes.any.isRequired,
+  // PropTypes.element指定仅可以将单一子元素作为子节点传递给组件
   children: PropTypes.element.isRequired
-};
 ```
 
 #### defaultProps
