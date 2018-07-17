@@ -12,6 +12,34 @@ tags:
 
 <!--more-->
 
+### setTimeout
+
+比较简单的一个 js 的方法，但是要记住，在某个组件被卸载（unmount）之后，计时器却仍然在运行，要解决这个问题，只需铭记`在unmount组件时清除（clearTimeout/clearInterval）所有用到的定时器`：
+
+```javascript
+import React,{
+  Component
+} from 'react';
+
+export default class Hello extends Component {
+  componentDidMount() {
+    this.timer = setTimeout(
+      () => { console.log('把一个定时器的引用挂在this上'); },
+      500
+    );
+  }
+  componentWillUnmount() {
+    // 请注意Un"m"ount的m是小写
+
+    // 如果存在this.timer，则使用clearTimeout清空。
+    // 如果你使用多个timer，那么用多个变量，或者用个数组来保存引用，然后逐个clear
+    this.timer && clearTimeout(this.timer);
+  }
+};
+```
+
+
+
 ### 主线程渲染
 
 iOS 中渲染视图要在主线程中，所以 RN 中要调用原生方法，并且渲染视图的时候要通过 `dispatch_async` 到主线程进行。
