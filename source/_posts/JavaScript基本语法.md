@@ -889,7 +889,7 @@ new Promise((resolve, reject) => {
 })
 ```
 
-
+> 并不是说 `.then` 返回一个 promise，使用者就必须要自己创建一个 promise。如果 `.then`  返回的是某个值 `someObject`，那么会被默认包装为一个 promise，并且立刻调用 `resolve(someObject)`，即执行后一个  `.then` 的而方法。
 
 ###失败调用 `catch()` 
 
