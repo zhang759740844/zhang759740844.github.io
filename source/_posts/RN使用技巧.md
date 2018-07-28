@@ -12,6 +12,90 @@ tags:
 
 <!--more-->
 
+
+
+### 何时重绘
+
+触发重绘有两种方式：
+
+- `setState` 调用的时候。
+- 父组件重绘的时候
+
+`setState` 会触发 `render` 方法。
+
+> 现有的例子开看， `setState` 只是用来标记重绘的，标记了重绘后。React 的 `render` 方法生成的新的 JSX 对象和老的 JSX 对象比较，看看两个 JSX 对象的各个部分有哪些地方不同。然后渲染不同的部分
+
+针对有子组件的视图，每次父组件 `render` 的时候，都会触发子组件的 `componentWillReceiveProps` 和 `render` 方法。所以我们创建子组件的时候，最好重写 `shouldComponentUpdate` 方法，去判断 props 中的各个属性是否变化。(**验证过，确实只要父组件刷新了，不管子组件的 props 是否变化，都会调用 render**)
+
+由于 `componentWillReceiveProps` 后面接着的就是 `render` 方法，所以 `componentWillReceiveProps` 中不需要使用 `this.setState` 。直接修改 this 上的属性也是可以的比如：
+
+```javascript
+ componentWillReceiveProps (nextProps) {
+    this.count = nextProps.count
+ }
+ render () {
+   return (
+     <View>
+       <Text>{this.count}</Text>
+     </View>
+   )
+ }
+```
+
+这样也是可以正确渲染出 `this.count` 的。
+
+### Reselect
+
+使用 react-redux 的时候，还经常搭配另一个常用的库 Reselect。我们存在 redux 中的 state 可能需要经过一些处理。
+
+比如 `state.a` 和 `state.b` 可能通过 `g(a,b)` 衍生出 c。这个 c 如果放在 redux 中，那么每个 `state.a` 和 `state.b` 变化的地方都要计算 `g(a,b)`，很容易遗漏出错。如果把 c 放在 render 方法中，即每次 render 的时候计算 `g(a,b)`，又会造成重复计算。
+
+因此，比较好的做法就是在 `state.a` `state.b` 变化的时候计算 `g(a,b)`，并且即不把`g(a,b)` 放在 redux 中，也不放在 render 中。所以，我们可以通过 redux 把数据传给组件的时候添加计算属性的方式来达到目的，即通过  `mapStateToProps` 方法。
+
+> 是不是很像 vuex 中的 getter。Vue 真是太人性化了
+
+ ```javascript
+import { createSelector } from 'reselect'
+
+fSelector = createSelector(
+    a => state.a,
+    b => state.b,
+    (a, b) => f(a, b)
+)
+hSelector = createSelector(
+    b => state.b,
+    c => state.c,
+    (b, c) => h(b, c)
+)
+gSelector =  createSelector(
+    a => state.a,
+    c => state.c,
+    (a, c) => g(a, c)
+)
+uSelector = createSelector(
+    a => state.a,
+    b => state.b,
+    c => state.c,
+    (a, b, c) => u(a, b, c)
+)
+
+...
+function mapStateToProps(state) {
+    const { a, b, c } = state
+    return {
+        a,
+        b,
+        c,
+        fab: fSelector(state),
+        hbc: hSelector(state),
+        gac: gSelector(state),
+        uabc: uSelector(state)
+    }
+}
+ ```
+
+比如上面的例子，`fab` 是通过 `ab` 计算得到，通过 `createSelector`方法，注册了 `ab`，以及计算方法 `f(a,b)`。那么只有在  `a || b` 变化的时候，才会重新计算 `fab`
+
 ### setTimeout
 
 比较简单的一个 js 的方法，但是要记住，在某个组件被卸载（unmount）之后，计时器却仍然在运行，要解决这个问题，只需铭记`在unmount组件时清除（clearTimeout/clearInterval）所有用到的定时器`：
@@ -93,7 +177,7 @@ RN 项目中，会用到很多第三方的组件。这些组件在 `react-native
 ```javascript
 this.state.a = '1'
 this.setState({
-    a: '1'
+    a: this.state.a
 })
 ```
 
@@ -153,6 +237,10 @@ this.setState({
 })
 ```
 
+> 这样的说法存疑，到底 setState 是用来标记脏数据的还是只是用来标注重绘的存疑。需要进一步论证。
+>
+> 反正现有的🌰来看，只要设置了新的 state 的某个属性值a，然后 setState 另外的 state 中的属性 b，页面上的 a 也会更新
+
 上面的写法其实也很眼熟。一般用在 redux 的 `reducer` 中:
 
 ```
@@ -167,25 +255,6 @@ function someReducer(state = initialState, action) {
 ```
 
 redux 中返回的一定是一个新的 state。
-
-### 何时重绘
-
-触发重绘有两种方式：
-
-- `setState` 调用的时候。
-- `props` 变化的时候。
-
-`setState` 会触发 `render` 方法，`render` 方法生成的新的 DOM 会和老的 DOM 比较，然后渲染差异的部分
-
-针对有子组件的视图，每次父组件 `render` 的时候，都会传入一些属性。这些属性构成了**新的 props**。所以，**父组件每次 `render` 的时候，即使子组件的各个属性值没变，子组件默认也是要重绘的，因为承载属性值的 `props` 变化了**。所以我们创建子组件的时候，最好重写 `shouldComponentUpdate` 方法，去判断 props 中的各个属性是否变化。
-
-### 性能优化
-
-因为 props 值变化的时候，整个组件都会重绘。所以我们可以重写组件的 `shouldComponentUpdate` 方法，去判断 props 中的各个属性是否变化。这是在控制组件是否重绘的角度进行优化。react-redux 默认为每个组件都做了上面所说的判断。
-
-使用 react-redux 的时候，还经常搭配另一个常用的库 Reselect。因为 store 中的 state 变化的时候，会默认为每一个注册了的组件调用 `mapStateToProps` 方法，即使组件想要的 state 中的属性并没有变化。所以使用 Reselect 可以提前判断当前组件需要的 state 是否变化，来提前终止 `mapStateToProps` 的调用。
-
-> react-redux 和 reselect  都是使用数据的地址是否变化来判断属性是否变化的。所以当数据更新的时候，要保证数据的地址也变化了。
 
 ### Text 控件
 
@@ -477,6 +546,24 @@ render () {
 2. 将一个对象作为组件的属性传入的时候要通过 `{...obj}` 的方式
 3. 通过 `hasOwnProperty` 进一步删除不想传递给子组件的属性
 4. `this.props` 的展开要放在 `render` 方法里，因为 props 可能会变化触发重绘，所以要每次重绘的时候都进行对象展开
+
+### Props 使用的注意点
+
+通常我们直接会把 props 放到 render 方法中，比如上面的例子。但是这样其实不太好，比如一个页面跳转的时候，会带一些 props 过来，我们需要修改 props 中的一些属性。但是我们并不希望把这些修改带回到其他页面。
+
+这种时候我们就不能直接修改 props 中的属性了。我们需要在 render 的时候，深拷贝或者不浅不深的拷贝 props 的值：
+
+```javascript
+render () {
+    this.props1 = this.props.props1
+    this.props2 = this.props.props2
+    return (
+    	<View/>
+    )
+}
+```
+
+> 因为多加了一层 `this.props1` 我们就不需要担心，到底能不能修改 props 了，如果不能修改 props，那么直接深拷贝一下即可。
 
 #### propTypes
 组件的属性可以接受任意值，字符串、对象、函数等等都可以。有时，我们需要一种机制，验证别人使用组件时，提供的参数是否符合要求。组件类的 `PropTypes` 属性，就是用来验证组件实例的属性是否符合要求。我们需要引入一个 `prop-types` 库：
