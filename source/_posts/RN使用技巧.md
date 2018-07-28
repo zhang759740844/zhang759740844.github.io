@@ -547,7 +547,7 @@ render () {
 3. 通过 `hasOwnProperty` 进一步删除不想传递给子组件的属性
 4. `this.props` 的展开要放在 `render` 方法里，因为 props 可能会变化触发重绘，所以要每次重绘的时候都进行对象展开
 
-### Props 使用的注意点
+#### Props 使用的注意点
 
 通常我们直接会把 props 放到 render 方法中，比如上面的例子。但是这样其实不太好，比如一个页面跳转的时候，会带一些 props 过来，我们需要修改 props 中的一些属性。但是我们并不希望把这些修改带回到其他页面。
 
@@ -564,6 +564,32 @@ render () {
 ```
 
 > 因为多加了一层 `this.props1` 我们就不需要担心，到底能不能修改 props 了，如果不能修改 props，那么直接深拷贝一下即可。
+
+更进一步，其实我们只有在不希望修改数据带到其他页面的时候才会使用 `this` 挂载，一般情况下，我们直接使用结构赋值即可：
+
+```javascript
+render () {
+    const {prop1, prop2} = this.props
+    return (
+    	<View/>
+    )
+}
+```
+
+如果项目变化需求变化了，再转到把 props 的属性挂在到 `this` 下：
+
+```javascript
+render () {
+    this.props1 = this.props.props1
+    this.props2 = this.props.props2
+    const {prop1, prop2} = this
+    return (
+    	<View/>
+    )
+}
+```
+
+就不需要再更换 View 里的参数了
 
 #### propTypes
 组件的属性可以接受任意值，字符串、对象、函数等等都可以。有时，我们需要一种机制，验证别人使用组件时，提供的参数是否符合要求。组件类的 `PropTypes` 属性，就是用来验证组件实例的属性是否符合要求。我们需要引入一个 `prop-types` 库：
