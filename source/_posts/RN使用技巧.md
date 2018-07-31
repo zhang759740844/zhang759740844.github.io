@@ -19,13 +19,9 @@ tags:
 触发重绘有两种方式：
 
 - `setState` 调用的时候。
-- 父组件重绘的时候
-
-`setState` 会触发 `render` 方法。
+- `props` 变化的时候
 
 > 现有的例子开看， `setState` 只是用来标记重绘的，标记了重绘后。React 的 `render` 方法生成的新的 JSX 对象和老的 JSX 对象比较，看看两个 JSX 对象的各个部分有哪些地方不同。然后渲染不同的部分
-
-针对有子组件的视图，每次父组件 `render` 的时候，都会触发子组件的 `componentWillReceiveProps` 和 `render` 方法。所以我们创建子组件的时候，最好重写 `shouldComponentUpdate` 方法，去判断 props 中的各个属性是否变化。(**验证过，确实只要父组件刷新了，不管子组件的 props 是否变化，都会调用 render**)
 
 由于 `componentWillReceiveProps` 后面接着的就是 `render` 方法，所以 `componentWillReceiveProps` 中不需要使用 `this.setState` 。直接修改 this 上的属性也是可以的比如：
 
@@ -43,6 +39,42 @@ tags:
 ```
 
 这样也是可以正确渲染出 `this.count` 的。
+
+###  性能优化
+
+#### 利用 shouldComponentUpdate
+
+针对有子组件的视图，每次父组件 `render` 的时候，都会触发子组件的 `componentWillReceiveProps` 和 `render` 方法。所以我们创建子组件的时候，最好重写 `shouldComponentUpdate` 方法，去判断 props 中的各个属性是否变化。一般出于性能原因，`shouldComponentUpdate` 方法都是进行**浅层判等**，即判断之前的属性和现在的属性是否是同一个对象:
+
+```javascript
+shouldComponentUpdate(nextProps, nextState) {
+    return (nextProps.completed !== this.props.completed) || (nextProps.text !== this.props.text)
+}
+```
+
+#### style 不要写在 JSX 中
+
+这里有一个注意点，如下代码即使重写了 `shouldComponentUpadate` 方法也是一直会重绘的：
+
+```javascript
+<Foo style={{color: 'red'}} />
+```
+
+这是因为，`{color: 'red'} ` 相当于每次都传入了一个新的对象。所以传 style的时候，不要直接写在 JSX 中
+
+> 其实任何属性，包括传一个方法都不应该直接写在 jsx 中，如果都不写在 jsx 中，就会产生很多冗余代码。所以注意 style 写在 styleSheet 中这点即可。
+
+#### 使用 react-redux 的 connect 方法
+
+我们写组件的时候写 `shouldComponentUpdate` 判断一个个 props 是否变化其实是一个蛮烦的事。react-redux 其实帮我们做了这件事。使用它提供的 `connect` 方法，不需要做任何其他的事情，只要在 export 组件的时候做一些改变即可：
+
+```javascript
+export default TodoItem
+=> 改为
+export default connect()(TodoItem)
+```
+
+`connect()` 参数为空，表示不从 store 中获取任何状态与方法 
 
 ### Reselect
 
