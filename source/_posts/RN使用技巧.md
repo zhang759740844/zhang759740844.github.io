@@ -76,6 +76,35 @@ export default connect()(TodoItem)
 
 `connect()` 参数为空，表示不从 store 中获取任何状态与方法 
 
+#### key
+
+key 是一个老生常谈的东西。对于一个列表的每一项，需要唯一的 key 值。新老列表，key 值不同的项，视图将会被 Unmount 以及 mount，对于 key 值相同的项，视图只会被更新。
+
+对于一个列表，如果我们不设置 key 值，默认是使用列表数组的索引 index 作为 key。但是这样会产生性能问题。比如删除了列表的第一项，整个列表的每一项都会更新
+
+那如果我们在列表中添加一项的时候，什么值能作为这个唯一的 key 呢？可以依靠时间：`Data.now()`。
+
+比方说在 add 的时候，为添加的项创建一个 key 字段：
+
+```javascript
+addItem: function(e) {
+  var itemArray = this.state.items;
+
+  itemArray.push(
+    {
+      text: this._inputElement.value,
+      key: Date.now()
+    }
+  );
+
+  this.setState({
+    items: itemArray
+  });
+}
+```
+
+这样每次添加的时候，key 就获得了唯一值。
+
 ### Reselect
 
 使用 react-redux 的时候，还经常搭配另一个常用的库 Reselect。我们存在 redux 中的 state 可能需要经过一些处理。
@@ -90,24 +119,24 @@ export default connect()(TodoItem)
 import { createSelector } from 'reselect'
 
 fSelector = createSelector(
-    a => state.a,
-    b => state.b,
+    [state => state.a,
+    state => state.b],
     (a, b) => f(a, b)
 )
 hSelector = createSelector(
-    b => state.b,
-    c => state.c,
+    [state => state.b,
+    state => state.c],
     (b, c) => h(b, c)
 )
 gSelector =  createSelector(
-    a => state.a,
-    c => state.c,
+    [state => state.a,
+    state => state.c],
     (a, c) => g(a, c)
 )
 uSelector = createSelector(
-    a => state.a,
-    b => state.b,
-    c => state.c,
+    [state => state.a,
+    state => state.b,
+    state => state.c],
     (a, b, c) => u(a, b, c)
 )
 
