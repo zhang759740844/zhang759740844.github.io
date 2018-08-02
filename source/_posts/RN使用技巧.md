@@ -12,6 +12,31 @@ tags:
 
 <!--more-->
 
+### 黄色警告
+
+黄色警告以及红屏报错可以手动触发：
+
+```javascript
+console.error('红屏错误')
+console.warn('黄屏警告')
+```
+
+我们开发的时候，应该尽可能避免黄色警告。但是如果这个警告是第三方引入的呢？我们可以隐藏特别类型的警告，比如 ant-design 引入的如下警告：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/yellowbox.png?raw=true)
+
+我们可以通过下面的代码隐藏：
+
+```javascript
+import {YellowBox} from 'react-native'
+
+const ignoreCase = [
+  // ant design 引入的
+  'Warning: NativeButton: prop type `background` is invalid;'
+]
+YellowBox.ignoreWarnings(ignoreCase)
+```
+
 
 
 ### 何时重绘
