@@ -11,6 +11,12 @@ tags:
 
 <!--more-->
 
+### Framework Search Paths 和 Header Search Paths
+
+一般情况下，直接把文件或者 framework 拖进工程里，并且勾上 `copy if needed`，不会出现任何问题。但是有时候，我们的头文件或者 framework 并不能直接放到工程里。比如一个 RN 应用，framework 是保存在 RN 的 src 中的某个文件夹内的。这个时候就会出现头文件找不到的问题。
+
+因为通过 `copy if needed` 添加的文件会被 Xcode 自动添加到 Framework Search Paths 或者 Header Search Paths 里。但是如果不是这种情况，我们就需要手动添加 Search Paths
+
 ### 为什么不在 iOS 项目中使用 redux
 
 redux 将所有状态组合在一起，配合 react 食用更佳，那么我们为什么不把他使用子啊 iOS 中呢？我想到了两个理由：
