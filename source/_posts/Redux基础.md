@@ -936,7 +936,7 @@ handlers: [
 actionCreators[key] = createAction(model.namespace + '/' + key)
 ```
 
-通过 redux-action 的 `createAction` 生成一个 **action 创建方法**，直接在方法名前加上 `namespace` 作为 `action.type` 传入。这样 `action.type` 就和前面处理 reducers 时添加 `namespace` 的做法一致了。调用这个 action 创建方法的话只需要传入一个 payload 就可以生成一个 action：
+通过 redux-action 的 `createAction` 生成一个 **action 创建方法 createAction**，直接在方法名前加上 `namespace` 作为 `action.type` 传入。这样 `action.type` 就和前面处理 reducers 时添加 `namespace` 的做法一致了。调用这个 action 创建方法的话只需要传入一个 payload 就可以生成一个 action：
 
 ```javascript
 let action = createAction(model.namspace + '/someaction')('payload')
@@ -948,11 +948,11 @@ let action = createAction(model.namspace + '/someaction')('payload')
 actionCreators[key.name] = createAction(model.namespace + '/' + key.name, key.action)
 ```
 
-还是通过 `createAction`，不过这里第二个参数传入了一个 action 方法。`createAction` 会把它直接做为 `action.payload` 保存。
+还是通过 `createAction`，不过这里**此时生成的 createAction 方法会在执行的时候接受参数，然后将其作为入参立刻执行 action 方法，并将 action 方法的返回值作为 payload 保存。**
 
-之后的部分前面说 redux的时候说到过，使用 `redux-thunk` 这个中间件，在 dispatch 的时候发现 `action.payload` 时候函数的时候，把 dispatch 时传入的参数作为这个函数的参数，调用这个函数。
+> 虽然之前说了关于 `redux-thunk` 的 action 为 function 的情况。但是其实通过 `redux-actions` 创建的 action 其实不会是一个 action。这时候就要配合 `redux-promise-middleware` 了
 
-同时还需要配合 `redux-promise-middleware`。因为 `redux-thunk` 只负责调用方法，对于一个异步的网络请求来说，获取到数据后还需要自己 dispatch 把数据设置到 state 中去。 `redux-promise-middleware` 就做了这样一个事情。它会检查 `action.payload` 调用后返回的是不是一个 promise。如果是一个 promise，它会在 `.then()` 方法中，替代使用者执行 dispatch 方法。它还能检查网络请求是成功还是失败，为原本的 `action.type` 添加相应的成功或者失败的后缀。
+`redux-promise-middleware` 就做了这样一个事情。它会检查 `action.payload` 调用后返回的是不是一个 promise。如果是一个 promise，它会在 `.then()` 方法中，替代使用者执行 dispatch 方法。它还能检查网络请求是成功还是失败，为原本的 `action.type` 添加相应的成功或者失败的后缀。
 
 第三种对应 `else if(key.handler)` 的情况：
 
