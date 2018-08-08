@@ -1222,13 +1222,11 @@ export function getName() {
 等价于=> export {name, getName}
 ```
 
-注意，不能直接写`export name`,要写也要写成 `export {name}`
+注意，不能直接写`export name`,要写也要写成 `export {name}`。为什么呢？其实就相当于给 export 的对象起一个名字，`export name` 就相当于 `export 'zachary'` ，这样别人就无法知道如何引入了，所以就需要起一个名字：`export let name = 'zachary'` .引入方式如下：
 
 ```javascript
 import {name, getName} from './myName'
 ```
-
-其实相当于对象的解构赋值。
 
 > import 和 require 都不需要写 .js 后缀！！！
 
@@ -1263,6 +1261,14 @@ import {default as myName} from './myName'
 `module.exports = {}` 直接导出一个对象。`let a = require('../module')`直接从路径获取导出的对象。
 
 > 这种方式导出的是一个整的对象，如果要导出多个，需要作为对象的各个属性。而 ES6 的导出相当于直接将导出对象解构赋值了。
+
+### ES6 和 CommonJs 在引用方式的差异
+
+CommonJS的一个模块，就是一个脚本文件。**`require`命令第一次执行的时候，加载该脚本，然后执行整个脚本，然后在内存生成一个对象。以后需要用到这个模块的时候，就会到`exports`属性上面取值。即使再次执行`require`命令，也不会再次执行该模块，而是到缓存之中取值。**
+
+ES6模块的运行机制与CommonJS不一样，**它遇到模块加载命令`import`时，不会去执行模块，而是只生成一个引用。等到真的需要用到时，再到模块里面去取值。因此，ES6模块是动态引用**
+
+> `require` 的好处是可以在代码中使用，而 `import` 只能在头部。这样 `require` 就可以在执行到当前代码的时候，根据代码的上下文动态的引入想要的模块。而 `import` 则无法改变引入的模块。
 
 ### 模块加载
 
