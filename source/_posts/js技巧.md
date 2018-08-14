@@ -10,6 +10,22 @@ tags:
 
 <!--more-->
 
+### 判断是否是 promsie 类型
+
+基本类型的判断可以通过 `typeof` 实现:
+
+```javascript
+typeof '123' === 'string'
+```
+
+promise 类型可以通过 `instanceof` 判断：
+
+```javascript
+new Promise() instanceof Promise
+```
+
+
+
 ### && 的使用
 
 平时我们条件判断的时候，通常是这样的：

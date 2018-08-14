@@ -112,6 +112,18 @@ Gist 可以保存上传的配置文件。拉取配置文件需要配置两个 id
 3. 在Terminal中输入`csrutil disable` 关闭SIP
 4. 重启reboot OSX
 
+### npm 全局安装无权限
+
+有时候我们使用 `sudo npm install -g xxx` 的时候仍然提示 `Error: EACCES: permission denied`。
+
+这个时候可以增加一些选项：
+
+```bash
+sudo npm install -g xxx --unsafe-perm=true --allow-root
+```
+
+
+
 ### shell 脚本 sudo 命令不输入密码
 
 #### expect

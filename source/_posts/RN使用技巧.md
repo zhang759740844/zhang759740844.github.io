@@ -24,6 +24,10 @@ tags:
 
 当然，Immutable 提供的类型毕竟不是原生类型，使用起来需要注意一些地方，所以最好还是把状态树设计的扁平一些。
 
+### react-native link
+
+`react-native link` 方法可以把 node_module 中的 RN 库链接到 iOS 以及 Android 工程中。但是其中有一个坑点，就是在 iOS 端，`react-native link` 只会将 RN 库链接到 default target 中，而自己另外新建的 target 需要自己动手链接到 `Link Binary with Libraries` 中
+
 ### 黄色警告
 
 黄色警告以及红屏报错可以手动触发：
