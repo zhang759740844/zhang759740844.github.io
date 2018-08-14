@@ -361,11 +361,15 @@ let store = createStore(
 `applyMiddleware` 应该做的是这样一个操作：
 
 ```javascript
-let dispatch = store.dispatch
-for temp in middlewares {
-    dispatch = temp(store)(dispatch)
-}
+store.dispatch = middlewares.reduce((middleware, preDispatch) => {
+    return middleware(store)(preDispatch)
+}, store.dispatch)
+
 ```
+
+所以最终的 dispatch 会是一个多层 middleware 嵌套的结构，每一个 middleware 中的 `next(action)` 都是执行指向下一个 middleware，而执行 `store.dispatch(action)` 就是重新执行一遍 middleware 链。如图：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/middleware_1.png?raw=true)
 
 ### 组织 reducer
 
