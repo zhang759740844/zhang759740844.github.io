@@ -12,6 +12,18 @@ tags:
 
 <!--more-->
 
+### 清除 RN package 缓存
+
+一般情况下我们不需要清除 package 的缓存，清除缓存后再打开会非常耗时。但是我遇到了一种情况就是使用 `babel-plugin-root-import` 使用 `@` 替代 `src` 目录的时候，`@` 的指向总是不对。所以我怀疑可能是缓存的问题。
+
+清除缓存使用命令：
+
+```bash
+npm start -- --reset-cache
+```
+
+注意中间要加上 `--`
+
 ### Immutable.js 的使用动机
 
 一般说到 React 性能优化就会提到 Immutable 这个库。这里介绍一下它的使用场景。
