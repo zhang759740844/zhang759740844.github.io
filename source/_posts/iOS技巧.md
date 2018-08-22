@@ -11,6 +11,12 @@ tags:
 
 <!--more-->
 
+### 模拟器弹出键盘
+
+一般情况下，模拟器的输入框是不会弹出键盘的，我们可以设置其为弹出键盘：`command+shift+k`。其实勾掉了选项中的 connect kardware keyboard：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/keyboard_1.png?raw=true)
+
 ### Framework Search Paths 和 Header Search Paths
 
 一般情况下，直接把文件或者 framework 拖进工程里，并且勾上 `copy if needed`，不会出现任何问题。但是有时候，我们的头文件或者 framework 并不能直接放到工程里。比如一个 RN 应用，framework 是保存在 RN 的 src 中的某个文件夹内的。这个时候就会出现头文件找不到的问题。
