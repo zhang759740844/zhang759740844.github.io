@@ -57,6 +57,8 @@ listen: 0.0.0.0:4873  # listen on all addresses
 npm adduser --registry  http://10.26.5.252:4873
 ```
 
+> npm adduser 是 npm login 的别名
+
 之后会让你输入用户名密码以及邮箱。完成注册：
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/verdaccio_2.png?raw=true)
@@ -68,6 +70,10 @@ npm adduser --registry  http://10.26.5.252:4873
 添加用户之后，默认就会在 `.npmrc` 中添加一个 token，如果后面要 publish 就得靠它：
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/verdaccio_5.png?raw=true)
+
+> 上面 registry= 表示的是下载源；
+>
+> 两个注释的带有 `authToken` 的表示的是注册用户的token。
 
 ## 切换下载源
 
@@ -202,6 +208,70 @@ forever start `which verdaccio`
 ```
 
 不过使用的时候最好还是看看官方文档
+
+## npm 后续使用
+
+### 创建与运行 npm script
+
+通过 `npm init` 命令创建 package.json。
+
+在 package.json 的 scripts 字段中新增命令，如 eslint：
+
+```json
+{
+  "scripts": {
+    "eslint": "eslint *.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+}
+```
+
+对于一些内置的 npm 命令，直接执行 `npm+脚本名`，如上面的 `npm test` 或者 `npm start`。自己定义的脚本需要使用 `npm run +脚本名`，如 `npm run eslint`。
+
+### npm script 钩子
+
+npm script 在执行之前会检查是否有`pre` 和 `post` 的钩子脚本。即如果运行 `npm run test` 脚本。会先检查是否有 `pretest` 脚本，如果有则执行，然后执行 `test` 最后执行 `posttest`:
+
+```json
+{
+  "scripts": {
+    "pretest": "npm run lint",
+    "test": "mocha tests/",
+    "posttest": "echo \"complete\""
+  },
+}
+```
+
+### git hook 中执行 npm script
+
+我们使用 npm 库 `husky`。使用 `npm install husky --save-dev` 保存为 dev-denpendancy 中。然后我们的代码仓库的 `.git/hooks` 目录，会发现里面的钩子都被 husky 替换掉了:
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/husky_1.png?raw=true)  
+
+> --save-dev 表示只保存为开发环境下使用的模块。在生产和发布的过程中不会将这部分模块打入包中。
+
+接下来需要在 scripts 对象中增加 husky 能识别的 Git Hooks 脚本 `precommit` 和 `prepush`：
+
+```json
+"scripts": {
+    "precommit": "npm run lint",
+    "prepush": "npm run test",
+}
+```
+
+### @scope
+
+有时候，我们看别人的 package.json 的时候，会看到 dependency 中有类似这样的东西：
+
+```json
+{
+  "dependencies": {
+    "@somescope/someprojectname": "^1.0.0",
+  },
+}
+```
+
+所有的私有模块都是 scoped package 的，所以上面表示的是一个私有仓库。只有当你获得相应权限的时候才可以拉取使用。
 
 
 
