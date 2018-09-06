@@ -38,6 +38,7 @@ let name: string = 'bob'
 
 ```typescript
 let list: number[] = [1, 2, 3]
+let list: Array<number> = [1, 2, 3]
 ```
 
 > 和 swift 略有不同，swift 将类型放在括号内
@@ -104,9 +105,10 @@ function warnUser(): void {
 ```typescript
 let someValue: any = "this is a string"
 let strLength: number = (someValue as string).length
+let strLength: number = (<string>someValue).length
 ```
 
-和 swift 基本一致
+第一种方式和 swift 基本一致。第二种方式的强转一般是圆括号，这里是尖括号。
 
 #### 对象
 
@@ -122,7 +124,136 @@ let a: {b: string, c: string} = {b: '123', c: '234'}
 
 > swift 中 `var` 声明变量，`let` 声明常量
 
+### 接口
 
+**ts 中的接口并不像在其它语言里一样，传入的对象要实现这个接口，ts中只要传入的对象满足接口的要求，那么它就是被允许的。**
 
+```typescript
+interface LabelledValue {
+  label: string;
+}
 
+function printLabel(labelledObj: LabelledValue) {
+  console.log(labelledObj.label);
+}
+
+let myObj = {size: 10, label: "Size 10 Object"};
+printLabel(myObj);
+```
+
+上面的例子中，只要入参满足存在 `label` 属性即可。
+
+#### 可选属性
+
+有些属性不是必须的，可选属性名字定义的后面加一个`?`符号：
+
+```typescript
+interface SquareConfig {
+  color?: string;
+  width?: number;
+}
+
+function createSquare(config: SquareConfig): {color: string; area: number} {
+  let newSquare = {color: "white", area: 100};
+  if (config.color) {
+    newSquare.color = config.color;
+  }
+  if (config.width) {
+    newSquare.area = config.width * config.width;
+  }
+  return newSquare;
+}
+
+let mySquare = createSquare({color: "black"});
+```
+
+#### 只读属性
+
+```typescript
+interface Point {
+    readonly x: number;
+    readonly y: number;
+}
+```
+
+通过赋值一个对象字面量来构造一个`Point`。 赋值后， `x`和`y`再也不能被改变了。
+
+`ReadonlyArray<T>`类型，它与`Array<T>`相似，只是把所有可变方法去掉了，因此可以确保数组创建后再也不能被修改：
+
+```typescript
+let a: number[] = [1, 2, 3, 4];
+let ro: ReadonlyArray<number> = a;
+ro[0] = 12; // error!
+ro.push(5); // error!
+ro.length = 100; // error!
+a = ro; // error!
+```
+
+#### 函数类型
+
+```typescript
+interface SearchFunc {
+  (source: string, subString: string): boolean;
+}
+
+let mySearch: SearchFunc;
+mySearch = function(src, sub) {
+    let result = src.search(sub);
+    return result > -1;
+}
+```
+
+函数的参数名不需要与接口里定义的名字相匹配。如果你不想指定类型，TypeScript的类型系统会推断出参数类型
+
+#### 类类型
+
+和 Java 一样，TS 用它强制一个类去符合某种契约，实现接口使用关键字 `implements`：
+
+```typescript
+interface ClockInterface {
+    currentTime: Date
+    setTime(d: Date)
+}
+
+class Clock implements ClockInterface {
+    currentTime: Date;
+    setTime(d: Date) {
+        this.currentTime = d
+    }
+    constructor(h: number, m: number) { }
+}
+```
+
+#### 继承接口
+
+接口继承使用关键字 `extends`：
+
+```typescript
+interface Shape {
+    color: string;
+}
+
+interface PenStroke {
+    penWidth: number;
+}
+
+interface Square extends Shape, PenStroke {
+    sideLength: number;
+}
+
+let square = <Square>{};
+square.color = "blue";
+square.sideLength = 10;
+square.penWidth = 5.0;
+```
+
+### 类
+
+#### 继承
+
+继承和 Java 非常类似。子类的构造函数中需要调用 `super` 父类的构造函数。
+
+#### public
+
+TS 中默认成员是 public 的。
 
