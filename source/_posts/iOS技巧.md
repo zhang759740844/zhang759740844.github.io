@@ -23,6 +23,10 @@ tags:
 
 因为通过 `copy if needed` 添加的文件会被 Xcode 自动添加到 Framework Search Paths 或者 Header Search Paths 里。但是如果不是这种情况，我们就需要手动添加 Search Paths
 
+> 主工程中引入了目标库，子target没有引入目标库。由于目标库已经在工程中了，因此只要在子target只要设置头文件搜寻地址即可。
+>
+> 以上适用于静态库，对于动态库，主工程中需要引入目标库，子 target 中还需要将动态库通过 Link Binary With Libraries 引入，不用设置头文件搜寻地址了。
+
 ### 为什么不在 iOS 项目中使用 redux
 
 redux 将所有状态组合在一起，配合 react 食用更佳，那么我们为什么不把他使用子啊 iOS 中呢？我想到了两个理由：
@@ -677,4 +681,4 @@ NSString *strDistance=[NSString stringWithFormat:@"%.xf", kilometers]; //x表示
 
 
 
-​	
+	
