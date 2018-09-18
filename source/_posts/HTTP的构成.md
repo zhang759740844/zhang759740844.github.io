@@ -155,6 +155,7 @@ brew install mitmproxy
 - f: 过滤请求。可以参照帮助中的 Filter expression 对过滤关键字进行编辑。删除过滤就是将过滤关键字清空。其实还可以有更多过滤方式，包括过滤指定的 header，指定的 body，过滤请求、回复等。具体[参见文档](https://docs.mitmproxy.org/stable/concepts-filters/)
 - d: 删除请求
 - h: 显示所有帮助
+- m: 改变请求返回实体的类型。比如把 raw 改为 json
 
 ### 拦截
 
