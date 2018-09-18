@@ -157,6 +157,8 @@ brew install mitmproxy
 - h: 显示所有帮助
 - m: 改变请求返回实体的类型。比如把 raw 改为 json
 
+除了快捷键，我们可以按住 command 点击 url 来在浏览器中查看网页信息。可以按住 command+option+fn 然后选中信息
+
 ### 拦截
 
 输入 `i` 设置拦截，再输入 `~s` 进入 response 拦截模式，`~q` 进入 request 拦截模式。如果不想拦截了。再次输入 `i` 将刚才设置的参数清空即可。也可以键入 `I` 表示暂停拦截。
