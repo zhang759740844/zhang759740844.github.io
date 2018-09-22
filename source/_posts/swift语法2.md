@@ -5,7 +5,6 @@ tags:
 
 	- Swift
 
-
 ------
 
 接着上一篇
@@ -51,7 +50,7 @@ while 的形式：
 
 > while condition{
 >
-> ​	statements
+> 	statements
 >
 > }
 
@@ -63,7 +62,7 @@ while 的形式：
 
 > repeat {
 >
-> ​	statements
+> 	statements
 >
 > } while condition
 
@@ -337,6 +336,7 @@ greet(person: ["name": "Jane", "location": "Cupertino"])
 >
 > 1. `guard let` 中必须要有 `return`，而 `if let` 则不需要 `return`
 > 2. `guard let` 变量的作用域是外部作用域，`if let` 的作用域是内部作用域。也就是说，guard 方式 let 得到的值外部还能用到，if 方式 let 到的值外部已经无法使用。
+> 3. 上面说到为什么作用域是外部的，这就要明白 guard 的目的。guard 是用来代替在一个函数中 `if xxx 为空 return` 的情况的。也就是一般都是用来做非空判断的。所以非空的情况下拿到 let 的值，在下面使用。
 
 ### 检查 API 是否可用
 
@@ -757,7 +757,7 @@ var reversedNames = names.sorted(by: backward)
 
 > {(parameters) -> returntype in
 >
-> ​	statements
+> 	statements
 >
 > }
 

@@ -5,7 +5,6 @@ tags:
 
 	- Swift
 
-
 ------
 
 开始啃 Swift 3.1 的官方文档，地址[Swift 官方文档](https://developer.apple.com/library/prerelease/content/documentation/Swift/Conceptual/Swift_Programming_Language/)。
@@ -319,16 +318,16 @@ if let actualNumber = Int(possibleNumber) {
 
 > if let constantName = someOptional {	
 >
-> ​	statements
+> 	statements
 >
 > }
 
 **这里的 `let` 或者 `var` 是必须的，并且作用域为整个 if 判断如果 `Int(possibleNumber)` 存在，就声明了 `actualNumber`，如果不存在就相当于没有声明这个变量。**
 
-一条 if 可以写多个可选绑定，用逗号隔开就行，表示 & 的关系，一个是 false 则整个判断条件是 false。
+一条 if 可以写多个可选绑定**或者条件判断**，用逗号隔开就行，表示 & 的关系，一个是 false 则整个判断条件是 false。
 
 ```swift
-if let firstNumber = Int("4"), let secondNumber = Int("42"), firstNumber < secondNumber && secondNumber < 100 {
+if let firstNumber = Int("4"), let secondNumber = Int("42"), firstNumber < secondNumber, secondNumber < 100 {
     print("\(firstNumber) < \(secondNumber) < 100")
 }
 // Prints "4 < 42 < 100"
@@ -343,7 +342,7 @@ if let firstNumber = Int("4") {
 // Prints "4 < 42 < 100"
 ```
 
-可以都用逗号，但是有可选绑定就不能用 `&&`
+**可以都用逗号，但是有可选绑定就不能用 `&&`**
 
 > 可选绑定的生命周期在函数内，出了函数，这个变量就回收了。
 
