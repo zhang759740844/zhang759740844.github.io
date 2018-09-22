@@ -84,7 +84,10 @@ struct objc_class : objc_object {
 当你发出一个类似`[NSObject alloc]`的消息时，你事实上是把这个消息发给了一个**类对象 (Class Object)** ，这个类对象必须是一个元类的实例，而这个元类同时也是一个**根元类 (root meta class)**的实例。所有的元类最终都指向根元类为其超类。所有的元类的方法列表都有能够响应消息的类方法。所以当 `[NSObject alloc]`这条消息发给类对象的时候，`objc_msgSend()`会去它的元类里面去查找能够响应消息的方法，如果找到了，然后对这个类对象执行方法调用。
 ![Class isa and superclass relationship](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/runtime_principle.jpg?raw=true)
 
+> 看明白这个图上面就都明白了。
+
 ### class_rw_t
+
 `bits` 中包含了一个指向 `class_rw_t` 结构体的指针，它的定义如下:
 ```objc
 struct class_rw_t {
@@ -101,7 +104,8 @@ struct class_rw_t {
 
 其中，`const class_ro_t *ro`包含了所有**成员变量**的一维数组以及**各个基础的(base)属性、方法和协议**
 `method_array_t methods`、`property_array_t properties`、`protocol_array_t protocols`则包含了所有**拓展的属性方法和协议**。**注意：这里的属性只是getset方法，不包含成员变量。**
-这也就解释了，开篇不能添加成员变量的原因。
+
+> 基础的属性和方法和拓展的方法没有存在一个对象中，所以不能在 extension 中添加成员变量。但是完全用 runtime 创建的类是可以动态添加的。
 
 具体如何应用可看下一篇。
 
@@ -133,7 +137,8 @@ struct method_t {
 - `imp`指向了方法的实现，本质上是一个函数指针
 
 #### ivar_t
-`ivar_list_t`和`ivar_array_t`内都是`ivar_t`类型:
+`ivar_list_t` 内是`ivar_t`类型:
+
 ```objc
 struct ivar_t {
     int32_t *offset;
@@ -143,7 +148,8 @@ struct ivar_t {
 ```
 
 #### property_t
-`ivar_list_t`和`ivar_array_t`内都是`ivar_t`类型:
+`property_list_t`和`property_array_t`内都是`property_t`类型:
+
 ```objc
 struct property_t {
     const char *name;
@@ -220,6 +226,8 @@ struct objc_super { id receiver; Class class; };
 这里调用`class`只是举例，所有调用`super`的方法，最后都变成了`self`的调用。
 
 > 其实就是即使是 [super class] **调用的是父类的 class 方法**，但是**接收对象永远还是 self**(验证过，此结论正确)
+>
+> `objc_super -> receiver` 永远是子类
 
 
 ## Category 的实现原理

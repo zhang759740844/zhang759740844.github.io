@@ -345,10 +345,16 @@ outCount使用了**指向指针的指针**的方式，使没有返回outCount的
 ![消息转发流程](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/runtime_dynamicMethod.jpg?raw=true)
 
 1. 当 Runtime 系统在`Cache`和方法分发表中（包括超类）找不到要执行的方法时，Runtime会调用`resolveInstanceMethod:`或`resolveClassMethod:`(添加实例方法实现和类方法实现)来给程序员一次动态添加方法实现的机会，指定是否动态添加方法。若返回`NO`，则进入下一步，若返回`YES`，则通过 `class_addMethod` 函数动态地添加方法，消息得到处理，此流程完毕.
-2. `resolveInstanceMethod:` 方法返回 `NO` 时，就会进入 `forwardingTargetForSelector:` 方法，这是 Runtime 给我们的第二次机会，用于指定哪个对象响应这个 `selector`。返回`nil`，进入下一步，返回某个对象，则会调用该对象的方法.
-3. 若 `forwardingTargetForSelector:` 返回的是`nil`，则我们首先要通过 `methodSignatureForSelector:` 来指定方法签名，返回`nil`，表示不处理，若返回方法签名，则会进入下一步.
-4. 当第 `methodSignatureForSelector:` 方法返回方法签名后，就会调用 `forwardInvocation:` 方法，我们可以通过 `anInvocation` 对象做很多处理，比如修改实现方法，修改响应对象等.
+2. `resolveInstanceMethod:` 方法返回 `NO` 时，就会进入 `forwardingTargetForSelector:` 方法，这是 Runtime 给我们的第二次机会，用于指定响应这个 `selector` 的对象。返回`nil`，进入下一步；返回某个对象，则会调用该对象的方法.
+3. 若 `forwardingTargetForSelector:` 返回的是`nil`，则我们首先要通过 `methodSignatureForSelector:` 来指定方法签名。 `methodSignatureForSelector` 方法返回`nil`，表示不处理，若返回方法签名，则会进入下一步.
+4. 当 `methodSignatureForSelector:` 方法返回方法签名后，就会调用 `forwardInvocation:` 方法，我们可以通过 `NSInvocation` 对象做很多处理，比如修改实现方法，修改响应对象等.
 5. 如果到最后，消息还是没有得到响应，程序就会crash.
+
+> 三步的流程为
+>
+> 1. 增加这个方法
+> 2. 使用其他对象调用这个方法
+> 3. 任意对象调用任意方法
 
 ### 示例：
 ```objc
@@ -416,18 +422,18 @@ outCount使用了**指向指针的指针**的方式，使没有返回outCount的
 
 其中 `"v@:"` 表示返回值和参数,这个符号涉及[Type Encoding](https://developer.apple.com/library/content/documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Articles/ocrtPropertyIntrospection.html)以及[关于type encodings的理解--runtime programming guide](http://www.jianshu.com/p/f4129b5194c0)。其中 `class_addMethod` 具体的使用方式可以参见下面一节。
 
+一般来说可以使用`method_getTypeEncoding()`获取更详细的Type_Encoding，代替手动的 输入的 `v@:`。下面例子中也会用到。
+
 ---
-其中**v**表示返回`void`类型，**@**表示参数`id(self)`，**：**表示`SEL(_cmd)`这几个是必须要有的，后面可以接入参类型。
+其中**v**表示`void`**返回类型**，**@**表示参数`id(self)`，**：**表示`SEL(_cmd)`。`@:`是必须要有的。后面可以接入参类型。
 
 举个例子：`"i@:@"`
 **i**表示返回值类型`int`
 **@：**和上面意义相同
 **@**最后一个@表示有一个入参，是`id`类型。
 
-不过，实际上，这个东西好像没什么用，因为在`class_addMethod`上试验过，随便传任何字符串都一样能正常运行。
-
 ---
-一般来说可以使用`method_getTypeEncoding()`获取更详细的Type_Encoding,下面例子中也会用到。
+NSInvocation 使用详见 [API使用](https://zhang759740844.github.io/2017/02/13/iOS%E4%B8%ADAPI%E7%9A%84%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95/)
 
 ### 转发与多继承
 转发和继承相似，可以用于为Objc编程添加一些多继承的效果。就像下图那样，一个对象把消息转发出去，就好似它把另一个对象中的方法借过来或是“继承”过来一样。
@@ -442,8 +448,8 @@ outCount使用了**指向指针的指针**的方式，使没有返回outCount的
 - (void)createClass
 {
     Class MyClass = objc_allocateClassPair([NSObject class], "myclass", 0);
-    //添加一个NSString的变量，第四个参数是对其方式，第五个参数是参数类型
-    if (class_addIvar(MyClass, "itest", sizeof(NSString *), 0, "@")) {
+    //添加一个NSString的变量，第四个参数是对齐方式，第五个参数是参数类型
+    if (class_addIvar(MyClass, "itest", sizeof(NSString *), log2(sizeof(NSString *)), @encode(NSString *))) {
         NSLog(@"add ivar success");
     }
     //myclasstest是已经实现的函数，"v@:"这种写法见type encoding
