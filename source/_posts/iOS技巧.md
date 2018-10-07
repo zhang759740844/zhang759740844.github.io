@@ -2,8 +2,8 @@ title: 一些 iOS 小技巧与注意点(持续更新)
 date: 2017/2/9 10:07:12  
 categories: iOS
 tags:
-	- 学习笔记
-	- 持续更新
+​	- 学习笔记
+​	- 持续更新
 
 ------
 
@@ -16,6 +16,23 @@ tags:
 一般情况下，模拟器的输入框是不会弹出键盘的，我们可以设置其为弹出键盘：`command+shift+k`。其实勾掉了选项中的 connect kardware keyboard：
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/keyboard_1.png?raw=true)
+
+### import 尖括号和双引号的区别
+
+import "xxx.h"的路径搜索顺序：
+
+1. USE_HEADERMAP
+2. USER_HEADER_SEARCH_PATHS
+3. HEADER_SEARCH_PATHS
+
+import <xxx.h> 的路径搜索顺序：
+
+1. 系统路径
+2. HEADER_SEARCH_PATHS
+
+USE_HEADERMAP 是在 Build Settings 中的 Use Header Maps 中设置，默认为 YES，表示系统会自动为编译期提供一个文件映射。我们自己 new 出来的文件就是通过它找到的。
+
+其实就是双引号是自己创建的文件里找，尖括号是从系统的文件里找。没找到的话，都会到 HEADER_SEARCH_PATHS 中找。
 
 ### Framework Search Paths 和 Header Search Paths
 
@@ -681,4 +698,4 @@ NSString *strDistance=[NSString stringWithFormat:@"%.xf", kilometers]; //x表示
 
 
 
-	
+​	
