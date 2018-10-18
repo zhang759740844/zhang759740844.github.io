@@ -2,15 +2,42 @@ title: React-Native 技巧与坑总结
 date: 2016/11/25 10:07:12  
 categories: React-Native
 tags:
-	- React-Native
-	- 爬坑
-	- 持续更新
+​	- React-Native
+​	- 爬坑
+​	- 持续更新
 
 ---
 
 本文将收集关于 React-Native 的各种技巧与坑，不论是摘录的还是自己遇到的。
 
 <!--more-->
+
+### husky hook git commit
+
+我们可以使用 husky hook git 的提交方法。安装方式如下：
+
+```bash
+npm install husky --save-dev
+```
+
+然后在 package.json 中配置：
+
+```json
+{  
+  "scripts": {
+    "lint": "standard --verbose | snazzy",
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run lint",
+    }
+  }
+}
+```
+
+需要注意的是，husky 安装的时候会在 `.git` 文件夹下生成 `hook` 文件夹，如果是拷贝的别人的 node_modules，不会生成 hook 文件夹，所以需要先 uninstall 再 install 一遍
+
+
 
 ### 清除 RN package 缓存
 
