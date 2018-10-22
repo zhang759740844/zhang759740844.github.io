@@ -2,14 +2,36 @@ title: hexo 配置遇到的一些坑
 date: 2016/12/3 14:07:12  
 categories: Git
 tags: 
-	- Hexo
-	- 爬坑
+ - Hexo
+ - 爬坑
 
 ---
 
 配置个人博客有时候是一件很蛋疼的事情，经常会出现一些奇奇怪怪的问题。这里我就将把我填上的一些坑总结一下。
 
 <!--more-->
+
+### hexo d 无法提示 fatal: could not read Username for xxx
+
+之前一直没有问题，最近突然报了这个错。原因就是没有设置好用户名密码。
+
+打开 `_config.yml`，修改deploy节点:
+
+```yml
+# 原来的设置
+deploy:
+type: git
+repo: https://github.com/{yourname}/{yourname}.github.io.git
+branch: master
+
+# 修改为
+deploy:
+type: git
+repo: https://{yourname}:{yourpassword}@github.com/{yourname}/{yourname}.github.io.git
+branch: master
+```
+
+
 
 ### 更新 hexo
 

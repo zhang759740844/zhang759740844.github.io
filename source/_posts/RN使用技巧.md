@@ -2,9 +2,9 @@ title: React-Native 技巧与坑总结
 date: 2016/11/25 10:07:12  
 categories: React-Native
 tags:
-​	- React-Native
-​	- 爬坑
-​	- 持续更新
+ - React-Native
+ - 爬坑
+ - 持续更新
 
 ---
 
