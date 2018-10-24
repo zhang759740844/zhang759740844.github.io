@@ -9,7 +9,11 @@ tags:
 
 <!--more-->
 
+### ssh免密登录
 
+在目标机器的 **.ssh** 文件夹下新建一个 **authorized_keys** 文件，在其中加入自己的 ssh_pub 即可
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/sshlogin.png?raw=true)
 
 ### 应用程序弹窗选择
 

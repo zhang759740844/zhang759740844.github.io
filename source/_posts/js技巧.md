@@ -1,9 +1,10 @@
-mtitle: js技巧
+title: js技巧
 date: 2018/7/31 14:07:12  
 categories: JavaScript
 tags: 
 	- 持续更新
 	
+
 ---
 
 记录一些 js 使用技巧
