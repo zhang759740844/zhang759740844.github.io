@@ -25,6 +25,20 @@ scp ./xxx.js 10.26.5.145:~
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/sshlogin.png?raw=true)
 
+登录的时候输入：
+
+```shell
+ssh zachary@10.26.5.145
+```
+
+退出使用
+
+```shell
+exit
+```
+
+
+
 ### 应用程序弹窗选择
 
 有时候应用程序会弹窗，如下图，你只能按回车确定，否则必须使用鼠标选择取消：
