@@ -12,6 +12,65 @@ tags:
 
 <!--more-->
 
+### 使用绝对路径替代相对路径
+
+如果在 import 的时候使用相对路径，那么有些层级较深的时候会非常难看，可以使用devdependency 中安装 npm 插件：`babel-plugin-root-import`
+
+然后在*.babelrc* 中加入：
+
+```json
+{
+  "plugins": [
+    [
+      "babel-plugin-root-import", {
+        "rootPathSuffix": "src",
+        "rootPathPrefix": "@"
+      }
+    ]
+  ]
+}
+```
+
+这样就可以使用 `@` 来代替目录 `src`.
+
+### 消除 console.log
+
+我们可以通过 babel 插件将 console 去除。
+
+首先在 devdependency 中安装 npm 插件：`babel-plugin-transform-remove-console`
+
+然后在更目录下新建一个名为 *.babelrc* 的文件，在其中加入：
+
+```json
+{
+  "env": {
+    "production": {
+      "plugins": ["transform-remove-console"]
+    }
+  }
+}
+```
+
+
+
+### 为 FlatList 设置 ListEmptyComponent
+
+如果直接设置 `ListEmptyComponent` 占位符你会发现，即使将 `ListEmptyComponent` 的 style 设置为 `{flex:1}` 它也并不会填充满 flatList。这是因为包裹它的外层 `View` 没有设置高度。这就需要我们自己将 `FlatList` 的高度设置给 `ListEmptyComponent`。可以使用 `onLayout` 方法：
+
+```js
+<FlatList
+  onLayout={e => {
+    this.setState({
+      fHeight: e.nativeEvent.layout.height
+    })
+  }}
+/>
+```
+
+我们在 `FlatList` 布局的时候获取到它的高度设置为 state 即可。
+
+
+
 ### husky hook git commit
 
 我们可以使用 husky hook git 的提交方法。安装方式如下：
@@ -143,6 +202,29 @@ shouldComponentUpdate(nextProps, nextState) {
 这是因为，`{color: 'red'} ` 相当于每次都传入了一个新的对象。所以传 style的时候，不要直接写在 JSX 中
 
 > 其实任何属性，包括传一个方法都不应该直接写在 jsx 中，如果都不写在 jsx 中，就会产生很多冗余代码。所以注意 style 写在 styleSheet 中这点即可。
+
+#### render 时不要使用箭头函数
+
+我们在 render 一个 button 的时候经常这么写：
+
+```jsx
+<Button onClick={()=> this.doClick()}>
+</Button>
+```
+
+这样会导致组件的重绘。因为每次渲染的时候会重新创建这个箭头函数，导致传入了新的 props。正确的做法应该是把这一过程提前：
+
+```js
+doClick = () => {
+}
+```
+
+```jsx
+<Button onClick={this.doClick()}>
+</Button>
+```
+
+这样 `doClick` 方法传递的就是一个引用了。
 
 #### 使用 react-redux 的 connect 方法
 

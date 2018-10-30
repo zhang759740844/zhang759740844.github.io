@@ -9,6 +9,34 @@ tags:
 
 <!--more-->
 
+### 拷贝文件到目标机器
+
+通过 **scp** 将文件拷贝到目标机器的根目录下
+
+```shell
+scp ./xxx.js 10.26.5.145:~
+```
+
+
+
+### ssh免密登录
+
+在目标机器的 **.ssh** 文件夹下新建一个 **authorized_keys** 文件，在其中加入自己的 ssh_pub 即可
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/sshlogin.png?raw=true)
+
+登录的时候输入：
+
+```shell
+ssh zachary@10.26.5.145
+```
+
+退出使用
+
+```shell
+exit
+```
+
 
 
 ### 应用程序弹窗选择

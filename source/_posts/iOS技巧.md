@@ -11,6 +11,27 @@ tags:
 
 <!--more-->
 
+### 通过 GCD 判断是否是主队列
+
+先要明白队列和线程的关系。主线程中除了主队列还有可能运行其他的全局队列。而主队列只会在主线程中运行
+
+关于如何判断是否是主队列，可以使用 GCD：
+
+```objc
+BOOL RCTIsMainQueue()
+{
+  static void *mainQueueKey = &mainQueueKey;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    dispatch_queue_set_specific(dispatch_get_main_queue(),
+                                mainQueueKey, mainQueueKey, NULL);
+  });
+  return dispatch_get_specific(mainQueueKey) == mainQueueKey;
+}
+```
+
+其实就是在主线程中添加了一个 key-value 映射，只有在主线程的情况下，才能拿到这个 key-value
+
 ### 模拟器弹出键盘
 
 一般情况下，模拟器的输入框是不会弹出键盘的，我们可以设置其为弹出键盘：`command+shift+k`。其实勾掉了选项中的 connect kardware keyboard：
