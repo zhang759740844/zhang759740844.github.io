@@ -12,14 +12,17 @@ tags:
 
 ## 基础
 ### 创建
+
+创建一个自定义类型的 button
+
 ```objc
-UIButton *btn1 = [[UIButton alloc] init];
+UIButton *btn1 = [[UIButton buttonWithType:UIButtonTypeCustom];
 CGRect btn1Frame = CGRectMake(50, 50, 200, 100);
 btn1.frame = btn1Frame;
 [self.view addSubview:btn1];
 ```
 
-通过`init`和设置`frame`以及`addSubView`就可以将button添加到Voew上。
+
 
 ### 点击事件
 #### 通过xib关联
@@ -39,60 +42,6 @@ btn1.frame = btn1Frame;
 ```
 为`btn1`添加和删除一个`btn1Pressed`的点击事件。
 
-上面添加点击事件的方式需要先定义一个点击方法 `btn1Pressed`，点击方法和 button 添加事件是分离的。那么如何直接通过 block 的形式一步到位呢？可以封装点击方法，在点击方法执行是调用传入的 block：
-
-```objc
-//设置点击事件
-[button handleClickBlock:^(UIButton *button) {
-	...
-}];
-
-//UIButton的范畴
-typedef void (^ButtonActionBlock)(UIButton *button);
-@implementation UIButton (Block)
-
-- (void)handleClickBlock:(ButtonActionBlock)action {
-    [self handleControlEvents:UIControlEventTouchUpInside withBlock:action];
-}
-
-- (void)handleControlEvents:(UIControlEvents)events withBlock:(ButtonActionBlock)action {
-    [self setAssociateCopyValue:action withKey:@selector(handleControlEvents:withBlock:)];
-    [self addTarget:self action:@selector(buttonAction:) forControlEvents:events];
-}
-
-- (void)buttonAction:(id)sender {
-    ButtonActionBlock block = (ButtonActionBlock)[self associatedValueForKey:@selector(handleControlEvents:withBlock:)];
-    if (block) {
-      	// 设置enabled 为的是让 button 在执行完 block 前只能相应一次点击事件
-        self.enabled = NO;		
-        block(sender);
-        self.enabled = YES;
-    }
-}
-
-//封装了给category添加属性的方法
-@implementation NSObject (Associate)
-
-- (void)setAssociateValue:(id)value withKey:(void *)key{
-    objc_setAssociatedObject(self, key, value, OBJC_ASSOCIATION_RETAIN);
-}
-
-- (void)setAssociateWeakValue:(id)value withKey:(void *)key{
-    objc_setAssociatedObject(self, key, value, OBJC_ASSOCIATION_ASSIGN);
-}
-
-- (void)setAssociateCopyValue:(id)value withKey:(void *)key {
-    objc_setAssociatedObject(self, key, value, OBJC_ASSOCIATION_COPY_NONATOMIC);
-}
-
-- (id)associatedValueForKey:(void *)key{
-    return objc_getAssociatedObject(self, key);
-}
-@end
-```
-
-
-
 ## 设置title和image
 button有`imageView`和`titleLabel`两个属性，默认image在左，label在右。
 
@@ -109,7 +58,7 @@ button有`imageView`和`titleLabel`两个属性，默认image在左，label在�
 
 其中需要说明的是，高亮就是点击时的状态。其实还有一种`UIControlStateSelected | UIControlStateHighlighted`这个组合是选中时候的高亮状态，也是比较有用的。
 
-### 设置button选中
+### 设置button选中图片
 button选中与否是由`UIControlStateSelected`控制的。
 
 可能会遇到这样的情景：点击一下button切换成另外一个图，再点一下切换回去，实际上就是类似于*点赞*。一般情况我们实现方式是这样的：
@@ -168,170 +117,17 @@ button选中与否是由`UIControlStateSelected`控制的。
 btn.adjustsImageWhenHighlighted = NO;
 ```
 
+### 设置title 和 image 的位置
 
+我们可以通过 `UIEdgeInserts` 的方式修改位置，但是这种方式经常会压缩拉长 image，所以更好的方式是通过继承 UIButton，并且重写 `layoutSubViews` 方法的方式：
 
-### 设置image和title位置
-image和title默认image在左，title紧贴在其右边。不过这个位置其实是可以改变的。
-
-#### image和title位置互换
-先看代码：
-```objc
-[btn1 setTitleEdgeInsets:UIEdgeInsetsMake(0, -btn1.imageView.bounds.size.width, 0, btn1.imageView.bounds.size.width)];
-[btn1 setImageEdgeInsets:UIEdgeInsetsMake(0, btn1.titleLabel.bounds.size.width, 0, -btn1.titleLabel.bounds.size.width)];
-```
-这里需要强调的是一定要先设置`title`再设置`image`。因为`title`是依赖于`image`的，在如果先设置`image`，这个时候`title`还没有确定，于是`titleLabel.bounds.size.width`一定是`0`，即`image`没有变。
-
-这里的`UIEdgeInsetsMake`里的四个参数分别是`top`,`left`,`bottom`,`right`四个方向的`inset`,默认是`0`，也就是说，所有变化都是针对当前位置的。`-btn1.imageView.bounds.size.width`表示让`title`的左边距**减少**`image`的宽度，同理`btn1.imageView.bounds.size.width`表示让右边距**增加**`image`的宽度。
-
-#### 控制image的大小
-交换了image的位置后，我就想怎么控制image的大小。尝试改变了`UIEdgeInsetsMake`的参数，发现改变`top`和`bottom`可以将图片压缩，但是改变`left` `right`图片始终不动。
-
-经过我不断尝试后终于得出了结论：
-以横轴为例，只有当**左边距+右边距+图片宽度=button宽度**时，继续增加边距，才会导致图片的压缩。当**左边距+右边距+图片宽度<button宽度**时，增加一边会让图像像另一边移动；同时增加两边，两边抵消，在原处不动。
-
-因此，为什么改变`top`和`bottom`可以将图片压缩呢？因为由于button高度较小，image在纵轴将button填满，此时`top`和`bottom`都为0，但是由于**image高度=button高度**，此时增加`top`和`bottom`就会将图片压缩。当然，如果一个增加，一个等量减小，图片就会像减少那边移动。
-
-而在横轴方面，开始时，**左边距+右边距+图片宽度<button宽度**。图片只会平移直到边距增加到使等式相等才会进行压缩。
-
-## UIControl
-### 概览
-`UIControl` 是控件类的基类，它是一个抽象基类，我们不能直接使用 `UIControl` 类来实例化控件，它只是为控件子类定义一些通用的接口，并提供一些基础实现，以在事件发生时，预处理这些消息并将它们发送到指定目标对象上。
-![UIControl](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/uibutton_1.png?raw=true)
-
-### Target-Action机制
-Target-action 是一种设计模式，直译过来就是”目标-行为”。当我们通过代码为一个按钮添加一个点击事件时，通常是如下处理：
-
-```objc
-[button addTarget:self action:@selector(tapButton:) forControlEvents:UIControlEventTouchUpInside];
-```
-
-也就是说，当按钮的点击事件发生时，会将消息发送到 `target`(此处即为 `self` 对象)，并由 `target` 对象的 `tapButton:` 方法来处理相应的事件。因此，Target-Action 机制由两部分组成：即目标对象和行为 `Selector`。目标对象指定最终处理事件的对象，而行为 `Selector` 则是处理事件的方法。
-
-我们先来看看 UIControl 为我们提供了哪些自定义跟踪行为的方法:
-```objc
-- (BOOL)beginTrackingWithTouch:(UITouch *)touch withEvent:(UIEvent *)event
-- (BOOL)continueTrackingWithTouch:(UITouch *)touch withEvent:(UIEvent *)event
-- (void)endTrackingWithTouch:(UITouch *)touch withEvent:(UIEvent *)event
-- (void)cancelTrackingWithEvent:(UIEvent *)event
-```
-
-这四个方法分别对应的时跟踪开始、移动、结束、取消四种状态。跟 `UIResponse` 提供的四个事件跟踪方法是不是挺像的？我们来看看 `UIResponse` 的四个方法：
-
-```objc
-- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
-- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
-- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
-- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event
-```
-
-上面两组方法的参数基本相同，只不过 `UIControl` 的是针对单点触摸，而 `UIResponse` 可能是多点触摸。另外，返回值也是大同小异。由于 `UIControl` 本身是视图，所以它实际上也继承了 `UIResponse` 的这四个方法。如果测试一下，我们会发现**在针对控件的触摸事件发生时，这两组方法都会被调用，而且互不干涉。**
-
-对于一个给定的事件，`UIControl` 会调用 `sendAction:to:forEvent:` 来将行为消息转发到 `UIApplication`对象，再由 `UIApplication` 对象调用其 `sendAction:to:fromSender:forEvent:` 方法来将消息分发到指定的 `target` 上。而如果子类想监控或修改这种行为的话，则可以重写这个方法:
-
-```objc
-// ImageControl.m
-- (void)sendAction:(SEL)action to:(id)target forEvent:(UIEvent *)event {
-  // 将事件传递到对象本身来处理
-    [super sendAction:@selector(handleAction:) to:self forEvent:event];
-}
- 
-- (void)handleAction:(id)sender {
- 
-    NSLog(@"handle Action");
-}
- 
-// ViewController.m
- 
-- (void)viewDidLoad {
-    [super viewDidLoad];
- 
-    self.view.backgroundColor = [UIColor whiteColor];
- 
-    ImageControl *control = [[ImageControl alloc] initWithFrame:(CGRect){50.0f, 100.0f, 200.0f, 300.0f} title:@"This is a demo" image:[UIImage imageNamed:@"demo"]];
-    // ...
- 
-    [control addTarget:self action:@selector(tapImageControl:) forControlEvents:UIControlEventTouchUpInside];
-}
-- (void)tapImageControl:(id)sender {
- 
-    NSLog(@"sender = %@", sender);
+```swift
+override func layoutSubviews() {
+    super.layoutSubviews()
+    imageView?.bounds = CGRect(x: 0, y: 0, width: 50, height: 50)
+    titleLabel?.bounds = CGRect(x: 0, y: 0, width: 50, height: 50)
 }
 ```
-
-由于我们重写了 `sendAction:to:forEvent:` 方法，所以最后处理事件的 `Selector` 是 `ImageControl的handleAction:` 方法，而不是 `ViewController` 的 `tapImageControl:` 方法。
-
-### Target-Action的管理
-为一个控件对象添加、删除Target-Action的操作我们都已经很熟悉了，主要使用的是以下两个方法：
-```objc
-// 添加
-- (void)addTarget:(id)target action:(SEL)action forControlEvents:(UIControlEvents)controlEvents
- 
-- (void)removeTarget:(id)target action:(SEL)action forControlEvents:(UIControlEvents)controlEvents
-```
-
-如果想获取控件对象所有相关的 `target` 对象，则可以调用 `allTargets` 方法，该方法返回一个集合。集合中可能包含 `NSNull` 对象，表示至少有一个 `nil` 目标对象。
-
-而如果想获取某个 `target` 对象及事件相关的所有 `action`，则可以调用 `actionsForTarget:forControlEvent:` 方法。返回一个可变数组。
-
-## 一些点
-
-### 设置颜色
-
-准确的说，这是关于 UIColor 的。不过我们多数情况下使用 UIColor 都是设置 UIButton。UIColor 提供了一个方法用于将 RGB 转为 UIColor
-
-```objc
-[UIColor colorWithRed:(float)98/255 green:(float)138/255 blue:(float)252/255 alpha:1]
-```
-
-注意，这里的 RGB 都是在 0-1 之间的数，且需要在计算的时候转化为 float，否则得到的就是 0。
-
-另外，设置 UIButton 的 borderColor 的时候，其类型为 CGColor，需要从 UIColor 中获取，切记不能通过强转：
-
-```objc
-[self.btn.layer setBorderColor:[UIColor colorWithRed:98 green:138 blue:252 alpha:1].CGColor];
-```
-
-### UIButton 无法修改文字和文字颜色
-
-设置的错误示例：
-
-```objc
-//第一种错误
-[customButton.titleLabel setTextColor:[UIColor blackColor]];
-//第二种错误
-customButton.titleLabel.textColor = [UIColor blackColor];
-```
-
-这种方式修改文字和颜色是无效的。因为 `titleLabel` 是 `readonly` 的。如果要修改，需要设置不同 `state` 下的状况：
-
-```objc
-// title 同理
-[button setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
-```
-
-### [button setImage:] 不显示图片
-
-当我们在代码中设置 `button` 的图片的时候，这个这个 `button` 是系统默认的类型(system)，那么这个时候 `setImage:` 方法是锁住的，这时候使用该方法设置图片,你见到的可能是蓝色底色的一片或者没有任何效果。
-
-如果想要正常显示图片，需要将 `button` 的类型设置为 `custom`。可以在 storyboard 中设置，也可以在代码中设置。
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
