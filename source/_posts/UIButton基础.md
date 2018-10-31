@@ -2,6 +2,7 @@ title: UIButton 简介
 date: 2016/8/29 14:07:12  
 categories: iOS
 tags: 
+
 	- 基本控件
 ---
 
@@ -101,10 +102,10 @@ button有`imageView`和`titleLabel`两个属性，默认image在左，label在�
 [btn1 setTitle:@"BTN1" forState:UIControlStateNormal];
 ```
 这里`forState`常用的有一下几种：
-- UIControlStateNormal  		常态
-  - UIControlStateHighlighted 高亮
-    - UIControlStateDisabled禁用
-    - UIControlStateSelected选中
+- UIControlStateNormal 常态
+- UIControlStateHighlighted 高亮
+- UIControlStateDisabled 禁用
+- UIControlStateSelected 选中
 
 其中需要说明的是，高亮就是点击时的状态。其实还有一种`UIControlStateSelected | UIControlStateHighlighted`这个组合是选中时候的高亮状态，也是比较有用的。
 
