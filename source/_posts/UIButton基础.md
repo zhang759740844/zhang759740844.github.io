@@ -129,6 +129,25 @@ override func layoutSubviews() {
 }
 ```
 
+## 设置 button 圆角
+
+普通的使用 cornerRadius 的方式设置圆角会产生离屏渲染。可以使用CAShapeLayer和UIBezierPath设置圆角：
+
+```objc
+let w = button.frame.size.width
+let h = button.frame.size.height
+let rect = CGRect(x: 0, y: 0, width: w, height: h)
+
+let path = UIBezierPath(roundedRect: rect, cornerRadius: 15)
+let layer = CAShapeLayer()
+layer.frame = rect
+layer.path = path.cgPath
+button.layer.mask = layer
+button.backgroundColor = UIColor.red
+```
+
+
+
 
 
 
