@@ -9,25 +9,92 @@ tags:
 
 <!--more-->
 
-### Interface Builder 概要
-
-- Bundle 主要用来保存可执行代码以及保存资源文件。添加到工程里的资源文件会在编译时复制到 main bundle 中。如果没有，那么在 Copy Bundle Resource 中添加。
-- 开发 SDK 的时候，资源文件会单独打包到一个 Bundle 中（静态库中无法添加资源文件）。Bundle 保存在 main bundle 下，所以集成 SDK 的时候要去找对应 Bundle 下的资源。
-
 ### 使用 Inferface Builder
 
-- 右键 IB 中的控件拖到代码中自动生成 property 或者 action
-- 如果要为 VC 添加一个 xib，需要将 xib 的 view 和 VC 的 view 连线。
-- 可以在一个 xib 中创建多个 View，然后通过 `loadNibNamed` 方法获取 View 的数组
-- 创建 UIVIewController 的时候，系统会判断是否有同名的 xib 文件。如果有，就直接加载。如果没有就需要调用 `initWithNibNamed` 方法指定 xib 文件名。
-- xib 嵌套，不能直接拖个 View 设置其 class。你只能拖一个占位的 UIView，然后用代码将要嵌套的那个视图 addSubView 的方式添加进去。
-- 加载 image 有两种方式，一种是通过 `initWithName ` 在 mainBundle 中加载；一种是通过 `initWithContentofFile` 通过路径拼接加载。前者加载的图片会被系统缓存，后者则不会。所以大图片最好用后者。
-- 要创建 Bundle 要在 macOS 中找，然后将 Supported Platforms 设置为 iOS
-- 只能向 sb 文件中添加 UIViewController，而不能添加 View。
-- 一个 sb 可以添加多个 VC，通过 storyboardID 来识别 sb。可以通过 storyboardID 来初始化某个 VC。
-- sb 可以通过 segue 来跳转，减少胶水代码
-- 使用 sb 就可以省略 window 以及 rootViewController 的创建。
-- @UIApplicationMain 会自动生成 main 函数
+#### xib 加载 UIView
+
+xib 既可以和 View 关联，也可以和 VC 关联。与 View 关联时，需要设置其中 view 的 Class，与 VC 关联的时候需要设置 File's Owner 的 Class。与 VC 关联的时候要注意把 VC 的 view 属性和视图连接。
+
+可以通过以下方式创建与 xib 关联的 View:
+
+```swift
+// 由于一个 xib 中可以包含好几个 view，所以 loadNibNamed 得到的是一个数组，我们获取第一个 View
+let someView = Bundle.main.loadNibNamed("SomeView", owner:nil, options: nil)?[0] as! UIView
+view.addSubView(someView)
+```
+
+#### xib 加载 Cell
+
+有一个特殊的 View 是 cell:
+
+```objc
+// 平时使用 loadNibNamed:owner:options 方法会先把 xib 加载到内存生成相应的 nib，再通过 nib 转化为 View 实例。对于 UITableView 来说，重复加载 xib 是一个耗时操作，所以 UITableView 通过注册 UINib 来缓存 nib
+[_tableView registerNib:[Nib nibWithNibNamed:@"SomeView"] bundle:nil];
+```
+
+#### xib 加载 VC
+
+可以通过以下方式创建于 xib 关联的 VC:
+
+```swift
+// 有同名的 xib 文件
+let homeVC = HomeViewController()
+// 没有同名的 xib 文件
+let homeVC = HomeViewController.init(nibName:"HomeView", bundle:nil)
+```
+
+#### xib 嵌套
+
+xib 不能直接嵌套，需要通过代码的方式。你只能拖一个占位的 UIView，然后用代码将要嵌套的那个视图 addSubView 的方式添加进去：
+
+```swift
+class MyView: UIView {
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        let someView = Bundle.main.loadNibNamed("someView", owner:nil, options: nil)?[0] as! SomeView
+		someView.frame = self.viewConteriner.frame
+        self.addSubView(someView)
+    }
+}
+```
+
+#### 加载 bundle 中的资源
+
+应用的代码和资源都放在应用所在的 main bundle 中，不过有一些第三方的 sdk 会把自己的资源文件打包成一个 bundle。这些 bundle 也会保存在 main bundle 中，我们可以先拿到其 bundle 再拿资源文件：
+
+```swift
+let subBundle = Bundle.init(path: Bundle.main.path(forResource: "myBundle" ofType:"bundle")!)
+let myView = subBundle?.loadNibNamed("BannerView", owner:nil, options:nil)?[0] as! UIView
+```
+
+#### 加载 image 方式
+
+有两种方式加载 image：
+
+```swift
+let image = UIImage.init(named:"someImage")
+let image = UIImage.init(contentsOfFile:(Bundle.main.path(forResource:"someImage", ofType:"png"))!)
+```
+
+第一种默认加载 mainbundle 中的图片，第二种可以加载任意位置的图片。第一种加载的图片会被系统缓存。所以显示 icon 的时候通过第一种方式加载比较好，图片资源较大时，用第二种方式
+
+#### 如何删除 storyboard
+
+storyboard的入口在**targets->General->Deployment Info->Main Interface**，默认的值为Main，即初始默认storyboard的名字。因此，想要不加载storyboard，需要将这个默认值删掉，就不会再从storyboard进入了。
+
+使用storyboard的时候 `application:didFinishWithOptions:` 方法只返回一个YES。删除后，需要添加代码对window初始化，否则app什么也显示不了。
+
+```objc
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+	self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+	ViewController *uv = [[ViewController alloc] initWithNibName:@"ViewController" bundle:nil];
+	[self.window setRootViewController:uv];
+	[self.window makeKeyAndVisible];
+	return YES;
+}
+```
+
+
 
 ### 全面学习 xib
 
@@ -83,5 +150,3 @@ tags:
 
 
 - 选中某个 View，然后按住 option，就可以获得这个 View 与其他 View 的距离关系了。
-
-  ​
