@@ -135,13 +135,13 @@ end
 首先要注册一个 CocoaPods 账号，在终端使用 `pod trunk` 命令注册，之后会有一封确认邮件，激活账号：
 
 ```shell
-$ pod trunk register 759740844@qq.com 'Zachary' --verbose
+$pod trunk register 759740844@qq.com 'Zachary' --verbose
 ```
 
 激活成功后，再到终端输入，可以看到注册信息：
 
 ```shell
-pod trunk me
+$pod trunk me
 ```
 
 ```shell
