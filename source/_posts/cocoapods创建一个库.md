@@ -304,7 +304,7 @@ end
 
 ![.a](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_bundle_1.png?raw=true)
 
-此时就不能再在 mainBundle 中，而需要在动态库中的 bundle 下找文件了。我们可以学习下 `SVProgressHUD` 的做法，通过 `[NSBundle bundleForClass:[SVProgressHUD class]]` 拿到 `SVProgressHUD` 所在的 Bundle，然后获取图片的 bundle：
+此时就不能再在 mainBundle 中，而需要在动态库中的 bundle 下找文件了。我们可以学习下 `SVProgressHUD` 的做法，通过 `[NSBundle bundleForClass:[SVProgressHUD class]]` 拿到 SVProgressHUD 文件所在的 bundle，也就是资源文件所在的  `SVProgressHUD.Bundle` 所在的 bundle，然后获取图片：
 
 ```objc
 NSBundle *bundle = [NSBundle bundleForClass:[SVProgressHUD class]];
