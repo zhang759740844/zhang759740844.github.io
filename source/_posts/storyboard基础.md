@@ -2,9 +2,8 @@ title: Storyboard 使用方法
 date: 2016/10/13 14:07:12  
 categories: iOS 
 tags: 
-	- Xcode
+​	- Xcode
 
-	
 ---
 
 Storyboard是苹果官方主推的一个代替xib的策略。有必要详细学习下它的使用方法。
@@ -350,21 +349,6 @@ Push类型必须用在NavigationController中，否则报错。是在navigation 
 ```
 
 跳转传值不仅可以用`prepareForSegue:sender:`实现，也可以通过代理、通知的方式，不过这样挺麻烦的，不推荐。具体参见[使用storyboard实现页面跳转，简单的数据传递](http://blog.csdn.net/mad1989/article/details/7919504#comments)
-
-
-### 多分支NavigationController
-主要应用在下面这种情况：
-![storyboard_20](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/storyboard_20.png?raw=true)
-navigationController要分情况跳转到界面A或者界面B，但是navigationController只能有一个`rootViewController`啊。所以，通过一个空的`ParentViewController`在`viewWillAppear:`方法中加载任意一个`ChildViewController`。如下图：
-![storyboard_22](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/storyboard_22.png?raw=true)
-
-注意，上图红框中的分支，其实**表现的只是一个页面的两种形态**，本质上还是一个页面。所以加载`childViewController`的segue都要用不带任何动画的`custome`类型。因为如果`ChildViewController`有动画，那么就会暴露出`ParentViewController`中的空白部分，就表现为两个页面了。
-
-可以看出，这个方法的优点是可以通过`parent`，从`C1`直接跳到`C2`，如果不用这种父子ViewController的方式，那么不可避免的就得先从`C1`跳回前一级页面，然后再从前一级页面跳到`C2`。不过缺点就是`C1`到`C2`的跳转没有任何跳转动画。
-
-不过，思考了一段时间后，觉得多分支NavigationController本身并不是一个问题，用父子ViewController的方式虽然能解决，但是把问题复杂化了。比如应用在登录跳转上，我完全可以不用在加载NavigationController后再判断是否要登录，而是把这一过程放到加载NavigationController之前。至于可以直接跳转的这一好处，一般情况下，产品也不会这么设计，而且它的弊端也是很明显的。
-
-具体实现的过程参见[基于Storyboard的创建多分支NavigationController的方法](http://www.cnblogs.com/shanpow/p/4149462.html)。记得如果使用这种方法的话，一定要清除`Parent`中上次显示的`ChildViewController`，文中在`prepareForSegue:sender:`方法中清除，是个很好的时机。 
 
 ## storyboard reference
 iOS9中，苹果引入了 storyboard reference 用以减小storyboard的体积，方便管理（并不知道iOS9之前怎么用多个storyboard）。
