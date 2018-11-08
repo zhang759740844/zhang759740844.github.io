@@ -26,7 +26,7 @@ tags:
 // 有同名的 xib 文件
 let homeVC = HomeViewController()
 // 没有同名的 xib 文件
-let homeVC = HomeViewController.init(nibName:"HomeView", bundle:nil)
+let homeVC = HomeViewController.init(nibName:"HomeViewController", bundle:nil)
 ```
 
 ### 加载 bundle 中的资源
@@ -35,7 +35,8 @@ let homeVC = HomeViewController.init(nibName:"HomeView", bundle:nil)
 
 ```swift
 let subBundle = Bundle.init(path: Bundle.main.path(forResource: "myBundle" ofType:"bundle")!)
-let myView = subBundle?.loadNibNamed("BannerView", owner:nil, options:nil)?[0] as! UIView
+let image = subBundle?.path(forResource: "myImage" ofType:"png")!)
+
 ```
 
 ### 加载 image 方式
@@ -113,20 +114,5 @@ layer.borderColor				Color
 @end
 ```
 
-xib中的Key.Path 改为此属性 **layer.borderColorFromUIColor** 即可通过 runtime 动态设置。
-
-
-
-
-
-### storyboard 全面学习
-
-- sb 中可以向一个 tableViewController 添加一个或多个 Table View Cell。可以设置其不同的 Identifier。
-- Extra View 可以为 VC 提供一个额外的关联视图。你不能将 View 拖到 VC 中，而是应该和 VC 平级。你可以再将这个 View 和 代码关联，在需要的时候添加到 VC 中。
-- sb 中的 segue 用 Identifier 区分。Class 是 segue 的类型，一般为 UIStoryboardSegue
-- 可以重写 `prepare(for:sender:)` 方法。通过 Identifier 找到对应的 segue，从而确定跳转的页面关系，`segue.destination` 就是目标 VC。
-- 可以重写 `shouldPerformSegue(withIdentifier:sender:)` 来判断是否需要跳转。
-- 可以调用 `performSegue(withIdentifier:sender:)` 来自己触发跳转
-
- 
+xib中的Key.Path 改为此属性 **layer.borderColorFromUIColor** 即可通过 runtime 动态设置。 
 
