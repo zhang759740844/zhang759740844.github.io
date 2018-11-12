@@ -55,6 +55,8 @@ Mac 上安装 *iFunBox*
 2. 组权限：属于该组的成员对他能进行的操作
 3. 其他人权限：其他人能进行的操作
 
+可以通过 chmod 改变权限
+
 #### Cydia Substrate
 
 Cydia 自动安装了 Cydia Substrate，包含三个模块：
@@ -67,7 +69,7 @@ Cydia 自动安装了 Cydia Substrate，包含三个模块：
 
 通过 Cydia 安装一下插件：
 
-1. adv-cmds：提供指令 `ps -A` 获取全部进程
+1. adv-cmds：提供指令 `ps -A` 获取全部进程的**进程ID和可执行文件路径**
 2. appsync：修改应用的文件会导致签名验证错误，该插件会绕过系统的签名验证
 
 
