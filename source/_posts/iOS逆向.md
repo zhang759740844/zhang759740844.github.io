@@ -37,7 +37,7 @@ passwd
 
 #### 公钥登录
 
-在目标设备的 $HOME/.ssh 目录下找打 *authorized_keys* 文件，如果没有则自己创建。将本机的公钥复制到该文件中。
+在目标设备的 $HOME/.ssh 目录下找 *authorized_keys* 文件，如果没有则自己创建。将本机的公钥复制到该文件中。
 
 ### iOS系统结构
 
@@ -69,8 +69,70 @@ Cydia 自动安装了 Cydia Substrate，包含三个模块：
 
 通过 Cydia 安装一下插件：
 
-1. adv-cmds：提供指令 `ps -A` 获取全部进程的**进程ID和可执行文件路径**
+1. adv-cmds：提供指令 `ps -A` 获取全部进程的进程ID和**可执行文件路径**（dumpdecrypted 砸壳时候用到）
 2. appsync：修改应用的文件会导致签名验证错误，该插件会绕过系统的签名验证
 
+> `ps -A`  获取完整的可执行文件路径
 
+## 逆向工具详解
+
+### 应用解密
+
+#### dumpdecrypted
+
+dumpdecrypted 会注入可执行文件，然后动态地从内存总 dump 出解密后的内容
+
+1. github上下载，包含一个 makefile 和一个 .c 文件
+2. `$make` 编译生成一个 **dumpdecrypted.dylib** 动态库
+3. 远程登录到手机，将生成的动态库放到 `/var/root` 下
+4. 在 `/var/root` 目录下使用环境变量 `DYLD_INSERT_LIBRARIES` 将 dylib 注入到要脱壳的可执行文件中
+  1. `ps -A` 拿到正在运行的要注入的应用的完整路径（/var/mobile/Containers/…/{应用的名字}）
+  2. 终端输入 `$DYLD_INSERT_LIBRARIES=dumpdecrypted.dylib {完整路径}` 进行注入
+5. 最终在 `/var/root` 目录下，得到的 `{应用名}.decrypted` 就是脱壳后的 mach-o。
+
+#### Clutch
+
+Cluch 会生成一个新的进程，然后暂停进程，dump 内存
+
+1. github上下载源码
+2. 使用 Xcode 编译，会在 *build* 目录下生成一个二进制文件 *Clutch*
+3. 远程登录到手机，将 Clutch 放到 `/usr/bin` 目录下，并为其添加执行权限
+4. `Clutch -i` 列出所有可以脱壳的应用，以及其 **BundleId**
+5. `Clutch -b {BundleId}` 砸壳
+6. 砸完壳的 ipa 的路径会在屏幕上输出
+
+Clutch 砸壳得到的是一个包含各种资源文件的完整的 .app
+
+> `Clutch  -i` 获取所有 BundleId
+
+### class-dump
+
+clas-dump 可以导出已砸壳应用的头文件。（未砸壳应用被加密无法获取，需要先砸壳）
+
+官网下载 class-dump，把下载的二进制文件放到 `/usr/bin` 目录下。
+```shell
+$class-dump -H {二级制文件} -o {文件路径}
+```
+
+> 如果项目中包含 Swift 编写的代码，那么很有可能产生 `class-dump[13914:58557859] Error: Cannot find offset for address 0x5000000001017925 in string` 这样的一个错误，可以使用 Monkey 修改过的 class-dump
+
+### Reveal
+
+1. Mac 端下载 Reveal 打开，在 help 里找到 *Show Reveal Library in Finder -> iOS Library* ，打开要嵌入 iOS 应用的 framework
+2. 打开该目录后，有一个 *RevealServer.framework*，将其中的 mach-o 文件 **RevealServer** 重命名为 `libReveal.dylib`。
+3. 新建一个 `libReveal.plist` 文件，用 vim 写入要注入的 App 的 BundleId，如下所示：
+
+```json
+{
+    Filter = {
+    	Bundles = (
+    		"tv.douyu.live"
+    	);
+	};
+}
+
+```
+
+4. 将两个文件复制到手机的 `/Library/MobileSubstrate/DynamicLibraries` 目录下。
+5. 重启应用，就会通过 Cydia 的 *MobileLoader*  加载该库了。
 
