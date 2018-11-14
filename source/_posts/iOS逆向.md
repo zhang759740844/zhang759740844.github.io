@@ -136,3 +136,55 @@ $class-dump -H {二级制文件} -o {文件路径}
 4. 将两个文件复制到手机的 `/Library/MobileSubstrate/DynamicLibraries` 目录下。
 5. 重启应用，就会通过 Cydia 的 *MobileLoader*  加载该库了。
 
+### Cycript
+
+##### 如何用 Cycript 调试一个进程
+
+1. `$ps -A`  获取所有运行的进程（一般在 `/var/mobile/Containers` 文件夹下，所以可以使用 `$ps -A | grep /var/mobile/Containers` 筛选更准确）
+2. `cycript -p 进程名` 进入调试
+3. **cmd+R** 清屏，**ctrl+D** 退出
+
+#### Cycript 语法
+
+```swift
+// 获取 UIApplication
+cy# UIApp    // 等价于 [UIApplication sharedApplication]
+
+// 定义一个变量
+cy# var rootViewController = UIApp.keyWindow.rootViewController
+cy# var myView = [[UIView alloc] init]
+
+// 找到内存中的该类型的对象
+cy# choose(UIViewController)
+
+// 通过 #+内存地址 获取对象
+cy# #0x1234567.rootViewController
+
+// 通过 *+对象 查看所有成员变量
+cy# *UIApp
+```
+Cycript 主要用于查看控制器的层级、对象的成员变量以及动态调试界面
+
+#### 编写 Cycript 库
+
+编写 Cycript 库文件 `test.cy`:
+```js
+(function(exports) {
+	// 递归打印 VC 层级
+	ChildVcs = function(vc) {
+		if (![vc isKindOfClass:[UIViewController class]]) throw new Error(invalidParamStr);
+		return [vc _printHierarchy].toString();
+	};
+
+	// 递归打印view的层级结构
+	Subviews = function(view) { 
+		if (![view isKindOfClass:[UIView class]]) throw new Error(invalidParamStr);
+		return view.recursiveDescription().toString(); 
+	};
+})(exports);
+```
+然后将文件放入 `usr/lib/cycript0.9` 文件夹下。
+```js
+cy# @import test
+cy# ChildVcs(#0x12345678)
+```
