@@ -295,6 +295,7 @@ export PATH=~/theos/bin:$PATH
 3. 编辑生成的 *Makefile* 文件，在文件最上方添加配置：
 ```makefile
 # 设置IP和端口号，表示要通过 SSH 的方式安装这个 theos
+# 切记一定要放在最上面
 export THEOS_DEVICE_IP={你的手机的IP}
 export THEOS_DEVICE_PORT=22
 
@@ -386,3 +387,11 @@ HBLogDebug(@"=0x%x", (unsigned int)r);
 // 批量替换为
 HBLogDebug(@"=0x%@", r);
 ```
+
+
+
+## 逆向进阶
+
+### 程序加载
+
+系统动态库会通过动态库加载器 dyld 被加载到内存中。为了优化程序启动速度，iOS 采用了共享缓存技术。在系统启动后被加载到内存中。当有新的程序加载时会先到共享缓存里寻找。找到就直接将共享缓存中的地址映射到目标进程的内存空间。
