@@ -11,6 +11,22 @@ tags:
 
 <!--more-->
 
+### 部分页面支持旋转
+
+在一些视频应用中，播放视频的时候是支持屏幕旋转的，但是其他时候则不支持，iOS 在 UIViewController 中提供了一个方法 `supportedInterfaceOrientations()`。
+
+当 iOS 设备旋转到一个新的方向时，`supportedInterfaceOrientations()` 方法就会被调用。如果这个方法的返回值中包含新的方向，应用程序就会旋转当前视图，否则不旋转。每个视图控制器都可以重写这个方法，对于单个试图控制器，可以在特定条件下支持特定的方向。
+
+```swift
+override func supportedInterfaceOrientations)_ -> UIInterfaceOrientationMasl {
+    return UIInterfaceOrientationMask(rawValue:(UIInterfaceOrientationMask.portait.rawValue | UIInterfaceOrientationMask.landscapeLeft.rawValue))
+}
+```
+
+
+
+
+
 ### 通过 GCD 判断是否是主队列
 
 先要明白队列和线程的关系。主线程中除了主队列还有可能运行其他的全局队列。而主队列只会在主线程中运行
