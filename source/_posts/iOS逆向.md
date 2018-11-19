@@ -375,7 +375,7 @@ $logify.pl xxx.h > Tweak.xm
 ```
 
 但是经常会编译不过，需要手动修改：
-1. 未定义头文件：报错 `unknown type name ‘XXX’`，在头部声明 `@class XXX;`
+1. 未定义头文件：报错 `unknown type name ‘XXX’`，在头部声明 `@class XXX;`,或者将 class 类型改为 id
 2. 未声明协议：报错`no type or protocol named 'XXX'`，在头部声明 `@protocol XXX`
 3. 不能存在 weak：报错 `cannot create __weak reference`，替换掉所有的 `__weak` 为空字符串
 4. 不能存在非 oc 方法：报错 `expected selector for Objective-C method` ，删除以点开头的非 OC 的方法
@@ -392,6 +392,199 @@ HBLogDebug(@"=0x%@", r);
 
 ## 逆向进阶
 
+### ASLR
+
+Address space layout randomization 地址空间布局随机化
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/逆向_3.png?raw=true)
+
+可以通过 lldb 的 `image list -o -f` 获得这个偏移地址:
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/逆向_4.png?raw=true)
+
+获得了偏移地址后，在通过 hopper 获得未使用 ALSR 的方法的地址，两者相加，就是该方法实际在内存中的地址了，可以为其设置断点：
+
+```shell
+breakpoint set -o {函数地址}+{偏移地址}
+```
+
+### 通用二进制文件
+
+包含了多种架构的二进制文件叫做通用二进制文件，又叫 fat binary 胖二进制文件。
+```shell
+// 查看信息：
+$file {文件名}
+$lipo -info {文件名}
+
+// 瘦身
+$lipo {文件名} -thin armv7 -o {输出文件名}
+
+// 合并
+$lipo -create {文件名1} {文件名2} -o {输出文件名}
+```
+
+Xcode 中生成架构配置如图：
+- Architecture： Xcode 支持的架构，不同 Xcode 版本不同
+- Valid Architecture： 想要生成的架构
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/逆向_6.png?raw=true)
+
+最终生成的架构就是支持的和想要的的交集。
+
 ### 程序加载
 
-系统动态库会通过动态库加载器 dyld 被加载到内存中。为了优化程序启动速度，iOS 采用了共享缓存技术。在系统启动后被加载到内存中。当有新的程序加载时会先到共享缓存里寻找。找到就直接将共享缓存中的地址映射到目标进程的内存空间。
+在编写一个程序时，看到的入口函数都是 main.m。实际上在 main 函数执行前已经执行了 `+load` 和 `constructor` 构造函数。现在要探讨在 main 函数执行前做了什么
+
+#### dyld 简介
+
+**系统内核在做好启动程序的准备工作之后就会从内核态切换到用户态，将工作交给 dyld。**
+
+系统动态库会通过动态库加载器 dyld 被加载到内存中。为了优化程序启动速度，iOS 采用了共享缓存技术。在系统启动后被加载到内存中。当有新的程序加载时会先到共享缓存里寻找。找到就直接将共享缓存中的地址映射到目标进程的内存空间。 
+
+#### dyld 加载流程
+
+dyld 的时间线：
+
+```
+Load dylibs -> Rebase -> Bind -> ObjCruntime -> Initializers
+```
+
+1. dyld 从主执行文件的 header 获取到需要加载的所依赖动态库列表，并递归的将他们加载，为每一个动态库生成一个 ImageLoader 对象
+
+   - 检查共享缓存是否映射到了共享区域
+
+   - 加载所有通过 `DYLD_INSERT_LIBRARIES` 插入的库
+
+2. 在加载所有的动态链接库之后，它们只是处在相互独立的状态，需要将它们绑定起来，这就是 Fix-ups
+
+   - Rebasing：在 imageLoader 内部调整指针的指向，即修改 ASLR 带来的偏差
+   - Binding：dylib 通过指针绑定会使用的外部的实例方法等符号的地址
+
+3. ObjC Runtime 需要维护一张映射类名与类的全局表。当加载一个 dylib 时，其定义的所有的类都需要被注册到这个全局表中。
+
+4. 执行初始化方法，`+load` 和 `constructor`  就是在这里执行的
+
+5. 通过 Load Command 找到 `LC_MAIN` 即 main 函数位置，执行
+
+#### Mach-O 文件
+
+Mach-O 是苹果的可执行文件，结构由三部分组成：
+- Header：文件类型，目标架构类型
+- Load Commands：描述载入内存的有哪些段，段有多大，从哪里开始
+- Data：段的数据
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/macho0.png?raw=true)
+
+使用 MachOView 查看，我们可以看到有各种各样的段。class-dump 就是通过这种方式获取到头文件信息的。
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/macho1?raw=true)
+
+- `__TEXT` 代码段，只读，包括函数，和只读的字符串(如  `__TEXT,__text`)
+- `__DATA` 数据段，读写，包括可读写的全局变量等(如 `__DATA,__data`）
+- `__LINKEDIT` 动态链接器需要使用的信息，包括重定向信息，绑定信息，懒加载信息等。只读
+
+#### 懒加载和非懒加载
+
+在之前说的dyld执行流程中有一环叫做 binding，即绑定符号的地址。iOS 系统为了加快系统启动速度，将符号分成了懒加载符号和非懒加载符号。
+
+非懒加载符号在 dyld 加载时就会绑定真实的值。懒加载符号不会，只有第一次去调用它时才会绑定真实的地址，第二次调用直接使用真实地址
+
+### hook
+
+#### fishhook
+
+苹果为了能在 Mach-O 文件中访问外部函数，采用了一个技术，叫做PIC（位置代码独立）技术。当你的应用程序想要调用 Mach-O 文件外部的函数的时候，或者说如果 Mach-O 内部需要调用系统的库函数时，Mach-O 文件会：
+
+1. 先在 Mach-O 文件的 _DATA 段中建立一个指针ptr（8字节的数据，放的全是0），这个指针变量指向外部函数。
+2. DYLD 会动态的进行绑定！将 Mach-O 中的 _DATA 段中的指针，指向外部函数。
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/macho2.png?raw=true)
+
+上图中可以看到，其他部分都是实实在在的代码信息，没有好的修改办法。只有红色框框中的 `nl_symbol_ptr` 和 `la_symbol_ptr`是指针段，由于指针都是长度固定的，所以方便修改指针地址，进而达到 hook 的目的。
+
+所以说，C的底层也有动态的表现。C在内部函数的时候是静态的，在编译后，函数的内存地址就确定了。但是，外部的函数是不能确定的，也就是说C的底层也有动态的。fishhook 之所以能 hook C函数，是利用了 Mach-O 文件的 PIC 技术特点。也就造就了静态语言C也有动态的部分，通过 DYLD 进行动态绑定的时候做了手脚。
+
+**我们经常说符号，其实 _DATA 段中建立的指针就是符号。fishhook的原理其实就是，将指向系统方法（外部函数）的符号重新进行绑定指向内部的函数。这样就把系统方法与自己定义的方法进行了交换。这也就是为什么C的内部函数修改不了，自定义的函数修改不了，只能修改 Mach-O 外部的函数。**
+
+### iOS 签名
+
+签名过程如图：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/逆向_5.png?raw=true)
+
+#### 重签名
+
+1. 准备一个 embedded.mobileprovision 文件（一定是付费证书产生的）。可以通过 Xcode 自动生成，然后在编译后的 APP 包中找到。
+2. 命令行中抽出 embedded.mobileprovision 文件中的 xxx.plist 权限：
+```shell
+# 生成 temp.plist
+$security cms -D -i embedded.mobileprovision > temp.plist
+```
+3. 命令行中将 temp.plist 转为 entitlements.plist 可以用于签名的 plist：
+```shell
+# temp.plist 生成 entitlements.plist
+$/usr/libexec/PlistBuddy -x -c 'Print :Entitlements' temp.plist > entitlements.plist
+```
+4. 命令行中查看可用证书：
+```shell
+$ security find-identity -v -p codesigning
+```
+5. 命令行中重签名：
+```shell
+codesing -f -s {上一步拿到的证书ID} --entitlements entitlements.plist {从目标ipa文件中获取的app文件}.app
+```
+
+## 安全保护
+
+### 静态混淆
+
+#### 宏定义
+
+使用宏将方法属性名修改为其他无意义的字符串
+
+### 动态保护
+
+#### 反调试
+
+**ptrace**
+
+UNIX 早期版本提供的一种对运行中的进程进行跟踪和控制的手段，就是系统调用 ptrace。通过 ptrace 实现对另一个进程的调试跟踪
+
+可以通过参数 `PT_DENY_ATTACH` 禁用调试
+
+**sysctl**
+
+当一个进程被调试时，该进程中的一个标志位用来标记正在被调试。可以定时通过 sysctl 查看这个标志位
+
+#### 反反调试
+
+hook函数 -> 判断参数 -> 返回结果
+
+#### hook 检测
+
+**Method Swizzle**
+
+Method Swizzle 的原理是替换 imp，通过 dladdr 得到 imp 所在的模块，判断模块是不是主二进制模块，如果不是就是被 hook 了。
+
+**符号表替换**
+
+fishhook 是基于懒加载符号表和非懒加载符号表进行替换的，所以遍历符号表中的指针就能判断程序是否被恶意 hook 了。
+
+非懒加载的指针指向真实地址，懒加载的指针在没有解析到真正的地址钱指向 `__stub_helper`，所以遍历符号表，判断是否指向了系统模块或者 `__stub_helper` 即可。
+
+#### 完整性校验
+
+**load command**
+
+直接读取 Mach-O load command 中的 `LC_LOAD_DYLIB` 
+
+**代码校验**
+
+获取内存中代码的 MD5 值，如果代码修改了，就会不一样
+
+**重签名校验** 
+
+判断 bundle ID 是否被修改
+
+
+
