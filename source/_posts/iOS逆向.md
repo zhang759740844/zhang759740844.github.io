@@ -512,27 +512,17 @@ Mach-O 是苹果的可执行文件，结构由三部分组成：
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/逆向_5.png?raw=true)
 
-#### 重签名
+当我们修改了别人的 APP 之后，我们就需要将修改过的 ipa 重签名，才能安装到手机上。重签名了的应用可以安装到未越狱手机。
 
-1. 准备一个 embedded.mobileprovision 文件（一定是付费证书产生的）。可以通过 Xcode 自动生成，然后在编译后的 APP 包中找到。
-2. 命令行中抽出 embedded.mobileprovision 文件中的 xxx.plist 权限：
-```shell
-# 生成 temp.plist
-$security cms -D -i embedded.mobileprovision > temp.plist
-```
-3. 命令行中将 temp.plist 转为 entitlements.plist 可以用于签名的 plist：
-```shell
-# temp.plist 生成 entitlements.plist
-$/usr/libexec/PlistBuddy -x -c 'Print :Entitlements' temp.plist > entitlements.plist
-```
-4. 命令行中查看可用证书：
-```shell
-$ security find-identity -v -p codesigning
-```
-5. 命令行中重签名：
-```shell
-codesing -f -s {上一步拿到的证书ID} --entitlements entitlements.plist {从目标ipa文件中获取的app文件}.app
-```
+### IPAPatch 免越狱调试 APP
+
+IPAPatch 就是通过从签名达到免越狱注入代码的目的。使用起来非常简单。
+
+1. 使用 PP 助手下载一个已越狱的应用的 ipa
+2. 下载 IPAPatch 的工程
+3. 使用已越狱的 ipa 替换工程中 Assets 文件夹下的 app.ipa 文件。注意，名字要一样
+4. 修改 bundleId
+5. Run Xcode 安装到手机
 
 ## 安全保护
 
