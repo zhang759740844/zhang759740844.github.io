@@ -11,6 +11,19 @@ tags:
 
 <!--more-->
 
+### 画一条一个像素的线
+
+根据当前屏幕的缩放因子计算出1 像素线对应的Point，然后设置偏移
+
+```objc
+#define SINGLE_LINE_WIDTH           (1 / [UIScreen mainScreen].scale)
+#define SINGLE_LINE_ADJUST_OFFSET   ((1 / [UIScreen mainScreen].scale) / 2)
+
+UIView *view = [[UIView alloc] initWithFrame:CGrect(x - SINGLE_LINE_ADJUST_OFFSET, 0, SINGLE_LINE_WIDTH, 100)];
+```
+
+
+
 ### 部分页面支持旋转
 
 在一些视频应用中，播放视频的时候是支持屏幕旋转的，但是其他时候则不支持，iOS 在 UIViewController 中提供了一个方法 `supportedInterfaceOrientations()`。
