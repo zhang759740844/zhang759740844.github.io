@@ -11,6 +11,22 @@ tags:
 
 <!--more-->
 
+### 判断是否点击了某个 View
+
+```objc
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    UITouch *touch = [touches anyObject];
+    // 将 touch 转化到 View 的坐标系
+    CGPoint touchPoint = [touch locationInView:self];
+    if (CGRectContainsPoint(self.bounds, touchPoint)) {
+        // 点在了 View 中
+    }
+}
+```
+
+
+
 ### 画一条一个像素的线
 
 根据当前屏幕的缩放因子计算出1 像素线对应的Point，然后设置偏移
