@@ -477,7 +477,7 @@ Mach-O 是苹果的可执行文件，结构由三部分组成：
 
 使用 MachOView 查看，我们可以看到有各种各样的段。class-dump 就是通过这种方式获取到头文件信息的。
 
-![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/macho1?raw=true)
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/macho1.png?raw=true)
 
 - `__TEXT` 代码段，只读，包括函数，和只读的字符串(如  `__TEXT,__text`)
 - `__DATA` 数据段，读写，包括可读写的全局变量等(如 `__DATA,__data`）
