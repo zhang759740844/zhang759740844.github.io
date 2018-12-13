@@ -479,8 +479,8 @@ Mach-O 是苹果的可执行文件，结构由三部分组成：
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/macho1.png?raw=true)
 
-- `__TEXT` 代码段，只读，包括函数，和只读的字符串(如  `__TEXT,__text`)
-- `__DATA` 数据段，读写，包括可读写的全局变量等(如 `__DATA,__data`）
+- `__TEXT` 代码段，只读，包括函数，和只读的字符串(如  `__TEXT,__text` 保存所有代码，又如 `__TEXT.__objc_classname` 保存 Objective-C 类名称)
+- `__DATA` 数据段，读写，包括可读写的全局变量等(如 `__DATA,__data` 保存初始化过的可变数据，又如 `__DATA.__objc_classlist` 保存所有类实体的指针，指向 __data 中保存的 objc_class 实例）
 - `__LINKEDIT` 动态链接器需要使用的信息，包括重定向信息，绑定信息，懒加载信息等。只读
 
 #### 懒加载和非懒加载
