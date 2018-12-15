@@ -38,6 +38,36 @@ tags:
 UIView *view = [[UIView alloc] initWithFrame:CGrect(x - SINGLE_LINE_ADJUST_OFFSET, 0, SINGLE_LINE_WIDTH, 100)];
 ```
 
+### 缓存行高
+
+在cell展示后，保存行高：
+
+```objc
+
+- (void)tableView:(UITableView *)tableView didEndDisplayingCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath 
+{
+  NSString *key = [NSString stringWithFormat:@"%ld",    (long)indexPath.row];
+  [self.heightDict setObject:@(cell.height) forKey:key];
+  DEBUG_LOG(@"第%@行的计算的最终高度是%f",key,cell.height);
+}
+```
+
+如果已经缓存了行高，那么直接返回高度，否则返回预估行高：
+
+```objc
+
+- (CGFloat)tableView:(UITableView *)tableView estimatedHeightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    NSString *key = [NSString stringWithFormat:@"%ld",indexPath.row];
+    if (self.heightDict[key] != nil) {
+       NSNumber *value = _heightDict[key];
+       DEBUG_LOG(@"%@行的缓存下来的高度是%f",key,value.floatValue);
+       return value.floatValue;
+    }
+    return UITableViewAutomaticDimension;
+} 
+```
+
 
 
 ### 部分页面支持旋转
