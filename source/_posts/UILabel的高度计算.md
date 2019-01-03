@@ -2,8 +2,8 @@ title: UILabel高度控制
 date: 2016/9/12 14:07:12  
 categories: iOS 
 tags: 
-	- UI
-	
+​	- UI
+​	
 
 ---
 
@@ -51,30 +51,14 @@ UILabel会根据传入的`size`的`width`自动换行，得到`height`后，将�
 
 既然要调用`sizeThatFits`那就需要传入一个`CGSize`。这个`CGSize`就是设置View的`frame`时传入的`height`,`width`。
 
+## boundingRectWithSize
 
-
-
-
-## frame与constraint
-在代码添加View时，init都会使用`initWithFrame:`方法。在AutoLayout后，`constraint`被使用，是为了适配不同屏幕的机器。
-
-- 设置好View之间的`constraint`后，一个View的约束改变，将会联动改变其他View的位置、大小。
-- 设置好View的`frame`或者`bound`后，改变View的`frame`，不会对其它View造成任何影响。
-- 在设置好`constraint`后，显示的View就以约束为准。修改`frame`，View的显示没有任何改变，虽然`frame`确实变了。
+`boundingRectWithSize` 其实和上面的方法差不多，但是前面的方法需要拿到 label 的实例。下面这个方法则是通过 String 直接计算的：
 
 ```objc
-NSLog(@"改变前%f,%f,%f,%f",_label.frame.size.height,_label.frame.size.width,_label.frame.origin.x,_label.frame.origin.y);
-_label.frame = CGRectMake(0, 0, 200, 200);
-NSLog(@"改变后%f,%f,%f,%f",_label.frame.size.height,_label.frame.size.width,_label.frame.origin.x,_label.frame.origin.y);
-
-2016-09-12 15:32:44.458 Parallax[2126:578089] 66.000000,147.000000,180.000000,117.000000
-2016-09-12 15:32:44.459 Parallax[2126:578089] 改变后200.000000,200.000000,0.000000,0.000000
+NSString *text = @"Today is a fine day";
+UIFont *font = [UIFont systemFontOfSize:30];
+CGRect suggestedRect = [text boundingRectWithSize:CGSizeMake(800, MAXFLOAT) options:NSStringDrawingUsesFontLeading attributes:@{ NSFontAttributeName : font } context:nil];
+NSLog(@"size = %@", NSStringFromCGSize(suggestedRect.size));
 ```
 
-
-## 与systemLayoutSizeFittingSize的比较
-`systemLayoutSizeFittingSize`方法是在整个view的约束已经确定，通过计算UILabel的高度(或许其中也调用了`sizeThatFits`吧)，得到最适合的supview的高度。
-
-`sizetofit`和`sizethatfits`则是在supview的高度确定的情况下，计算得到UILabel的高度，然后通过手动设置frame或者约束条件，将其添加到supview上。
-
-> Demo 详见 UIScrollViewDemo/Parallax

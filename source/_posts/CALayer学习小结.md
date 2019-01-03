@@ -2,6 +2,7 @@ title: CALayer学习小结
 date: 2016/8/12 14:07:12  
 categories: iOS
 tags: 
+
 	- Animation
 	- UI
 
@@ -17,7 +18,7 @@ UIView之所以能显示在屏幕上，因为内部的layer。创建UIView的时
 当UIView需要显示到屏幕上时，会调用drawRect:方法进行绘图，并且会将所有内容绘制在自己的图层上，绘图完毕后，系统会将图层拷贝到屏幕上，于是就完成了UIView的显示。
 UIView本身不具备显示的功能，拥有显示功能的是它内部的图层。
 
-### 使用
+### 基本属性
 通过操作这个CALayer对象，可以很方便地调整UIView的一些界面属性，比如：阴影、圆角大小、边框宽度和颜色等。
 ```objc
 //设置边框的宽度为20
@@ -50,9 +51,22 @@ self.iconView.layer.transform=CATransform3DMakeRotation(M_PI_4, 1, 1, 0.5);
 
 > 注意，这里的颜色不是 UIColor 类型，而是 CGColor 类型。需要使用 [UIColor redColor].CGColor 的方式获取，而不是使用强制转型把 UIColor 转为 CGColor。
 
-## 创建图层
+### position和anchorPoint
 
-### 基本方法
+- position:设置CALayer在父层中的位置，这个位置会和锚点重合。
+- anchorPoint:决定着CALayer身上的哪个点会在position属性所指的位置。以自己的左上角为原点(0, 0)，它的x、y取值范围都是0~1，**默认值为（0.5, 0.5）**。layer 的缩放和旋转，都是以 anchorPoint 为原点的。
+
+### 隐式动画
+
+每个View内部都关联着一个Root Layer。所有非rootlayer都存在着隐式动画。隐式动画就是对于layer的部分属性进行修改时，默认会产生的一些动画。
+
+常见的动画属性：
+
+- bounds：用于设置CALayer的宽度和高度。修改这个属性会产生缩放动画
+- backgroundColor：用于设置CALayer的背景色。修改这个属性会产生背景色的渐变动画
+- position：用于设置CALayer的位置。修改这个属性会产生平移动画
+
+### 创建图层
 ```objc
 - (void)viewDidLoad
 {
@@ -82,100 +96,128 @@ self.iconView.layer.transform=CATransform3DMakeRotation(M_PI_4, 1, 1, 0.5);
 对比CALayer，UIView多了一个事件处理的功能。也就是说，CALayer不能处理用户的触摸事件，而UIView可以。
 如果显示出来的东西需要跟用户进行交互的话，用UIView；如果不需要跟用户进行交互，用UIView或者CALayer都可以
 
-## CAlayer属性
-### position和anchorPoint
-- position:设置CALayer在父层中的位置，这个位置要和锚点重合。
-- anchorPoint:决定着CALayer身上的哪个点会在position属性所指的位置。以自己的左上角为原点(0, 0)，它的x、y取值范围都是0~1，**默认值为（0.5, 0.5）**
+## UIView的transform属性
 
-### 隐式动画
-每个View内部都关联着一个Root Layer。所有非rootlayer都存在着隐式动画。隐式动画就是对于layer的部分属性进行修改时，默认会产生的一些动画。
+transform是view的一个重要属性,它在矩阵层面上改变view的显⽰状态,能实现view的缩放、旋转、平移等功能。transform是`CGAffineTransform`类型的。
 
-常见的动画属性：
-- bounds：用于设置CALayer的宽度和高度。修改这个属性会产生缩放动画
-- backgroundColor：用于设置CALayer的背景色。修改这个属性会产生背景色的渐变动画
-- position：用于设置CALayer的位置。修改这个属性会产生平移动画
+### transform结构
 
-## 自定义layer
-### 第一种方式：新建layer类
-想要在view中画东西，需要自定义view,创建一个类与之关联，让这个类继承自UIView，然后重写它的DrawRect：方法，然后在该方法中画图。
+transform是一个`CGAffineTransform`类型，结构如下：
 
-如果在layer上画东西，与上面的过程类似。
 ```objc
-#import "YYMylayer.h"
-@implementation YYMylayer
-//重写该方法，在该方法内绘制图形
--(void)drawInContext:(CGContextRef)ctx
+struct CGAffineTransform {
+  CGFloat a, b, c, d;
+  CGFloat tx, ty;
+};
+```
+
+CGAffineTransform实际上是一个矩阵
+
+```objc
+| a,  b,  0 |
+| c,  d,  0 |
+| tx, ty, 1 |
+```
+
+由于transform只有两维，需要一个3阶矩阵来表示其缩放以及平移的变化。
+
+坐标变换过程：
+
+```objc
+                    | a,  b,  0 |
+{x',y',1}={x,y,1} x | c,  d,  0 |
+                    | tx, ty, 1 |
+                    
+==>
+
+xn=ax+cy+tx;
+yn=bx+dy+ty;
+
+```
+
+这个矩阵的第三列是固定的，所以每次变换时，只需传入前两列的六个参数[a,b,c,d,tx,ty]即可。
+
+### transform方法
+
+在`CGAffineTransform`的生成函数中，大多是两两对应的，一个带
+make字样，一个不带。带make字样的是直接生成一个新的`CGAffineTransform`，不带make字样的则是在一个`CGAffineTransform`的基础上生成新的。函数返回值均是`CGAffineTransform`类型。
+
+多个`CGAffineTransform`对象赋给view，最终只执行最后一个动画，多个动画需要组合在一起。
+
+#### scale
+
+实现的是放大和缩小:
+
+```objc
+CGAffineTransformScale(CGAffineTransform t,
+  CGFloat sx, CGFloat sy)；
+CGAffineTransformMakeScale(CGFloat sx, CGFloat sy)；
+```
+
+生成新的transform相当于将`t' = [sx ，0 ，0，sy ，0， 0]`这六个参数代入矩阵中,即改变a和d。
+
+#### rotate
+
+实现的是旋转：
+
+```objc
+CGAffineTransformRotate(CGAffineTransform t,
+  CGFloat angle)
+CGAffineTransformMakeRotation(CGFloat angle)；
+```
+
+angle为角度，angle=π则旋转180度。矩阵的六个参数为`t' =  [ cos(angle)，sin(angle)，-sin(angle)，cos(angle) 0，0]；`
+
+#### translate
+
+实现的是平移：
+
+```objc
+CGAffineTransformTranslate(CGAffineTransform t,
+  CGFloat tx, CGFloat ty)；
+CGAffineTransformMakeTranslation(CGFloat tx,
+  CGFloat ty)；
+```
+
+矩阵的六个参数为`t' = [1，0，0，1，tx，ty] ；`代入公式，`xn=x+tx,yn=y+ty`
+
+#### 复原
+
+```objc
+view.transform＝CGAffineTransformIdentity;
+```
+
+上述的各种动画的变化都是以原始图像为基准的，而不是在变化后继续变化。`CGAffineTransformIdentity`将view从当前状态复原回view最初始的状态。
+
+> 一个技巧。如果使用 AutoLayout 的视图要添加动画，一般我们会把约束拖到代码中，然后在动画前修改约束，在动画的 block 中调用其父控件的 `layoutIfNeeded`。
+>
+> 还有一种更好的办法，直接用 view 的 transform 属性。
+
+## CALayer的transform属性
+
+### transform结构
+
+CALayer的transform是一个`CATransform3D`结构：
+
+```objc
+struct CATransform3D
 {
-    //1.绘制图形
-    //画一个圆
-    CGContextAddEllipseInRect(ctx, CGRectMake(50, 50, 100, 100));
-    //设置属性（颜色）
-//    [[UIColor yellowColor]set];	不能这样设置
-    CGContextSetRGBFillColor(ctx, 0, 0, 1, 1);
-     //2.渲染
-    CGContextFillPath(ctx);
-}
-@end
-```
-注意：
-1. 默认为无色，不会显示。要想让绘制的图形显示出来，还需要设置图形的颜色。注意不能直接使用UI框架中的类
-2. 在自定义layer中`drawInContext:`方法不会自己调用，只能自己通过`setNeedDisplay`方法调用，在view中画东西`DrawRect:`方法在view第一次显示的时候会自动调用。
-
-在view中绘图：
-```objc
-#import "YYVIEW.h"
-@implementation YYVIEW
-- (void)drawRect:(CGRect)rect
-{
-    //1.获取上下文
-    CGContextRef ctx=UIGraphicsGetCurrentContext();
-    //2.绘制图形
-    CGContextAddEllipseInRect(ctx, CGRectMake(50, 50, 100, 100));
-    //设置属性（颜色）
-    //    [[UIColor yellowColor]set];
-    CGContextSetRGBFillColor(ctx, 0, 0, 1, 1);
-    //3.渲染
-    CGContextFillPath(ctx);
-    //在执行渲染操作的时候，本质上它的内部相当于调用了下面的方法
-    //[self.layer drawInContext:ctx];
-}
+  CGFloat m11, m12, m13, m14;
+  CGFloat m21, m22, m23, m24;
+  CGFloat m31, m32, m33, m34;
+  CGFloat m41, m42, m43, m44;
+};
 ```
 
-### 第二种方式：实现delegate方法
-设置viewcontroller为CALayer的delegate，然后让delegate实现drawLayer:inContext:方法，当CALayer需要绘图时，会调用delegate的drawLayer:inContext:方法进行绘图。
-```objc
-@implementation YYViewController
-- (void)viewDidLoad{
-    [super viewDidLoad];
-    //1.创建自定义的layer
-    CALayer *layer=[CALayer layer];
-    //2.设置layer的属性
-	...
-    //设置代理
-    layer.delegate=self;
-    [layer setNeedsDisplay];
-    //3.添加layer
-    [self.view.layer addSublayer:layer];
-}
--(void)drawLayer:(CALayer *)layer inContext:(CGContextRef)ctx{
-    //1.绘制图形
-    //画一个圆
-    CGContextAddEllipseInRect(ctx, CGRectMake(50, 50, 100, 100));
-    //设置属性（颜色）
-    //    [[UIColor yellowColor]set];
-    CGContextSetRGBFillColor(ctx, 0, 0, 1, 1);   
-    //2.渲染
-    CGContextFillPath(ctx);
-}
-@end
-```
-注意：
-1. 在设置代理的时候，它并不要求我们遵守协议，说明这个方法是nsobject中的，就不需要再额外的显示遵守协议了。
-2. 不能再将某个UIView设置为CALayer的delegate，因为UIView对象已经是它内部根层的delegate，再次设置为其他层的delegate就会出问题。
+有别于`CGAffineTransform`,`CATransform3D`是一个三维变化，需要一个4阶矩阵表示。其他类似，再次不表。
 
-### 补充
-1. 无论采取哪种方法来自定义层，都必须调用CALayer的setNeedsDisplay方法才能正常绘图。
-2. **当UIView需要显示时**，它内部的层会准备好一个CGContextRef(图形上下文)，然后**调用delegate(这里就是UIView)**的drawLayer:inContext:方法，并且传入已经准备好的CGContextRef对象。而UIView在drawLayer:inContext:方法中又会调用自己的drawRect:方法。平时在drawRect:中通过UIGraphicsGetCurrentContext()获取的就是由层传入的CGContextRef对象，在drawRect:中完成的所有绘图都会填入层的CGContextRef中，然后被拷贝至屏幕。
+### transform方法
+
+CALayer的transform方法和View的transform基本一致。举几点不同：
+
+- CALayer由于有z轴，因此对不同图层使用`CATransform3DMakeTranslation (CGFloat tx, CGFloat ty, CGFloat tz)`方法的时候可以通过改变tz的值，来实现图层的覆盖。对于tz来说，值越大，那么图层就越往外（接近屏幕），值越小，图层越往里（屏幕里）。
+- 由于图像是从正面投影，直接绕着x或y轴旋转达不到透视的效果，如果要达到透视效果，需要改变`m34`(其实改变m14，m24也能达到效果，可以自行通过行列式推导。)，再对图层进行旋转。`m34`的值可以根据需要实现的效果推导得到，不直接的方法还是直接试。
+- 如果想要直接改变矩阵里的值，可以先使用`CATransform3DIdentity`的方式，初始化一个`CATransform3D`实例，然后再赋值。
 
 
 
@@ -243,5 +285,3 @@ layer的大小和形状是受到mask遮罩层的影响的，可以通过赋给ma
 ```
 
 
-
->Demo 详见 CALayer-transform

@@ -954,7 +954,9 @@ const p = Promise.race([p1, p2, p3]);
 
 async 函数式 Generator 函数的语法糖.
 
-`async`函数返回一个 Promise 对象，可以使用`then`方法添加回调函数。当函数执行的时候，一旦遇到`await`就会先返回，等到异步操作完成，再接着执行函数体内后面的语句:
+**async函数返回一个 Promise 对象**，可以使用`then`方法添加回调函数。
+
+当函数执行的时候，一旦遇到`await`就会先返回，等到异步操作完成，再接着执行函数体内后面的语句:
 
 ```javascript
 async function getStockPriceByName(name) {
@@ -970,19 +972,6 @@ getStockPriceByName('goog').then(function (result) {
 
 上面代码是一个获取股票报价的函数，函数前面的`async`关键字，表明该函数内部有异步操作。调用该函数时，会立即返回一个`Promise`对象**不是说 stockPrice 是一个 Promise 而是说 async 修饰的这个方法最终返回一个 Promise，stockPrice 只是作为 resolve 的 input 而已**。
 
-正常情况下，`await`命令后面是一个 Promise 对象。如果不是，会被转成一个立即`resolve`的 Promise 对象:
-
-```javascript
-async function f() {
-  return await 123;
-}
-
-f().then(v => console.log(v))
-// 123
-```
-
-上面代码中，`await`命令的参数是数值`123`，它被转成 Promise 对象，并立即`resolve`。
-
 如果确实希望多个请求并发执行，可以使用`Promise.all`方法:
 
 ```javascript
@@ -995,7 +984,9 @@ async function dbFuc(db) {
 }
 ```
 
-
+> 1. async 相当于告诉外界，这个方法会返回一个 promise
+> 2. await 必须在 async 中才能使用
+> 3. await 后面的方法会延迟到 await 方法执行完后执行，相当于 then 操作
 
 ## Proxy
 
