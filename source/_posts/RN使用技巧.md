@@ -2,6 +2,7 @@ title: React-Native 技巧与坑总结
 date: 2016/11/25 10:07:12  
 categories: React-Native
 tags:
+
  - React-Native
  - 爬坑
  - 持续更新
@@ -11,6 +12,16 @@ tags:
 本文将收集关于 React-Native 的各种技巧与坑，不论是摘录的还是自己遇到的。
 
 <!--more-->
+
+### 带有 Gesture 的父组件会 block 子组件中 TouchableOpacity 的点击事件
+
+把按钮放到有 Move 手势的父组件的时候会经常因为响应了父组件的 Move 手势而不响应按钮的点击事件。这个时候需要给 Move 手势的添加行为做一个限制：
+
+```js
+onMoveShouldSetPanResponder: (evt, gestureState) => Math.abs(gestureState.dx) > 5 || Math.abs(gestureState.dy) > 5
+```
+
+当移动的距离超过5之后，才响应滚动事件。
 
 ### 使用绝对路径替代相对路径
 
@@ -813,7 +824,7 @@ Greeting.propTypes = {
 };
 ```
 
-上面例子中，如果 `name` 不是 string 类型，那么就会产生一个警告。还可以设置 `name: React.PropTypes.string.isRequired` 表示必须传入属性 `name`。
+上面例子中，如果 `name` 不是 string 类型，那么就会产生一个警告。还可以设置 `name: PropTypes.string.isRequired` 表示必须传入属性 `name`。
 
 除了 string 外，还有许多类型的 PropTypes 可以设置:
 
