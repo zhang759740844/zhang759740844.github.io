@@ -13,6 +13,47 @@ tags:
 
 <!--more-->
 
+### 组件在动画下的隐藏和显示
+
+组件从隐藏到显示的动画是非常好想到的，就是设置组件的 `opacity` 透明度。
+
+而从显示到隐藏的过程就有点坑了。如果还是设置透明度为 0，那么节点还在，无法响应后面视图的点击事件。但是如果 render 的时候返回 null，那么组件节点就直接消失了，无法达到动画的效果。
+
+这里我们应该借助一个 CSS 属性 `display` ,当它为 `none` 的时候，节点还在，但是组件从视图上移除了，不会影响后面的点击事件。
+
+这里举一个显示头部视图的例子。示例代码如下：
+
+```js
+  renderHeader () {
+    if (this.props.showHeader) {
+      this.state.showHeader = true
+      Animated.timing(this.headerViewAlpha, {
+        toValue: 1,
+        duration: 700
+      }).start()
+    } else {
+      Animated.timing(this.headerViewAlpha, {
+        toValue: 0,
+        duration: 700
+      }).start(() => {
+        this.setState({
+          showHeader: false
+        })
+      })
+    }
+
+    // 外部让显示的情况下，内部也让显示的时候才显示
+    let display = !this.state.showHeader && !this.props.showHeader ? 'none' : 'flex'
+    return (
+      <Animated.View style={{opacity: this.headerViewAlpha, marginBottom: -20, display}}>
+        {this.props.headerView()}
+      </Animated.View>
+    )
+  }
+```
+
+这个组件通过外部传进来的 `showHeader` 控制显示和隐藏。当外部传来的 `showHeader` 为 true 时，直接通过透明度的动画显示组件。当外部传来的 `showHeader` 为 false 时，先通过透明度动画隐藏组件，然后设置内部的 `showHeader` 为 false，重绘视图。重绘的时候因为内外部的 `showHeader` 都为 false，就将 `display` 设为 `none` 了，从而达到在动画完成后隐藏视图的效果。
+
 ### 带有 Gesture 的父组件会 block 子组件中 TouchableOpacity 的点击事件
 
 把按钮放到有 Move 手势的父组件的时候会经常因为响应了父组件的 Move 手势而不响应按钮的点击事件。这个时候需要给 Move 手势的添加行为做一个限制：
