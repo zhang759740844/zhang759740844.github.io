@@ -13,11 +13,61 @@ tags:
 
 <!--more-->
 
+### 获取控件的frame
+
+给控件添加 `onLayout` 方法回调
+
+```js
+<TouchableOpacity
+  onLayout={(e) => this.rowlayouts= e.nativeEvent.layout}
+/>
+```
+
+就可以通过 `this.rowlayouts` 拿到组件的宽高以及起始坐标
+
+
+
+### `pointerEvents="none"` 的使用时机
+
+`pointerEvents="none"` 可以让设置的视图不响应点击事件。实践下来有两个应用场景：
+
+1. 比如有一个绝对布局的视图盖住了下面的视图，在 iOS 中可以直接将其 userInteraction 置为 false。RN 中相应的属性就是 `pointerEvents`
+2. 监听手势事件的时候，我们希望获取当前手势相对于父视图的位置，即 `event.nativeEvent.locationY` ，但是如果父视图中有子视图，并且手势作用的起始点在子视图上，那么 `event.nativeEvent.locationY` 是以子视图为参照的，影响我们对于坐标的计算。这时候就可以把它的子视图设置 `pointerEvents="none"`
+
+###存在手势的视图中的按钮点击事件不响应
+
+这个问题主要是因为点击按钮的时候手指有略微的滑动，因此，点击事件被识别为了 Move 事件，进而相应手势而不相应按钮了。
+
+做法是在细微移动的时候不让手势相应：
+
+```js
+onMoveShouldSetPanResponder (event, gestureState) {
+  let touchCapture = Math.abs(gestureState.dx) > 5 || Math.abs(gestureState.dy) > 5
+  return touchCapture
+}
+```
+
+
+
+### FlatList 的性能优化
+
+FlatList 的 `data` 中接收一个数组，作为渲染的数据源。有时候我们点击了 cell，要改变状态引起重绘，但是直接修改 `data` 中某一项的值，并不会引起重绘。因为 React 中是判断 data 的地址是否变化，显然，`data` 并没有变化地址。
+
+如果我们 `data = data.map(item => item)` 这样新建一个数据源就有点费事了。FlatList 提供了一个属性 `extraData`，当需要重绘的时候，改变 `extraData` 的值就行。
+
+我们可以将 `extraData` 等于某一个 state 中的布尔值，每次需要重绘的时候，让这个布尔值取反。这样 FlatList 发现这个布尔值改变了，就会引发整个 FlatList 的重绘。
+
+整个 FlatList 的重绘也是会引发性能问题的。我们要做的是自定义一个 Cell 类，然后将数据源的某个 item 设置为一个新的对象：`Object.assign({}, item, {someChange: xxx})`这样在 FlatList 重绘触发每一个 cell renderItem 的时候，大部分 Cell 并没有收到新的 Props 就会阻止整个 cell 的重绘。只有数据变化的 cell 才会触发重绘
+
 ### 组件在动画下的隐藏和显示
 
 组件从隐藏到显示的动画是非常好想到的，就是设置组件的 `opacity` 透明度。
 
 而从显示到隐藏的过程就有点坑了。如果还是设置透明度为 0，那么节点还在，无法响应后面视图的点击事件。但是如果 render 的时候返回 null，那么组件节点就直接消失了，无法达到动画的效果。
+
+这里有两种方式设置隐藏：
+
+#### display
 
 这里我们应该借助一个 CSS 属性 `display` ,当它为 `none` 的时候，节点还在，但是组件从视图上移除了，不会影响后面的点击事件。
 
@@ -53,6 +103,46 @@ tags:
 ```
 
 这个组件通过外部传进来的 `showHeader` 控制显示和隐藏。当外部传来的 `showHeader` 为 true 时，直接通过透明度的动画显示组件。当外部传来的 `showHeader` 为 false 时，先通过透明度动画隐藏组件，然后设置内部的 `showHeader` 为 false，重绘视图。重绘的时候因为内外部的 `showHeader` 都为 false，就将 `display` 设为 `none` 了，从而达到在动画完成后隐藏视图的效果。
+
+> 这种方式在 render 方法中又设置了 state 其实是不太推荐的。
+
+#### height
+
+另外一种方式就是设置视图的高度，使其高度为 0:
+
+```js
+if (showCurrentHeader) {
+  Animated.timing(this.headerViewHeight, {
+    toValue: deviceHeight,
+    duration: 0
+  }).start(() => {
+    Animated.timing(this.headerViewAlpha, {
+      toValue: 1,
+      duration: 700
+    }).start()
+  })
+} else {
+  Animated.timing(this.headerViewAlpha, {
+    toValue: 0,
+    duration: 700
+  }).start(() => {
+    Animated.timing(this.headerViewHeight, {
+      toValue: 0,
+      duration: 0
+    }).start()
+  })
+}
+
+renderHeader () {
+  return (
+    <Animated.View style={{opacity: this.headerViewAlpha, marginBottom: -20, height: this.headerViewHeight}}>
+      {this.props.headerView()}
+    </Animated.View>
+  )
+}
+```
+
+这里动态修改了 `headerViewHeight` 这个高度。不过要注意，这里修改了高度并不是说子视图就一定会隐藏的。有些组件可能还是会展示出来，这个时候就要设置 style  的 `overflow: 'hidden'`
 
 ### 带有 Gesture 的父组件会 block 子组件中 TouchableOpacity 的点击事件
 
@@ -276,7 +366,9 @@ doClick = () => {
 </Button>
 ```
 
-这样 `doClick` 方法传递的就是一个引用了。
+这样 `doClick` 方法传递的就是一个引用了。（如果有些方法需要参数，那么把参数作为 props 传入）
+
+> 并不是说使用箭头函数一定会产生重绘，有些组件内部会重写 shouldComponentUpdate 方法，会无视这种 onClick 事件。但是如果组件内部没有这么做。就需要自己注意箭头函数引起的重绘了。
 
 #### 使用 react-redux 的 connect 方法
 
@@ -460,7 +552,7 @@ this.setState({
 
 一定不能在 `setState` 的时候改变 state 的原来值。否则 state 会变成意想不到的值。比如一个数组，你**不能直接在 setState 的时候往里 push值**。你可以将数组复制，然后push 好之后再 setState，或者**先设置好 state，然后再 setState。**
 
-##### 坑3
+#### 坑3
 
 同一个函数中的多个 `setState`  不是分别调用的，而是等到某个时刻合并执行的。所以如果 `setState` 多次设置 state 中的某个值，前面的值的设置会被后面的覆盖掉。
 
