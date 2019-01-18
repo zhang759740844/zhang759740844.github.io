@@ -34,6 +34,8 @@ tags:
 1. 比如有一个绝对布局的视图盖住了下面的视图，在 iOS 中可以直接将其 userInteraction 置为 false。RN 中相应的属性就是 `pointerEvents`
 2. 监听手势事件的时候，我们希望获取当前手势相对于父视图的位置，即 `event.nativeEvent.locationY` ，但是如果父视图中有子视图，并且手势作用的起始点在子视图上，那么 `event.nativeEvent.locationY` 是以子视图为参照的，影响我们对于坐标的计算。这时候就可以把它的子视图设置 `pointerEvents="none"`
 
+> 再记述一下遇到的坑，在 android 上，如果父视图添加 panresponser，子视图直接设置 `pointerEvents="none"` 会让子视图的区域无法响应父视图的手势。必须在子视图上再嵌套一层 View。并且这个 View 也是有讲究的不能直接嵌套。因为在 Android 上，空的 View 会被直接移除。所以需要设置 `collapsable={false}` 让Android也强制渲染，才能正确响应父视图的手势
+
 ###存在手势的视图中的按钮点击事件不响应
 
 这个问题主要是因为点击按钮的时候手指有略微的滑动，因此，点击事件被识别为了 Move 事件，进而相应手势而不相应按钮了。
