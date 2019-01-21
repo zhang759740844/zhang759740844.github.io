@@ -13,6 +13,18 @@ tags:
 
 <!--more-->
 
+### PureComponent 和 Component
+
+PureComponent 和 Component 的不同在于前者提供了一个 `shouldComponentUpdate`  的默认实现。
+
+继承于 Component 的组件没有实现默认的 `shouldComponentUpdate` 方法，每一个 props 的变化以及内部的 `setState` 方法的调用都会触发重绘。
+
+继承于 PureComponent 的组件，默认在 ` shouldComponentUpdate` 中比较将 props 和 state 中的每一项进行浅比较。如果有不同才重绘。所以如果在 PureComponent 内 `setState` 就一定要保证 `setState` 的对象和之前的对象的地址不同，否则比如修改对象中的某个字段这种在 PureComponent 中是不会重绘的。
+
+### 震动
+
+震动使用 RN 自带的 `Vibration` 即可。这里主要提醒一下，如果是那种连续会触发的震动，可以使用 `Vibration.cancel()` 方法取消之前的震动，然后再 `Vibration.vibrate(50)` 继续短频震动。
+
 ### 获取控件的frame
 
 给控件添加 `onLayout` 方法回调
