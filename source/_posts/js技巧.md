@@ -11,6 +11,17 @@ tags:
 
 <!--more-->
 
+### 如何创建一个带有默认值的数组
+
+```js
+// 方法1
+Array.apply(null, Array(30)).map(() => 4)
+// 方法2
+Array(30).fill(4)
+```
+
+
+
 ### 判断是否是 promsie 类型
 
 基本类型的判断可以通过 `typeof` 实现:
