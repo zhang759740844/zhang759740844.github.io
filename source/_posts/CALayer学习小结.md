@@ -14,9 +14,7 @@ tags:
 
 ## CALayer简介
 ### 简介
-UIView之所以能显示在屏幕上，因为内部的layer。创建UIView的时候自动创建CALayer对象。
-当UIView需要显示到屏幕上时，会调用drawRect:方法进行绘图，并且会将所有内容绘制在自己的图层上，绘图完毕后，系统会将图层拷贝到屏幕上，于是就完成了UIView的显示。
-UIView本身不具备显示的功能，拥有显示功能的是它内部的图层。
+UIView之所以能显示在屏幕上，因为内部的layer。创建UIView的时候自动创建CALayer对象。UIView本身不具备显示的功能，拥有显示功能的是它内部的图层。
 
 ### 基本属性
 通过操作这个CALayer对象，可以很方便地调整UIView的一些界面属性，比如：阴影、圆角大小、边框宽度和颜色等。
@@ -51,10 +49,16 @@ self.iconView.layer.transform=CATransform3DMakeRotation(M_PI_4, 1, 1, 0.5);
 
 > 注意，这里的颜色不是 UIColor 类型，而是 CGColor 类型。需要使用 [UIColor redColor].CGColor 的方式获取，而不是使用强制转型把 UIColor 转为 CGColor。
 
-### position和anchorPoint
+### position，anchorPoint，bounds 以及 frame 的概念
 
+- frame: 用来描述自己在父视图的位置，即 x y 是相对于父视图的起点的。 
+- bounds: 描述当前视图的左上角的相对子视图的坐标，以及视图大小的。一般 `bounds.origin` 为 (0, 0) ，如果把它改为 (-50, 0)，就表示左上角的坐标为  (-50, 0)，现在子视图相对的原点坐标就在左上角右边 50 的地方。所以相当于把所有子视图向右移动 50.
 - position:设置CALayer在父层中的位置，这个位置会和锚点重合。
-- anchorPoint:决定着CALayer身上的哪个点会在position属性所指的位置。以自己的左上角为原点(0, 0)，它的x、y取值范围都是0~1，**默认值为（0.5, 0.5）**。layer 的缩放和旋转，都是以 anchorPoint 为原点的。
+- anchorPoint:决定着CALayer身上的哪个点会在position属性所指的位置。以自己的左上角为原点(0, 0)，它的x、y取值范围都是0~1，**默认值为（0.5, 0.5）**。**layer 的缩放和旋转，都是以 anchorPoint 为原点的**。
+
+position，anchorpoint 和 bounds 共同决定了视图的 frame。一般情况下，frame 的大小等于 bounds 的大小，但是如果视图旋转了，frame 会变为旋转视图的外界矩形的大小。
+
+> 如果我们想移动一个视图的所有子视图，可以修改 `bonuds.orgin`。不过我们也可以在视图上添加一个 `contentView `，然后移动它的 frame。
 
 ### 隐式动画
 
@@ -191,7 +195,15 @@ view.transform＝CGAffineTransformIdentity;
 
 > 一个技巧。如果使用 AutoLayout 的视图要添加动画，一般我们会把约束拖到代码中，然后在动画前修改约束，在动画的 block 中调用其父控件的 `layoutIfNeeded`。
 >
-> 还有一种更好的办法，直接用 view 的 transform 属性。
+> 还有一种更好的办法，在动画的 block 中直接用 view 的 transform 属性。
+
+### 设置 transform 进行动画和 设置 frame 动画的区别
+
+视图的 frame 其实是由视图的 bounds，position，anchorpoint 以及 transform 共同决定的。修改 frame 其实就是修改 bounds 和 position 的值。
+
+一般而言，最好使用 transform 进行动画，因为有一种情况是，如果该视图具有子视图，并且要进行缩放动画。那么执行动画的时候，动画虽然有一个过程，但其实从动画一开始，frame就已经修改了。如果直接设置frame，那么开始的时候，子视图就会按变化后的frame来重新布局，而不是跟随父视图一起慢慢变化。
+
+而 transform 动画的话，不会调用控件的 `layoutsubview` 方法，整个过程更像是把整个视图按比例缩放，子视图会跟着父视图一起缩放。
 
 ## CALayer的transform属性
 
@@ -284,4 +296,109 @@ layer的大小和形状是受到mask遮罩层的影响的，可以通过赋给ma
 }
 ```
 
+## 关于离屏渲染
+
+### 渲染机制
+
+CPU 计算内容交由 GPU 渲染，GPU 渲染完成后放入帧缓冲区。随后视频控制器会按照 VSync 信号逐行读取帧缓冲区的数据，经过可能的数模转换传递给显示器显示。
+
+### GPU 渲染方式
+
+- On-Screen Rendering：意为当前屏幕渲染。GPU的渲染操作是在当前用于显示的屏幕缓冲区中进行。
+- Off-Screen Rendering：意为离屏渲染。GPU在当前屏幕缓冲区以外新开辟一个缓冲区进行渲染操作。
+
+其实非当前屏幕缓冲区的渲染都叫做离屏渲染，CPU 渲染得到 bitmap 然后交由 GPU 显示也是一种**特殊的离屏渲染**，此举会消耗一定的 CPU 资源。但是如果 GPU 资源紧张，同时 CPU 空闲，可以考虑如此优化，以消除 GPU 不能及时渲染导致的丢帧的影响。
+
+所以离屏渲染不一定就是影响性能的。只是渲染方式的一种。
+
+### 离屏渲染的触发
+
+- shouldRasterize（光栅化）
+- masks（遮罩）
+- shadows（阴影）
+- edge antialiasing（抗锯齿）
+- group opacity（不透明）
+
+其中，光栅化是把GPU的操作转到CPU上，将图转化为一个个栅格组成的图象。并且缓存起来，减少渲染的频度。对于基本不会变化的视图，开启光栅化有助于性能优化，但是如果内容经常变化，那么就会造成性能浪费。
+
+### 为什么会产生离屏渲染
+
+当使用圆角，阴影，遮罩的时候，图层属性的混合体被指定为在未预合成之前不能直接在屏幕中绘制，所以就需要屏幕外渲染被唤起。
+
+使用离屏渲染的时候会很容易造成性能消耗，因为在OPENGL里离屏渲染会单独在内存中创建一个屏幕外缓冲区并进行渲染，而屏幕外缓冲区跟当前屏幕缓冲区上下文切换是很耗性能的。
+
+### 视图圆角
+
+设置视图的 `cornerRadius`本身并不会触发离屏渲染，真正产生离屏渲染的是 `maskToBounds` 。
+
+一般情况下，直接设置圆角即可。
+
+```objc
+UIView *view = [[UIView alloc] init];
+view.backgroundColor = [UIColor blackColor];
+view.layer.cornerRadius = 3.f;
+```
+
+但是 UILabel 例外，UILabel 如果有背景色需要设置 layer 的背景色：
+
+```objc
+UILabel *label = [[UILabel alloc] init];
+// 重点在此！！设置视图的图层背景色，千万不要直接设置 label.backgroundColor
+label.layer.backgroundColor = [UIColor grayColor].CGColor;
+label.layer.cornerRadius = cornerRadius;
+```
+
+UIImageView 无法做到直接隐藏图片圆角。所以需要自己绘制出一个带圆角的图片：
+
+```swift
+extension UIImage {  
+    func kt_drawRectWithRoundedCorner(radius radius: CGFloat, _ sizetoFit: CGSize) -> UIImage {
+        let rect = CGRect(origin: CGPoint(x: 0, y: 0), size: sizetoFit)
+
+        UIGraphicsBeginImageContextWithOptions(rect.size, false, UIScreen.mainScreen().scale)
+        CGContextAddPath(UIGraphicsGetCurrentContext(),
+            UIBezierPath(roundedRect: rect, byRoundingCorners: UIRectCorner.AllCorners,
+                cornerRadii: CGSize(width: radius, height: radius)).CGPath)
+        CGContextClip(UIGraphicsGetCurrentContext())
+
+        self.drawInRect(rect)
+        CGContextDrawPath(UIGraphicsGetCurrentContext(), .FillStroke)
+        let output = UIGraphicsGetImageFromCurrentImageContext();
+        UIGraphicsEndImageContext();
+
+        return output
+    }
+}
+```
+
+另外，还有一种使用贝塞尔曲线，利用CALayer层绘制指定圆角样式的mask遮盖View 的方式达到圆角效果的。不过这种方式也是操作 mask，会产生离屏渲染，所以不推荐。
+
+> 这样是把  GPU 的任务转给了 CPU 去完成。那么如果还是掉帧怎么办？
+>
+> 1. 直接让 UI 将图片切为圆角
+> 2. 在原来的视图上添加一个四个角有颜色中间透明的图片
+> 3. 将上面绘制圆角图片的过程放到子线程中去，绘制完成后回到主线程中。
+
+### 添加shadow的离屏渲染
+
+我们直接设置 shadow 相关属性会产生离屏渲染：
+
+```objc
+let layer = view.layer
+layer.shadowColor = UIColor.black.cgColor
+layer.shadowOpacity = 0.3
+layer.shadowRadius = radius
+layer.shadowOffset = CGSize(width: 0, height: -3)
+```
+
+只要你提前告诉CoreAnimation你要渲染的View的形状Shape,就会减少离屏渲染计算。因此，我们需要加上设置 `shadowPath` 的一行：
+
+```objc
+let layer = view.layer
+layer.shadowColor = UIColor.black.cgColor
+layer.shadowOpacity = 0.3
+layer.shadowRadius = radius
+layer.shadowOffset = CGSize(width: 0, height: -3)
+layer.shadowPath = [[UIBezierPathbezierPathWithRect：myView.bounds] CGPath];
+```
 

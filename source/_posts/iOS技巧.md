@@ -56,7 +56,7 @@ UIView *view = [[UIView alloc] initWithFrame:CGrect(x - SINGLE_LINE_ADJUST_OFFSE
 
 ```objc
 
-- (CGFloat)tableView:(UITableView *)tableView estimatedHeightForRowAtIndexPath:(NSIndexPath *)indexPath
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     NSString *key = [NSString stringWithFormat:@"%ld",indexPath.row];
     if (self.heightDict[key] != nil) {
