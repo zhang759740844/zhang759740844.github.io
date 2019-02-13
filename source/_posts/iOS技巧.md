@@ -11,6 +11,19 @@ tags:
 
 <!--more-->
 
+### UIView 的生命周期
+
+```objc
+- (void)didAddSubview:(UIView *)subview;
+- (void)willRemoveSubview:(UIView *)subview;
+- (void)willMoveToSuperview:(nullable UIView *)newSuperview;
+- (void)didMoveToSuperview;
+```
+
+ `willMoveToSuperview` 会在添加到父视图和从父视图移除的时候调用，移除的时候参数为 `nil`（类似于 `willMoveToParentViewController`）
+
+ `didMoveToSuperview` 也比较重要，在这个方法中可以拿到父视图的大小，进行相应的布局
+
 ### 判断是否点击了某个 View
 
 ```objc
@@ -40,7 +53,7 @@ UIView *view = [[UIView alloc] initWithFrame:CGrect(x - SINGLE_LINE_ADJUST_OFFSE
 
 ### 缓存行高
 
-在cell展示后，保存行高：
+在cell离开屏幕后，保存行高：
 
 ```objc
 
@@ -55,7 +68,6 @@ UIView *view = [[UIView alloc] initWithFrame:CGrect(x - SINGLE_LINE_ADJUST_OFFSE
 如果已经缓存了行高，那么直接返回高度，否则返回预估行高：
 
 ```objc
-
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     NSString *key = [NSString stringWithFormat:@"%ld",indexPath.row];
@@ -65,7 +77,7 @@ UIView *view = [[UIView alloc] initWithFrame:CGrect(x - SINGLE_LINE_ADJUST_OFFSE
        return value.floatValue;
     }
     return UITableViewAutomaticDimension;
-} 
+}
 ```
 
 
@@ -81,8 +93,6 @@ override func supportedInterfaceOrientations)_ -> UIInterfaceOrientationMasl {
     return UIInterfaceOrientationMask(rawValue:(UIInterfaceOrientationMask.portait.rawValue | UIInterfaceOrientationMask.landscapeLeft.rawValue))
 }
 ```
-
-
 
 
 
