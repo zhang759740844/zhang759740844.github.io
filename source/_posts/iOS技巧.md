@@ -2,6 +2,7 @@ title: 一些 iOS 小技巧与注意点(持续更新)
 date: 2017/2/9 10:07:12  
 categories: iOS
 tags:
+
  - 学习笔记
  - 持续更新
 
@@ -472,7 +473,7 @@ AutoLayout 最后也是将约束设置为要展示的位置信息。所以我们
 - `allowsGroupOpacity` 属性允许子控件的不透明度继承于其父控件，默认是开启的 `yes`。不过这会影响性能，自定义控件的时候最好设置为 `self.layer.allowsGroupOpacity = NO;`
 - `clipsToBounds` 是 `UIView` 的属性，如果设置为 `yes`，则不显示超出父 View 的部分；`masksToBounds` 是 `CALayer` 的属性，如果设置为 `yes`，则不显示超出父 View layer 的部分.
 - 设置视图的时候一定要先设置大小再设置 center ，center 是为了确定 CGRect 的，如果当时CGRect为0，那么此时设置 center，就像当于给 CGRect 设置了 origin。
-- ​
+- 
 
 
 ### 用 UIImageView 播放动图
@@ -533,7 +534,9 @@ app 中的加载等候经常需要播放一个动图，那么怎么让图片动�
 
 这个方法是找到并隐藏相应 hud。这里面使用了 `NSEnumerator` 这个枚举类，通过 `reverseObjectEnumerator` 反向浏览集合。
 
-### 通过 View 获取 ViewController
+### 获取当前 ViewController
+
+### 通过 View
 
 为了做到数据与视图的分离，我们一般会将一个页面的局部视图以自定义 `UIView` 的方式独立出来，如果在该视图中有触发事件(事件处理不需要父视图的上下文)，就会遇到在 `UIView` 中获取 `UIViewController` 的情况，可以写一个 `UIView` 的范畴 `UIView(UIViewController)`：
 
@@ -550,6 +553,37 @@ app 中的加载等候经常需要播放一个动图，那么怎么让图片动�
              }
       }
      return nil;
+}
+```
+
+### 通过 rootViewController
+
+```objc
+- (UIViewController *)findCurrentViewController
+{
+    UIWindow *window = [[UIApplication sharedApplication].delegate window];
+    UIViewController *topViewController = [window rootViewController];
+    
+    while (true) {
+        
+        if (topViewController.presentedViewController) {
+            
+            topViewController = topViewController.presentedViewController;
+            
+        } else if ([topViewController isKindOfClass:[UINavigationController class]] && [(UINavigationController*)topViewController topViewController]) {
+            
+            topViewController = [(UINavigationController *)topViewController topViewController];
+            
+        } else if ([topViewController isKindOfClass:[UITabBarController class]]) {
+            
+            UITabBarController *tab = (UITabBarController *)topViewController;
+            topViewController = tab.selectedViewController;
+            
+        } else {
+            break;
+        }
+    }
+    return topViewController;
 }
 ```
 

@@ -111,7 +111,23 @@ typedef NS_ENUM(NSInteger, UIAlertActionStyle) {
 
 这里的 `style` 如果是 `UIUIAlertActionStyleCancel` 那么就会自动放在最底下；如果是 `UIAlertActionStyleDestructive` 就会变成红色。
 
-### 和 UIAlertView 和 UIActionsheet 的区别
+### UIAlertView 和 UIAlertController 的区别
 
 - `UIAlertView` :iOS 系统为了保证 `UIAlertView` 在所有界面之上，它会临时创建一个新的 `UIWindow`，通过将 `UIWindow` 的 `UIWindowLevel` 设置的更高，让 `UIAlertView` 盖在所有应用的界面之上。
 - `UIAlertController`:继承自 `UIViewController`，它采用一个 `UIPopoverPresentationController` 类进行管理，`UIPopoverPresentationController` 又继承自 `UIPresentationController`，其中的`presentingViewController` 属性表示展示之前的 Controller，`presentedViewController` 属性表示被展示的Controller。另外这种方式，也统一了iPhone和iPad的使用方式
+
+### 自定义的 UIAlertController
+
+如果系统的提示框不能满足业务需求，就需要自定义。最方便的方式还是在当前的 UIWindow 上添加视图。不过我们还是以 ViewController 的方式创建。
+
+但是当你把 UIViewController 的背景色设为透明，然后 present 的时候，会发现页面是黑色的。这是因为 present 出来的 viewController 表面上看起来是盖在了原有界面的上面，但那其实只是个动画，最终实际上是替换掉了，所以设置透明以后会导致下面没有东西所以就变成黑色了。
+
+我们需要设置 ViewController 的 `modalPresentationStyle` 属性为 `UIModalPresentationOverCurrentContext`，表示 present 出来的 ViewController 是盖在之前的 ViewController 上的。**注意，不能再 `viewDidload` 中设置, 必须在初始化的时候设置好,然后再 present**：
+
+```objc
+MyAlertViewController *alertViewController = [MyAlertViewController alloc] init];
+alertViewController.modalPresentationStyle = UIModalPresentationOverCurrentContext;
+[self presentViewController: alertViewController animated: false];
+```
+
+这种方式禁掉了动画，如果需要过渡效果，可以自定义 ViewController 的 modal 动画实现。
