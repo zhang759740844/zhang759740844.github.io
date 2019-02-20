@@ -2,10 +2,11 @@ title: UINavigationController使用方法
 date: 2017/5/4 10:07:12  
 categories: iOS
 tags:
+
 	- 基本控件
 ---
 
-想要从底层重写一个 app，需要对 navigation 的封装进行了解。
+navigation 简单了解下使用
 
 <!--more-->
 
@@ -93,6 +94,41 @@ vc3.view.backgroundColor = [UIColor greenColor];
 @property(nullable, nonatomic,strong) UIBarButtonItem *leftBarButtonItem;
 ```
 
+### 设置默认返回按钮
+
+#### 设置返回箭头
+
+导航栏默认有一个返回的按钮，我们可以自定义它的箭头：
+
+```objc
+// 设置颜色时，imageWithRenderingMode 设置 UIImage 渲染为原来的颜色
+[[UINavigationBar appearance] setBackIndicatorImage:[[UIImage imageNamed:@"back"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal]];
+
+// 使用 tintColor 设置颜色
+[[UINavigationBar appearance] setBackIndicatorImage:[UIImage imageNamed:@"back"]];
+[[UINavigationBar appearance] setBackIndicatorTransitionMaskImage:[UIImage imageNamed:@"back"]];
+[[UINavigationBar appearance] setTintColor:[UIColor lightGrayColor]];
+```
+
+#### 通用的隐藏返回文字
+
+返回按钮旁的标题默认是上一级页面的 title，可以如下设置隐藏 title:
+
+```objc
+[[UIBarButtonItem appearance] setBackButtonTitlePositionAdjustment:UIOffsetMake(-100, 0) forBarMetrics:UIBarMetricsDefault];
+```
+
+#### 特殊页面设置返回按钮
+
+把自定义的 barbutton 设置到 `backBarButtonItem` 即可
+
+```swift
+let backbtn = UIBarButtonItem(title: "取消", style: UIBarButtonItemStyle.Plain, target:self, action: nil)
+self.navigationItem.backBarButtonItem = backbtn
+```
+
+> 注意，这段代码要写在上一个控制器中。因为 back 要返回的是上一个控制器。
+
 ### 自定义左侧按钮
 
 按钮使用的是 `UIBarButtonItem` 这个类，通过 `initWithCustomView:` 方法初始化。
@@ -117,9 +153,11 @@ vc3.view.backgroundColor = [UIColor greenColor];
 
 自定义右侧按钮和左侧按钮方法类似。
 
+> 注意，设置了 leftBarButtonItem 就替代了原来的的返回按钮。可以通过设置 `self.navigationItem.leftItemsSupplementBackButton = YES;` 保留返回按钮和 leftItems
+
 ### 自定义中间视图
 
-自定义中间视图比较简单，直接设置 `navigationItem` 的 `titleView`，一般直接设置 `title` 即可。
+自定义中间视图比较简单，直接设置 `navigationItem` 的 `titleView`。
 
 
 
@@ -170,23 +208,6 @@ vc3.view.backgroundColor = [UIColor greenColor];
 
 [参考自:iOS: 教你给 UI 控件添加 Badge(消息提醒小圆点)](http://www.jianshu.com/p/89fa23d53400)
 
-
-
-### 控制左边返回按钮的距离
-
-如果我们要指定左边返回按钮距离左边框的距离，可以在在返回按钮前再插入一个 `UIBarButtonItem`：
-
-```objc
-UIBarButtonItem *leftItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"gobackItem.png"] style:UIBarButtonItemStylePlain target:self action:@selector(backViewcontroller)];
-
-UIBarButtonItem *fixedItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:nil action:nil];
-// 设置边框距离，个人习惯设为-16，可以根据需要调节
-fixedItem.width = -16;
-self.navigationItem.leftBarButtonItems = @[fixedItem, leftItem];
-```
-
-通过 `leftBarButtonItems`，插入一个不响应任何时间的 `fixspace`。
-
 ### 自定义右上角按钮或多个按钮
 
 ```objc
@@ -197,77 +218,13 @@ self.navigationItem.leftBarButtonItems = @[fixedItem, leftItem];
 
 ### 设置 navigationItem 字体格式
 
-#### 方法一：
-
-在 `BaseNavigationViewController` 中的 `initWithRootViewController` 中设置，或者在 `viewController` 的 `viewDidLoad` 方法中：
-
-```objc
-// 字体大小19，颜色为白色
-[self.navigationController.navigationBar setTitleTextAttributes:@{NSFontAttributeName:[UIFont systemFontOfSize:19],NSForegroundColorAttributeName:[UIColor whiteColor]}];
-```
-
-####  方法二：
-
-可以通过 `[UINavigationBar appearance]` 方法，囊括了方法一中的设置的各个位置，看还可以在 `AppDelegate` 中 `didFinishLaunchingWithOptions` 设置：
+可以通过 `[UINavigationBar appearance]` 方法 设置：
 
 ```objc
  [[UINavigationBar appearance]setTitleTextAttributes:@{NSForegroundColorAttributeName:[UIColor whiteColor],NSFontAttributeName:[UIFont systemFontOfSize:18]}];
 ```
 
-> 1. 这个设置和是否隐藏导航栏一样，都是全局的，无法孤立地设置某一个 ViewController。如果有一个地方需要特殊设置，那么需要在其它地方再设置回去。
-> 2. 后调用的覆盖先调用的，方法一的调用时机比方法二晚，二设置的信息会被一覆盖。
-
-## 导航栏
-
-### 隐藏导航栏
-
-```objc
-- (void)viewWillAppear:(BOOL)animated{
-    [self.navigationController setNavigationBarHidden:YES animated:YES];
-}
-```
-
-> 这个方法设置之后，后面的页面的导航栏也都隐藏了，需要在后面的页面中将其设置为 NO，所以要在 viewWillAppear 方法中，每次显示页面的时候都要重新设置。
-
-### 修改导航栏背景色
-
-#### 错误示范
-
-```objc
-- (void)viewDidLoad {
-    [super viewDidLoad];
-    // 无效果
-    self.navigationController.navigationBar.backgroundColor = [UIColor redColor];
-}
-```
-
-这个方法无法达到理想效果，上面会盖上白色的一层 `UIImageView`，必须直接设置这个 `UIImageView` 才能达到理想的效果。
-
-#### 正确示范
-
-##### 方法一：
-
-```objc
-[self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"xxx"] forBarMetrics:UIBarMetricsDefault];
-```
-
-就像上面说的，必须要直接设置 `UIImageView`，可以自己写个纯色的 `UIImage` 也可以直接放一张图片。
-
-> 不要想着将这个 `UIImageView` 置为 nil，就能显示出 `navigationBar` 的背景色了。`navigationBar` 不包含上面的那个状态栏(如下图所示)，因此，会露出白白的一片，只有设置 `UIImageView` 才能将这一片也遮住。
-
-![设置imageView为nil](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/navigationbar_imageView.png?raw=true)
-
-##### 方法二：
-
-还是 `[UINavigationBar appearance]` 方法：
-
-```objc
-[[UINavigationBar appearance] setBarTintColor:[UIColor redColor]];
-```
-
-一步达到效果。
-
-## 小技巧
+> 这个设置和是否隐藏导航栏一样，都是全局的，无法孤立地设置某一个 ViewController。如果有一个地方需要特殊设置，那么需要在其它地方再设置回去。
 
 ### 操作 navigationItem
 
@@ -279,13 +236,11 @@ self.navigationItem.leftBarButtonItems = @[fixedItem, leftItem];
 >
 > NavigationBar 是一个 UIView 对象，NavigationItem 中的各个 view 都被添加到其上
 
-
-
-
-
 ### UINavigationController 返回手势失效
 
-系统为 UINavigationController 提供了一个 `interactivePopGestureRecognizer` 用于右滑返回(pop),但是，如果自定了 back button 或者隐藏了 navigationBar ，该手势就失效了。我们需要自己实现一下 delegate 方法;
+系统为 UINavigationController 提供了一个 `interactivePopGestureRecognizer` 用于右滑返回(pop),但是，如果自定了 left button 或者隐藏了 navigationBar ，该手势就失效了。我们需要自己实现一下 delegate 方法;
+
+> 不过一般我们最好还是使用默认的 backbutton 返回为好。一般自定义了 left button，并且隐藏了 backbutton 的情况，都应该是不让用户能够直接返回的情况。
 
 新建一个 `BaseNavigationController` 实现 delegate：
 
@@ -325,4 +280,141 @@ self.navigationItem.leftBarButtonItems = @[fixedItem, leftItem];
     self.navigationController.interactivePopGestureRecognizer.enabled = YES;
 }
 ```
+
+## 导航栏
+
+### 隐藏导航栏
+
+```objc
+- (void)viewWillAppear:(BOOL)animated{
+    [self.navigationController setNavigationBarHidden:YES animated:animated];
+}
+```
+
+> 这个方法设置之后，后面的页面的导航栏也都隐藏了。所以要注意一个原则，在当前页面 `viewWillAppear` 方法中做的修改，也要在当前页面的 `viewWillDisappear` 中还原回来。
+
+### 修改导航栏背景色
+
+#### 错误示范
+
+```objc
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // 无效果
+    self.navigationController.navigationBar.backgroundColor = [UIColor redColor];
+}
+```
+
+这个方法无法达到理想效果，上面会盖上白色的一层 `UIImageView`，必须直接设置这个 `UIImageView` 才能达到理想的效果。
+
+#### 正确示范
+
+```objc
+[self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"xxx"] forBarMetrics:UIBarMetricsDefault];
+```
+
+就像上面说的，必须要直接设置 `UIImageView`，可以自己写个纯色的 `UIImage` 也可以直接放一张图片。
+
+### 设置导航栏透明度
+
+设置导航栏透明度需要自己创建一个带有透明度的 UIImage:
+
+```objc
+// 背景色
+UIImage *image = [self imageWithColor:[color colorWithAlphaComponent:alpha]];
+[self.navigationController.navigationBar setBackgroundImage:image forBarMetrics:UIBarMetricsDefault];
+
+- (UIImage *)imageWithColor:(UIColor *)color {
+    CGRect rect = CGRectMake(0, 0, 1, 1);
+    UIGraphicsBeginImageContext(rect.size);
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    CGContextSetFillColorWithColor(context, [color CGColor]);
+    CGContextFillRect(context, rect);
+    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    return image;
+}
+```
+
+> 这里只创建了一个像素的图片，但是还是能达到平铺整个导航栏的效果。
+>
+> 创建的 UIImage 的大小只有一个像素的好处是节约 CPU 资源。
+
+### 隐藏导航栏底部的分割线
+
+就是设置一个透明的图片，和设置导航栏背景色一个道理。
+
+```objc
+UINavigationBar *navigationBar = self.navigationController.navigationBar;
+//此处使底部线条失效
+[navigationBar setShadowImage:[UIImage new]];
+```
+
+### 导航栏的几个属性
+
+这些属性一般用处不大，但是有点印象就行了。以下为默认值
+
+```objc
+self.navigationController.navigationBar.translucent = YES;
+self.edgesForExtendedLayout = UIRectEdgeAll;
+self.automaticallyAdjustsScrollViewInsets = YES;
+self.extendedLayoutIncludesOpaqueBars = NO;
+```
+
+- 导航半透明的时候
+  -  设置 `edgesForExtendedLayout` 为 `UIRectEdgeAll` ，视图会延伸到导航栏下。默认为 YES
+    - 此时默认 `automaticallyAdjustScrollViewInsets` 为 YES。ScrollView 会自动设置 contentInset
+  -  设置`edgesForExtendedLayout` 为 `UIRectEdgeNone` ，视图不会延伸。
+- 导航栏不透明的时候
+  - 设置 `edgesForExtendedLayout` 无效。
+  - 设置 `extendedLayoutIncludesOpaqueBars` 为 YES，可以延伸到不透明的导航栏下
+  - 设置`extendedLayoutIncludesOpaqueBars`  为 NO，不会延伸到透明的导航栏系下，默认为 NO
+
+### 更改顶部状态栏颜色
+
+1. 在工程的Info.plist文件中添加一行**UIViewControllerBasedStatusBarAppearance**，选择Boolean类型，并设置为YES，Xcode会自动把名称变为View controller-based status bar appearance。
+
+2. 在你的ViewController中添加下面的方法
+
+   ```objc
+   -(UIStatusBarStyle)preferredStatusBarStyle{
+       // return UIStatusBarStyleDefault; 黑色
+       return UIStatusBarStyleLightContent; // 白色
+   }
+   ```
+
+3. 调用 UIViewController 的 `setNeedsStatusBarAppearanceUpdate` 方法，通知状态栏颜色改变了。
+
+### 全屏滑动返回
+
+实现全屏滑动返回仅需在导航栏给导航栏添加`UIGestureRecognizerDelegate`协议，并在ViewDidLoad中设置。关键在于调用系统返回处理方法 `hyandleNavigationTransition`
+
+```objc
+// 获取系统自带滑动手势的target对象
+id target = self.interactivePopGestureRecognizer.delegate;
+
+// 创建全屏滑动手势，调用系统自带滑动手势的target的action方法
+UIPanGestureRecognizer *pan = [[UIPanGestureRecognizer alloc] initWithTarget:target action:@selector(handleNavigationTransition:)];
+
+// 设置手势代理，拦截手势触发
+pan.delegate = self;
+
+// 给导航控制器的view添加全屏滑动手势
+[self.view addGestureRecognizer:pan];
+
+// 禁止使用系统自带的滑动手势
+self.interactivePopGestureRecognizer.enabled = NO;
+```
+
+### 导航栏过渡
+
+导航栏过渡是一个需要好好设计的功能。如果做得不好，push 和 pop 时候会非常僵硬。
+
+比较好的方式是通过 Method Swizzling 获取系统方法 `_updateInteractiveTransition` 拿到当前的进度。
+
+具体可参考如下两篇文章：
+
+[iOS: 记一次导航栏平滑过渡的实现](https://www.jianshu.com/p/859a1efd2bbf)
+
+[超简单！！！ iOS设置状态栏、导航栏按钮、标题、颜色、透明度，偏移等](https://www.jianshu.com/p/540a7e6f7b40)
 

@@ -371,12 +371,14 @@ extension UIImage {
 }
 ```
 
-另外，还有一种使用贝塞尔曲线，利用CALayer层绘制指定圆角样式的mask遮盖View 的方式达到圆角效果的。不过这种方式也是操作 mask，会产生离屏渲染，所以不推荐。
+这种方式如果不做缓存，每次都会创建新的 UIImage，加重 CPU 的负担。
+
+另外，还有一种使用贝塞尔曲线，利用CALayer层绘制指定圆角样式的mask遮盖View 的方式达到圆角效果的。不过这种方式也是操作 mask，会产生离屏渲染，但是效果会比直接设置圆角要好很多。
 
 > 这样是把  GPU 的任务转给了 CPU 去完成。那么如果还是掉帧怎么办？
 >
 > 1. 直接让 UI 将图片切为圆角
-> 2. 在原来的视图上添加一个四个角有颜色中间透明的图片
+> 2. 在原来的视图上添加一个四个角有颜色中间透明的图片,遮盖到原来图片上。这样是通过混合图层的方式实现。损耗的性能会好很多。
 > 3. 将上面绘制圆角图片的过程放到子线程中去，绘制完成后回到主线程中。
 
 针对上面第二点：添加一个四个角有颜色中间透明的图片。相关代码如下：
@@ -446,4 +448,8 @@ layer.shadowRadius = radius
 layer.shadowOffset = CGSize(width: 0, height: -3)
 layer.shadowPath = [[UIBezierPathbezierPathWithRect：myView.bounds] CGPath];
 ```
+
+## 参考文档 
+
+[离屏渲染优化详解：实例示范+性能测试](https://www.jianshu.com/p/ca51c9d3575b)
 
