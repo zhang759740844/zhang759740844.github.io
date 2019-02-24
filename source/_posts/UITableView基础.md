@@ -336,6 +336,40 @@ button点击事件中有一个event对象，记录了当前点击坐标，然后
 
 就不举例了。同上面一样。
 
+#### beginUpdates和endUpdates
+
+如果要同时进行刷新或者插入删除移动等操作，需要使用 `beginUpdates` 和 `endUpdates` 包裹，作为一个动画组进行。
+
+如果要自己控制动画的时间可以通过动画的方式：
+
+```objc
+[UIView animateKeyframesWithDuration:1 delay:0 options:UIViewKeyframeAnimationOptionAutoreverse animations:^{
+    } completion:^(BOOL finished) {
+    	// 添加Transaction事务
+        [CATransaction begin];
+        [CATransaction setCompletionBlock:^{
+            NSLog(@"动画完成")
+        }];
+        [self.tableView beginUpdates];
+        [self.tableView moveRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0] toIndexPath:[NSIndexPath indexPathForRow:2 inSection:0]];
+        NSString *str = self.arrayData[0];
+        [self.arrayData removeObjectAtIndex:0];
+        [self.arrayData insertObject:str atIndex:2];
+        [self.tableView endUpdates];
+        [CATransaction commit];
+    }];
+```
+
+`beginUpdates` 和 `endUpdates` 有一个好处就是会调用 `heightForRow` 改变高度，但是不会调用 `cellForRow` 刷新视图。所以，当 tableView 的某一项高度改变的时候，可以直接使用该方法刷新高度。
+
+```objc
+// 刷新 tableView 中 cell 的高度
+self.tableView.beginUpdates()
+self.tableView.endUpdates()
+```
+
+
+
 ## 小技巧
 ### 当cell未能填满tableview时，怎么响应空白部分点击事件
 当 tableview 太大，cell 太少，以至于不能填满tableview的时候，那么空白部分的点击事件该怎么设置呢？只要给 tableview 添加一个 footerview，这个 footerview 的大小是整个 tableview 的大小，然后设置这个 footerview 的点击事件即可。

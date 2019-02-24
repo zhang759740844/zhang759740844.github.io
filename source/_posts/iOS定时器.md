@@ -14,10 +14,13 @@ tags:
 
 一个 NSTimer 注册到 RunLoop 后，RunLoop 会为其重复的时间点注册好事件。例如 10:00, 10:10, 10:20 这几个时间点。RunLoop 为了节省资源，并不会在非常准确的时间点回调这个 Timer。Timer 有个属性叫做 Tolerance (宽容度)，标示了当时间点到后，容许有多少最大误差。
 
-有两种创建方式：
+### 创建
+
+有两种创建方式，方法一：
 
 ```objc
 self.timer = [NSTimer timerWithTimeInterval:5 target:self selector:@selector(showTime) userInfo:nil repeats:YES];
+// 必须加
 [[NSRunLoop currentRunLoop] addTimer:self.timer forMode:NSRunLoopCommonModes];
 // 如果是非主线程要调用,主线程已经自动运行 runloop 就不需要自己 run 了
 [[NSRunLoop currentRunLoop] run];
@@ -26,6 +29,8 @@ self.timer = [NSTimer timerWithTimeInterval:5 target:self selector:@selector(sho
 这个类方法创建出来的对象如果不用 `addTimer: forMode` 方法手动加入循环池中，将不会循环执行。
 
 这里如果不是用的 `NSRunLoopCommonModes` 而是 `NSDefaultRunLoopMode` 那么当界面滑动时，无法执行 `showTime` 方法回调。当滑动停止时，立刻执行最初的注册的定时事件，之后由于滑动导致未能注册的事件的回调一律忽略。
+
+方法二：
 
 ```objc
 self.timer = [NSTimer scheduledTimerWithTimeInterval:3.0 target:self selector:@selector(run:) userInfo:@"abc" repeats:NO];
@@ -47,6 +52,48 @@ self.timer = nil;
 ```
 
 > NSRunLoop 会强引用 NSTimer，所以外部不需要强引用 timer。
+
+### 执行N次后结束
+
+可以在外部创建一个计数器，当执行到一定次数后在内部结束：
+
+```swift
+var runCount = 0
+
+Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { timer in
+    print("Timer fired!")
+    runCount += 1
+    if runCount == 3 {
+        timer.invalidate()
+    }
+}
+```
+
+### 附加 context
+
+创建 timer 时传入的 userInfo 是一个 id 类型。所以可以直接通过 timer 拿到 userInfo 代表的值，需要强转类型：
+
+```swift
+let context = ["user": "@twostraws"]
+Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(fireTimer), userInfo: context, repeats: true)
+
+
+@objc func fireTimer(timer: Timer) {
+    guard let context = timer.userInfo as? [String: String] else { return }
+    let user = context["user", default: "Anonymous"]
+
+    print("Timer fired by \(user)!")
+    runCount += 1
+
+    if runCount == 3 {
+        timer.invalidate()
+    }
+}
+```
+
+### NSTimer 不准时
+
+NSTimer 是由 RunLoop 控制执行的，当到达时间后，会触发睡眠的 RunLoop 执行定时器方法。但是如果当前 RunLoop 一直在运行，则无法立刻执行定时器方法，导致延时执行。
 
 ## CADisplayLink
 
@@ -83,7 +130,13 @@ self.timer = nil;
 
 iOS 设备的 FPS 是60Hz，因此 `CADisplayLink` 的 selector 默认调用周期是每秒60次，这个周期可以通过 `frameInterval` 属性设置， `CADisplayLink`的 selector 每秒调用次数为 `60/ frameInterval`。比如当 `frameInterval` 设为2，每秒调用就变成30次。因此， `CADisplayLink` 周期的设置方式略显不便。不过 `CADisplayLink` 适合于需要精度较高的定时。
 
-> NSRunLoop 不会强引用 CADisplayLink，所以外部需要强引用 displayLink，否则立刻回收
+> NSRunLoop 会强引用 CADisplayLink，所以外部也不需要强引用 CADisplayLink 
+
+### 应用之查看 FPS
+
+CADisplayLink 和屏幕的刷新率是一致的，所以可以通过判断一秒钟内 CADisplayLink 执行了多少次来间接知道屏幕刷新率：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/cadisplaylink.png?raw=true)
 
 ### 与 NSTimer 不同
 
@@ -97,7 +150,7 @@ iOS 设备的 FPS 是60Hz，因此 `CADisplayLink` 的 selector 默认调用周�
 
 ## 延迟调用
 
-当调用 NSObject 的 `performSelector:afterDelay:` 后，**实际上其内部会创建一个 Timer 并添加到当前线程的 Run Loop 中**。所以如果当前线程没有 Run Loop，则这个方法会失效。
+当调用 NSObject 的 `performSelector:afterDelay:` 后，**实际上其内部会创建一个 Timer 并添加到当前线程的 Run Loop 中**。**所以如果当前线程没有 Run Loop，则这个方法会失效**（注意，这是一个考点，所以在子线程中直接调用该方法是无效的）。
 
 当调用 `performSelector:onThread:` 时，实际上其会创建一个 Timer 加到对应的线程去，同样的，如果对应线程没有 Run Loop 该方法也会失效。
 
@@ -147,10 +200,72 @@ dispatch_source_set_event_handler(_gcdTimer, ^{
 dispatch_resume(_gcdTimer);
 ```
 
+GCD 是准时的定时器
+
 > 注意 `dispatch_source_t` 并不是一个指针
 
-> `dispatch_source_t` 本身也需要强引用，否则会立刻回收，无法完成定时
+> `dispatch_source_t` 本身需要强引用，否则会立刻回收，无法完成定时
 
 ##  关于 runloop
 
-我们可以观察到，除了 GCD，另外三种方法都需要把定时器加入当前 runloop 中。这里要强调一点，一般情况下，不要把定时器加到非主线程中去。因为定时器需要线程的 runloop 启动，即 `[[NSRunLoop currentRunLoop] run];`。对于主线程，这没有任何问题，主线程的 runloop 默认开启。但是**对于子线程，我们最好不要启动它的 runloop，这会导致子线程一直处于活动状态而不被回收，从而造成内存泄漏**。所以，定时器最好还是加在主线程里吧。如果一定要在子线程里设置，那么一定要在结束的时候，停止运行循环。
+我们可以观察到，除了 GCD，另外三种方法都需要把定时器加入当前 runloop 中。这里要强调一点，一般情况下，不要把定时器加到非主线程中去。因为定时器需要线程的 runloop 启动，即 `[[NSRunLoop currentRunLoop] run];`。对于主线程，这没有任何问题，主线程的 runloop 默认开启。但是**对于子线程，我们最好不要启动它的 runloop，这会导致子线程一直处于活动状态而不被回收，从而造成内存泄漏**。所以，定时器最好还是加在主线程里吧。**如果一定要在子线程里设置，那么一定要在结束的时候，停止运行循环**。
+
+
+
+## 关于循环引用问题
+
+定时器包括 CADisplayLink 和  NSTimer 都需要手动通过 `invalidate` 方法来销毁。这就关系到销毁的时机。
+
+### 方式一
+
+通过 `dealloc` 方法销毁：
+
+错误的做法：
+
+```objc
+__weak typeof(self) wself = self;
+self.displayLink = [CADisplayLink displayLinkWithTarget:wself selector:@selector(selector)];
+[self.displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+
+- (void)dealloc {
+    [self.displayLink invalidate];
+}
+```
+
+上面这种弱引用方式是没有用的。因为它们内部会强引用 target。所以其实不会执行 dealloc 方法。
+
+为了打破这种强引用，我们可以新建一个 weakTarget 的类，通过转发实现：
+
+```objc
+// class WeakTarget
+@property (nonatomic, weak) id target;
+
+- (instancetype)initWithTarget:(id)target {
+    self = [super init];
+    if (self) {
+        self.target = target;
+    }
+    return self;
+}
+
+- (id)forwardingTargetForSelector:(SEL)aSelector {
+    return self.target;
+}
+```
+
+使用：
+
+```objc
+self.displayLink = [CADisplayLink displayLinkWithTarget:[[WeakTarget alloc] initWithTarget:self] selector:@selector(selector)];
+[self.displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+
+- (void)dealloc {
+    [self.displayLink invalidate];
+}
+```
+
+这样，timer 强引用的就不是我们业务相关的类了。
+
+### 方式二
+
+通过 VC 或者 View 的生命周期销毁。虽然强引用了不会调用 `dealloc` ，但是生命周期还是会回调的比如在 `viewWillDisappear` 或者 `removeFromSuperView` 等方法中。

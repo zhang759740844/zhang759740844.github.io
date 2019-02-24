@@ -235,6 +235,8 @@ CALayer的transform方法和View的transform基本一致。举几点不同：
 
 ## Mask属性
 
+### 基本使用
+
 layer的大小和形状是受到mask遮罩层的影响的，可以通过赋给mask层一个新layer，来实现改变layer形状的效果。mask图层的 Color 属性是无关紧要的（**mask不是透明的部分，layer能显示出原来的颜色**），真正重要的是图层的轮廓。
 
 下面的例子中，为一个图片设置了圆形的蒙版。蒙版外的部分是透明的，该部分图片不予显示。
@@ -294,6 +296,21 @@ layer的大小和形状是受到mask遮罩层的影响的，可以通过赋给ma
     
     [self addMaskLayer];
 }
+```
+
+### 绘制只有两个圆角的视图
+
+有些情况下，一个 button 或者 label，只要右边的两个角圆角，或者只要一个圆角。该怎么办呢？
+
+```objc
+CGRect rect = CGRectMake(0, 0, 100, 50);
+CGSize radio = CGSizeMake(5, 5); // 圆角尺寸
+UIRectCorner corner = UIRectCornerTopLeft | UIRectCornerTopRight; // 这只圆角位置
+UIBezierPath *path = [UIBezierPath bezierPathWithRoundedRect:rect byRoundingCorners:corner cornerRadii:radio];
+CAShapeLayer *masklayer = [[CAShapeLayer alloc] init]; // 创建shapelayer
+masklayer.frame = button.bounds;
+masklayer.path = path.CGPath; // 设置路径
+button.layer.mask = masklayer;
 ```
 
 ## 关于离屏渲染

@@ -110,5 +110,128 @@ dispatch_async(dispatch_get_main_queue(), ^{
 
 
 
+## 锁
+
+### 自旋锁
+
+#### 定义
+
+自旋锁不会引起调用者睡眠，而是不停的循环，直到锁被释放。适用于多核。
+
+#### OSSpinLock
+
+iOS 中的自旋锁为 **OSSpinLock**。但是不建议使用。因为会产生优先级反转的现象。
+
+#### 优先级反转
+
+由于线程存在优先级，即根据优先级来分配 CPU 执行时间。但是会产生问题：如果一个低优先级的线程获得锁并访问共享资源，这时一个高优先级的线程也尝试获得这个锁，它会处于 spin lock 的忙等状态从而占用大量 CPU。此时低优先级线程无法与高优先级线程争夺 CPU 时间，从而导致任务迟迟完不成、无法释放 lock。
+
+#### 特点
+
+由于不停循环，避免了线程上下文切换的时间损耗。在能快速获取资源的多线程环境中速度最快。
+
+### 互斥锁
+
+#### 定义
+
+顾名思义，等待锁的线程会处于休眠状态。
+
+#### 常见类型
+
+ iOS 使用以 `pthread_mutex` 为基础的各种封装。常见三种类型：
+
+- PTHREAD_MUTEX_NORMAL
+- PTHREAD_MUTEX_ERRORCHECK
+- PTHREAD_MUTEX_RECURSIVE 
+
+#### NSLock
+
+针对第二种类型，iOS 封装了 `NSLock`。它会损失一定性能换来错误提示。并简化直接使用 pthread_mutex 的定义。
+
+```objc
+//主线程中
+NSLock *lock = [[NSLock alloc] init];
+    
+//线程1
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        [lock lock];
+        NSLog(@"线程1");
+        sleep(2);
+        [lock unlock];
+        NSLog(@"线程1解锁成功");
+    });
+
+    //线程2
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        sleep(1);//以保证让线程2的代码后执行
+        [lock lock];
+        NSLog(@"线程2");
+        [lock unlock];
+    });
+
+2016-08-19 14:23:09.659 ThreadLockControlDemo[1754:129663] 线程1
+2016-08-19 14:23:11.663 ThreadLockControlDemo[1754:129663] 线程1解锁成功
+2016-08-19 14:23:11.665 ThreadLockControlDemo[1754:129659] 线程2
+```
+
+#### NSReursiveLock 和 @synchronized
+
+针对第三种类型，iOS 封装了 `NSRecursiveLock` 和 `@synchronized`。它们是**递归锁**，也就是说同一个线程可以重复获取递归锁，不会死锁。`NSRecursiveLock` 和 `NSLock` 使用类似。
+
+#### NSConditionLock
+
+另外还有一种**条件锁**`NSConditionLock`。基于 `pthread_cond_t` 实现。只有 condition 参数与初始化时候的 condition 相等，lock 才能正确进行加锁操作。
+
+```objc
+//主线程中
+NSConditionLock *lock = [[NSConditionLock alloc] initWithCondition:0];
+
+//线程1
+dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    [lock lockWhenCondition:1];
+    NSLog(@"线程1");
+    sleep(2);
+    [lock unlock];
+});
+
+//线程2
+dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    if ([lock tryLockWhenCondition:0]) {
+        NSLog(@"线程2");
+        [lock unlockWithCondition:1];
+        NSLog(@"线程2解锁成功");
+    } else {
+        NSLog(@"线程2尝试加锁失败");
+    }
+});
+```
+
+### 信号量
+
+#### 定义
+
+信号量的初始值，可以用来控制线程并发访问的最大数量。信号量的初始值为1，代表同时只允许1条线程访问资源，保证线程同步
+
+#### dispatch_semaphore
+
+```objc
+dispatch_semaphore_t signal = dispatch_semaphore_create(1);
+// 如果信号量的值 > 0，就让信号量的值减1，然后继续往下执行代码
+// 如果信号量的值 <= 0，就会休眠等待，直到信号量的值变成>0，就让信号量的值减1，然后继续往下执行代码
+dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
+// 让信号量的值+1
+dispatch_semaphore_signal(signal);
+```
+
+### 信号量和互斥锁的区别
+
+虽然 Semaphore=1时可以看成互斥锁，但是它们真正的使用场景是有差别的。
+
+锁是服务于共享资源的；而semaphore是服务于多个线程间的执行的逻辑顺序的。比如，a 和 b 执行完了再执行 c，就可以通过信号量实现，但是无法通过互斥锁实现。
+
+### 速度比较
+
+OSSpinLock > dispatch_semaphore > pthread_mutex > NSLock > NSRecursiveLock > NSConditionLock > @synchronized
+
 
 
