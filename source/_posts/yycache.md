@@ -713,7 +713,9 @@ static NSString *_YYNSStringMD5(NSString *string) {
 
 ### 为什么 `YYMemoryCache` 使用互斥锁 `pthread_mutex`，而 `YYDiskCache` 使用信号量 `dispatch_semaphore`
 
-作者通过 `pthread_mutex` 和忙等来替代 `OSSpinLock`，这应该是作者测试后的结果。因为 `YYDiskCache` 在写入比较大的缓存时，可能会有比较长的等待时间，而`dispatch_semaphore` 在这个时候是不消耗CPU资源的，所以比较适合。
+作者通过 `pthread_mutex` 的 `pthread_mutex_trylock()` 和忙等 `usleep()` 来替代 `OSSpinLock`，这是因为使用互斥锁，没有拿到锁的线程会被挂起。当释放锁激活其他线程的时候，就唤醒挂起的线程。需要上下文切换，信号发送等开销，效率低于自旋锁。所以使用这种方式替代自旋锁。
+
+因为 `YYDiskCache` 在写入比较大的缓存时，可能会有比较长的等待时间，而`dispatch_semaphore` 在这个时候是不消耗CPU资源的，所以比较适合。
 
 ### 为什么 `YYMemoryCache` 使用双向链表
 
@@ -725,7 +727,27 @@ static NSString *_YYNSStringMD5(NSString *string) {
 
 ### 如何执行定时任务来定时清理缓存
 
-作者使用的是 **`dispatch_after` 的延时 + 递归**的方式进行定时执行操作。相比于
+作者使用的是 **`dispatch_after` 的延时 + 递归**的方式进行定时执行操作，而不是使用 NSTimer 的 repeat
+
+### 子线程释放
+
+一个对象最后在哪个线程中使用，那么最终就会在哪个线程的 runloop 中销毁。
+
+```objc
+_YYLinkedMapNode *node = [_lru removeTailNode];
+if (_lru->_releaseAsynchronously) {
+    dispatch_queue_t queue = _lru->_releaseOnMainThread ? dispatch_get_main_queue() : YYMemoryCacheGetReleaseQueue();
+    dispatch_async(queue, ^{
+        [node class]; //hold and release in queue
+    });
+} else if (_lru->_releaseOnMainThread && !pthread_main_np()) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [node class]; //hold and release in queue
+    });
+}
+```
+
+对象的销毁虽然消耗资源不多，但累积起来也是不容忽视的。通常当容器类持有大量对象时，其销毁时的资源消耗就非常明显。同样的，如果对象可以放到后台线程去释放，那就挪到后台线程去。这里有个小 Tip：把对象捕获到 block 中，然后扔到后台队列去随便发送个消息以避免编译器警告，就可以让对象在后台线程销毁了。
 
 
 
