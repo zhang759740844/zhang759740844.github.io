@@ -178,6 +178,14 @@ NSLock *lock = [[NSLock alloc] init];
 
 针对第三种类型，iOS 封装了 `NSRecursiveLock` 和 `@synchronized`。它们是**递归锁**，也就是说同一个线程可以重复获取递归锁，不会死锁。`NSRecursiveLock` 和 `NSLock` 使用类似。
 
+##### @synchronized 实现原理
+
+`@synchronized` 中传入的object的内存地址，被用作key，系统创建了一个递归锁，作为值，保存在一个 hash map 中。每当再次遇到 `@synchronized` 关键字的时候，就会到 hash map 中得到这个锁，并且尝试获取这个锁，失败则挂起。
+
+所以，如果object 被外部访问变化，`@synchronized` 就失去了锁的作用。因此一定要注意，不能改变 object 的地址。
+
+> 这是一个考点，`@synchronized` 如何实现的
+
 #### NSConditionLock
 
 另外还有一种**条件锁**`NSConditionLock`。基于 `pthread_cond_t` 实现。只有 condition 参数与初始化时候的 condition 相等，lock 才能正确进行加锁操作。
