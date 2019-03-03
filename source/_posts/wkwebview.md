@@ -230,7 +230,12 @@ func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigatio
 通过自定义Scheme，在链接激活时，拦截该URL，拿到参数，调用OC方法：
 
 ```objc
+// 在HTML中写上A标签直接填写假请求地址
 <a href="myScheme://login?username=12323123&code=892845">短信验证登录</a>
+// 在JS中用location.href跳转
+location.href = 'wakaka://wahahalalala/action?param=paramobj'
+// 在JS中创建一个iframe，然后插入dom之中进行跳转
+$('body').append('<iframe src="' + 'wakaka://wahahalalala/action?param=paramobj' + '" style="display:none"></iframe>');
 
 - (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler {
     //可以通过navigationAction.navigationType获取跳转类型，如新链接、后退等
@@ -250,14 +255,35 @@ func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigatio
 }
 ```
 
-缺点就是没有回调方法。
+WKWebView 拦截：
+```objc
+- (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler {
+    //1 根据url，判断是否是所需要的拦截的调用 判断协议/域名
+    if (是){
+      //2 取出路径，确认要发起的native调用的指令是什么
+      //3 取出参数，拿到JS传过来的数据
+      //4 根据指令调用对应的native方法，传递数据
+      //确认拦截，拒绝WebView继续发起请求
+        decisionHandler(WKNavigationActionPolicyCancel);
+    }else{
+        decisionHandler(WKNavigationActionPolicyAllow);
+    }
+    return YES;
+}
+```
+
+假跳转的缺点：
+- 丢失消息。在同一个运行逻辑内快速的连续发送两个通信请求，那么后面的消息将收不到。
+- URL长度限制。
 
 #### scriptMessageHandler
 
 在OC中添加一个scriptMessageHandler，则会在`all frames`中添加一个js的function： `window.webkit.messageHandlers.<name>.postMessage(<messageBody>)` 。那么当我在OC中通过如下的方法添加了一个handler，如
 
 ```objc
-[controller addScriptMessageHandler:[[SomeDelegateClass alloc] initWithTarget:self] name:@"currentCookies"]; //这里self要遵循协 WKScriptMessageHandler
+//配置对象注入
+[self.webView.configuration.userContentController addScriptMessageHandler:self name:@"nativeObject"];
+
 ```
 
 > 这里不能直接传入 self，会被 `WKUserContentController` 强引用，而不能销毁。所以需要创建一个代理类对象，类似于处理 NSTimer。
@@ -265,7 +291,14 @@ func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigatio
 当我在js中调用下面的方法时:
 
 ```objc
-window.webkit.messageHandlers.currentCookies.postMessage(document.cookie);
+//准备要传给native的数据，包括指令，数据，回调等
+var data = {
+    action:'xxxx',
+    params:'xxxx',
+    callback:'xxxx',
+};
+//传递给客户端
+window.webkit.messageHandlers.nativeObject.postMessage(data);
 ```
 
 > 注意，`postMessage` 方法要求必须要有一个参数，即使是一个空对象，也要写成 `postMessage({})`，否则 native 无法收到消息。
@@ -273,11 +306,12 @@ window.webkit.messageHandlers.currentCookies.postMessage(document.cookie);
 在OC中将会收到`WKScriptMessageHandler`的回调
 
 ```objc
-- (void)userContentController:(WKUserContentController *)userContentController didReceiveScriptMessage:(WKScriptMessage *)message {
-    if ([message.name isEqualToString:@"currentCookies"]) {
-        NSString *cookiesStr = message.body;    //message.body返回的是一个id类型的对象，所以可以支持很多种js的参数类型(js的function除外)
-        NSLog(@"当前的cookie为： %@", cookiesStr);
-    }
+-(void)userContentController:(WKUserContentController *)userContentController didReceiveScriptMessage:(WKScriptMessage *)message{
+    //1 解读JS传过来的JSValue  data数据
+    NSDictionary *msgBody = message.body;
+    //2 取出指令参数，确认要发起的native调用的指令是什么
+    //3 取出数据参数，拿到JS传过来的数据
+    //4 根据指令调用对应的native方法，传递数据
 }
 ```
 
@@ -287,19 +321,43 @@ window.webkit.messageHandlers.currentCookies.postMessage(document.cookie);
 
 ```objc
 - (void)dealloc {
-    //记得移除
-    [self.webView.configuration.userContentController removeScriptMessageHandlerForName:@"currentCookies"];
+    //移除对象注入
+    [self.webView.configuration.userContentController removeScriptMessageHandlerForName:@"nativeObject"]; 
 }
 ```
 
 #### WKUIDelegate
 
-前面说到，`WKUIDelegate` 协议中的几个弹窗方法，可以用来实现 JS2OC 的通信。前面几种 JS2OC 的通信的 callback 都需要 OC自己调用 OC2JS 的异步方法返回。而使用 `WKUIDelegate` 可以同步返回结果：
+前面说到，`WKUIDelegate` 协议中的几个弹窗方法，可以用来实现 JS2OC 的通信。前面几种 JS2OC 的通信的 callback 都需要 OC自己调用 OC2JS 的异步方法返回。而使用 `WKUIDelegate` 可以同步返回结果。
+
+**JS 端调用**
+
+```js
+var data = {
+    action:'xxxx',
+    params:'xxxx',
+    callback:'xxxx',
+};
+var jsonData = JSON.stringify([data]);
+//发起弹框
+prompt(jsonData);
+```
+
+ **客户端拦截：**
 
 ```objc
--(void)webView:(WKWebView *)webView runJavaScriptTextInputPanelWithPrompt:(NSString *)prompt defaultText:(NSString *)defaultText initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(NSString * _Nullable))completionHandler {
-    NSLog(@"%@----%@", prompt, defaultText);
-    completionHandler(@"xxxxxx");
+- (void)webView:(WKWebView *)webView runJavaScriptTextInputPanelWithPrompt:(NSString *)prompt defaultText:(nullable NSString *)defaultText initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(NSString * _Nullable result))completionHandler{
+    //1 根据传来的字符串反解出数据，判断是否是所需要的拦截而非常规H5弹框
+    if (是){
+        //2 取出指令参数，确认要发起的native调用的指令是什么
+        //3 取出数据参数，拿到JS传过来的数据
+        //4 根据指令调用对应的native方法，传递数据
+        //直接返回JS空字符串
+        completionHandler(@"");
+    }else{
+        //直接返回JS空字符串
+        completionHandler(@"");
+    }
 }
 ```
 
@@ -308,8 +366,6 @@ window.webkit.messageHandlers.currentCookies.postMessage(document.cookie);
 ```js
 let result = window.prompt(somePrompt, someDefaultText)
 ```
-
-
 
 ## Cookie 管理
 
@@ -658,6 +714,8 @@ if ([(id)cls respondsToSelector:sel]) {
 ```
 
 > 上面是为 WKWebView 注册了一个 scheme 为 myapp 的 `NSURLProtocol`，对于要拦截 http 或者 https 请求，换成相应 scheme 就可以了。
+
+
 
 ## 一些问题
 
