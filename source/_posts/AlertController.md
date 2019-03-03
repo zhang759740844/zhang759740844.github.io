@@ -126,7 +126,7 @@ typedef NS_ENUM(NSInteger, UIAlertActionStyle) {
 
 ```objc
 MyAlertViewController *alertViewController = [MyAlertViewController alloc] init];
-alertViewController.modalPresentationStyle = UIModalPresentationOverCurrentContext;
+modalPresentationStyle = UIModalPresentationOverCurrentContext;
 [self presentViewController: alertViewController animated: false];
 ```
 

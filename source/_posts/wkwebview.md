@@ -393,7 +393,7 @@ request.allHTTPHeaderFields = requestHeaderFields;
 
 ```objc
 //核心方法：
-/**
+modalPresentationStyle
  修复打开链接Cookie丢失问题
 
  @param request 请求
@@ -657,6 +657,8 @@ if ([(id)cls respondsToSelector:sel]) {
 }
 ```
 
+> 上面是为 WKWebView 注册了一个 scheme 为 myapp 的 `NSURLProtocol`，对于要拦截 http 或者 https 请求，换成相应 scheme 就可以了。
+
 ## 一些问题
 
 ### 白屏问题
@@ -679,6 +681,24 @@ if ([(id)cls respondsToSelector:sel]) {
 ### WKWebView 上通过 loadRequest 发起的 post 请求 body 数据会丢失
 
 一般加载一个网页请求为啥要用 post 咧。所以简单点用 get 就好啦
+
+## WebViewJavascriptBridge 源码解析
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

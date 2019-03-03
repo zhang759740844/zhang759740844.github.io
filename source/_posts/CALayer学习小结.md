@@ -231,6 +231,80 @@ CALayer的transform方法和View的transform基本一致。举几点不同：
 - 由于图像是从正面投影，直接绕着x或y轴旋转达不到透视的效果，如果要达到透视效果，需要改变`m34`(其实改变m14，m24也能达到效果，可以自行通过行列式推导。)，再对图层进行旋转。`m34`的值可以根据需要实现的效果推导得到，不直接的方法还是直接试。
 - 如果想要直接改变矩阵里的值，可以先使用`CATransform3DIdentity`的方式，初始化一个`CATransform3D`实例，然后再赋值。
 
+## CAShapeLayer
+
+`CAShapeLayer`继承自CALayer。`CAShapeLayer`是在坐标系内绘制贝塞尔曲线的，通过绘制贝塞尔曲线，设置shape(形状)的path(路径)，从而绘制各种各样的图形以及不规则图形。因此，使用`CAShapeLayer`需要与`UIBezierPath`一起使用。
+
+### 创建
+
+```objc
+CAShapeLayer *layer = [CAShapeLayer layer];
+```
+
+### 属性
+
+```objc
+// 要呈现的路径
+@property(nullable) CGPathRef path;
+// 填充色
+@property(nullable) CGColorRef fillColor;
+// 填充规则。值有两种，非零和奇偶数，但默认是非零值。
+@property(copy) NSString *fillRule;
+// 设置描边色
+@property(nullable) CGColorRef strokeColor;
+// 绘制边线轮廓路径的子区域。该值必须在[0,1]范围，0代表路径的开始，1代表路径的结束。在0和1之间的值沿路径长度进行线性插值。strokestart默认为0，strokeend默认为1。
+@property CGFloat strokeStart;
+@property CGFloat strokeEnd;
+// 线的宽度
+@property CGFloat lineWidth;
+// 端点和交点的显示类型
+@property(copy) NSString *lineCap;
+@property(copy) NSString *lineJoin;
+
+```
+
+### 创建贝塞尔曲线
+
+这里只是给了几个图形的基本画法，还有更多图形的画法可以稍后查看
+
+```objc
+//绘制矩形
+UIBezierPath *path = [UIBezierPath bezierPathWithRect:CGRectMake(0, 0, 100, 100)];
+//绘制圆形路径
+UIBezierPath *path = [UIBezierPath bezierPathWithOvalInRect:CGRectMake(0, 0, 100, 100)];
+//绘制自带圆角的路径
+UIBezierPath *path = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(0, 0, 100, 100) cornerRadius:30];
+//指定矩形某一个角加圆角（代码示例为左上角）
+UIBezierPath *path = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(0, 0, 100, 100) byRoundingCorners:UIRectCornerTopLeft cornerRadii:CGSizeMake(50, 50)];
+
+self.layer.path = path.CGPath;
+```
+
+### 曲线动画
+
+曲线动画的主要思想是对 layer 的 `strokeEnd` 属性做 `CABasicAnimation` 动画：
+
+```objc
+UIBezierPath *path = [UIBezierPath bezierPath];
+//起始点
+[path moveToPoint:CGPointMake(50, 667/2)];
+//结束点、两个控制点
+[path addCurveToPoint:CGPointMake(330, 667/2) controlPoint1:CGPointMake(125, 200) controlPoint2:CGPointMake(185, 450)];
+    
+CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"strokeEnd"];
+animation.duration = 5;
+animation.fromValue = @(0);
+animation.toValue = @(1);
+animation.repeatCount = 100;
+    
+CAShapeLayer *layer = [self createShapeLayerNoFrame:[UIColor clearColor]];
+layer.path = path.CGPath;
+layer.lineWidth = 2.0;
+[layer addAnimation:animation forKey:@"strokeEndAnimation"];
+```
+
+
+
 
 
 ## Mask属性
