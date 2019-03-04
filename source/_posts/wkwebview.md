@@ -750,13 +750,118 @@ if ([(id)cls respondsToSelector:sel]) {
 
 
 
+## JavaScriptCore
 
+JavaScriptCore是苹果Safari浏览器的JavaScript引擎
 
+### OC 调用 JS
 
+OC 调用 JS 可以直接使用 `evaluteScript` 方法：
 
+```objc 
+#import <JavaScriptCore/JavaScriptCore.h>
+int main() {
+    JSContext *context = [[JSContext alloc] init];
+    JSValue *value = [context evaluateScript:@"2 + 2"];
+    NSLog(@"2 + 2 = %d", [value toInt32]);
+    return 0
+}
+```
 
+#### JSContext
 
+- JSContext 是JS代码的执行环境。JSContext 为JS代码的执行提供了上下文环境，通过jSCore执行的JS代码都得通过JSContext来执行。
 
+- JSContext对应于一个 JS 中的全局对象。JSContext对应着一个全局对象，相当于浏览器中的window对象，JSContext中有一个GlobalObject属性，实际上JS代码都是在这个GlobalObject上执行的，但是为了容易理解，可以把JSContext等价于全局对象。
+
+#### JSValue
+
+- JSValue 是对 JS 值的包装。JS中的值拿到OC中是不能直接用的，需要包装一下
+- JSValue存在于JSContext中。JSValue是不能独立存在的，它必须存在于某一个JSContext中。
+- JSValue对其对应的JS值和其所属的JSContext对象都是强引用的关系。因为jSValue需要这两个东西来执行JS代码，所以JSValue会一直持有着它们。
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/jscore1.png?raw=true)
+
+示例：
+
+js 代码：
+
+```js
+// 计算阶乘
+var factorial = function (n) {
+    if (n < 0) return
+    if (n === 0) return 1
+    return n * factortial(n-1)
+}
+```
+
+oc 调用：
+
+```objc
+NSString *factorialScript = [self loadJSFromBundle];
+JSContext *context = [[JSContext alloc] init];
+[context evaluteScript: factorialScript];
+JSValue *function = context[@"factorial"];
+JSValue *result = [function callWithArguments:@[@5]];
+NSLog(@"factorial(5) = %d", [result toInt32]); 
+```
+
+从 Bundle 中拿到 js 代码执行，从 context 中拿到方法，然后通过 `callWithArguments` 执行，执行后得到 JSValue 的值。
+
+### JS 调用 OC
+
+两种方式可以让 OC 暴露方法给 JS：
+
+- Block：可以将 OC 中的单个方法暴露给 JS 调用。
+- JSExport协议：可以将OC的中某个对象直接暴露给JS使用
+
+#### Block
+
+JSCore会自动将这个Block包装成一个JS方法：
+
+```objc
+context[@"makeNSColor"] = ^(NSDictorary * colors){
+    float r = [colors[@"red"] floatValue];
+    float g = [colors[@"green"] floatValue];
+    float b = [colors[@"blue"] floatValue];
+    return [NSColor colorWithRed:(r / 255.0) green:(g / 255.0) blue:(b / 255) alpha:1.0];
+}
+```
+
+js 端就可以直接调用这个 `makeNSColor` 方法了。运行得到一个 NSColor 对象，在 js 中表现为一个 object。
+
+如果我们在 js 端再对这个方法封装一下：
+
+```js
+var colorForWord = function (word) {
+    return makeNSColor(word)
+}
+```
+
+在 oc 端调用的示意图如下：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/jscore2.png?raw=true)
+
+`OC Caller`去调用这个`colorForWrod`函数，因为`colorForWrod`函数接收的是一个`String`类型那个参数word，`OC Caller`传过去的是一个`NSString`类型的参数，JSCore转换成对应的`String`类型。然后`colorForWrod`函数继续向下调用，就像上面说的，知道其拿到返回的`wrapper Object`，它将`wrapper Object`返回给调用它的`OC Caller`，JSCore又会在这时候把`wrapper Object`转成JSValue类型，最后再OC中通过对JSValue调用对应的转换方法，即可拿到里面包装的值，这里我们调用`- toObject`方法，最后会得到一个`NSColor`对象，即从最开始那个暴露给JS的Block中返回的对象。
+
+##### 注意点
+
+1. 不要在Block中直接使用JSValue。
+2. 不要在Block中直接使用JSContext。
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/jscore3.png?raw=true)
+
+Block会强引用它里面用到的外部变量，如果直接在Block中使用JSValue的话，那么这个JSvalue就会被这个Block强引用，而每个JSValue都是强引用着它所属的那个JSContext的，这是前面说过的，而这个Block又是注入到这个Context中，所以这个Block会被context强引用，这样会造成循环引用，导致内存泄露。不能直接使用JSContext的原因同理。所以建议把JSValue当做参数传到Block中，而不是直接在Block内部使用，这样Block就不会强引用JSValue了。
+
+针对第二点，可以使用`[JSContext currentContext] `方法来获取当前的Context。
+
+#### JSExport 协议
+
+通过JSExport 协议可以很方便的将OC中的对象暴露给JS使用，且在JS中用起来就和JS对象一样。
+
+声明一个自定义的协议并继承自JSExport协议。然后当你把实现这个自定义协议的对象暴露给JS时，JS就能像使用原生对象一样使用OC对象了：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/jscore4.png?raw=true)
 
 
 
