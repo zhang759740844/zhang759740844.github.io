@@ -1,7 +1,8 @@
-title: WKWebView 的简单使用
+88title: WKWebView 的简单使用
 date: 2018/7/31 14:07:12  
 categories: iOS
 tags: 
+
  - 学习笔记
 	
 ---
@@ -366,6 +367,8 @@ prompt(jsonData);
 ```js
 let result = window.prompt(somePrompt, someDefaultText)
 ```
+
+## 带回调的 OC 与 JS 交互
 
 ## Cookie 管理
 
@@ -862,6 +865,71 @@ Block会强引用它里面用到的外部变量，如果直接在Block中使用J
 声明一个自定义的协议并继承自JSExport协议。然后当你把实现这个自定义协议的对象暴露给JS时，JS就能像使用原生对象一样使用OC对象了：
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/jscore4.png?raw=true)
+
+## WebViewJavaScriptBridge 源码解析
+
+### 基本用法
+
+1. 导入头文件，声明一个 `WebViewJavascriptBridge` 属性：
+
+```objc
+#import "WebViewJavascriptBridge.h"
+...
+@property WebViewJavascriptBridge* bridge;
+```
+
+2. 将 wkwebview 设置给 bridge
+
+```objc
+self.bridge = [WebViewJavascriptBridge bridgeForWebView:webView];
+```
+
+3. 在 Objective-C 中注册 handler 和调用 JavaScript 中的 handler：
+
+```objc
+[self.bridge registerHandler:@"ObjC Echo" handler:^(id data, WVJBResponseCallback responseCallback) {
+    NSLog(@"ObjC Echo called with: %@", data);
+    responseCallback(data);
+}];
+[self.bridge callHandler:@"JS Echo" data:nil responseCallback:^(id responseData) {
+    NSLog(@"ObjC received response: %@", responseData);
+}];
+```
+
+4. 复制下面的 `setupWebViewJavascriptBridge` 函数到你的 JavaScript 代码中。该方法用来初始化 js 端的 bridge：
+
+```objc
+function setupWebViewJavascriptBridge(callback) {
+    if (window.WebViewJavascriptBridge) { return callback(WebViewJavascriptBridge); }
+    if (window.WVJBCallbacks) { return window.WVJBCallbacks.push(callback); }
+    window.WVJBCallbacks = [callback];
+    var WVJBIframe = document.createElement('iframe');
+    WVJBIframe.style.display = 'none';
+    WVJBIframe.src = 'https://__bridge_loaded__';
+    document.documentElement.appendChild(WVJBIframe);
+    setTimeout(function() { document.documentElement.removeChild(WVJBIframe) }, 0)
+}
+```
+
+5. 调用 `loadRequest`，在执行 JS 代码的时候会调用 `setupWebViewJavascriptBridge` 函数。使用 `bridge` 来注册 handler 和调用 Objective-C 中的 handler：
+
+```objc
+setupWebViewJavascriptBridge(function(bridge) {
+    bridge.registerHandler('JS Echo', function(data, responseCallback) {
+        console.log("JS Echo called with:", data)
+        responseCallback(data)
+    })
+    bridge.callHandler('ObjC Echo', {'key':'value'}, function responseCallback(responseData) {
+        console.log("JS received response:", responseData)
+    })
+})
+```
+
+至此，native 端和 js 端都有了一个 bridge，可以相互调用。
+
+### 源码解析
+
+
 
 
 
