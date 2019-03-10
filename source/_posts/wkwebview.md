@@ -741,17 +741,15 @@ if ([(id)cls respondsToSelector:sel]) {
 
 ### WKWebView 上通过 loadRequest 发起的 post 请求 body 数据会丢失
 
-一般加载一个网页请求为啥要用 post 咧。所以简单点用 get 就好啦
+一般加载一个网页请求为啥要用 post 咧。所以简单点用 get 就好啦。
 
-## WebViewJavascriptBridge 源码解析
+但是如果还是想要通过 post 发起请求的话。假如想通过-[WKWebView loadRequest:]加载 post 请求 request1。需要进行以下步骤：
 
-
-
-
-
-
-
-
+1. 不直接把 post 请求的信息放到 body 中，而是创建新的请求 request2。同时将 request1 的 body 字段复制到 request2 的 header 中（WebKit 不会丢弃 header 字段）。
+2. 然后通过`-[WKWebView loadRequest:]` 加载新的 post 请求 request2。
+3. 通过 `+[WKBrowsingContextController registerSchemeForCustomProtocol:]` 注册 scheme
+4. 注册 NSURLProtocol 拦截请求,替换请求 scheme, 由 native 端生成新的请求 request3。
+5. 将 request2 header的body 字段复制到 native 发起的请求 request3 的 body 中，并使用 NSURLConnection 加载 request3，最后通过 NSURLProtocolClient 将加载结果返回 WKWebView;
 
 ## JavaScriptCore
 
@@ -891,9 +889,6 @@ self.bridge = [WebViewJavascriptBridge bridgeForWebView:webView];
     NSLog(@"ObjC Echo called with: %@", data);
     responseCallback(data);
 }];
-[self.bridge callHandler:@"JS Echo" data:nil responseCallback:^(id responseData) {
-    NSLog(@"ObjC received response: %@", responseData);
-}];
 ```
 
 4. 设置 bridge 的代理为任意你操作的控制器。这样，所有 webView 相关的方法在经过 bridge 的预处理后，都将操作权转移给了使用者：
@@ -917,7 +912,7 @@ function setupWebViewJavascriptBridge(callback) {
 }
 ```
 
-5. 调用 `loadRequest`，在执行 JS 代码的时候会调用 `setupWebViewJavascriptBridge` 函数。使用 `bridge` 来注册 handler 和调用 Objective-C 中的 handler：
+6. 调用 `loadRequest`，在执行 JS 代码的时候会调用 `setupWebViewJavascriptBridge` 函数。使用 `bridge` 来注册 handler 和调用 Objective-C 中的 handler：
 
 ```objc
 setupWebViewJavascriptBridge(function(bridge) {
@@ -932,6 +927,22 @@ setupWebViewJavascriptBridge(function(bridge) {
 ```
 
 至此，native 端和 js 端都有了一个 bridge，可以相互调用。
+
+7. JS 端主动调用 Native:
+
+```js
+bridge.callHandler('ObjC Echo', {'key':'value'}, function responseCallback(responseData) {
+    console.log("JS received response:", responseData)
+})
+```
+
+8. Native 主动调用 JS：
+
+```objc
+[self.bridge callHandler:@"JS Echo" data:nil responseCallback:^(id responseData) {
+    NSLog(@"ObjC received response: %@", responseData);
+}];
+```
 
 ### 结构
 
@@ -1037,8 +1048,6 @@ setupWebViewJavascriptBridge(function (bridge) {
 
 1. 将传进来的 js 初始化成功后需要执行的方法，保存到 `window.WVJBCallbacks` 中，等到后面 JS 端的 bridge 初始化成功后，再取出来调用
 2. 通过添加一个 iframe 加载初始化链接 `https://__bridge_loaded__`，调起原生，然后再移除这个 iframe
-
-> 假 Request 的发起有两种方式，-1:`location.href` -2:`iframe`。通过 `location.href` 有个问题，就是如果 JS 多次调用原生的方法也就是 `location.href` 的值多次变化，Native 端只能接受到最后一次请求，前面的请求会被忽略掉，所以这里 WebViewJavascriptBridge 选择使用 iframe
 
 #### native 拦截 iframe 的 request
 
@@ -1163,6 +1172,16 @@ function _doSend(message, responseCallback) {
 
 把方法名和参数生成一个消息对象，放到 `sendMessageQueue` 数组中，同时加载 URL 调起原生。如果有回调的 block，那么通过 uniqueId 生成一个 callbackId，也保存到消息对象中。
 
+##### disableJavscriptAlertBoxSafetyTimeout
+
+```js
+function disableJavscriptAlertBoxSafetyTimeout() {
+	dispatchMessagesWithTimeoutSafety = false;
+}
+```
+
+是否禁用异步调用。如果设置为 false。那么native 端调用 js 的话将是同步的。我们可以在下面的 `_handleMessageFromObjC` 方法中看到相关逻辑。
+
 ##### _fetchQueue
 
 获取所有的消息队列，转为字符串返回，然后清空消息队列
@@ -1185,6 +1204,7 @@ function _handleMessageFromObjC(messageJSON) {
 }
 
 function _dispatchMessageFromObjC(messageJSON) {
+  // 判断是否是异步调用。如果是异步调用则通过 setTimeout 将方法延后调用。否则直接执行。由于 javascript 是单线程的原因，会阻塞原有 js 代码的执行。
   if (dispatchMessagesWithTimeoutSafety) {
     setTimeout(_doDispatchMessageFromObjC);
   } else {
@@ -1278,7 +1298,7 @@ JS 调用原生的方法上面已经分析过了，就是 `window.WebViewJavascr
 }
 ```
 
-`WKFlushMessageQueue`  会先去 js 端获取 js 端要执行的 native 的所有方法名和参数，然后执行 `_base` 中的方法执行：
+`WKFlushMessageQueue`  会先去 js 端获取 js 端要执行的 native 的所有方法名和参数，然后执行 `_base` 中的 `flushMessageQueue` 方法：
 
 ```objc
 - (void)WKFlushMessageQueue {
@@ -1290,6 +1310,8 @@ JS 调用原生的方法上面已经分析过了，就是 `window.WebViewJavascr
     }];
 }
 ```
+
+`flushMessageQueue` 方法会先把从 JS 端传来的字符串转为对象数组，然后在自身注册的 `messageHandlers` 中找对应的处理方法执行。
 
 ```objc
 - (void)flushMessageQueue:(NSString *)messageQueueString{
@@ -1308,11 +1330,12 @@ JS 调用原生的方法上面已经分析过了，就是 `window.WebViewJavascr
             NSString* callbackId = message[@"callbackId"];
             // 如果有 callbackId 说明 js 端需要回调
             if (callbackId) {
+                // 创建一个 callback 的 block，传入 responseData，然后找到 JS 端响应的处理方法
                 responseCallback = ^(id responseData) {
                     if (responseData == nil) {
                         responseData = [NSNull null];
                     }
-                    
+                    // 把需要回调的 callbackId 作为 responseId 存入
                     WVJBMessage* msg = @{ @"responseId":callbackId, @"responseData":responseData };
                     [self _queueMessage:msg];
                 };
@@ -1328,16 +1351,105 @@ JS 调用原生的方法上面已经分析过了，就是 `window.WebViewJavascr
                 NSLog(@"WVJBNoHandlerException, No handler for message from JS: %@", message);
                 continue;
             }
-            
+            // 执行 handler 方法
             handler(message[@"data"], responseCallback);
         }
     }
 }
 ```
 
+`_queueMessage` 方法将在下面的原生调用 JS 中分析
 
+#### 原生调用 JS
 
+原生调用 JS，bridge 先调用 `_base` 中的相关处理方法:
 
+```objc
+// WKWebViewJavascriptBridge.m
+- (void)callHandler:(NSString *)handlerName data:(id)data responseCallback:(WVJBResponseCallback)responseCallback {
+    [_base sendData:data responseCallback:responseCallback handlerName:handlerName];
+}
+```
+
+`_base` 中把 `data` `callbackId` `handlerName` 这几个参数封装为字典，再转为 JSON字符串。随后在主线程中通过 `evaluteJavascript` 传递给JS：
+
+```objc
+// 参数转为字典
+- (void)sendData:(id)data responseCallback:(WVJBResponseCallback)responseCallback handlerName:(NSString*)handlerName {
+    NSMutableDictionary* message = [NSMutableDictionary dictionary];
+    
+    if (data) {
+        message[@"data"] = data;
+    }
+    
+    if (responseCallback) {
+        NSString* callbackId = [NSString stringWithFormat:@"objc_cb_%ld", ++_uniqueId];
+        self.responseCallbacks[callbackId] = [responseCallback copy];
+        message[@"callbackId"] = callbackId;
+    }
+    
+    if (handlerName) {
+        message[@"handlerName"] = handlerName;
+    }
+    [self _queueMessage:message];
+}
+
+- (void)_queueMessage:(WVJBMessage*)message {
+    if (self.startupMessageQueue) {
+        [self.startupMessageQueue addObject:message];
+    } else {
+        [self _dispatchMessage:message];
+    }
+}
+
+// 字典转为 JSON 并执行
+- (void)_dispatchMessage:(WVJBMessage*)message {
+    NSString *messageJSON = [self _serializeMessage:message pretty:NO];
+    [self _log:@"SEND" json:messageJSON];
+    messageJSON = [messageJSON stringByReplacingOccurrencesOfString:@"\\" withString:@"\\\\"];
+    messageJSON = [messageJSON stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""];
+    messageJSON = [messageJSON stringByReplacingOccurrencesOfString:@"\'" withString:@"\\\'"];
+    messageJSON = [messageJSON stringByReplacingOccurrencesOfString:@"\n" withString:@"\\n"];
+    messageJSON = [messageJSON stringByReplacingOccurrencesOfString:@"\r" withString:@"\\r"];
+    messageJSON = [messageJSON stringByReplacingOccurrencesOfString:@"\f" withString:@"\\f"];
+    messageJSON = [messageJSON stringByReplacingOccurrencesOfString:@"\u2028" withString:@"\\u2028"];
+    messageJSON = [messageJSON stringByReplacingOccurrencesOfString:@"\u2029" withString:@"\\u2029"];
+    
+    NSString* javascriptCommand = [NSString stringWithFormat:@"WebViewJavascriptBridge._handleMessageFromObjC('%@');", messageJSON];
+    if ([[NSThread currentThread] isMainThread]) {
+        [self _evaluateJavascript:javascriptCommand];
+
+    } else {
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            [self _evaluateJavascript:javascriptCommand];
+        });
+    }
+}
+```
+
+可以发现，转化后的 JSON 作为 `WebViewJavascriptBridge._handleMessageFromObjC('%@')` 的参数传入 JS。至此，原生调用 JS 的过程也结束了。
+
+### 几个问题
+
+1. **js 端还没有初始化完成，native 就发送的消息如何处理？**
+
+WebViewJavaScriptBridge 提供了一个 `startupMessageQueue` 用于保存在 JS 还没有初始化完成时候的 Native 消息队列。在 JS 初始化的代码执行完后，会立即执行 `startupMessageQueue` 中保存的消息，然后把 `startupMessageQueue` 队列置位 nil，之后的消息就不会保存到 `startupMessageQueue` 中了。
+
+2. **js 和 native 相互通信的方式是怎样？**
+
+js 端存在一个 `sendMessageQueue` 队列，用于存放 js 需要执行的消息队列，然后通知 native 到这个消息队列中拿消息。native 端需要发送消息的时候，则是直接执行 `evaluateJavascript`。这是因为执行 js 端的消息时异步的，执行期间可能有其他消息发生，而 native 的 `evalutejavascript` 是同步的，只有执行完这个方法， native 才会继续执行。
+
+3. **为什么`WebViewJavascriptBridge` 中 JS 调用原生时，把要传给原生的数据放到 messageQueue 中，再让原生调 JS 去取，而不是直接拼在 URL 后面？**
+
+URL 太长会丢数据。尤其是对参数进行 base64 编码，以保证 url 中不会出现一些非法的字符的时候。如果参数是一个很复杂的对象，那么这个 url 的编解码将会很复杂。
+
+4. **`WebViewJavascriptBridge` 中加载 URL 调起原生时，为什么不是用 `window.location="https://xxx"` 这种形式，而是新添加一个 iframe 来加载这个 URL？**
+
+如果我们连续 2 个 js 调 native，连续 2 次改 window.location 的话，在 native 的 delegate 方法中，只能截获后面那次请求，前一次请求由于很快被替换掉，所以被忽略掉了。
+
+5. 把 native 提供给 js 的方法都注册到 handler 中，当方法多的时候，不易于代码管理。该如何调整使不同类型的方法的职责分工更加明确？
+
+不直接注册所有的方法，而是只注册一个方法，所有 js 调用都经过这个而方法。这个方法内部使用 runtime 动态转发实现。因此，js 端调用 native 方法的时候，需要传递类名和方法名。
 
 ## 参考
 
@@ -1348,3 +1460,8 @@ JS 调用原生的方法上面已经分析过了，就是 `window.WebViewJavascr
 [从零收拾一个hybrid框架（二）-- WebView容器基础功能设计思路](http://awhisper.github.io/2018/03/06/hybrid-webcontainer/)
 
 [自己动手打造基于 WKWebView 的混合开发框架](https://lvwenhan.com/ios/462.html)
+
+[WebViewJavascriptBridge 源码中 Get 到的“桥梁美学”](https://juejin.im/post/5a40492f6fb9a0451969ce95#heading-7)
+
+
+

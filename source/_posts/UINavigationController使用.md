@@ -418,3 +418,4 @@ self.interactivePopGestureRecognizer.enabled = NO;
 
 [超简单！！！ iOS设置状态栏、导航栏按钮、标题、颜色、透明度，偏移等](https://www.jianshu.com/p/540a7e6f7b40)
 
+如果要求不高，对于特殊的页面，直接在 `viewWillAppear` 和 `viewWillDisapper` 中通过 `[self.navigationController setNavigationBarHidden:YES animated:YES]` 显示和隐藏即可。

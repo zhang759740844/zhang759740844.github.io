@@ -12,6 +12,46 @@ tags:
 
 <!--more-->
 
+### SafeArea
+
+iOS11 提供了 `safeAreaLayoutGuide` 和 `safeAreaInsets` 来帮助刘海屏的适配。
+
+前者你可以把它当做是一个 view。我们一般配合 Masonry 使用。Masonry 提供了 `mas_safeAreaLayoutGuide`，`mas_safeAreaLayoutGuideRight/Left/Top/Bottom` 来辅助布局： 
+
+```objc
+[view1 mas_makeConstraints:^(MASConstraintMaker *make) {
+     make.edges.equalTo(self.view.mas_safeAreaLayoutGuide).inset(10.0);
+}];
+......
+[rightTopView mas_makeConstraints:^(MASConstraintMaker *make) {
+     make.right.equalTo(self.view.mas_safeAreaLayoutGuideRight);
+     make.top.equalTo(self.view.mas_safeAreaLayoutGuideTop);
+     make.width.height.equalTo(@(size));
+}];
+```
+
+后者则是一个 inset，适合在 frame 布局的时候使用。但是要注意，`safeAreaInsets` 是在系统方法 `viewSafeAreaInsetsDidChange` 之后才会变为正确的值的，所以我们需要在之后的生命周期方法，比如 `viewDidLayoutSubviews` 方法中设置：
+
+```objc
+static inline UIEdgeInsets sgm_safeAreaInset(UIView *view) {
+    if (@available(iOS 11.0, *)) {
+        return view.safeAreaInsets;
+    }
+    return UIEdgeInsetsZero;
+}
+
+- (void)viewDidLayoutSubviews {
+    [super viewDidLayoutSubviews];
+    UIEdgeInsets safeAreaInsets = sgm_safeAreaInset(self.view);
+    CGFloat height = 44.0; // 导航栏原本的高度，通常是44.0
+    height += safeAreaInsets.top > 0 ? safeAreaInsets.top : 20.0; // 20.0是statusbar的高度，这里假设statusbar不消失
+    if (_navigationbar && _navigationbar.height != height) {
+        _navigationbar.height = height;
+}
+```
+
+
+
 ### UIView 的生命周期
 
 ```objc
