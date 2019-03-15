@@ -27,6 +27,8 @@ PureComponent 和 Component 的不同在于前者提供了一个 `shouldComponen
 
 ### 获取控件的frame
 
+#### 方式一
+
 给控件添加 `onLayout` 方法回调
 
 ```js
@@ -36,6 +38,28 @@ PureComponent 和 Component 的不同在于前者提供了一个 `shouldComponen
 ```
 
 就可以通过 `this.rowlayouts` 拿到组件的宽高以及起始坐标
+
+#### 方式二
+
+在其它点击事件触发的时候，通过 ref 获取：
+
+```js
+import {
+   UIManager,
+   findNodeHandle
+} from 'react-native'
+
+handleClick = () => {
+	UIManager.measure(findNodeHandle(this.buttonRef),(x,y,width,height,pageX,pageY)=>{
+		// todo
+ })
+	
+}
+
+<TouchableButton ref={(ref)=>this.buttonRef=ref} onPress={this.handleClick}/>
+```
+
+
 
 
 
@@ -125,31 +149,23 @@ FlatList 的 `data` 中接收一个数组，作为渲染的数据源。有时候
 另外一种方式就是设置视图的高度，使其高度为 0:
 
 ```js
+this.headerViewHeight = new Animated.Value(deviceHeight)
+
 if (showCurrentHeader) {
   Animated.timing(this.headerViewHeight, {
     toValue: deviceHeight,
     duration: 0
-  }).start(() => {
-    Animated.timing(this.headerViewAlpha, {
-      toValue: 1,
-      duration: 700
-    }).start()
-  })
+  }).start()
 } else {
-  Animated.timing(this.headerViewAlpha, {
+  Animated.timing(this.headerViewHeight, {
     toValue: 0,
     duration: 700
-  }).start(() => {
-    Animated.timing(this.headerViewHeight, {
-      toValue: 0,
-      duration: 0
-    }).start()
-  })
+  }).start()
 }
 
 renderHeader () {
   return (
-    <Animated.View style={{opacity: this.headerViewAlpha, marginBottom: -20, height: this.headerViewHeight}}>
+    <Animated.View style={{height: this.headerViewHeight}}>
       {this.props.headerView()}
     </Animated.View>
   )
@@ -157,6 +173,60 @@ renderHeader () {
 ```
 
 这里动态修改了 `headerViewHeight` 这个高度。不过要注意，这里修改了高度并不是说子视图就一定会隐藏的。有些组件可能还是会展示出来，这个时候就要设置 style  的 `overflow: 'hidden'`
+
+上面这种方式你可能会有疑问，这是知道控件高度的情况下才可以设置高度。那么如果控件的高度是包裹的控件的高度，无法知道准确的 height，这种情况怎么办呢？
+
+思路是不进行动画之前不设置 height，在渲染完成的时候，将视图的高度保存起来，待到将要开始动画的时候，立即 setState，将 height 设置进去，在 setState 的回调中开启动画。下面是一个动画实现 Cell 删除的示例：
+
+```js
+export default class CanDeleteCell extends React.PureComponent {
+  constructor (props) {
+    super(props)
+    this.alpha = new Animated.Value(1)
+    this.height = null
+    this.state = { isDelete: false }
+  }
+
+  deleteCell () {
+    return new Promise((resolve, reject) => {
+      this.setState({ isDelete: true }, () => {
+        Animated.timing(this.alpha, {
+          toValue: 0,
+          duration: 500
+        }).start()
+        Animated.timing(this.height, {
+          toValue: 0,
+          duration: 500
+        }).start((finished) => {
+          if (finished) {
+            resolve(this.props.index)
+          } else {
+            reject(this.props.index)
+          }
+        })
+      })
+    })
+  }
+
+  render () {
+    const innerStyle = this.state.isDelete
+      ? {opacity: this.alpha, height: this.height}
+      : {opacity: this.alpha}
+    return (
+      <Animated.View
+        onLayout={e => { this.height = new Animated.Value(e.nativeEvent.layout.height) }}
+        style={[...this.props.style, innerStyle]}
+      >
+        {this.props.children}
+      </Animated.View>
+    )
+  }
+}
+```
+
+在最开始渲染的时候，使用 `onLayout` 拿到高度，待到外部调用 `deleteCell` 方法的时候，立即 `setState` 把 `isDelete` 置为 true。然后重绘。
+
+
 
 ### 带有 Gesture 的父组件会 block 子组件中 TouchableOpacity 的点击事件
 
