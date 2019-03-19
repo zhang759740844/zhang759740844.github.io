@@ -1,19 +1,39 @@
-title: ios响应机制
+title: iOS手势与响应机制
 date: 2016/9/3 10:07:12  
 categories: iOS
 tags:
-	- UIResponder
----
+
+​	- UIResponder
 
 从点击屏幕到系统做出响应，经历了哪些过程？需要详细探究下ios的响应机制。本文参考自[史上最详细的iOS之事件的传递和响应机制
 ](http://www.jianshu.com/p/2e074db792ba)
 
 <!--more-->
 
-## iOS中的事件
-ios中的事件可以被分为三类：**触摸事件**，**加速计事件**，**远程控制事件**。本文讨论的是触摸事件。
+## UIResponder
 
-### 响应者对象(UIResponder)
+### 点击事件响应流程
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/uitouch1.png?raw=true)
+
+#### 系统响应阶段
+
+1. 手指触碰屏幕，事件交由 IOKit 处理
+2. IOKit 将触摸事件封装为一个 Event 对象，通过 march port 传递给 SpringBoard 桌面进程。
+3. SpringBoard 进程因接收到触摸事件，触发了其主线程 runloop 的 source1 事件源的回调。若前台无应用，则触发 SpringBoard 本身主线程 runloop 的 source0 事件源的回调，将事件交由桌面系统去消耗；若前台有应用，则将触摸事件通过IPC传递给前台APP进程。
+
+#### APP响应阶段
+
+1. APP进程的 mach port 接受到 SpringBoard 进程传递来的触摸事件，主线程的 runloop 被唤醒，触发了 source1 回调。
+2. source1 回调又触发了一个 source0 回调，将接收到的 Event 对象封装成 UIEvent 对象，此时APP将正式开始对于触摸事件的响应。
+3. source0 回调内部将触摸事件添加到 UIApplication 对象的事件队列中。事件出队后，UIApplication 开始通过不断 hit-testing 寻找最佳响应者。
+4. 找到响应者后，事件便在响应链上传播。事实上，事件除了被响应者消耗，还能被手势识别器或是 target-action 模式捕捉并消耗掉。
+5. 事件处理完毕后，runloop 进入休眠。等待再次被唤醒。
+
+### 几个名词：响应者、触摸、事件
+
+#### UIResponder
+
 在iOS中不是任何对象都能处理事件，只有继承了`UIResponder`的对象才能接受并处理事件，我们称之为“响应者对象”。
 
 以下都是继承自`UIResponder`的，所以都能接收并处理事件:
@@ -23,81 +43,32 @@ ios中的事件可以被分为三类：**触摸事件**，**加速计事件**，
 
 那么为什么继承自UIResponder的类就能够接收并处理事件呢？因为UIResponder中提供了以下4个对象方法来处理触摸事件。
 ```objc
-UIResponder内部提供了以下方法来处理事件触摸事件
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event;
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event;
 - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event;
-加速计事件
-- (void)motionBegan:(UIEventSubtype)motion withEvent:(UIEvent *)event;
-- (void)motionEnded:(UIEventSubtype)motion withEvent:(UIEvent *)event;
-- (void)motionCancelled:(UIEventSubtype)motion withEvent:(UIEvent *)event;
-远程控制事件
-- (void)remoteControlReceivedWithEvent:(UIEvent *)event;
 ```
 
-## 事件的处理
-### 触摸事件：
-下面以UIView为例来说明触摸事件的处理:
+#### UITouch
+
+- 一个手指一次触摸屏幕，就对应生成一个UITouch对象。多个手指同时触摸，生成多个UITouch对象。
+- 每个UITouch对象记录了触摸的一些信息，包括触摸时间、位置、阶段、所处的视图、窗口等信息。
+
+UITouch 提供了获取相对于视图的坐标的方法：
+
 ```objc
-// UIView是UIResponder的子类，可以覆盖下列4个方法处理不同的触摸事件
-// 一根或者多根手指开始触摸view，系统会自动调用view的下面方法
-- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
-// 一根或者多根手指在view上移动，系统会自动调用view的下面方法（随着手指的移动，会持续调用该方法）
-- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
-// 一根或者多根手指离开view，系统会自动调用view的下面方法
-- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
-// 触摸结束前，某个系统事件(例如电话呼入)会打断触摸过程，系统会自动调用view的下面方法
-- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event
-// 提示：touches中存放的都是UITouch对象
-```
-需要注意的是：
-- 以上四个方法是由系统自动调用的，所以可以通过重写该方法来处理一些事件。很重要的一点：**如果想处理UIView的触摸事件，那么就在UIView中重写；如果想处理UIViewController的触摸事件，那么就在UIViewController中重写。**
-- 只要手指没有离开屏幕，相应的 **UITouch** 对象就会一直存在
-- 在触摸事件持续过程中，无论发生什么，最初产生触摸事件的那个视图都会在各个阶段收到相应的触摸事件消息。即使手指在移动时离开了这个视图的 frame 区域，系统还是会向该视图发送 `touchesMoved:withEvent:` 和 `touchedEnded:withEvent:` 消息。也就是说，当某个视图发生触摸事件后，该视图将永远拥有当时创建的所有 **UITouch** 对象
-- 如果两根手指同时触摸一个view，那么view只会调用一次`touchesBegan:withEvent:`方法，`touches`参数中装着2个`UITouch`对象.
-- 当时图收到 `touchesMoved:withEvent:` 消息时，touches 中只会包含正在移动的 **UITouch** 对象，如果使用三个手指同时触摸视图，但是只移动其中一个手指，其他两个手指不懂，那么 touches 中只会包含一个 **UITouch** 对象。
-- 如果这两根手指一前一后分开触摸同一个view，那么view会分别调用2次`touchesBegan:withEvent:`方法，并且每次调用时的`touches`参数中只包含一个`UITouch`对象.
-
-### UITouch
-当用户用一根手指触摸屏幕时，会创建一个与手指相关的UITouch对象。
-
-#### UITouch作用
-- 保存着跟手指相关的信息，比如触摸的位置、时间、阶段
-- 当手指移动时，系统会更新同一个UITouch对象，使之能够一直保存该手指在的触摸位置
-- 当手指离开屏幕时，系统会销毁相应的UITouch对象
-
-#### UITouch属性
-```objc
-触摸产生时所处的窗口
-@property(nonatomic,readonly,retain) UIWindow *window;
-
-触摸产生时所处的视图
-@property(nonatomic,readonly,retain) UIView *view
-;
-
-短时间内点按屏幕的次数，可以根据tapCount判断单击、双击或更多的点击
-@property(nonatomic,readonly) NSUInteger tapCount;
-
-记录了触摸事件产生或变化时的时间，单位是秒
-@property(nonatomic,readonly) NSTimeInterval timestamp;
-
-当前触摸事件所处的状态
-@property(nonatomic,readonly) UITouchPhase phase;
+- (CGPoint)locationInView:(UIView *)view;
 ```
 
-#### UITouch方法
-```objc
-(CGPoint)locationInView:(UIView *)view;
-// 返回值表示触摸在view上的位置
-// 这里返回的位置是针对view的坐标系的（以view的左上角为原点(0, 0)）
-// 调用时传入的view参数为nil的话，返回的是触摸点在UIWindow的位置
+#### UIEvent
 
-(CGPoint)previousLocationInView:(UIView *)view;
-// 该方法记录了前一个触摸点的位置
-```
+- 触摸的目的是生成触摸事件供响应者响应，一个触摸事件对应一个UIEvent对象
+- UIEvent对象中包含了触发该事件的触摸对象的集合，可以通过**allTouches** 属性获取。
 
-#### 使用UITouch实现UIView的拖拽
+#### 例1：使用 UITouch 实现 UIView 的拖拽
+
+通过 UIResponder 和 UITouch 的视图定位，可以实现拖拽 UI 的功能
+
 ```objc
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event{ 
     // 想让控件随着手指移动而移动,监听手指移动 
@@ -120,143 +91,431 @@ UIResponder内部提供了以下方法来处理事件触摸事件
     self.transform = CGAffineTransformTranslate(self.transform, offsetX, offsetY);
 }
 ```
-通过UITouch对象获得当前点和上一个点的位置，求得偏移量
 
-## iOS中的事件的产生和传递
-### 事件的产生过程
-1. 发生触摸事件后，系统会将该事件加入到一个由UIApplication管理的事件队列中。
-2. UIApplication会从事件队列中取出最前面的事件，并将事件分发下去以便处理，通常，先发送事件给应用程序的主窗口（keyWindow）。
-3. 主窗口会在视图层次结构中找到一个最合适的视图来处理触摸事件，这也是整个事件处理过程的第一步。
- 1. 首先判断主窗口（keyWindow）自己是否能接受触摸事件。
- 2. 判断触摸点是否在自己身上。
- 3. 子控件数组中从后往前遍历子控件(后添加的view在上面，降低循环次数)，重复前面的两个步骤。
- 4. 如果触摸点在子控件上，那么重复3
- 5. 如果没有符合条件的子控件，那么就认为自己最合适处理这个事件，也就是自己是最合适的view。
-4. 找到最合适的view后，**将这个view层层返回给viewController,viewcontroller就会自动调用该view的touches方法处理具体的事件**。
+### 例2：配合 CAShapeLayer 实现一个画板
 
-触摸事件的传递是从父控件传递到子控件,也就是UIApplication->window->寻找处理事件最合适的view。注意: 如果父控件不能接受触摸事件，那么子控件就不可能接收到触摸事件。
+简单说就是记录下收拾的贝塞尔曲线，然后将这个曲线的 path 设置给 CAShapeLayer：
 
-### UIView不能接受触摸事件的三种情况
+```objc
+- (CAShapeLayer *)shapeLayer{
+  if (_shapeLayer == nil) {
+    _shapeLayer = [CAShapeLayer layer];
+    _shapeLayer.strokeColor = [UIColor blackColor].CGColor;
+    _shapeLayer.fillColor = [UIColor clearColor].CGColor;
+    _shapeLayer.lineJoin = kCALineJoinRound;
+    _shapeLayer.lineCap = kCALineCapRound;
+    _shapeLayer.lineWidth = 10;
+    [self.layer addSublayer:_shapeLayer];
+   }
+   return _shapeLayer;
+ }
+
+- (UIBezierPath *)path{
+  if (_path == nil) {
+    _path = [UIBezierPath bezierPath];
+    _path.lineWidth = 10;
+  }
+  return _path;
+}
+
+- (void)touchesMoved:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event{
+  UITouch *touch = [touches anyObject];
+  CGPoint point = [touch locationInView:self];
+  [self.path addLineToPoint:point];
+  self.shapeLayer.path = self.path.CGPath;
+}
+
+- (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event{
+  UITouch *touch = [touches anyObject];
+  CGPoint point = [touch locationInView:self];
+  [self.path moveToPoint:point];
+}
+
+- (void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event{
+  self.shapeLayer = nil;
+  self.path = nil;
+}
+```
+
+### 向下寻找响应者的过程
+
+#### 自上而下的寻找过程
+
+1. UIApplication首先将事件传递给 UIWindow，多个窗口优先最上层的窗口。
+2. 调用 `hitTest` 方法，询问是否可以响应。视图若不能响应，则将事件传递给上一个同级子视图；若能响应，则从后往前询问当前视图的子视图。
+3. 重复步骤2。视图若没有能响应的子视图了，则自身就是最合适的响应者。
+
+#### 无法响应的情况
+
 - 不允许交互：`userInteractionEnabled = NO`
 - 隐藏：如果把父控件隐藏，那么子控件也会隐藏，隐藏的控件不能接受事件
 - 透明度：如果设置一个控件的透明度<0.01，会直接影响子控件的透明度。alpha：0.0~0.01为透明。
 
-**注 意**:
+**注意**:
+
 - 默认UIImageView不能接受触摸事件，因为不允许交互，即`userInteractionEnabled = NO`，所以如果希望UIImageView可以交互，需要`userInteractionEnabled = YES`。
-- 不管视图能不能处理事件，只要点击了视图就都会产生事件，关键看该事件是由谁来处理！也就是说，如果视图不能处理事件，点击视图，还是会产生一个触摸事件，只是该事件不会由被点击的视图处理而已！
 
-### 找到最合适控件的方法
-#### hitTest：withEvent：
-只要事件一传递给一个控件,这个控件就会调用他自己的`hitTest：withEvent：`方法.用来寻找并返回最合适的view(能够响应事件的那个最合适的view)
+#### 判断是否可以响应的逻辑
 
-#### 拦截事件
-不管点击哪里，最合适的view都是`hitTest：withEvent：`方法中返回的那个view。因此，可以通过重写`hitTest：withEvent：`方法，返回指定的view作为最合适的view，这样就完成了事件的拦截。如果不想拦截，就调用`[super touchesMoved:touches withEvent:event];`
-
-#### 注意
-- **`hitTest：withEvent：`是UIView的方法，不是UIResponse的方法！所以Controller里不能用。这点很重要！这说明只能控制UIView里的子View**
-- 不管这个控件能不能处理事件，也不管触摸点在不在这个控件上，事件都会先传递给这个控件，随后再调用`hitTest:withEvent:`方法。`hitTest`的这个`CGPoint point`表示当前手指触摸的点，其值是以方法调用者的左上角(0,0)为基准的(就是touch的`locationInView:`方法的返回值)。也就是说，不同的控件调用这个方法，这个point都是经过计算而产生的不同的值。
-- `hitTest：withEvent：`找到最佳View后，会一层层返回，将这个View返回给ViewController。如`hitTest:withEvent:`方法中返回`nil`，那么调用该方法的控件本身和其子控件都不是最合适的view，也就是在自己身上没有找到更合适的view。那么最合适的view就是该控件的父控件。
-
-#### 技巧
-想让谁成为最合适的view就重写谁自己的父控件的`hitTest:withEvent:`方法返回指定的子控件。这里又要注意，最好不要在子控件内`return self`。因为，在遍历子控件的时候，很有可能没有遍历到你真正想要返回的那个控件，就在其他控件已经return了。
-
-例如：whiteView有redView和greenView两个子控件。redView先添加，greenView后添加。如果要求无论点击那里都要让redView作为最合适的view（把事件交给redView来处理）那么只能在whiteView的`hitTest:withEvent:`方法中`return self.subViews[0]`;这种情况下在redView的`hitTest:withEvent:`方法中`return self;`是不好使的！
-
-#### hitTest:withEvent：的底层实现
 ```objc
-#import "WSWindow.h"
-@implementation WSWindow
-// 什么时候调用:只要事件一传递给一个控件，那么这个控件就会调用自己的这个方法
-// 作用:寻找并返回最合适的view
-// UIApplication -> [UIWindow hitTest:withEvent:]寻找最合适的view告诉系统
-// point:当前手指触摸的点
-// point:是方法调用者坐标系上的点
 - (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event{
-    // 1.判断下窗口能否接收事件
+    //3种状态无法响应事件
      if (self.userInteractionEnabled == NO || self.hidden == YES ||  self.alpha <= 0.01) return nil; 
-    // 2.判断下点在不在窗口上 
-    // 不在窗口上 
+    //触摸点若不在当前视图上则无法响应事件
     if ([self pointInside:point withEvent:event] == NO) return nil; 
-    // 3.从后往前遍历子控件数组 
+    //从后往前遍历子视图数组 
     int count = (int)self.subviews.count; 
     for (int i = count - 1; i >= 0; i--) { 
-    	// 获取子控件
-    	UIView *childView = self.subviews[i]; 
-    	// 坐标系的转换,把窗口上的点转换为子控件上的点 
-    	// 把自己控件上的点转换成子控件上的点 
-    	CGPoint childP = [self convertPoint:point toView:childView]; 
-    	UIView *fitView = [childView hitTest:childP withEvent:event]; 
-    	if (fitView) {
-    		// 如果能找到最合适的view 
-    		return fitView; 
-    	}
+        // 获取子视图
+        UIView *childView = self.subviews[i]; 
+        // 坐标系的转换,把触摸点在当前视图上坐标转换为在子视图上的坐标
+        CGPoint childP = [self convertPoint:point toView:childView]; 
+        //询问子视图层级中的最佳响应视图
+        UIView *fitView = [childView hitTest:childP withEvent:event]; 
+        if (fitView) {
+            //如果子视图中有更合适的就返回
+            return fitView; 
+        }
     } 
-    // 4.没有找到更合适的view，也就是没有比自己更合适的view 
+    //没有在子视图中找到更合适的响应视图，那么自身就是最合适的
     return self;
 }
-// 作用:判断下传入过来的点在不在方法调用者的坐标系上
-// point:是方法调用者坐标系上的点
-//- (BOOL)pointInside:(CGPoint)point withEvent:(UIEvent *)event{
-//		return NO;
-//}
-- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event{ 
-    NSLog(@"%s",__func__);
-}
-@end
 ```
 
-`hit:withEvent:`方法底层会调用`pointInside:withEvent:`方法判断点在不在方法调用者的坐标系上。
+`pointInside:withEvent:` 这个方法，用于判断触摸点是否在自身坐标范围内
 
-#### pointInside:withEvent:方法
-`pointInside:withEvent:`方法判断点在不在当前view上（方法调用者的坐标系上）如果返回YES，代表点在方法调用者的坐标系上;返回NO代表点不在方法调用者的坐标系上，那么方法调用者也就不能处理事件。
+#### 例1：超出父视图区域的点击响应
 
+开发中可能会遇到一种情况：Tabbar 中的一个按钮超出了 tabbar 显示的区域。默认情况下，点击超出部分是无法响应点击事件的。
 
-## 事件的响应
-### 事件的传递与响应区别
-前面说到了，当一个事件发生后，事件会从父控件传给子控件，也就是说由UIApplication -> UIWindow -> UIView -> initial view,以上就是事件的传递，也就是寻找最合适的view的过程。
+因为触摸点不在TabBar的坐标范围内，因此TabBar无法响应该触摸事件，`hitTest:withEvent:` 直接返回了nil。整个过程，事件根本没有传递到圆形按钮。所以我们需要做的是扩大 tabbar 的点击范围。
 
-在找到了最合适的view后，接下来就是事件的响应过程。响应过程是传递过程的逆过程。在事件的响应中，如果某个控件实现了`touches...`方法，则这个事件将由该控件来接受，如果调用了`[super touches….]`;就会将事件顺着响应者链条往上传递，传递给上一个响应者；接着就会调用上一个响应者的`touches….`方法。
-
-touches默认做法是把事件顺着响应者链条向上抛：
-```objc
-#import "WSView.h"
-@implementation WSView 
-//只要点击控件,就会调用touchBegin,如果没有重写这个方法,自己处理不了触摸事件
-// 上一个响应者可能是父控件
-- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event{ 
-	// 默认会把事件传递给上一个响应者,上一个响应者是父控件,交给父控件处理
-	[super touchesBegan:touches withEvent:event]; 
-	// 注意不是调用父控件的touches方法，而是调用父类的touches方法
-	// super是父类 superview是父控件 
-	// 不过super内还是要调用superview的touch的方法来交给上一个响应者的。
-}
-@end
-```
-
-事件的传递是从上到下（父控件到子控件），事件的响应是从下到上（顺着响应者链条向上传递：子控件到父控件。
-
-**注意：**ViewController中如果自定义了`touchesBegan:withEvent:`方法，任何情况都会执行。只有在UIView中定义的`touchesBegan:withEvent:`方法，才会根据`hitTest：withEvent：`的不同返回，执行返回View的`touchesBegan:withEvent:`方法。估计是因为UIViewController中没有`hitTest：withEvent：`方法的缘故。
-
-### 一个事件多个对象处理
-因为系统默认做法(super方法)是把事件上抛给父控件，所以可以通过重写自己的touches方法和父控件的touches方法来达到一个事件多个对象处理的目的。
+我们需要重写 tabbar 的 `pointInside:withEvent:` 方法，先把位置转换到按钮上判断一下是否点击了按钮：
 
 ```objc
-- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event{ 
-	// 1.自己先处理事件...
-	NSLog(@"do somthing...");
-	// 2.再调用系统的默认做法，再把事件交给上一个响应者处理
-	[super touchesBegan:touches withEvent:event]; 
+//TabBar
+- (BOOL)pointInside:(CGPoint)point withEvent:(UIEvent *)event {
+    //将触摸点坐标转换到在CircleButton上的坐标
+    CGPoint pointTemp = [self convertPoint:point toView:_CircleButton];
+    //若触摸点在CricleButton上则返回YES
+    if ([_CircleButton pointInside:pointTemp withEvent:event]) {
+        return YES;
+    }
+    //否则返回默认的操作
+    return [super pointInside:point withEvent:event];
 }
+```
+
+#### 例2：按钮扩大响应区域
+
+和上面类似，还是重写 `pointInside:withEvent:` 方法：
+
+```objc
+- (BOOL)pointInside:(CGPoint)point withEvent:(UIEvent *)event {
+  	// 将一个 100*100 的按钮扩大为 300*300 的按钮
+  	CGRect rect = CGRectMake(-100, -100, 300, 300);
+		return CGRectContainsPoint(rect, point) ? YES : NO;
+}
+```
+
+### 事件响应的向上传递
+
+在找到最佳响应者之后，UIApplication将事件通过 `sendEvent:` 传递给事件所属的window，window同样通过 `sendEvent:` 再将事件传递给最佳响应者：
+
+```objc
+UIApplication ——> UIWindow ——> hit-tested view
+```
+
+响应者接收到时间之后，会回调 `UIResponder` 中的 `touchesBegan:withEvent:` 方法。响应者对于接收到的事件有3种操作：
+
+- 不拦截，默认操作事件会自动沿着默认的响应链往下传递
+- 拦截，不再往下分发事件。重写 `touchesBegan:withEvent:` 进行事件处理，不调用父类的 `touchesBegan:withEvent:` 
+- 拦截，继续往下分发事件。重写 `touchesBegan:withEvent:` 进行事件处理，同时调用父类的 `touchesBegan:withEvent:` 将事件往下传递
+
+每一个响应者对象（UIResponder对象）都有一个 `nextResponder` 方法，用于获取响应链中当前对象的下一个响应者。调用父类的 `touchesBegan:withEvent:`  会默认调用 `nextResponder` 的 `touchesBegan:withEvent:`。因此，就把响应事件向上传递了。
+
+> 我们可以通过响应链 `nextResponder` 找到下一级响应者，直到找到 UIViewController 的子类
+
+## UIGestureRecognizer
+
+### 手势简介
+
+`UIGestureRecognizer` 是手势的基类，可以创建其派生类实例来满足不同需求。
+
+#### 初始化方法
+
+`UIGestureRecognizer`类为其子类准备好了一个统一的初始化方法：
+
+```objc
+- (instancetype)initWithTarget:(nullable id)target action:(nullable SEL)action;
+```
+
+#### 手势状态
+
+UIgestureRecognizer类中有如下一个属性，里面枚举了一些手势的当前状态:
+
+```objc
+@property(nonatomic,readonly) UIGestureRecognizerState state;
+```
+
+枚举值如下：
+
+```objc
+typedef NS_ENUM(NSInteger, UIGestureRecognizerState) {
+    UIGestureRecognizerStatePossible,   // 默认的状态，这个时候的手势并没有具体的情形状态
+    UIGestureRecognizerStateBegan,      // 手势开始被识别的状态
+    UIGestureRecognizerStateChanged,    // 手势识别发生改变的状态(手势正在移动的状态)
+    UIGestureRecognizerStateEnded,      // 手势识别结束，将会执行触发的方法
+    UIGestureRecognizerStateCancelled,  // 手势识别取消
+    UIGestureRecognizerStateFailed,     // 识别失败，方法将不会被调用
+    UIGestureRecognizerStateRecognized
+};
+```
+
+可以在手势的处理方法中，判断手势的状态，区分不同的处理方式。
+
+#### 常用属性和方法
+
+```objc
+//设置代理，具体的协议后面会说
+@property(nullable,nonatomic,weak) id <UIGestureRecognizerDelegate> delegate; 
+//设置手势是否有效
+@property(nonatomic, getter=isEnabled) BOOL enabled;
+//获取手势所在的view
+@property(nullable, nonatomic,readonly) UIView *view; 
+//获取触发触摸的点
+- (CGPoint)locationInView:(nullable UIView*)view; 
+//设置触摸点数
+- (NSUInteger)numberOfTouches; 
+//获取某一个触摸点的触摸位置
+- (CGPoint)locationOfTouch:(NSUInteger)touchIndex inView:(nullable UIView*)view;
+```
+
+其中，`UITouch`也有一个方法是`locationInView:`可以获取触摸点在view中的位置。
+
+#### 代理方法 UIGestureRecognizerDelegate
+
+```objc
+//手指触摸屏幕后回调的方法，返回NO则不再进行手势识别，方法触发等
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch;
+//开始进行手势识别时调用的方法，返回NO则结束，不再触发手势
+- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer;
+//是否支持多时候触发，返回YES，则可以多个手势一起触发方法，返回NO则为互斥
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer;
+//下面这个两个方法也是用来控制手势的互斥执行的
+//这个方法返回YES，第一个手势和第二个互斥时，第一个会失效
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRequireFailureOfGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
+//这个方法返回YES，第一个和第二个互斥时，第二个会失效
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldBeRequiredToFailByGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
+```
+
+#### 手势互斥
+
+同一个View上是可以添加多个手势对象的，默认这个手势是互斥的，并且触发是随机的，一个手势触发了就会默认屏蔽其他相似的手势动作。
+
+如果我们想设置一下当手势互斥时要优先触发的手势，可以使用如下的方法：
+
+```objc
+[ges requireGestureRecognizerToFail:ges2];
+```
+
+表示如果`ges2`匹配，那么不会执行`ges`。只有当`ges2`不匹配的时候，才会执行`ges`。这个方法还适用于识别双击手势时屏蔽单击手势。只有确定不是双击手势后再识别为单击手势
+
+### UIGestureRecoginzer 子类
+
+#### 点击手势——UITapGestureRecognizer
+
+```objc
+//设置点击次数，默认为单击
+@property (nonatomic) NSUInteger  numberOfTapsRequired; 
+//设置同时点击的手指数
+@property (nonatomic) NSUInteger  numberOfTouchesRequired;
+```
+
+#### 捏合手势——UIPinchGestureRecognizer
+
+```objc
+//设置缩放比例
+@property (nonatomic)          CGFloat scale; 
+//设置捏合速度
+@property (nonatomic,readonly) CGFloat velocity;
+```
+
+在设置完缩放后，一定要把`recognizer.scale`设置为1
+
+```objc
+- (void)handlePinch:(UIPinchGestureRecognizer*)recognizer{
+    NSLog(@"缩放操作");//处理缩放操作
+    //对imageview缩放
+    _imageView.transform = CGAffineTransformScale(_imageView.transform, recognizer.scale, recognizer.scale);
+    recognizer.scale = 1;
+}
+```
+
+#### 拖拽手势——UIPanGestureRecognzer
+
+```objc
+//设置触发拖拽的最少触摸点，默认为1
+@property (nonatomic)          NSUInteger minimumNumberOfTouches; 
+//设置触发拖拽的最多触摸点
+@property (nonatomic)          NSUInteger maximumNumberOfTouches;  
+//获取手势的当前位置
+- (CGPoint)translationInView:(nullable UIView *)view;            
+//设置手势的当前位置
+- (void)setTranslation:(CGPoint)translation inView:(nullable UIView *)view;
+```
+
+拖动过程中处理方法会被多次调用，但是在一次拖拽结前，`translationInView:` 方法参照的点都是最开始按下的点。这就导致增量的拖动，越拖越快。所以我们必须使用`setTranslation`设置为`CGPointZero`，就能将手指的当前位置设置为拖移手势的起始位置：
+
+```objc
+-(void)handlePan:(UIPanGestureRecognizer*)recognizer{
+    NSLog(@"拖动操作");
+    //处理拖动操作,拖动是基于imageview，如果经过旋转，拖动方向也是相对imageview上下左右移动，而不是屏幕对上下左右
+    // 拖动过程中可以判断是否为 UIGestureRecognizerStateChanged
+    if (recognizer.state == UIGestureRecognizerStateChanged){
+          CGPoint translation = [recognizer translationInView:_imageView];
+    	  recognizer.view.center = CGPointMake(recognizer.view.center.x + translation.x, recognizer.view.center.y + translation.y);
+          [recognizer setTranslation:CGPointZero inView:_imageView];
+    }
+}
+```
+
+#### 滑动手势——UISwipeGestureRecognizer
+
+滑动手势和拖拽手势的不同之处在于滑动手势更快，拖拽比较慢
+
+```objc
+//设置触发滑动手势的触摸点数
+@property(nonatomic) NSUInteger                        numberOfTouchesRequired; 
+//设置滑动方向
+@property(nonatomic) UISwipeGestureRecognizerDirection direction;  
+```
+
+#### 旋转手势——UIRotationGestureRecognizer
+
+```objc
+//设置旋转角度
+@property (nonatomic)          CGFloat rotation;
+//设置旋转速度 
+@property (nonatomic,readonly) CGFloat velocity;
+```
+
+在设置完旋转后，`recognizer.rotation`一定要清零.
+
+```objc
+- (void)handleRotate:(UIRotationGestureRecognizer*) recognizer{
+    NSLog(@"旋转操作");//处理旋转操作
+    //对imageview旋转
+    _imageView.transform = CGAffineTransformRotate(_imageView.transform, recognizer.rotation);
+    recognizer.rotation = 0;    //一定要清零
+}
+```
+
+#### 长按手势——UILongPressGestureRecognizer
+
+```objc
+//设置触发前的点击次数
+@property (nonatomic) NSUInteger numberOfTapsRequired;    
+//设置触发的触摸点数
+@property (nonatomic) NSUInteger numberOfTouchesRequired; 
+//设置最短的长按时间
+@property (nonatomic) CFTimeInterval minimumPressDuration; 
+//设置在按触时时允许移动的最大距离 默认为10像素
+@property (nonatomic) CGFloat allowableMovemen
+```
+
+### 手势与响应链
+
+#### 结论
+
+event 绑定的 touch 对象上维护了一个手势识别器数组。在响应链通过 hit-test 寻找最佳响应视图的时候，会收集响应链上每一个视图上施加的手势：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/uitouch2.png?raw=true)
+
+Window先将事件传递给这些手势识别器，再传给hit-tested view。一旦有手势识别器成功识别了手势，Application就会取消hit-tested view对事件的响应。因此可以理解为**手势识别器比UIResponder具有更高的事件响应优先级**。
+
+> 但是，识别手势是需要时间的，所以具体的表现就是当有点击事件的时候，会先触发 `touchBegan:withEvent:` 方法，然后当手势识别到的时候，就会触发 `touchCancelled:withEvent:`
+
+比如在视图上添加一个 UIPanGestureRecognizer 手势。打印日志可以看到，会先触发 UIResponder 的回调，直到 UIPanGestureRecognizer 识别成功：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/uitouch3.png?raw=true)
+
+#### 手势识别器的两个属性
+
+```objc
+@property(nonatomic) BOOL cancelsTouchesInView;
+@property(nonatomic) BOOL delaysTouchesBegan;
+```
+
+##### cancelsTouchesInView
+
+默认为YES。表示当手势识别器成功识别了手势之后，会通知Application取消响应链对事件的响应，并不再传递事件给hit-test view。若设置成NO，表示手势识别成功后不取消响应链对事件的响应，事件依旧会传递给hit-test view。
+
+如果设置 `pan.cancelsTouchesInView = NO`，那么上面的 UIPanGestureRecognizer 的日志会变为：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/uitouch4.png?raw=true)
+
+##### delaysTouchesBegan
+
+默认为NO。默认情况下手势识别器在识别手势期间，当触摸状态发生改变时，Application都会将事件传递给手势识别器和hit-tested view；若设置成YES，则表示手势识别器在识别手势期间，截断事件，即不会将事件发送给hit-tested view。
+
+如果设置 `pan.delaysTouchesBegan = NO`，那么上面的 UIPanGestureRecognizer 的日志会变为：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/uitouch5.png?raw=true)
+
+### UITableView 的点击和手势的冲突
+
+UIScrollView 的滑动其实是因为系统加了一个 UIPanGesture的缘故。UITableView 点击 Cell 其实是调用了 `touchBegan:withEvent:` 方法。
+
+因此，当有这样一个需求：cell 支持左滑，并且当一个 cell 左滑固定的时候，点击 UITableView 任意位置会关闭 cell。这种时候，需要给 UITableView 添加一个 UITapGesture。而这个 UITapGesture 就会导致 UITableView 本身 Cell 点击的不响应。
+
+因此，我们需要在通常情况下设置这个 `tapGesture.enabled = NO;`。只有在 Cell 展开的情况下，设置 `tapGesture.enabled = YES`
+
+### 手势与UIControl
+
+UIControl 继承于 UIResponder。像 UIButton 就是继承于 UIControl
+
+#### 结论
+
+系统派生于 UIControl 的类像 UIButton 之类，处理事件的优先级比**父视图上的** UIGestureRecognizer高。UIControl会阻止父视图上的手势识别器行为。
+
+> 注意，自己继承于 UIControl 实现的类不存在优先级比手势高的情况。
+>
+> 另外，UIControl 的优先级是比父视图上的手势高，如果当前视图也有手势，那么 UIControl 无法阻止手势响应。
+
+## 一些技巧
+
+### 几个坐标转换的方法
+
+#### UITouch
+
+```objc
+// 返回值表示触摸在view上的位置
+// 这里返回的位置是针对view的坐标系的（以view的左上角为原点(0, 0)）
+// 调用时传入的view参数为nil的话，返回的是触摸点在UIWindow的位置
+- (CGPoint)locationInView:(UIView *)view; 
+// 该方法记录了前一个触摸点的位置
+- (CGPoint)previousLocationInView:(UIView *)view; 
+```
+
+#### UIGestureRecognizer
+
+```objc
+// 返回坐标点,第一个参数为tauch数组的索引
+CGPoint point= [pan locationOfTouch:0 inView:self.view];
+// 手指移动了多少，上面是相对于坐标原点，这个是相对于拖拽的起始点，用于 拖拽 View 时候修改 View 位置的
+// 配合 [pan setTranslation:CGPointZero inView: someView] 使用，每次拖拽方法回调的时候，都要将上次的拖拽位移清零
+CGPoint point = [pan translationInView:self.view];
+```
+
+#### UIView
+
+```objc
+// UIView 转换到另一个 UIView 坐标系，在 hittest 中判断子控件是否是 responder 的时候会使用
+- (CGPoint)convertPoint:(CGPoint)point toView:(UIView *)view;
 ```
 
 
 
->Demo 请看UIGestureRecognizer
-
-
-
-
-
-
-
+[iOS触摸事件全家桶](https://www.jianshu.com/p/c294d1bd963d)
 
