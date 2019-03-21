@@ -13,341 +13,242 @@ tags:
 
 ## Cookie 管理
 
-网上有很多关于 Cookie 丢失时候的方法，使用场景不多，出现问题了看看就好。
+### loadRequest 无 Cookie
 
-### 首次加载无 Cookie
-
-WKWebView 不会在请求的时候自动到 `NSHTTPCookieStorage` 中获取 cookie。
-
-所以需要我们在  `loadRequest` 前，手动在 request header 中设置 Cookie, 解决首个请求 Cookie 带不上的问题:
+WKWebView 不会在请求的时候自动到 `NSHTTPCookieStorage` 中获取 cookie。所以需要我们在  `loadRequest` 前，手动从 `NSHTTPCookieStorage` 中拿到 Cookie，并将处理好的 Cookie String在 request header 中设置 Cookie, 解决首个请求 Cookie 带不上的问题：
 
 ```objc
 NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"http://www.baidu.com"]];
-NSArray *cookies = [NSHTTPCookieStorage sharedHTTPCookieStorage].cookies;
-//Cookies数组转换为requestHeaderFields
-NSDictionary *requestHeaderFields = [NSHTTPCookie requestHeaderFieldsWithCookies:cookies];
-//设置请求头
-request.allHTTPHeaderFields = requestHeaderFields;
+// 根据 Request 的 URL，获取相应的 cookie
+NSArray *availableCookie = [[NSHTTPCookieStorage sharedHTTPCookieStorage] cookiesForURL:request.URL];
+// 重新创建一个可变数组
+NSMutableArray *cookieMarr = [NSMutableArray arrayWithArray:availableCookie];
+//删除过期的cookie
+for (int i = 0; i < cookieMarr.count; i++) {
+    NSHTTPCookie *cookie = [cookieMarr objectAtIndex:i];
+    if (!cookie.expiresDate) {
+        continue;
+    }
+    /// cookie 有 expiresDate，超过的就 remove 掉
+    if ([cookie.expiresDate compare:self.currentTime]) {
+        [cookieMarr removeObject:cookie];
+        i--;
+    }
+}
+// 把 cookie 的 array 转为 string 类型
+for (NSHTTPCookie *cookie in cookieArr) {
+    if ([cookie.name rangeOfString:@"'"].location != NSNotFound) {
+        continue;
+    }
+    
+    if (![validDomain hasSuffix:cookie.domain] && ![cookie.domain hasSuffix:validDomain]) {
+        continue;
+    }
+    
+    NSString *value = [NSString stringWithFormat:@"%@=%@", cookie.name, cookie.value];
+    [marr addObject:value];
+}
+NSString *cookie = [marr componentsJoinedByString:@";"];
+
+// 设置 request 的 cookie
+[request setValue:cookie forHTTPHeaderField:@"Cookie"];
 [self.webView loadRequest:request];
 ```
 
-### 解决后续Ajax请求Cookie丢失问题
+### JS 在执行的时候使用 document.cookie 读取不到 cookie
 
-主要是给 WKWebView 注入脚本。js 端的 cookie 和 `NSHTTPCookieStorage` 同步。
-
-```objc
-/*!
- *  更新webView的cookie
- */
-- (void)updateWebViewCookie
-{
-    // 创建要注入的脚本,每次要加载网页的时候注入
-    WKUserScript * cookieScript = [[WKUserScript alloc] initWithSource:[self cookieString] injectionTime:WKUserScriptInjectionTimeAtDocumentStart forMainFrameOnly:NO];
-    //添加Cookie
-    [self.configuration.userContentController addUserScript:cookieScript];
-}
-
-- (NSString *)cookieString
-{	
-    NSMutableString *script = [NSMutableString string];
-    // 先获取到 js 端存在的所有的 cookie 的键
-    [script appendString:@"var cookieNames = document.cookie.split('; ').map(function(cookie) { return cookie.split('=')[0] } );\n"];
-    for (NSHTTPCookie *cookie in [[NSHTTPCookieStorage sharedHTTPCookieStorage] cookies]) {
-        // Skip cookies that will break our script
-        if ([cookie.value rangeOfString:@"'"].location != NSNotFound) {
-            continue;
-        }
-        // 比较 native 保存的键 js 端是否包含了，如果不包含，直接把它设置给 js 端。(js 端设置 document.cookie = 'xxx' 并不是直接把之前的都替换掉，而是取并集。可以尝试在 chrome 中操作一下)
-        [script appendFormat:@"if (cookieNames.indexOf('%@') == -1) { document.cookie='%@'; };\n", cookie.name, cookie.da_javascriptString];
-    }
-    return script;
-}
-
-@interface NSHTTPCookie (Utils)
-
-- (NSString *)da_javascriptString;
-
-@end
-
-@implementation NSHTTPCookie (Utils)
-
-- (NSString *)da_javascriptString
-{
-    NSString *string = [NSString stringWithFormat:@"%@=%@;domain=%@;path=%@",
-                        self.name,
-                        self.value,
-                        self.domain,
-                        self.path ?: @"/"];
-    if (self.secure) {
-        string = [string stringByAppendingString:@";secure=true"];
-    }
-    return string;
-}
-
-@end
-```
-
-### 跳转新页面时Cookie带不过去问题
-
-打开新页面，对应的就是 safari 增加新的标签页的情景。在 WKWebView 中 `navigationAction.targetFrame` 的 `mainFrame` 属性为NO，表明这个 `WKNavigationAction` 将会新开一个页面。
+当生成 Request 后，页面加载之前，给 WKWebView 注入脚本，使js 端的 cookie 和 `NSHTTPCookieStorage` 同步：
 
 ```objc
-//核心方法：
-modalPresentationStyle
- 修复打开链接Cookie丢失问题
-
- @param request 请求
- @return 一个fixedRequest
- */
-- (NSURLRequest *)fixRequest:(NSURLRequest *)request
-{
-    NSMutableURLRequest *fixedRequest;
-    if ([request isKindOfClass:[NSMutableURLRequest class]]) {
-        // 如果这个请求是可变的，那么后面就直接操作这个请求的 cookie
-        fixedRequest = (NSMutableURLRequest *)request;
-    } else {
-        // 如果这个请求是不可变的，那么就深拷贝一份，然后设置 cookie
-        fixedRequest = request.mutableCopy;
+-(void)syncClientCookieScripts:(NSMutableURLRequest *)request{
+    if (!request.URL) {
+        return;
     }
-    //防止Cookie丢失
-    NSDictionary *dict = [NSHTTPCookie requestHeaderFieldsWithCookies:[NSHTTPCookieStorage sharedHTTPCookieStorage].cookies];
-    if (dict.count) {
-        NSMutableDictionary *mDict = request.allHTTPHeaderFields.mutableCopy;
-        [mDict setValuesForKeysWithDictionary:dict];
-        fixedRequest.allHTTPHeaderFields = mDict;
-    }
-    return fixedRequest;
-}
-
-#pragma mark - WKNavigationDelegate 
-
-- (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler {
-
-#warning important 这里很重要
-    //解决Cookie丢失问题
-    NSURLRequest *originalRequest = navigationAction.request;
-    [self fixRequest:originalRequest];
-    //如果originalRequest就是NSMutableURLRequest, originalRequest中已添加必要的Cookie，可以跳转
-    //允许跳转
-    decisionHandler(WKNavigationActionPolicyAllow);
-    //可能有小伙伴，会说如果originalRequest是NSURLRequest，不可变，那不就添加不了Cookie了，是的，我们不能因为这个问题，不允许跳转，也不能在不允许跳转之后用loadRequest加载fixedRequest，否则会出现死循环，具体的，小伙伴们可以用本地的html测试下。
-    
-    NSLog(@"%@", NSStringFromSelector(_cmd));
-}
-
-#pragma mark - WKUIDelegate
-
-// 跳转到新页面调用
-- (WKWebView *)webView:(WKWebView *)webView createWebViewWithConfiguration:(WKWebViewConfiguration *)configuration forNavigationAction:(WKNavigationAction *)navigationAction windowFeatures:(WKWindowFeatures *)windowFeatures {
-
-#warning important 这里也很重要
-    //这里不打开新窗口
-    [self.webView loadRequest:[self fixRequest:navigationAction.request]];
-    return nil;
-}
-```
-
-### 本地保存 Cookie
-
-如果还是有 Cookie 丢失的情况，那么可以通过本地保存。
-
-```objc
-//比如在 h5 中登录成功的时候，保存Cookie。或者 Native 登录成功后，也可以保存 token，到时候 h5 页面把 token 作为 cookie 传过去。
-- (void)saveCookies {
-    NSArray *allCookies = [[NSHTTPCookieStorage sharedHTTPCookieStorage] cookies];
-    for (NSHTTPCookie *cookie in allCookies) {
-        if ([cookie.name isEqualToString:DAServerSessionCookieName]) {
-            NSDictionary *dict = [[NSUserDefaults standardUserDefaults] dictionaryForKey:DAUserDefaultsCookieStorageKey];
-            if (dict) {
-                NSHTTPCookie *localCookie = [NSHTTPCookie cookieWithProperties:dict];
-                if (![cookie.value isEqual:localCookie.value]) {
-                    NSLog(@"本地Cookie有更新");
-                }
+    NSArray *availableCookie = [[NSHTTPCookieStorage sharedHTTPCookieStorage] cookiesForURL:request.URL];
+    NSMutableArray *filterCookie = [[NSMutableArray alloc]init];
+   
+    for (NSHTTPCookie * cookie in availableCookie) {
+        if (self.syncCookieMode) {
+            //httponly需求不得写入js cookie
+            if (!cookie.HTTPOnly) {
+                [filterCookie addObject:cookie];
             }
-            [[NSUserDefaults standardUserDefaults] setObject:cookie.properties forKey:@"someKey"];
-            [[NSUserDefaults standardUserDefaults] synchronize];
-            break;
         }
     }
-}
-```
-
-在读取时，如果没有则添加：
-
-```objc
-@implementation NSHTTPCookieStorage (Utils)
-
-+ (void)load
-{
-    // hook 获取 cookies 的方法
-    class_methodSwizzling(self, @selector(cookies), @selector(da_cookies));
-}
-
-- (NSArray<NSHTTPCookie *> *)da_cookies
-{
-    NSArray *cookies = [self da_cookies];
-    BOOL isExist = NO;
-    for (NSHTTPCookie *cookie in cookies) {
-        if ([cookie.name isEqualToString:DAServerSessionCookieName]) {
-            isExist = YES;
-            break;
+    
+    // 拼接 JS 代码 对 Client Side 注入Cookie
+    NSDictionary *reqheader = [NSHTTPCookie requestHeaderFieldsWithCookies:filterCookie];
+    NSString *cookieStr = [reqheader objectForKey:@"Cookie"];
+    if (filterCookie.count > 0) {
+        for (NSHTTPCookie *cookie in filterCookie) {
+            NSTimeInterval expiretime = [cookie.expiresDate timeIntervalSince1970];
+            NSString *js = [NSString stringWithFormat:@"document.cookie ='%@=%@;expires=%f';",cookie.name,cookie.value,expiretime];
+            WKUserScript *jsscript = [[WKUserScript alloc]initWithSource:js injectionTime:WKUserScriptInjectionTimeAtDocumentStart forMainFrameOnly:NO];
+            [self.userContentController addUserScript:jsscript];
         }
     }
-    if (!isExist) {
-        //CookieStroage中添加
-        NSDictionary *dict = [[NSUserDefaults standardUserDefaults] dictionaryForKey:@"someKey"];
-        if (dict) {
-            NSHTTPCookie *cookie = [NSHTTPCookie cookieWithProperties:dict];
-            [[NSHTTPCookieStorage sharedHTTPCookieStorage] setCookie:cookie];
-            NSMutableArray *mCookies = cookies.mutableCopy;
-            [mCookies addObject:cookie];
-            cookies = mCookies.copy;
-        }
-    }
-    return cookies;
+    return;
 }
-
-@end
 ```
 
 ## User-Agent
 
-### 全局的 UA
+设置 UA 有两种方式，一种是全局的设置 UA，还有一种是设置局部的 UA。
+
+### 全局 UA
+
+设置全局 UA 是通过把包含 `UserAgent` 的字典存入 `NSUserDefaults` 中去：
 
 ```objc
-//最好在AppDelegate中就提前设置
-@implementation AppDelegate
-
-
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    // Override point for customization after application launch.
-    
-    //设置自定义UserAgent
-    [self setCustomUserAgent];
-    return YES;
-}
-
-- (void)setCustomUserAgent
-{
-    //get the original user-agent of webview
-    UIWebView *webView = [[UIWebView alloc] initWithFrame:CGRectZero];
-    NSString *oldAgent = [webView stringByEvaluatingJavaScriptFromString:@"navigator.userAgent"];
-    //add my info to the new agent
-    NSString *newAgent = [oldAgent stringByAppendingFormat:@" %@", @"WebViewDemo/1.0.0"];
-    //regist the new agent
-    NSDictionary *dictionnary = [[NSDictionary alloc] initWithObjectsAndKeys:newAgent, @"UserAgent", newAgent, @"User-Agent", nil];
-    // 全局设置 UA
-    [[NSUserDefaults standardUserDefaults] registerDefaults:dictionnary];
-}
-
-@end
+ NSDictionary *dictionary = [[NSDictionary alloc] initWithObjectsAndKeys:appUserAgent, @"UserAgent", nil];
+[[NSUserDefaults standardUserDefaults] registerDefaults:dictionary];
 ```
 
-虽然这里是通过 `UIWebView` 设置的，但是通过 `NSUserDefaults` 设置自定义`UserAgent`，可以同时作用于 `UIWebView` 和 `WKWebView` 。
+### 自定义 UA
 
-### 局部的 UA
+iOS 9 以上提供了自定义 UA 的方式，更加简单，直接成为了 WKWebView 的一个属性：
 
-关于自定义UA，`WKWebView`提供Api，前文中也说明过，就是调用`customUserAgent`属性：
-
-```objc
+```
 self.webView.customUserAgent = @"WebViewDemo/1.0.0"; 
 ```
 
-`WKWebView`的`customUserAgent`属性，优先级高于`NSUserDefaults`，当同时设置时，显示`customUserAgent`的值
+### 获取系统默认 UA
 
-如果不想覆盖原有的值, 可以这样:
+有时候，我们需要自定义 UA 的同时还想要有系统的 UA，即在系统 UA 后添加自己的 UA。这就需要获取到系统的 UA 了。可以通过 `UIWebView` 获取 UA 字符串：
 
 ```objc
-webView.evaluateJavaScript("navigator.userAgent") { [weak webView] (info, error) in
-    // 获取默认值
-    if var userAgent = info as? String {
-        // 添加自定义的内容
-        if userAgent.hasSuffix("/ios-app-cgyc") == false {
-            userAgent += "/ios-app"
-        }
-
-        if #available(iOS 9.0, *) {
-            webView?.customUserAgent = userAgent
-        } else {
-            // Fallback on earlier versions
-        }
-
-        // 重要：加载网页
-        let request = URLRequest(url: ul)
-        webView?.load(request)
-    }
-}
+UIWebView *webView = [[UIWebView alloc] init];
+NSString *originalUserAgent = [webView stringByEvaluatingJavaScriptFromString:@"navigator.userAgent"];
+NSString *appUserAgent = [NSString stringWithFormat:@"%@-%@", originalUserAgent, customUserAgent];
 ```
 
-注意，一定要在设置完 UA 之后，再加载网页
+获取到 UA，再通过上面两种方式设置全局或者自定义 UA 即可。
+
+
 
 ## NSURLProtocol
 
-`NSURLProtocol` 主要可以做一些缓存操作。使用 NSURLProtocol 对网络请求进行过滤，如果是特定的 html、css、js 等请求和图片请求，就在本地缓存数据中进行查找，命中缓存则使用本地数据包装成网络请求的响应数据进行回传，否则才执行对应的网络请求。这样即使在网络可用的情况下，也会优先使用本地缓存数据，不仅可以完成页面的离线展示，还有效地加快了网络可用时页面的加载速度。
+介绍一下 NSURLProtocol 的使用方式。
 
-### h5加载本地相册中的图片
+### 注册 NSURLProtocol
 
-有这样的一个需求，就是 WKWebView 中要加载本地相册中的一张图片，然后展示。h5 是无法直接加载本地的资源的，所以需要通过 NSURLProtocol 拦截 h5 的请求。
-
-本地相册选择后，我们可以拿到图片的 UIImage 对象。我们需要先把她保存到本地的地址下：
+首先要创建一个 `NSURLProtocol` 的子类：
 
 ```objc
-UIImage *image = [info  objectForKey:UIImagePickerControllerOriginalImage];
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,NSUserDomainMask, YES);
-    NSString *filePath = [[paths objectAtIndex:0] stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.png",timeString]];  //保存到本地
-    [UIImagePNGRepresentation(image) writeToFile:filePath atomically:YES];
-
-```
-
-然后，把保存的 `filePath`  传递给 webView 调用 h5 约定好的方法：
-
-```objc
-NSString *str = [NSString stringWithFormat:@"%@",filePath];
-[picker dismissViewControllerAnimated:YES completion:^{
-        // oc 调用js 并且传递图片路径参数
-        [self.webview evaluateJavaScript:[NSString stringWithFormat:@"getImg('%@')",str] completionHandler:^(id _Nullable data, NSError * _Nullable error) {
-        }];
-    }];
-}
-
-```
-
-h5 在方法中要发出一个网络请求。然后被 Native 拦截。我们需要创建一个 `NSURLProtocol` 拦截器:
-
-```objc
-@interface MyCustomURLProtocol : NSURLProtocol
+@interface MYProtocol : NSURLProtocol
 @end
-    
-@implementation MyCustomURLProtocol
-+ (BOOL)canInitWithRequest:(NSURLRequest*)theRequest{
-    if ([theRequest.URL.scheme caseInsensitiveCompare:@"myapp"] == NSOrderedSame) {
+```
+
+然后在任意时候注册：
+
+```objc
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    [NSURLProtocol registerClass:[YXNSURLProtocol class]];
+}
+```
+
+### 重写 NSURLProtocol 中的几个方法
+
+这里模拟一个真实的业务场景，就是 WKWebView 在首次通过 `loadRequest` 发起 post 的 body 丢失。具体原因见下面的*一些问题*
+
+解决方案就是将请求的 scheme 设置为一个特殊的协议字段，如本例中的 `post`，然后通过 `NSURLProtocol` 拦截。
+
+#### 是否拦截 Request
+
+```objc
++ (BOOL)canInitWithRequest:(NSURLRequest *)request{
+    /// 如果 scheme 是 post 那么拦截
+    if ([request.URL.scheme isEqualToString:@"post"]) {
         return YES;
+    }
+    
+    /// 如果是已经拦截过的就放行
+    if ([NSURLProtocol propertyForKey:@"HasIntercepted" inRequest:request]) {
+        return NO;
     }
     return NO;
 }
-
-+ (NSURLRequest*)canonicalRequestForRequest:(NSURLRequest*)theRequest{
-    return theRequest;
-}
-
-- (void)startLoading{
-    NSURLResponse *response = [[NSURLResponse alloc] initWithURL:[self.request URL] MIMEType:@"image/png" expectedContentLength:-1 textEncodingName:nil];
-    NSString *imagePath = [self.request.URL.absoluteString componentsSeparatedByString:@"myapp://"].lastObject;
-    NSData *data = [NSData dataWithContentsOfFile:imagePath];
-    [[self client] URLProtocol:self didReceiveResponse:response cacheStoragePolicy:NSURLCacheStorageNotAllowed];
-    [[self client] URLProtocol:self didLoadData:data];
-    [[self client] URLProtocolDidFinishLoading:self];
-}
-- (void)stopLoading{
-}
-@end
-
 ```
 
-我们需要在 ViewController 初始化的时候，注册这个拦截器。WKWebView 的 `NSURLProtocol` 使用起来写法比较特殊：
+未被拦截的 Request 直接放行，拦截的 Request 进入下一个方法
+
+#### 重设 NSURLRequest
+
+被拦截的 `post` 协议来到下面的方法中。这里从 `request.allHTTPHeaderFields`，即 request 的所有头信息中，拿到原本的 scheme 以及原本的 bodyParam。然后生成一个新的 Request，把 body 和 cookie 塞进去，返回这个 Request：
 
 ```objc
- //注册
++ (NSURLRequest *)canonicalRequestForRequest:(NSURLRequest *)request {
+    
+    /// 由于 WKWebView 通过 loadRequest 发起的 post 请求 body 会丢失，所以这里通过 NSURLProtocol 拦截，然后自己发出 request
+    if ([request.URL.scheme isEqualToString:@"post"]) {
+        //获取oldScheme
+        NSString *originScheme = request.allHTTPHeaderFields[@"oldScheme"];
+        
+        NSMutableString *urlString = [NSMutableString stringWithString:request.URL.absoluteString];
+        
+        NSRange schemeRange = [urlString rangeOfString:request.URL.scheme];
+        
+        [urlString replaceCharactersInRange:schemeRange withString:originScheme];
+        
+        //根据新的urlString生成新的request
+        NSMutableURLRequest *newRequest = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlString]];
+        
+        //获取bodyParam
+        NSString *bodyParam = request.allHTTPHeaderFields[@"bodyParam"];
+        NSData *bodyData =[bodyParam dataUsingEncoding:NSUTF8StringEncoding];
+        newRequest.HTTPMethod = @"POST";
+        newRequest.HTTPBody = bodyData;
+        
+        //获取cookie
+        NSString *cookie = request.allHTTPHeaderFields[@"Cookie"];
+        [newRequest addValue:cookie forHTTPHeaderField:@"Cookie"];
+        
+        [NSURLProtocol setProperty:@YES forKey:@"HasIntercepted" inRequest:newRequest];
+        
+        return newRequest;
+    }
+    
+    
+    return request;
+}
+```
+
+这里还要注意一点，我们将新生成的 Request 添加一个 `HasIntercepted` 的标记。这样再重新进入 `canInitWithRequest` 的时候就会被直接放行了，防止无限循环。
+
+#### 加载 Request
+
+来到了最后一步，自行创建一个 `NSURLSession` 来实现网络请求：
+
+```objc
+- (void)startLoading {
+    NSURLSession *session = [NSURLSession sharedSession];
+    NSURLSessionDataTask *task = [session dataTaskWithRequest:self.request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+        if (!error) {
+            // 请求成功了，把 response 和 data 都返回回去
+            [[self client] URLProtocol:self didReceiveResponse:response cacheStoragePolicy:NSURLCacheStorageAllowed];
+            [self.client URLProtocol:self didLoadData:data];
+            [[self client] URLProtocolDidFinishLoading:self];
+        }else{
+            [self.client URLProtocol:self didFailWithError:error];
+        }
+    }];
+    [task resume];
+    self.dataTask = task;
+}
+
+- (void)stopLoading {
+    [self.dataTask cancel];
+}
+```
+
+`self.client` 就是操作最后拦截结果的实例，`self.request` 就是上面创建的新的 Request。整个拦截过程就完成了。
+
+### 拦截 WKWebView 的请求
+
+WKWebView 默认是无法被 NSURLProtocol 拦截的，但是我们可以通过私有 Api 实现：
+
+```objc
+//注册
 [NSURLProtocol registerClass:[MyCustomURLProtocol class]];
 //实现拦截功能
 Class cls = NSClassFromString(@"WKBrowsingContextController");
@@ -358,10 +259,26 @@ if ([(id)cls respondsToSelector:sel]) {
     [(id)cls performSelector:sel withObject:@"myapp"];
 #pragma clang diagnostic pop
 }
-
 ```
 
-> 上面是为 WKWebView 注册了一个 scheme 为 myapp 的 `NSURLProtocol`，对于要拦截 http 或者 https 请求，换成相应 scheme 就可以了。
+> 上面是为 WKWebView 注册了一个 scheme 为 myapp 的 NSURLProtocol，对于要拦截 http 或者 https 请求，换成相应 scheme 就可以了。
+
+
+
+### NSURLProtocol 的应用场景
+
+通过自定义的NSURLProtocol，我们拿到用户请求的request之后，我们可以做很多事情。比如：
+
+1. 自定义请求和响应
+2. 网络的缓存处理（H5离线包 和 网络图片缓存）
+3. 重定向网络请求
+4. 过滤掉一些非法请求
+
+等等...
+
+
+
+## WKWebView 的复用池
 
 
 
@@ -379,20 +296,29 @@ if ([(id)cls respondsToSelector:sel]) {
 
 ```
 
-### WKWebView NSURLProtocol 的 post 请求的 body 为空
-
-由于 WKWebView 在独立进程里执行网络请求。一旦注册 http(s) scheme 后，网络请求将从 Network Process 发送到 App Process，这样 NSURLProtocol 才能拦截网络请求。在 webkit2 的设计里使用 MessageQueue 进行进程之间的通信，Network Process 会将请求 encode 成一个 Message,然后通过 IPC 发送给 App Process。出于性能的原因，encode 的时候 HTTPBody 和 HTTPBodyStream 这两个字段被丢弃掉了。
-
-因此，**如果通过 registerSchemeForCustomProtocol 注册了 http(s) scheme, 那么由 WKWebView 发起的所有 http(s)请求都会通过 IPC 传给主进程 NSURLProtocol 处理，导致 post 请求 body 被清空**；
-
 ### WKWebView 上通过 loadRequest 发起的 post 请求 body 数据会丢失
 
-一般加载一个网页请求为啥要用 post 咧。所以简单点用 get 就好啦。
+这是因为 WKWebView 有自己单独的一条进程。`loadRequest` 其实是将请求信息从应用进程传递给 WKWebView 所在进程，使其展示的过程。然而，苹果出于进程间通信加快速度的考虑，丢弃了 post 请求的 body 信息。
 
-但是如果还是想要通过 post 发起请求的话。假如想通过-[WKWebView loadRequest:]加载 post 请求 request1。需要进行以下步骤：
+解决方案是通过 `NSURLProtocol` 拦截 Request，这样 WKWebView 又把 post 请求回传给了 native。发送请求前，把原本 body 中的信息放到 header 中。然后由 `NSURLProtocol` 拦截，生成新的请求，完成数据加载，最后将请求得到的数据返回。
 
-1. 不直接把 post 请求的信息放到 body 中，而是创建新的请求 request2。同时将 request1 的 body 字段复制到 request2 的 header 中（WebKit 不会丢弃 header 字段）。
-2. 然后通过`-[WKWebView loadRequest:]` 加载新的 post 请求 request2。
-3. 通过 `+[WKBrowsingContextController registerSchemeForCustomProtocol:]` 注册 scheme
-4. 注册 NSURLProtocol 拦截请求,替换请求 scheme, 由 native 端生成新的请求 request3。
-5. 将 request2 header的body 字段复制到 native 发起的请求 request3 的 body 中，并使用 NSURLConnection 加载 request3，最后通过 NSURLProtocolClient 将加载结果返回 WKWebView;
+详见上面的 NSURLProtocol 使用介绍，有详细步骤讲解
+
+### WKWebView NSURLProtocol 的 post 请求的 body 为空
+
+上面 loadRequest 是从 app 将 post 请求传给 WKWebView，而此例是由于 NSURLProtocol 拦截，需要把 WKWebView 的 post 请求传递给 app 处理。因此，post 请求的 body 还是会丢失。
+
+所以，解决方式还是同上面 loadRequest 一样。
+
+
+
+## 其他优化
+
+
+
+## 参考
+
+[移动 H5 首屏秒开优化方案探讨](http://blog.cnbang.net/tech/3477/)
+
+[从零收拾一个hybrid框架（二）-- WebView容器基础功能设计思路](http://awhisper.github.io/2018/03/06/hybrid-webcontainer/)
+
