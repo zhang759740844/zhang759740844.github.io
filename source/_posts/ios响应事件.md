@@ -5,8 +5,7 @@ tags:
 
 ​	- UIResponder
 
-从点击屏幕到系统做出响应，经历了哪些过程？需要详细探究下ios的响应机制。本文参考自[史上最详细的iOS之事件的传递和响应机制
-](http://www.jianshu.com/p/2e074db792ba)
+从点击屏幕到系统做出响应，经历了哪些过程？需要详细探究下ios的响应机制。
 
 <!--more-->
 
@@ -515,7 +514,9 @@ CGPoint point = [pan translationInView:self.view];
 - (CGPoint)convertPoint:(CGPoint)point toView:(UIView *)view;
 ```
 
-
+## 参考
 
 [iOS触摸事件全家桶](https://www.jianshu.com/p/c294d1bd963d)
 
+[史上最详细的iOS之事件的传递和响应机制
+](http://www.jianshu.com/p/2e074db792ba)

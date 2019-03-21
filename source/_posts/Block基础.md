@@ -53,18 +53,16 @@ ArrayEnumerationBlock devowelizer；
 ### 外部变量
 在执行Block对象时，为了确保其下的外部变量能够始终存在，相应的Block对象会捕获这些变量，意味着程序会拷贝变量的值。
 
-**当外部对象是引用时，block会复制其引用的地址(指针指向的堆上的地址)，只能改变地址指向的对象的属性，不能将外部对象指向新的地址，类似于Java的引用机制。**
+**当外部对象是引用时，block会复制其引用的地址(指针指向的堆上的地址)，只能改变地址指向的对象的属性，不能将外部对象指向新的地址.**
 
 ### 修改外部变量
 如果需要在Block对象内修改某个外部变量，则可以声明相应的外部变量时，在前面加上__block关键字。
-
-**__block关键字让block内部拿到外部对象的指针。这样就可以改变地址上指向实例对象地址的指针的指向，从而达到改变外部对象的结果。**
 
 ### 在Block中使用self
 如果要写一个使用self的Block对象，需要避免强引用循环。  
 在Block外声明一个_weak指正，然后将这个指针指向Block对象使用的self，最后在Block对象中使用这个新的指针。
 ```objc
-_weak BNREmployee *weakSelf = self;	//弱引用指针
+_weak typeof(self) weakSelf = self;	//弱引用指针
 	myBlock = ^{
 		NSLog(@“Employee:%@”,weakSelf);
 	};
@@ -105,16 +103,3 @@ struct Block_layout {
 5. `descriptor`， 表示该 block 的附加描述信息，主要是 size 大小，以及 copy 和 dispose 函数的指针。
 6. 各种从外部复制过来的变量，block 能够访问它外部的局部变量，就是因为将这些变量（或变量的地址）复制到了结构体中。
 
-### block种类
-block的isa是以下三个的一种：
-1. `_NSConcreteGlobalBlock` 全局的静态 block，不会访问任何外部变量。
-2. `_NSConcreteStackBlock` 保存在栈中的 block，当函数返回时会被销毁。
-3. `_NSConcreteMallocBlock` 保存在堆中的 block，当引用计数为 0 时会被销毁。
-
-在 ARC 开启的情况下，将只会有 `NSConcreteGlobalBlock` 和 `NSConcreteMallocBlock`类型的 block。原本的 `NSConcreteStackBlock` 的 block 会被 `NSConcreteMallocBlock` 类型的 block 替代。
-
-### 研究工具：clang
-clang 提供一个命令，可以将 Objetive-C 的源码改写成 c 语言的，借此可以研究各种结构的源码实现方式。该命令是
-```objc
-clang -rewrite-objc xxxx
-```
