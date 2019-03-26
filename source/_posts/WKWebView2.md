@@ -312,7 +312,116 @@ if ([(id)cls respondsToSelector:sel]) {
 
 
 
-## 其他优化
+## 性能优化
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/webview_4.png?raw=true)
+
+由此我们可以看到，优化主要集中在优化 WebView 初始化和减少不必要的请求。
+
+###优化 webview 初始化
+
+webview 从不存在到存在的过程，系统需要进行一系列初始化。所有后续过程在这段时间完全阻塞。
+
+#### 全局 WebView 与 WebViewPool
+
+可以创建一个 WebViewPool 的单例对象，在 load 方法中监听应用启动成功的通知： `UIApplicationDidFinishLaunchingNotification`，初始化 Pool 对象，并且初始化任意个供复用的 WebView 实例，之后的复用很像 TableView Cell 的复用。
+
+之后业务上的所有的 WebView 实例都从 WebViewPool 中拿。WebView 需要增加一个 holder 的弱引用属性指向当前 VC。每次要从 WebViewPool 中取新的 WebView 实例的时候，就要查看一遍哪些 WebView 的 holder 为 nil，表示 WebView 所在的 VC 已经被回收，此时就要把 WebView 状态清空，然后放入复用池中。
+
+当 WebView 需要放回复用池的时候需要做两件事，以达到和浏览器相同的效果
+
+1. 把浏览记录清空
+2. 添加一个空白的页面
+
+```objc
+// 继承于 WKWebView 的类中
+//被回收
+- (void)webViewEndReuse{
+  	// 使用的私有API，所以通过字符串拼接的方式获取方法名
+    SEL sel = NSSelectorFromString([NSString stringWithFormat:@"%@%@%@%@", @"_re", @"moveA",@"llIte", @"ms"]);
+    if([self.backForwardList respondsToSelector:sel]){
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+        [self.backForwardList performSelector:sel];
+#pragma clang diagnostic pop
+    }
+  	
+  	// 加载空白页面，通过 NSURLProtocol 拦截到 URL 为该 String 就返回一个空页面
+    [self loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"webkit://reuse-webView"]]];
+}
+```
+
+现在相当于每个 WebView 的第一个视图都是一个空页面，因此需要重写 WebView 的 `canGoBack` 方法:
+
+```objc
+- (BOOL)canGoBack {
+    /// 由于 webView 是复用的，销毁的时候会在里面插入一个占位的 URL，表示之前的都是不能用的。所以这里要判断当前是否是哪个占位的 URL，如果是，表示不能回退了。
+    if ([self.backForwardList.backItem.URL.absoluteString caseInsensitiveCompare:@"webkit://reuse-webView"] == NSOrderedSame ||
+        [self.URL.absoluteString isEqualToString:@"webkit://reuse-webView"]) {
+        return NO;
+    }
+    return [super canGoBack];
+}
+```
+
+#### webView 数据预请求
+
+在客户端初始化WebView的同时，直接由native开始网络请求数据。当页面初始化完成后，向native获取其代理请求的数据。如果此时 native 还没有拿到数据，那么 js 端做一个短暂的轮询。
+
+### 减少不必要的请求
+
+分为前端优化和客户端优化
+
+#### 前端优化
+
+1. **降低请求量**：合并资源，减少 HTTP 请求数，使用 lazyLoad，使用 gzip 压缩，使用 webP 格式
+2. **加快请求速度**：预解析 DNS，减少域名数，使用与 Native 一样的域名
+3. **缓存**：使用 localStorage，询问是否更新
+4. **渲染**：服务端渲染
+
+#### 客户端优化
+
+**NSURLProtocol 拦截资源请求**
+
+对于一些图片资源文件，可以通过 NSURLProtocol 拦截请求，然后查找 native 是否存在缓存，有的话直接返回 NSData，没有的话，通过 native 发起一个请求，缓存并返回 NSData
+
+**离线包**
+
+离线包可以预下载，native 根据配置，在某个 节点下载离线包。下载好的离线包后，就可以拦截网络请求，对于离线包已经有的文件，直接读取离线包数据返回，否则走 HTTP 协议缓存逻辑。
+
+```objc
+//下载离线包html+css
+- (void)requestOfflinePkg {
+    NSString *zipName    = @"offline_pkg";
+    NSString *zipUrl     = [NSString stringWithFormat:@"http://localhost:9090/source/%@.zip", zipName];
+    NSURL    *url        = [NSURL URLWithString:zipUrl];
+    NSString *md5        = [self md5:zipUrl];
+    NSArray  *pathes     = NSSearchPathForDirectoriesInDomains(NSCachesDirectory,NSUserDomainMask,YES);
+    NSString *path       = [pathes objectAtIndex:0];
+    NSString *zipPath    = [NSString stringWithFormat:@"%@/zipDownload/%@",path,md5];
+    NSString *unzipPath  = [NSString stringWithFormat:@"%@/%@.zip",path,md5];
+
+
+    NSURLSession *session = [NSURLSession sharedSession];
+
+    NSURLSessionDataTask *task = [session dataTaskWithURL:url completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+        if(!error) {
+            [data writeToFile:unzipPath options:0 error:nil];
+
+            BOOL result = [SSZipArchive unzipFileAtPath:unzipPath toDestination:zipPath];
+
+            //解压缩成功
+            if (result) {
+                //删除zip
+                NSFileManager *fileManager = [NSFileManager defaultManager];
+                [fileManager removeItemAtPath:unzipPath error:nil];
+            }
+        }
+    }];
+
+    [task resume];
+}
+```
 
 
 
@@ -321,4 +430,6 @@ if ([(id)cls respondsToSelector:sel]) {
 [移动 H5 首屏秒开优化方案探讨](http://blog.cnbang.net/tech/3477/)
 
 [从零收拾一个hybrid框架（二）-- WebView容器基础功能设计思路](http://awhisper.github.io/2018/03/06/hybrid-webcontainer/)
+
+[[WebView性能、体验分析与优化](https://tech.meituan.com/2017/06/09/webviewperf.html)](https://tech.meituan.com/2017/06/09/webviewperf.html)
 
