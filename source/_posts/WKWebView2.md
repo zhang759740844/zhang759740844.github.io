@@ -314,9 +314,7 @@ if ([(id)cls respondsToSelector:sel]) {
 
 ## 性能优化
 
-![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/webview_4.png?raw=true)
-
-由此我们可以看到，优化主要集中在优化 WebView 初始化和减少不必要的请求。
+优化主要集中在优化 WebView 初始化和减少不必要的请求。
 
 ###优化 webview 初始化
 
