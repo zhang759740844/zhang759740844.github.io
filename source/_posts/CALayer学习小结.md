@@ -290,13 +290,13 @@ UIBezierPath *path = [UIBezierPath bezierPath];
 [path moveToPoint:CGPointMake(50, 667/2)];
 //结束点、两个控制点
 [path addCurveToPoint:CGPointMake(330, 667/2) controlPoint1:CGPointMake(125, 200) controlPoint2:CGPointMake(185, 450)];
-    
+
 CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"strokeEnd"];
 animation.duration = 5;
 animation.fromValue = @(0);
 animation.toValue = @(1);
 animation.repeatCount = 100;
-    
+
 CAShapeLayer *layer = [self createShapeLayerNoFrame:[UIColor clearColor]];
 layer.path = path.CGPath;
 layer.lineWidth = 2.0;
