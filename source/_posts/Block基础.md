@@ -2,8 +2,8 @@ title: Block 的使用
 date: 2016/9/1 10:07:12  
 categories: iOS
 tags:
-	- Objective-C
----
+
+​	- Objective-C
 
 类似于匿名函数，oc中提供`block`,可以将一段代码块像对象一样作为参数传递、执行。
 
@@ -68,38 +68,109 @@ _weak typeof(self) weakSelf = self;	//弱引用指针
 	};
 ```
 
-
 ## block的实现
-block的实现主要参考[唐巧谈Objective-C block的实现](http://blog.devtang.com/2013/07/28/a-look-inside-blocks/#)
 
-### block的结构
-block的结构如下:
+### block 结构
+
+**block本质上也是一个oc对象，他内部也有一个isa指针。block是封装了函数调用以及函数调用环境的OC对象。**
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_1.png?raw=true)
+
+### block 变量捕获
+
+变量有五种形式，auto 局部变量、static 局部变量、auto 全局变量、static 全局变量、成员变量。
+
+#### 局部变量
+
+对于局部变量来说，auto 局部变量捕获的是值，static 局部变量捕获的是地址。这是因为 auto 局部变量可能会销毁，所以要捕获值，否则会访问已回收的地址。而 static 局部变量则不用担心变量回收，所以捕获的是地址。***所以，在block调用之前修改地址中保存的值，block中的 static 变量会随之改变***。例：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_2.png?raw=true)
+
+#### 全局变量
+
+block不需要捕获全局变量，因为全局变量无论在哪里都可以访问。**局部变量因为跨函数访问所以需要捕获，全局变量在哪里都可以访问 ，所以不用捕获。**
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_3.png?raw=true)
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_4.png?raw=true)
+
+#### 成员变量
+
+成员变量是比较特殊的，**即使block中使用的是实例对象的属性，block中捕获的仍然是实例对象，并通过实例对象通过不同的方式去获取使用到的属性**
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_6.png?raw=true)
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_5.png?raw=true)
+
+### block 的类型
+
+#### 三种类型
+
+block 存在三种类型：
+
 ```objc
-struct Block_descriptor {
-    unsigned long int reserved;
-    unsigned long int size;
-    void (*copy)(void *dst, void *src);
-    void (*dispose)(void *);
-};
-
-struct Block_layout {
-    void *isa;
-    int flags;
-    int reserved;
-    void (*invoke)(void *, ...);
-    struct Block_descriptor *descriptor;
-    /* Imported variables. */
-};
+__NSGlobalBlock__ （ _NSConcreteGlobalBlock ）
+__NSStackBlock__ （ _NSConcreteStackBlock ）
+__NSMallocBlock__ （ _NSConcreteMallocBlock ）
 ```
 
-结构图如下：
-![block结构图](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_struct.jpg?raw=true)
+我们可以通过代码查看他们的类型：
 
-通过该图，我们可以知道，一个 block 实例实际上由 6 部分构成：
-1. `isa` 指针，所有对象都有该指针，用于实现对象相关的功能。
-2. `flags`，用于按 bit 位表示一些 block 的附加信息。
-3. `reserved`，保留变量。
-4. `invoke`，函数指针，指向具体的 block 实现的函数调用地址。
-5. `descriptor`， 表示该 block 的附加描述信息，主要是 size 大小，以及 copy 和 dispose 函数的指针。
-6. 各种从外部复制过来的变量，block 能够访问它外部的局部变量，就是因为将这些变量（或变量的地址）复制到了结构体中。
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_7.png?raw=true)
 
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_8.png?raw=true)
+
+#### 三种类型的定义
+
+**没有访问auto变量的block是*`__NSGlobalBlock__`*类型的，存放在数据段中。*
+ *访问了auto变量的block是*`__NSStackBlock__`*类型的，存放在栈中。*
+ `__NSStackBlock__`*类型的block调用copy成为*`__NSMallocBlock__`*类型并被复制存放在堆中。**
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_9.png?raw=true)
+
+栈 block 相当于一个局部变量，当超出作用域，就面临着被回收的风险。ARC 下，很多情况中，会自动帮我们执行一次 copy。
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_10.png?raw=true)
+
+> 因此，block 的属性修饰词需要使用 copy。当然 ARC 环境下，使用 strong，编译器也会自动帮我们 copy。
+
+### __weak 关键字
+
+`__weak` 关键字修饰的变量会对引用对象进行弱引用。在 block 中使用被弱引用的变量，block 内部也会捕获弱引用的对象：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_11.png?raw=true)
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_12.png?raw=true)
+
+### __block 关键字
+
+block 会捕获外部变量的值或者指向的对象，因而无法在 block 中修改外部变量的值或者指向的地址。那么如何做到能改变外部变量的值或者指向呢？没有什么是不能通过一个中间层做到的。
+
+因此，我们可以把要使用的变量包在一个对象中。这样，block 捕获外部的对象，对象无法修改地址，但是内部真正要使用的变量则可以自由的改变值或者地址。
+
+iOS 提供了  `__block` 来达到这个目的。`__block` 修饰的变量，编译期会自动将其包装为一个对象，原本被修饰的变量会作为对象的一个属性。
+
+> 只有要修改变量的值或者地址的时候才使用` __block`，比如修改 NSMutableArray 这种则不需要使用 `__block`
+
+### block 的嵌套
+
+对于 block 的嵌套，比如以下场景，blockB会捕获self，这是大家都了解的，但是blockA会捕获self么？为什么？
+
+```objc
+- (void)embeddedBlock
+{
+    void (^blockA)() = ^{
+        void (^blockB)() = ^{
+            NSLog(@"%@",self);
+        };
+    };
+}
+```
+
+答案是会，先将self从外界传入到blockA中。再从blockA的中传入到blockB中。blockB只能从blockA的作用域里捕获变量。因此blockB中捕获的任何东西，blockA必须也捕获一份。
+
+## 参考
+
+[iOS底层原理总结 - 探寻block的本质（一）](https://www.jianshu.com/p/c99f4974ddb5)
+
+[iOS底层原理总结 - 探寻block的本质（二）](https://www.jianshu.com/p/8865ff43f30e)

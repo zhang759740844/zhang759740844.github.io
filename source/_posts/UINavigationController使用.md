@@ -255,10 +255,14 @@ self.navigationItem.backBarButtonItem = backbtn
 
 ```objc
 - (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
-    if (self.viewControllers.count <= 1 ) {
-        return NO;
+		if (gestureRecognizer == self.interactivePopGestureRecognizer) {
+        //屏蔽调用rootViewController的滑动返回手势，避免右滑返回手势引起死机问题
+        if (self.viewControllers.count < 2 ||
+ self.visibleViewController == [self.viewControllers objectAtIndex:0]) {
+            return NO;
+        }
     }
-
+    //这里就是非右滑手势调用的方法啦，统一允许激活
     return YES;
 }
 ```
@@ -280,6 +284,20 @@ self.navigationItem.backBarButtonItem = backbtn
     self.navigationController.interactivePopGestureRecognizer.enabled = YES;
 }
 ```
+
+这种是开启了全局的右滑返回，对于特定页面的禁用右滑手势可以通过：
+
+```objc
+- (void)viewDidAppear:(BOOL)animated {
+		self.navigationController.interactivePopGestureRecognizer.enabled = NO;
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+  	self.navigationController.interactivePopGestureRecognizer.enabled = YES;
+}
+```
+
+
 
 ## 导航栏
 

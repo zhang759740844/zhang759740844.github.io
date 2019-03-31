@@ -85,6 +85,15 @@ Content-Type 用于指定内容类型，一般是指网页中存在的 Content-T
 
 那我们什么时候用 `application/x-www-form-urlencoded`，什么时候用 `multipart/form-data` 呢？大文件如文件图片用后者，小文件如键值对用前者。
 
+### HTTP2.0 的改进
+
+1. 为了解决这些问题，HTTP 2.0 会对 HTTP 的头进行一定的压缩，将原来每次都要携带的大量 key value 在两端建立一个索引表，对相同的头只发送索引表中的索引。
+2. HTTP 2.0 还将所有的传输信息分割为更小的消息和帧，并对它们采用二进制格式编码。常见的帧有**Header 帧**，用于传输 Header 内容，并且会开启一个新的流。再就是**Data 帧**，用来传输正文实体。多个 Data 帧属于同一个流。这些帧可以打散乱序发送， 然后根据每个帧首部的流标识符重新组装，并且可以根据优先级，决定优先处理哪个流的数据。基于此，可以实现串行请求的并行处理。如下图：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/tcp_3.png?raw=true)
+
+
+
 ## HTTPS
 ### 基本介绍
 HTTP 协议传输的数据都是未加密的，也就是明文的，因此使用 HTTP 协议传输隐私信息非常不安全。比如运营商可以轻易劫持你的 http 请求，在 response 中注入 js代码（如网页上弹窗广告、流量球等），甚至是重定向。为了保证这些隐私数据能加密传输，于是网景公司设计了 SSL（Secure Sockets Layer）协议用于对 HTTP 协议传输的数据进行加密，从而就诞生了 HTTPS。之后对 SSL 进行了升级为 TLS（Transport Layer Security）。我们现在的 HTTPS 都是用的 TLS 协议。
