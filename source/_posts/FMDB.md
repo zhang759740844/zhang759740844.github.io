@@ -9,6 +9,100 @@ iOS 上的数据库用的不多，看一看主流的 FMDB 以及其封装框架�
 
 <!--more-->
 
+## 简单SQL
+
+### 检索
+
+#### 检索数据
+
+##### 检索单个列
+
+```sql
+select prod_name from products;
+```
+
+##### 检索多个列
+
+```sql
+select prod_id, prod_name, prod_price from products;
+```
+
+##### 检索所有列
+
+```sql
+select * from produces
+```
+
+##### 检索的列去重
+
+```sql
+select distinct prod_name from products;
+```
+
+##### 限制展示个数
+
+```sql
+select prod_name from products limit 5;
+```
+
+#### 排序检索
+
+##### 简单排序
+
+```sql
+select prod_name from products order by prod_name;
+```
+
+##### 多列排序
+
+```sql
+select prod_id, prod_name, prod_price from products order by prod_name, prod_id;
+```
+
+##### 指定排序方向
+
+```sql
+select prod_id, prod_name, prod_price from products order by prod_name desc, prod_id limit 6;
+```
+
+### 过滤
+
+#### 过滤数据
+
+##### where 过滤
+
+```sql
+select prod_name from products where prod_price = 123;
+```
+
+##### 范围值
+
+```sql
+select prod_name from products where prod_id between 1 and 100;
+```
+
+##### 空值
+
+```sql
+select price_id from products where prod_name is null;
+```
+
+#### 数据过滤
+
+##### and or 操作符
+
+```sql
+select prod_price from products where (vend_id = 1003 or vend_id = 1004) and prod_price >= 100;
+```
+
+##### 指定范围
+
+```sql
+select prod_name from products where vend_id in (1003, 1004);
+```
+
+
+
 ## FMDB
 
 ### 基本使用
