@@ -276,12 +276,6 @@ if ([(id)cls respondsToSelector:sel]) {
 
 等等...
 
-
-
-## WKWebView 的复用池
-
-
-
 ## 一些问题
 
 ### 白屏问题
@@ -328,14 +322,18 @@ webview 从不存在到存在的过程，系统需要进行一系列初始化。
 
 当 WebView 需要放回复用池的时候需要做两件事，以达到和浏览器相同的效果
 
-1. 把浏览记录清空
-2. 添加一个空白的页面
+1. 添加一个空白的页面
+2. 把该页面之前的浏览记录清空
 
 ```objc
 // 继承于 WKWebView 的类中
 //被回收
 - (void)webViewEndReuse{
+    // 加载空白页面，空字符串会自动加一个空白页面
+    [self loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@""]]];
+  
   	// 使用的私有API，所以通过字符串拼接的方式获取方法名
+  	// 这个方法会把除了最上面的页面都清空掉。因此，会清空除了刚添加的空白页面的之前所有的页面，使页面恢复到最开始打开时候的模样。
     SEL sel = NSSelectorFromString([NSString stringWithFormat:@"%@%@%@%@", @"_re", @"moveA",@"llIte", @"ms"]);
     if([self.backForwardList respondsToSelector:sel]){
 #pragma clang diagnostic push
@@ -344,21 +342,7 @@ webview 从不存在到存在的过程，系统需要进行一系列初始化。
 #pragma clang diagnostic pop
     }
   	
-  	// 加载空白页面，通过 NSURLProtocol 拦截到 URL 为该 String 就返回一个空页面
-    [self loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"webkit://reuse-webView"]]];
-}
-```
 
-现在相当于每个 WebView 的第一个视图都是一个空页面，因此需要重写 WebView 的 `canGoBack` 方法:
-
-```objc
-- (BOOL)canGoBack {
-    /// 由于 webView 是复用的，销毁的时候会在里面插入一个占位的 URL，表示之前的都是不能用的。所以这里要判断当前是否是哪个占位的 URL，如果是，表示不能回退了。
-    if ([self.backForwardList.backItem.URL.absoluteString caseInsensitiveCompare:@"webkit://reuse-webView"] == NSOrderedSame ||
-        [self.URL.absoluteString isEqualToString:@"webkit://reuse-webView"]) {
-        return NO;
-    }
-    return [super canGoBack];
 }
 ```
 
