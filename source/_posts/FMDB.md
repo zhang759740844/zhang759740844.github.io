@@ -85,9 +85,9 @@ select prod_name from products where prod_id between 1 and 100;
 
 ```sql
 select price_id from products where prod_name is null;
+// 非空值
+select price_id from products where prod_name is not null;
 ```
-
-#### 数据过滤
 
 ##### and or 操作符
 
@@ -101,11 +101,251 @@ select prod_price from products where (vend_id = 1003 or vend_id = 1004) and pro
 select prod_name from products where vend_id in (1003, 1004);
 ```
 
+#### 正则过滤
 
+##### 字符包含匹配
+
+```sql
+select prod_name from products where prod_name regexp '1000';
+```
+
+`.`匹配任意一个字符：
+
+```sql
+select prod_name from products where prod_name regexp '.000';
+```
+
+##### OR 匹配任意一个条件
+
+```sql
+select prod_name from products where prod_name regexp '1000|2000|3000';
+```
+
+##### 匹配几个字符串之一
+
+```sql
+select prod_name from products where prod_name regexp '[123] Ton';
+```
+
+```sql
+select prod_name from products where prod_name regexp '[1-5a-z] Ton';
+```
+
+`^`  表示否定：
+
+```sql
+select prod_name from products where prod_name regexp '[^123] Ton';
+```
+
+
+
+##### 匹配多个实例
+
+| 元字符 |        说明        |
+| :----: | :----------------: |
+|   +    |     1个或多个      |
+|   ?    |     0个或一个      |
+|   *    |     0个或多个      |
+|  {n}   |    指定数目匹配    |
+|  {n,}  | 不少于指定数目匹配 |
+| {n,m}  |    匹配数目范围    |
+
+直接跟在要匹配的字符后面，如果要匹配的是字符串，需要给字符串加上括号
+
+##### 定位符
+
+| 元字符 |   说明   |
+| :----: | :------: |
+|   ^    | 文本开始 |
+|   $    | 文本结束 |
+
+### 函数
+
+#### 数据聚合
+
+对一个列的所有行进行操作，返回一个聚合的值
+
+##### sum() 求和avg() 求平均值
+
+```sql
+select sum(prod_price) as sum_price from products;
+select avg(prod_price) as avg_price from products;
+```
+
+##### count() 求数量
+
+```sql
+select count(prod_price) as num_price from  products;
+// count(*) 表示所有行数
+select count(*) as all_row from products;
+```
+
+##### min() max()求最小最大
+
+```sql
+select min(prod_price) as min_price from products;
+select max(prod_price) as max_price from products;
+```
+
+### 分组
+
+分组的作用是对执行分组，并对结果进行聚合
+
+#### 创建分组
+
+获取不同值的 `vend_id` 并将每个值的数量以 `num_prods` 字段展示
+
+```sql
+select vend_id, count(*) as num_prods from products group by vend_id;
+```
+
+#### 过滤分组
+
+`having` 在数据分组和进行过滤，`where` 在数据分组前进行过滤
+
+```sql
+select vend_id, count(*) as num_prods from products where prod_price >= 10 group by vend_id having count(*) >= 2;
+```
+
+#### 分组和排序
+
+在上面的基础上再对某一列排序：
+
+```sql
+select vend_id, count(*) as num_prods from products where prod_price >= 10 group by vend_id having count(*) >= 2 order by num_prods;
+```
+
+### 联结表
+
+#### 联结
+
+##### 定义
+
+检索数据的时候对多张表进行操作。
+
+譬如一个商品表，要记录这个商品的供应商的信息。如果供应商的信息存在这个商品表中，就会存在诸多重复数据。因此，应该讲供应商信息也单独创建一个表。供应商的 ID 为供应商表的**主键**。商品表只保存这个供应商的 ID，这个供应商的 ID 叫做商品表的**外键**，供应商表和商品表通过这个外键进行的关联。
+
+##### 创建联结
+
+```sql
+select vend_name, prod_name, prod_price from vendors, products where vendors.vend_id = products.vend_id order by vend_name, prod_name;
+```
+
+上面从供应商(`vendors`) 和商品(`products`)两张表中取 `vend_name`,`prod_name`,`prod_price` 这三列的数据。通过 `vend_id` 进行关联。
+
+相当于在运行时把两张表通过主键和外键关联，结合成了一张表。
+
+### 增删改
+
+#### 插入
+
+##### 插入一行
+
+```sql
+insert into customers(
+	cust_name,
+	cust_city,
+	cust_address
+) values (
+	'zachary',
+  'shanghai',
+  'minhang'
+);
+```
+
+##### 插入多个行
+
+```sql
+insert into customers(
+	cust_name,
+	cust_city,
+	cust_address
+) values (
+	'zachary',
+  'shanghai',
+  'minhang'
+), (
+  'zachary2',
+  'shanghai2',
+  'minhang2'
+);
+```
+
+##### 插入检索的数据
+
+```sql
+insert into customers(
+ 	cust_name,
+	cust_city,
+	cust_address
+) select
+		cust_name,
+		cust_city,
+		cust_address
+	from custnew; 
+```
+
+把从 `custnew` 表中检索出的这几列插入到 `customers` 中
+
+#### 更新数据
+
+```sql
+update customers
+set cust_name = 'zhang',
+		cust_address = NULL
+where cust_id = 10004;
+```
+
+#### 删除数据
+
+```sql
+delete from customers
+where cust_id = 1004;
+```
+
+### 操作表
+
+#### 创建表
+
+```sql
+create table customer (
+	cust_id				int 			not null auto_increment,
+  cust_name 		char(50) 	not null,
+  cust_address 	char(50) 	default 'shanghai',
+  cust_email 		char(50),
+  primary key (cust_id)
+) engine=innodb;
+```
+
+创建表的时候要指定字段，类型；
+
+非空的字段要手动通过 `not null` 标识；
+
+可以通过 `default` 指定默认值；
+
+表的主键通过创建表的时候用 `primary key` 指定，并且主键是必须唯一的，所以可以通过 `auto_increment` 标识其自增。
+
+最后 `engine=innodb` 指定引擎。
+
+#### 更新表结构
+
+添加列和删除列分别使用 `add` 和 `drop`
+
+```sql
+alter table vendors
+add vend_phone char(20),
+drop column vend_num;
+```
+
+#### 删除表
+
+```sql
+drop table customer2;
+```
 
 ## FMDB
 
-### 基本使用
+### 基本结构
 
 FMDB 是 sqlite 的简单封装，主要用来执行 sql 语句，并取出数据。主要有三个类：
 
@@ -113,27 +353,212 @@ FMDB 是 sqlite 的简单封装，主要用来执行 sql 语句，并取出数�
 - `FMResultSet`：保存了 sql 语句的执行结果。
 - `FMDatabaseQueue`：在多线程环境下执行 sql。
 
-下面这个例子就是 FMDB 的基本使用过程。
+### 基本使用
+
+#### 建立开启数据库和关闭
 
 ```objc
-NSString* dir = [NSSearchPathForDirectoriesInDomains( NSDocumentDirectory, NSUserDomainMask, YES) lastObject];
+// 创建数据库
+NSString* dir = [NSSearchPathForDirectoriesInDomains( NSLibraryDirectory, NSUserDomainMask, YES) lastObject];
 
-NSString* dbPath = [dir stringByAppendingPathComponent:@"district.sqlite"];
+NSString* dbPath = [dir stringByAppendingPathComponent:@"student.sqlite"];
 
 FMDatabase* db = [FMDatabase databaseWithPath:dbPath];
 
-[db open];
-
-FMResultSet *rs = [db executeQuery: @"select * from country"];
-
-while ([rs next]) {
-    NSLog(@"%@ %@",
-        [rs stringForColumn:@"city"], 
-        [rs stringForColumn:@"province"]);
+//2.获取数据库
+if ([db open]) {
+   NSLog(@"打开数据库成功");
+} else {
+   NSLog(@"打开数据库失败");
 }
+```
 
+当文件不存在时，fmdb 会自己创建一个。
+
+```objc
+// 关闭数据库
 [db close];
 ```
+
+#### 创建删除表
+
+```objc
+//3.创建表
+BOOL result = [db executeUpdate:@"CREATE TABLE IF NOT EXISTS t_student (
+	id integer PRIMARY KEY AUTOINCREMENT,
+	name text NOT NULL,
+	age integer NOT NULL,
+	sex text NOT NULL);"
+];
+if (result) {
+    NSLog(@"创建表成功");
+} else {
+    NSLog(@"创建表失败");
+}
+```
+
+```objc
+// 如果表格存在 则销毁
+BOOL result = [_db executeUpdate:@"drop table if exists t_student"];
+if (result) {
+    NSLog(@"删除表成功");
+} else {
+    NSLog(@"删除表失败");
+}
+```
+
+#### 增删改查
+
+##### 增
+
+```objc
+for (int i = 0; i < 4; i++) {
+    //插入数据
+    NSString * name = [NSString stringWithFormat: @ "测试名字%@", @(mark_student)];
+    int age = mark_student;
+    NSString * sex = @ "男";
+    mark_student++;
+    //1.executeUpdate:不确定的参数用？来占位（后面参数必须是oc对象，；代表语句结束）
+    BOOL result = [db executeUpdate: @ "INSERT INTO t_student (name, age, sex) VALUES (?,?,?)", name, @(age), sex];
+    //2.executeUpdateWithForamat：不确定的参数用%@，%d等来占位 （参数为原始数据类型，执行语句不区分大小写）
+    //    BOOL result = [_db executeUpdateWithFormat:@"insert into t_student (name,age, sex) values (%@,%i,%@)",name,age,sex];
+    //3.参数是数组的使用方式
+    //    BOOL result = [_db executeUpdate:@"INSERT INTO t_student(name,age,sex) VALUES  (?,?,?);" withArgumentsInArray:@[name,@(age),sex]];
+    if (result) {
+        NSLog(@ "插入成功");
+    } else {
+        NSLog(@ "插入失败");
+    }
+}
+```
+
+通过 `executeUpdate` 来执行非 select 的增删改语句。另外，有三种方式给 sql 传参：
+
+1. 使用 `?` 做占位符，那么传参就必须是 oc 对象。
+2. 使用 `%@` 等做占位符，传参可以是任意相依类型。
+3. 使用数组传参，占位符还是使用 `?`，数组中保存的也是 oc 对象。
+
+##### 删改
+
+这两个和增加数据没什么不同，因此就放在一起了：
+
+```objc
+//1.不确定的参数用？来占位 （后面参数必须是oc对象,需要将int包装成OC对象）
+int idNum = 11;
+BOOL result1 = [_db executeUpdate: @ "delete from t_student where id = ?", @(idNum)];
+//2.不确定的参数用%@，%d等来占位
+//BOOL result = [_db executeUpdateWithFormat:@"delete from t_student where name = %@",@"王子涵"];
+if (result1) {
+    NSLog(@ "删除成功");
+} else {
+    NSLog(@ "删除失败");
+}
+```
+
+```objc
+//修改学生的名字
+NSString * newName = @ "新名字";
+NSString * oldName = @ "测试名字2";
+BOOL result2 = [_db executeUpdate: @ "update t_student set name = ? where name = ?", newName, oldName];
+if (result2) {
+    NSLog(@ "修改成功");
+} else {
+    NSLog(@ "修改失败");
+}
+```
+
+##### 查
+
+表的查询要通过 `executeQuery` 执行：
+
+```objc
+//查询整个表
+FMResultSet * resultSet = [_db executeQuery: @ "select * from t_student"];
+//根据条件查询
+//FMResultSet * resultSet = [_db executeQuery:@"select * from t_student where id < ?", @(4)];
+//遍历结果集合
+while ([resultSet next]) {
+    int idNum = [resultSet intForColumn: @ "id"];
+    NSString * name = [resultSet objectForColumn: @ "name"];
+    int age = [resultSet intForColumn: @ "age"];
+    NSString * sex = [resultSet objectForColumn: @ "sex"];
+    NSLog(@ "学号：%@ 姓名：%@ 年龄：%@ 性别：%@", @(idNum), name, @(age), sex);
+}
+```
+
+查询结果会保存在 `FMResultSet` 类的实例中。即使操作结果只有一行，也需要先调用 `FMResultSet` 的`next` 方法。
+
+FMDB 提供如下多个方法来获取不同类型的数据：
+
+```objc
+intForColumn:
+longForColumn:
+longLongIntForColumn:
+boolForColumn:
+doubleForColumn:
+stringForColumn:
+dateForColumn:
+dataForColumn:
+```
+
+当然，一个一个自己获取列名也太麻烦了，可以使用 `FMResultSet` 提供的 `resultDictionary` 方法，获取整个字典：
+
+```objc
+while ([resultSet next]) {
+	NSDictionary *result = [resultSet resultDictionary];
+}
+```
+
+在使用 `while` 循环的时候，不需要手动关闭 FMResultSet，因为 `[FMResultSet next]` 遍历到最后会调用 `[FMResultSet close]`
+
+#### 线程安全
+
+`FMDatabase` 本身不是线程安全的，所以不要在多线程中使用。需要使用 `FMDatabaseQueue` 来帮助保证线程安全：
+
+```objc
+// 创建，最好放在一个单例的类中
+FMDatabaseQueue *queue = [FMDatabaseQueue databaseQueueWithPath:aPath];
+// 使用
+[queue inDatabase:^(FMDatabase *db) {
+    [db executeUpdate:@"INSERT INTO myTable VALUES (?)", [NSNumber numberWithInt:1]];
+    [db executeUpdate:@"INSERT INTO myTable VALUES (?)", [NSNumber numberWithInt:2]];
+    [db executeUpdate:@"INSERT INTO myTable VALUES (?)", [NSNumber numberWithInt:3]];
+    FMResultSet *rs = [db executeQuery:@"select * from foo"];
+    while ([rs next]) {
+        // …
+    }
+}];
+```
+
+#### 事务
+
+在数据库中，事务可以保证数据操作的完整性：
+
+```objc
+[_dataBaseQueue inDatabase:^(FMDatabase * _Nonnull db) {
+    [db open];
+    // 开启事物
+    [db beginTransaction];
+    BOOL isDeleteGroupSuccess = [db executeUpdate:@"DELETE FROM grouptable WHERE gcid = ?", groupID];
+    BOOL isDeleteMembershipSuccess = [db executeUpdate:@"DELETE FROM groupshiptable WHERE gcid = ?", groupID];
+    if (!isDeleteGroupSuccess || !isDeleteMembershipSuccess) {
+        // 当对两个表的操作中，其中一个失败，数据回滚
+        [db rollback];
+        return;
+    }
+    // 提交事物
+    [db commit];
+    [db close];
+}];
+```
+
+通过`beginTransaction` 开启一个事务。任意情况下发生错误的时候可以通过 `rollback` 回退，否则通过 `commit` 提交事务。
+
+#### 本地调试
+
+本地调试可以使用免费的数据库查看工具 ，比如：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/fmdb_2.png?raw=true)
 
 ### 源码解析
 
@@ -144,18 +569,12 @@ while ([rs next]) {
 ```objc
 - (instancetype)initWithPath:(NSString*)aPath {
     ...
-      
     self = [super init];
-    
     if (self) {
         _databasePath               = [aPath copy];
         _openResultSets             = [[NSMutableSet alloc] init];
         _db                         = nil;
-        _logsErrors                 = YES;
-        _crashOnErrors              = NO;
-        _maxBusyRetryTimeInterval   = 2;
     }
-    
     return self;
 }
 ```
@@ -168,69 +587,18 @@ while ([rs next]) {
 
 ```objc
 - (BOOL)open {
-	...
-    
+		...
     int err = sqlite3_open([self sqlitePath], (sqlite3**)&_db );
     if(err != SQLITE_OK) {
         NSLog(@"error opening!: %d", err);
         return NO;
     }
-    
-    if (_maxBusyRetryTimeInterval > 0.0) {
-        // set the handler
-        [self setMaxBusyRetryTimeInterval:_maxBusyRetryTimeInterval];
-    }
-    
+    ...
     return YES;
 }
 ```
 
-如果已经打开了就直接返回。否则调用 sqlite 提供的的 `sqlite3_open()` 方法，获得了打开的数据库，保存在 `_db` 属性中。最后还有一个 `setMaxBusyRetryTimeInterval:` 的方法，这个方法的主要目的就是当其他线程正在使用数据库的时候，设置一个当前线程的等待时间：
-
-```objc
-- (void)setMaxBusyRetryTimeInterval:(NSTimeInterval)timeout {
-    
-    _maxBusyRetryTimeInterval = timeout;
-    
-	...
-      
-    if (timeout > 0) {
-        sqlite3_busy_handler(_db, &FMDBDatabaseBusyHandler, (__bridge void *)(self));
-    }
-    else {
-        // turn it off otherwise
-        sqlite3_busy_handler(_db, nil, nil);
-    }
-}
-```
-
-它是通过 sqlite 提供的 `sqlite3_busy_handler` 完成的，在这里的意思就是当 `_db` 正忙的时候，调用 `[self FMDBDatabaseBusyHandler]` 方法。这个 `FMDBDatabaseBusyHandler` 方法做了什么呢？
-
-```objc
-static int FMDBDatabaseBusyHandler(void *f, int count) {
-    FMDatabase *self = (__bridge FMDatabase*)f;
-    
-    if (count == 0) {
-        self->_startBusyRetryTime = [NSDate timeIntervalSinceReferenceDate];
-        return 1;
-    }
-    
-    NSTimeInterval delta = [NSDate timeIntervalSinceReferenceDate] - (self->_startBusyRetryTime);
-    
-    if (delta < [self maxBusyRetryTimeInterval]) {
-        int requestedSleepInMillseconds = (int) arc4random_uniform(50) + 50;
-        int actualSleepInMilliseconds = sqlite3_sleep(requestedSleepInMillseconds);
-        if (actualSleepInMilliseconds != requestedSleepInMillseconds) {
-            NSLog(@"WARNING: Requested sleep of %i milliseconds, but SQLite returned %i. Maybe SQLite wasn't built with HAVE_USLEEP=1?", requestedSleepInMillseconds, actualSleepInMilliseconds);
-        }
-        return 1;
-    }
-    
-    return 0;
-}
-```
-
-这个方法做的就是不停地通过 `sqlite3_sleep()`，让当前线程 sleep。 直到设置的最大等待时间到来。
+如果已经打开了就直接返回。否则调用 sqlite 提供的的 `sqlite3_open()` 方法，打开的数据库。
 
 #### 创建 select sql
 
@@ -255,118 +623,15 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
         pStmt = statement ? [statement statement] : 0x00;
         [statement reset];
     }
-    
-    if (!pStmt) {
-        
-        rc = sqlite3_prepare_v2(_db, [sql UTF8String], -1, &pStmt, 0);
-        
-        if (SQLITE_OK != rc) {
-			...
-            
-            sqlite3_finalize(pStmt);
-            _isExecutingStatement = NO;
-            return nil;
-        }
-    }
-   
   	...
 }
 ```
 
-`cachedStatementForQuery:` 就是在字典中查找 sql 对应的 `sqlite3_stmt` 的方法，它返回的 `FMStatement` 是 `sqlite3_stmt` 的封装。如果存在对应的 `sqlite3_stmt` 则通过 `reset` 方法调用 `sqlite3_reset()` 重置这个 `sqlite3_stmt`。
-
-如果不存在呢，就是使用 `sqlite3_prepare_v2()`。在创建不成功的情况下，通过 `sqlite3_finalize()` 释放 `sqlite3_stmt` 数据结构。
+`cachedStatementForQuery:` 就是在字典中查找 sql 对应的 `sqlite3_stmt` 的方法，它返回的 `FMStatement` 是 `sqlite3_stmt` 的封装。
 
 ##### 绑定参数
 
-参数随着方法一起传了进来，一般参数有两种，一种是字典类型的，根据 sql 中的参数名插入，还有一种是数组型的，依次替换 sql 中的占位符：
-
-```objc
-- (FMResultSet *)executeQuery:(NSString *)sql withArgumentsInArray:(NSArray*)arrayArgs orDictionary:(NSDictionary *)dictionaryArgs orVAList:(va_list)args {
-    
-  	...
-      
-    id obj;
-    int idx = 0;
-    int queryCount = sqlite3_bind_parameter_count(pStmt); // pointed out by Dominic Yu (thanks!)
-    
-    // If dictionaryArgs is passed in, that means we are using sqlite's named parameter support
-    if (dictionaryArgs) {
-        
-        for (NSString *dictionaryKey in [dictionaryArgs allKeys]) {
-            
-            // Prefix the key with a colon.
-            NSString *parameterName = [[NSString alloc] initWithFormat:@":%@", dictionaryKey];
-            
-			...
-            
-            // Get the index for the parameter name.
-            int namedIdx = sqlite3_bind_parameter_index(pStmt, [parameterName UTF8String]);
-            
-            FMDBRelease(parameterName);
-            
-            if (namedIdx > 0) {
-                // Standard binding from here.
-                [self bindObject:[dictionaryArgs objectForKey:dictionaryKey] toColumn:namedIdx inStatement:pStmt];
-                // increment the binding count, so our check below works out
-                idx++;
-            }
-            else {
-                NSLog(@"Could not find index for %@", dictionaryKey);
-            }
-        }
-    }
-    else {
-        
-        while (idx < queryCount) {
-            
-            if (arrayArgs && idx < (int)[arrayArgs count]) {
-                obj = [arrayArgs objectAtIndex:(NSUInteger)idx];
-            }
-            else if (args) {
-                obj = va_arg(args, id);
-            }
-            else {
-                //We ran out of arguments
-                break;
-            }
-            
-            if (_traceExecution) {
-                if ([obj isKindOfClass:[NSData class]]) {
-                    NSLog(@"data: %ld bytes", (unsigned long)[(NSData*)obj length]);
-                }
-                else {
-                    NSLog(@"obj: %@", obj);
-                }
-            }
-            
-            idx++;
-            
-            [self bindObject:obj toColumn:idx inStatement:pStmt];
-        }
-    }
-    
-    if (idx != queryCount) {
-        NSLog(@"Error: the bind count is not correct for the # of variables (executeQuery)");
-        sqlite3_finalize(pStmt);
-        _isExecutingStatement = NO;
-        return nil;
-    }
-    
-    FMDBRetain(statement); // to balance the release below
-    
-    if (!statement) {
-        statement = [[FMStatement alloc] init];
-        [statement setStatement:pStmt];
-        
-        if (_shouldCacheStatements && sql) {
-            [self setCachedStatement:statement forQuery:sql];
-        }
-    }
-    
-  	...
-}
-```
+参数随着方法一起传了进来，一般参数有两种，一种是字典类型的，根据 sql 中的参数名插入，还有一种是数组型的，依次替换 sql 中的占位符。(代码很长，就不贴了)
 
 首先通过 `sqlite3_bind_parameter_count()` 获得 sql 的参数个数。然后检查传入的是字典还是数组。如果是字典，遍历字典，通过 `sqlite3_bind_parameter_index()` 拿到键对应的参数索引，然后绑定；如果是数组就依次绑定到对应的列中。绑定也是使用的 sqlite 提供的针对不同类型的一系列绑定方法。
 
@@ -394,41 +659,13 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
 
 ```objc
 - (BOOL)nextWithError:(NSError **)outErr {
-    
     int rc = sqlite3_step([_statement statement]);
-    
-    if (SQLITE_BUSY == rc || SQLITE_LOCKED == rc) {
 		...
-    }
-    else if (SQLITE_DONE == rc || SQLITE_ROW == rc) {
-        // all is well, let's return.
-    }
-    else if (SQLITE_ERROR == rc) {
-		...
-    }
-    else if (SQLITE_MISUSE == rc) {
-		...
-    }
-    else {
-		...
-    }
-    
-    if (rc != SQLITE_ROW) {
-        [self close];
-    }
-    
     return (rc == SQLITE_ROW);
 }
 ```
 
-其实上面的关键就是调用 sqlite 的 `sqlite3_step()` 方法。那么后面一大串是什么呢？就是执行 sql 的结果的一些状态：
-
-- SQLITE_BUSY 数据库文件有锁
-- SQLITE_LOCKED 数据库中的某张表有锁
-- SQLITE_DONE sqlite3_step()执行完毕
-- SQLITE_ROW sqlite3_step()获取到下一行数据
-- SQLITE_ERROR 一般用于没有特别指定错误码的错误，就是说函数在执行过程中发生了错误，但无法知道错误发生的原因。
-- SQLITE_MISUSE 没有正确使用SQLite接口，比如一条语句在sqlite3_step函数执行之后，没有被重置之前，再次给其绑定参数，这时bind函数就会返回SQLITE_MISUSE。
+其实上面的关键就是调用 sqlite 的 `sqlite3_step()` 方法。
 
 ##### 获取数据
 
@@ -701,20 +938,4 @@ NSLog(@"%d，roolback 从1变为了0",roolback);
 FMDB 的整个过程相对简单，简单来说就是先初始化控制类 `FMDatabase`，然后通过这个类打开 db，执行 sql，关闭数据库等操作。执行的 sql 需要转化为 sqlite 使用的 `sqlite3_stmt` 类型，并缓存。对于有结果的 sql，或创建一个 `FMResultSet` 来保存 sql 已经其相应结果。多线程通过 `FMDatabaseQueue` 实现，它可以为 sql 开启后台线程执行，并且封装了 sqlite 的原子性操作的语句来实现事务。
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/FMDB_1.png?raw=true)
-
-## JQFMDB
-
-JQFMDB 是 FMDB 的一层简单封装。FMDB 只是对 sqlite 进行了封装。JQFMDB 在其基础上封装了一些常用的 sql 语句。也就是说，一般的数据库操作只要调用适当的方法即可，不需要我们自己写 sql 语句了。
-
-另外，JQFMDB 还提供了字典模型转换的功能。即你在执行 sql 方法的时候，**传入 model 的 class 类型**。会自动进行属性和键的匹配。
-
-代码比较简单，稍微想一下就知道是如何完成的。所以就不做具体解析了。
-
-## BGFMDB
-
-BGFMDB 做的封装工作就多一些了。除了 JQFMDB 提供的功能外，还封装了许多，包括数据库的迁移，进一步的 sql 封装，线程安全的添加删除等。
-
-这里再次强调一下，FMDB 本生不是线程安全的，所以你必须在必要的时候，自己给 sql 操作添加锁。
-
-
 
