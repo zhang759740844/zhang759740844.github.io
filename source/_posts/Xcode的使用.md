@@ -75,11 +75,9 @@ end
 
 ## 安装 XVim
 
-慕名下载了[Xcode](https://github.com/XVimProject/XVim)，但是安装起来有点曲折。
+慕名下载了[XVim](https://github.com/XVimProject/XVim)，但是安装起来有点曲折。
 
-先用SourceTree创建了本地仓库，`clone`了代码。貌似Xcode8和Xcode7安装起来有点区别。
-
-Xcode8 的用户要按照他的方法设置个人证书。主要是因为在 Xcode8 中，出于安全原因，官方已经不支持第三方插件了。想要使用第三方插件，就得开个后门，回到 Xcode7 的安全配置。操作没有歧义，按照教程就可以完成。
+> **现在统一使用 XVim2 了**
 
 > 注意，创建自签名证书的时候要选对证书类型，要选为"代码签名"
 
