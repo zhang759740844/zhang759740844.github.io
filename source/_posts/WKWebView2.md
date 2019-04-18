@@ -263,6 +263,8 @@ if ([(id)cls respondsToSelector:sel]) {
 
 > 上面是为 WKWebView 注册了一个 scheme 为 myapp 的 NSURLProtocol，对于要拦截 http 或者 https 请求，换成相应 scheme 就可以了。
 
+> 针对这个问题，iOS11 推出了新的 API **WKURLSchemeHandler**，能够提供拦截 WKWebView 的功能。
+
 
 
 ### NSURLProtocol 的应用场景
@@ -367,6 +369,14 @@ webview 从不存在到存在的过程，系统需要进行一系列初始化。
 
 对于一些图片资源文件，可以通过 NSURLProtocol 拦截请求，然后查找 native 是否存在缓存，有的话直接返回 NSData，没有的话，通过 native 发起一个请求，缓存并返回 NSData
 
+**基于 LocalWebServer 实现的离线资源加载**
+
+通过 NSURLProtocol 可以实现资源的本地拦截加载。还有一种通过本地起一个 localserver 的方式，直接加载本地的资源。
+
+可以选用如 `CocoaHttpServer` 这样的第三方库，在离线资源所在的目录启动本地服务。这样，网页中的资源，可以直接通过 `http://localhost:[端口号]/someResource.js` 的方式加载。
+
+但是这样会引起 ATS 相关问题，即在 `Safari` 及 `Apple WebKit` 中：在https页面内，不允许http请求存在，否则一概会被block。因此，需要自签名 localhost，使其支持 `https://localhost:[端口号]/someResource.js` ，具体使用可在需要的时候搜索到。
+
 **离线包**
 
 离线包可以预下载，native 根据配置，在某个 节点下载离线包。下载好的离线包后，就可以拦截网络请求，对于离线包已经有的文件，直接读取离线包数据返回，否则走 HTTP 协议缓存逻辑。
@@ -414,4 +424,6 @@ webview 从不存在到存在的过程，系统需要进行一系列初始化。
 [从零收拾一个hybrid框架（二）-- WebView容器基础功能设计思路](http://awhisper.github.io/2018/03/06/hybrid-webcontainer/)
 
 [[WebView性能、体验分析与优化](https://tech.meituan.com/2017/06/09/webviewperf.html)](https://tech.meituan.com/2017/06/09/webviewperf.html)
+
+[基于 LocalWebServer 实现 WKWebView 离线资源加载](<https://www.jianshu.com/p/a69e77bf680c>)
 
