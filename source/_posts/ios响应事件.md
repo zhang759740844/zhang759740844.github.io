@@ -2,8 +2,9 @@ title: iOS手势与响应机制
 date: 2016/9/3 10:07:12  
 categories: iOS
 tags:
+ - UIResponder
 
-​	- UIResponder
+-----
 
 从点击屏幕到系统做出响应，经历了哪些过程？需要详细探究下ios的响应机制。
 
