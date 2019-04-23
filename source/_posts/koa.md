@@ -1,5 +1,5 @@
 title: Koa的基本使用
-date: 2018/7/31 14:07:12  
+date: 2019/4/23 14:07:12  
 categories: JavaScript
 tags: 
 
@@ -38,102 +38,6 @@ app.listen(3000)
 ```
 
 
-
-## koa 路由
-
-安装：
-
-```bash
-npm install --save koa-router
-```
-
-### 静态路由
-
-#### 示例
-
-```js
-const Koa = require('koa')
-const Router = require('koa-router')
-const app = new Koa()
-const router = new Router()
-
-// 配置路由
-router.get('/', async (ctx) => {
-  ctx.body = '首页'  // 相当于原生里的 res.writeHedr() res.end()
-}).get('/news', async (ctx) => {
-  ctx.body = '这是一个新闻页面'
-})
-
-// 
-app.use(router.routes()) // 启动路由
-	.use(router.allowedMethods())  // 可配置可不配置，建议配置。会根据 ctx.status 设置 response 响应头
-app.listen(3000)
-```
-
-#### 获取 get 传值
-
-```js
-router.get('/news', async (ctx) => {
-	// 从 ctx 中读取get传值,获取的是对象；等同于 ctx.request.query
-  console.log(ctx.query)
-  // 获取 url; 等同于 ctx.request.url
-  console.log(ctx.url)
-  // 获取整个request
-  console.log(ctx.request)
-})
-```
-
-#### 获取 post 传值
-
-安装 koa-bodyparser
-
-```bash
-npm install --save koa-bodyparser
-```
-
-```js
-const Koa = require('koa')
-const Router = require('koa-router')
-const BodyParser = require('koa-bodyparser')
-const app = new Koa()
-const router = new Router()
-const bodyParser = new BodyParser()
-
-// 使用 bodyParser 中间件
-app.use(bodyParser)
-
-router.post('/', async (ctx, next) 
-	// 通过 ctx.request.body 获取表单提交的数据
-	// 获取的 post 的 body 已经被转为对象
-	console.log(ctx.request.body)     
-})
-
-app.use(router.routes())
-	.use(router.allowedMethods())
-
-app.listen(3000, () => {
-  console.log('starting at port 3000')
-})
-```
-
-
-
-### 动态路由
-
-静态路由要求路径完全匹配，动态路由可以前部匹配，后部可以动态获取。koa 中通过 `:` 作为动态路由的标识：
-
-```js
-// 动态路由匹配 /news/xxxx
-router.get('/news/:aid', async (ctx) => {
-	// 动态路由的传值
-  console.log('以下是动态路由路由:' + (ctx.params).toString())
-})
-
-// 比如输入 localhost:3000/news/haha
-// => 以下是动态路由的路由: {aid: 'haha'}
-```
-
-动态路由可以匹配多个值。如 `/news/:aid/:cid`
 
 ## Koa 中间件
 
@@ -245,6 +149,118 @@ app.listen(3000, () => {
   console.log('starting at port 3000')
 })
 ```
+
+> 利用这种方式可以做消息转发
+
+## koa 路由中间件
+
+安装：
+
+```bash
+npm install --save koa-router
+```
+
+### 静态路由
+
+#### 示例
+
+```js
+const Koa = require('koa')
+const Router = require('koa-router')
+const app = new Koa()
+const router = new Router()
+
+// 配置路由
+router.get('/', async (ctx) => {
+  ctx.body = '首页'  // 相当于原生里的 res.writeHedr() res.end()
+}).get('/news', async (ctx) => {
+  ctx.body = '这是一个新闻页面'
+})
+
+// 
+app.use(router.routes()) // 启动路由
+	.use(router.allowedMethods())  // 可配置可不配置，建议配置。会根据 ctx.status 设置 response 响应头
+app.listen(3000)
+```
+
+#### 获取 get 传值
+
+```js
+router.get('/news', async (ctx) => {
+	// 从 ctx 中读取get传值,获取的是对象；等同于 ctx.request.query
+  console.log(ctx.query)
+  // 获取 url; 等同于 ctx.request.url
+  console.log(ctx.url)
+  // 获取整个request
+  console.log(ctx.request)
+})
+```
+
+#### 获取 post 传值
+
+安装 koa-bodyparser
+
+```bash
+npm install --save koa-bodyparser
+```
+
+```js
+const Koa = require('koa')
+const Router = require('koa-router')
+const BodyParser = require('koa-bodyparser')
+const app = new Koa()
+const router = new Router()
+const bodyParser = new BodyParser()
+
+// 使用 bodyParser 中间件
+app.use(bodyParser)
+
+router.post('/', async (ctx, next) 
+	// 通过 ctx.request.body 获取表单提交的数据
+	// 获取的 post 的 body 已经被转为对象
+	console.log(ctx.request.body)     
+})
+
+app.use(router.routes())
+	.use(router.allowedMethods())
+
+app.listen(3000, () => {
+  console.log('starting at port 3000')
+})
+```
+
+#### get 和 post 都支持
+
+如果一个请求，既要支持 get 又要支持 post 也是可以的，可以使用 `.all` 方法：
+
+```js
+router.all('/:pid', async (ctx) => {
+  console.log(ctx.url)
+  const buffer = await fse.readFile('./test.json')
+  ctx.body = buffer.toString()
+})
+```
+
+
+
+### 动态路由
+
+静态路由要求路径完全匹配，动态路由可以前部匹配，后部可以动态获取。koa 中通过 `:` 作为动态路由的标识：
+
+```js
+// 动态路由匹配 /news/xxxx
+router.get('/news/:aid', async (ctx) => {
+	// 动态路由的传值
+  console.log('以下是动态路由路由:' + (ctx.params).toString())
+})
+
+// 比如输入 localhost:3000/news/haha
+// => 以下是动态路由的路由: {aid: 'haha'}
+```
+
+动态路由可以匹配多个值。如 `/news/:aid/:cid`
+
+
 
 ## 设置 Cookie 和 Session
 
@@ -413,4 +429,79 @@ app.use(router.routes()).use(router.allowedMethods())
 http://localhost:3000/admin
 http://localhost:3000/admin/user
 ```
+
+## 实践
+
+### node 自动重启
+
+开发的时候每次修改都要手动重新 run 一次 node 会非常的麻烦。因此需要一个能自动重启的库的帮助。这个库就是 nodemon:
+
+```bash
+npm install -g nodemon
+```
+
+全局安装 nodemon，然后启动的时候不要通过 node 了，而是 nodemon：
+
+```bash
+nodemon app.js
+```
+
+### 文件操作
+
+使用 node 提供的 fs 操作文件比较复杂，尤其是使用 koa 的时候本生不支持 promise 写法。
+
+fs-extra 是一个比较完善的文件操作封装库：
+
+```bash
+npm install --save fs-extra
+```
+
+使用起来也和 fs 无异。下面例子中读取本地的 json 文件并返回：
+
+```js
+const fse = require('fs-extra')
+
+router.get('/', async (ctx) => {
+  const buffer = await fse.readFile('./test.json')
+  ctx.body = buffer.toString()
+})
+```
+
+### 发送请求
+
+我们使用 koa 接收客户端请求。但是很多时候，我们需要对请求做转发。因此，需要使用 nodejs 发送请求。
+
+发送请求可以使用库 *request-promise*。它是 *request* 的 promise 版本：
+
+```bash
+npm install --save request-promise
+# request 是 request-promise 的依赖项，需要自己手动安装
+npm install --save request
+```
+
+请求方式很简单：
+
+```js
+app.use(async (ctx, next) => {
+	// 先让路由响应
+  await next()
+	// 如果没有一个路由相应
+  if (ctx.status === 404) {
+    const url = `https://colorlab.lian-shang.cn${ctx.url}`
+    try {
+      // 尝试请求转发
+      let obj = await request.get(url)
+      ctx.body = obj
+    } catch (err) {
+      // 转发请求发送失败
+      console.log('发生了error')
+      console.log(err.statusCode)
+    }
+  }
+})
+```
+
+要注意， `await` 中发生的 error 需要通过 try…catch 捕获。
+
+
 
