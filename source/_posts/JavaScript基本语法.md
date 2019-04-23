@@ -2,7 +2,7 @@ title: JavaScript基本语法
 date: 2016/9/9 10:07:12  
 categories: JavaScript
 tags:
-	- 学习笔记
+  - 学习笔记
 ---
 
 JS 的语法，参考了廖雪峰的博客以及阮一峰的ES6
@@ -987,6 +987,7 @@ async function dbFuc(db) {
 > 1. async 相当于告诉外界，这个方法会返回一个 promise
 > 2. await 必须在 async 中才能使用
 > 3. await 后面的方法会延迟到 await 方法执行完后执行，相当于 then 操作
+> 4. await 的错误捕获需要使用 try…catch 的方式
 
 ## Proxy
 

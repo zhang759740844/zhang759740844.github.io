@@ -2,9 +2,7 @@ title: UILabel高度控制
 date: 2016/9/12 14:07:12  
 categories: iOS 
 tags: 
-​	- UI
-​	
-
+ - UI
 ---
 
 在[tableview自适应高度](https://zhang759740844.github.io/2016/08/26/UITableview自适应高度/)一篇中学习了如何用`systemLayoutSizeFittingSize:`方法得到UITableView的Cell的高度。本文将探究一般情况下如何得到UILabel的高度。

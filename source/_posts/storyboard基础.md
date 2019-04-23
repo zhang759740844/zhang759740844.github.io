@@ -2,8 +2,7 @@ title: Storyboard 使用方法
 date: 2016/10/13 14:07:12  
 categories: iOS 
 tags: 
-​	- Xcode
-
+ - Xcode
 ---
 
 Storyboard是苹果官方主推的一个代替xib的策略。有必要详细学习下它的使用方法。
