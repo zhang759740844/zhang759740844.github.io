@@ -393,7 +393,8 @@ app.listen(3000, () => {
 ```objc
 // 在 /routes/admin.js 目录下
 
-const router = require('koa-router')()
+const Router = require('koa-router')
+const router = new Router()
 
 router.get('/', async (ctx) => {
 	ctx.body = 'admin 首页'    

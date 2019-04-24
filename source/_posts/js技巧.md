@@ -70,7 +70,7 @@ let a = someFunc()
 
 一般情况下，我们使用 `npm install module-name -save` 来把模块和版本号添加到 dependency 中，`npm install module-name -save-dev` 来把模块和版本号添加到 devdependencies 中。
 
-这两个依赖的区别在于，在本地构建代码的时候需要用到 `devDependencied` 中的代码。比如我们需要使用 babel,eslint,webpeck 来构建代码，这些就会放在 `devDependencied` 中。这些依赖代码不会存在于构建好的项目代码中。
+这两个依赖的区别在于，在本地构建代码的时候需要用到 `devDependencies` 中的代码。比如我们需要使用 babel,eslint,webpeck 来构建代码，这些就会放在 `devDependencies` 中。这些依赖代码不会存在于构建好的项目代码中。
 
 ```
 假设有以下两个模块：
@@ -93,6 +93,8 @@ npm install D的时候， 下载的模块为：
 - C
 - E
 ```
+
+> devdependency 中的文件如果使用 npm publish 发布 npm 包也不会被上传
 
 ### !! 的用法
 

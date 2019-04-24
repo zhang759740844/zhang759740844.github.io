@@ -75,6 +75,8 @@ npm adduser --registry  http://10.26.5.252:4873
 >
 > 两个注释的带有 `authToken` 的表示的是注册用户的token。
 
+> npm adducer 是用来注册的，如果已经注册了用户无法再次注册。可以直接在网页端登录生成 token，然后手动设置到 .npmrc 中。
+
 ## 切换下载源
 
 一般情况下我们切换npm下载源的方式如下：
