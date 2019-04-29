@@ -637,6 +637,8 @@ FMDatabaseQueue *queue = [FMDatabaseQueue databaseQueueWithPath:aPath];
 
 绑定完了后，将这个 `sqlite3_stmt` 暂存。由于是已经绑定了参数，所以可见前面 `sqlite3_reset()` 做的就是将参数清空。
 
+> SQLite 支持使用占位符 `?`，并且在必要的时候绑定参数。所以你不需要把实际的值放入字符串中去。这是一个安全上的考量，它可以守护程序避免 SQL 注入。它也可以帮助你减少必须 escape 值（sql 提供的转义用的命令）这样的不必要的麻烦。
+
 ##### 创建 FMResultSet 保存结果
 
 现在 sql 已经创建完成，只欠执行了。FMDB 并没有立即执行，而是创建了一个 `FMResultSet` 对象，用来保存每次 sql 的结果。因为一个 db 可以执行多个 sql，所以就要创建多个 `FMResultSet` 。所以在创建 sql 的最后，还要创建一个 `FMResultSet`:

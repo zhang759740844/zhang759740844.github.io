@@ -341,11 +341,14 @@ router.get('/', async (ctx) => {
 })
 ```
 
+`koa-session` 的原理就是在内存中生成一个 session 的散列表。每次生成一个随机的字符串，并将其作为 cookie 下发给客户端，key 对应于 config 中的 key。设置的 `app.keys` 应该就是加密用的秘钥。
+
+当 session 量比较大的时候，就需要考虑通过使用外部存储的方式进行存储。比方说 mysql，redis 等
+
 #### Session 和 Cookie 的区别
 
 1. cookie 数据存放在客户的浏览器上，session 数据放在服务器上。
-2. cookie 不是很安全，别人可以分析存放在本地的 COOKIE 并进行 COOKIE 欺骗
-   考虑到安全应当使用 session。
+2. cookie 会暴露用户的信息，所以使用 session，只在 cookie 中保存一个 id，每次请求通过这个 id 从 session 散列表中获取相应的信息。
 3. 单个 cookie 保存的数据不能超过 4K，很多浏览器都限制一个站点最多保存 20 个 cookie。
 
 ## 访问静态文件
@@ -503,6 +506,174 @@ app.use(async (ctx, next) => {
 ```
 
 要注意， `await` 中发生的 error 需要通过 try…catch 捕获。
+
+### 设置环境变量
+
+node 中的环境变量在 `process.env` 中保存，使用库 `cross-env` 可以方便设置兼容 windows 的环境变量：
+
+```bash
+npm install --save-dev cross-env
+```
+
+package.json 中设置环境变量：
+
+```json
+{
+  "scripts": {
+    "build": "cross-env NODE_ENV=production webpack --config build/webpack.config.js"
+  }
+}
+```
+
+`NODE_ENV` 环境变量将由 cross-env 设置。打印 `process.env.NODE_ENV === 'production'` 为 true
+
+### 连接 Mysql
+
+Nodejs 连接 Mysql 需要 install 相关的库：
+
+```bash
+npm install --save mysql
+```
+
+基本使用：
+
+```js
+const mysql = require('mysql')
+
+// 创建连接对象
+const con = mysql.createConnection({
+  host: 'localhost',
+  user: 'root',
+  password: '',
+  port: '3306',
+  database: 'your_database'
+})
+
+// 开始连接
+con.connect()
+
+// 执行简单的sql
+const sql = 'select * from your_databse'
+con.query(sql, (err, result) => {
+  if (err) {
+ 		console.error(err)
+    return
+  }
+  console.log(result)
+})
+
+// 关闭连接
+con.end()
+```
+
+### redis
+
+redis 是一种内存存储，可以配合 mysql 进行频繁操作的数据的存储。
+
+#### 安装 redis
+
+##### 安装
+
+```bash
+brew install redis
+```
+
+##### 启动 server
+
+```bash
+redis-server
+```
+
+##### 启动 client
+
+```bash
+redis-client
+```
+
+存取值
+
+```bash
+# 设置键值对
+> set myname zachary
+# 取值
+> get myname
+```
+
+
+
+#### 使用 redis
+
+#### 安装 redis nodejs 模块
+
+```bash
+npm install redis --save
+```
+
+#### node 中使用
+
+```js
+const redis = require('redis')
+
+// 创建客户端
+// 默认是 6379 端口
+const redisClient = redis.createClient(6379, '127.0.0.1')
+redisClient.on('error', err => {
+  console.log(err)
+})
+
+// 测试使用
+redisClient.set('myname', 'zachary', redis.print)
+redisClient.get('myname', (err, val) => {
+  if (err) {
+    console.error(err)
+    return
+  }
+  console.log('val', val)
+  
+  // 退出 redis
+  redisClient.quit()
+})
+
+```
+
+### PM2
+
+- 进程守护，系统奔溃自动重启
+- 启动多进程，充分利用 CPU 和内存
+- 自带日志记录
+
+#### 下载
+
+```bash
+npm install pm2 -g
+```
+
+#### 启动
+
+开发环境下使用 `nodemon`，线上环境可以使用 `pm2`:
+
+```bash
+pm2 start app.js
+```
+
+#### 常用命令
+
+```bash
+# 查看进程列表
+pm2 list
+# 重启进程
+pm2 restart <AppName>/<id>
+# 停止进程
+pm2 stop <AppName>/<id>
+# 删除进程
+pm2 delete <AppName>/<id>
+# 查看进程信息
+pm2 info <AppName>/<id>
+# 查看日志(console.log/error/warn)
+pm2 log <AppName>/<id>
+# 监控
+pm2 monit <AppName>/<id>
+```
 
 
 
