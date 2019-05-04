@@ -137,3 +137,28 @@ let e = f(a === b || c === d) && g()
 ```
 
 把 f 推测为了一个方法。
+
+
+
+### npx 的使用
+
+一般我们安装一些 nodejs 的命令行工具需要先全局安装，比如使用 `create-react-app` 这种脚手架就需要先:
+
+```bash
+> npm install create-react-app -g
+> create-react-app my-app
+```
+
+事实上，我们没有必要使用全局安装的方式就可以解决，把它安装到某一个项目中，然后使用 npm 执行：
+
+```bash
+> npm install --save-dev create-react-app
+> npm create-react-app my-app
+```
+
+其实就相当于执行了 node-modules 下 bin 目录中的二进制文件：
+
+```bash
+> node-modules/.bin/create-react-app my-app
+```
+
