@@ -422,7 +422,8 @@ const app = require('koa')()
 const admin = require('./routes/admin.js')
 
 // 用子路由替代了原来的 async 方法
-router.get('/admin', admin)
+// 注意，一定是 use，不是 get 或者 post，我在这里卡了很久
+router.use('/admin', admin)
 
 app.use(router.routes()).use(router.allowedMethods())
 ```
