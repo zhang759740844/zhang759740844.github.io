@@ -567,6 +567,16 @@ con.query(sql, (err, result) => {
 con.end()
 ```
 
+#### 防止 sql 注入
+
+sql 如果是通过字符串拼接的方式注入的参数，那么容易引起 sql 注入。Nodejs 中的 mysql 库引入了 `escape` 方法，会对参数进行转义：
+
+```sql
+select id from User where username = ${escape(username)}
+```
+
+
+
 ### redis
 
 redis 是一种内存存储，可以配合 mysql 进行频繁操作的数据的存储。
