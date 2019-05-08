@@ -149,11 +149,11 @@ let e = f(a === b || c === d) && g()
 > create-react-app my-app
 ```
 
-事实上，我们没有必要使用全局安装的方式就可以解决，把它安装到某一个项目中，然后使用 npm 执行：
+事实上，我们没有必要使用全局安装的方式就可以解决，把它安装到某一个项目中，然后使用 npx 执行：
 
 ```bash
 > npm install --save-dev create-react-app
-> npm create-react-app my-app
+> npx create-react-app my-app
 ```
 
 其实就相当于执行了 node-modules 下 bin 目录中的二进制文件：
