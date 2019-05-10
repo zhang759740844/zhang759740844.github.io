@@ -71,7 +71,7 @@ injectGlobal`
 `
 ```
 
-通过反引号包裹的就是注入全局的样式，可以在全局任意位置引入：
+通过反引号包裹的就是注入全局的样式，然后在根视图中引入：
 
 ```js
 import './style.js'
@@ -90,4 +90,74 @@ export const Logo = styled.a`
 ```
 
 通过 import 引入的资源文件需要通过 `${}` 这样的模板语法使用。
+
+#### 某一个组件的特定样式
+
+某一个组件可以根据传入的 `className` 设置不同的样式：
+
+```js
+export const NavItem = styled.div`
+	&.left {
+		float: left;
+	}
+	&.right {
+		float: right;
+	}
+	&.active {
+		background: #fff;
+	}
+	line-height: 56px;
+	padding: 15px;
+`
+```
+
+使用 `&` 表示当前组件的 `className`。使用方式如下：
+
+```jsx
+import {NavItem} from './style.js'
+
+<NavItem className='left active'>左边样式</NavItem>
+<NavItem className='right'>右边样式</NavItem>
+```
+
+#### 除style外的默认属性
+
+定义组件的时候可以给组件设置默认的属性：
+
+```js
+export const Navsearch = styled.input.attrs({
+  placeholder: '搜索'
+})`
+	width: 90px;
+	height: 32px;
+`
+```
+
+这是一个输入框组件，通过 `attrs` 设置默认占位符属性。
+
+#### 父组件中设置子组件的样式
+
+父组件中可以通过子组件的 `className` 定位子组件。比如有一个子组件的 `className` 为 iconfont：
+
+```js
+export const parent = styled.div`
+	height: 100px;
+	.iconfont {
+		position: absolute;
+		right: 0;
+	}
+`
+```
+
+注意，组件设置自己的样式是通过 `&.classname`，而设置子组件的样式是通过 `.classname` 完成的。
+
+
+
+## 路由
+
+### 安装
+
+```bash
+npm install --save react-router-dom
+```
 

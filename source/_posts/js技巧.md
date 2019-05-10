@@ -162,3 +162,16 @@ let e = f(a === b || c === d) && g()
 > node-modules/.bin/create-react-app my-app
 ```
 
+
+
+### css 屏幕居中
+
+```css
+.center {
+	position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+```
+
