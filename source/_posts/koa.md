@@ -275,7 +275,7 @@ router.get('/', async (ctx) => {
     maxAge: 60*1000*60,
     // 配置可以访问的页面
     path: '/news',
-    // 当有多个子域名的时候使用
+    // 当有多个子域名的时候使用，也可以不写，默认是请求的域名
     domain: '.baidu.com',
     // true 表示这个 cookie 只有服务器端可以方位，false 表示客户端也可以访问
     httpOnly: true
@@ -527,6 +527,16 @@ package.json 中设置环境变量：
 ```
 
 `NODE_ENV` 环境变量将由 cross-env 设置。打印 `process.env.NODE_ENV === 'production'` 为 true
+
+
+
+### 允许跨域
+
+…. 使用细节
+
+如果设置了 `access-control-allow-origin` 为 `*`，那么就是允许跨域了。但是跨域的请求无法获取该域名下的 cookie 信息。
+
+必须设置 `access-control-allow-origin` 为一个特定的域名，而不是 `*`。这样 `Access-Control-Allow-Credentials` 才会被默认置位 true，才可以跨域使用 cookie。
 
 ### 连接 Mysql
 
