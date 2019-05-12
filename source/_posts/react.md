@@ -154,6 +154,26 @@ export const Logo = styled.a`
 
 通过 import 引入的资源文件需要通过 `${}` 这样的模板语法使用。
 
+#### 获取 js 中的 props
+
+还是使用 `${}`，它除了可以传入一个路径，还可以接收一个方法，入参就是该组件的 props：
+
+```js
+export const SomeItem = styled.div`
+	background: url(${(props) => props.imgUrl})
+`
+```
+
+```js
+import {SomeItem} from 'style'
+
+class App extends Components {
+  render () {
+    <SomeItem imgUrl='http://xxxxx' />
+  }
+}
+```
+
 
 
 
@@ -184,6 +204,244 @@ export const Navsearch = styled.input.attrs({
 ```bash
 npm install --save react-router-dom
 ```
+
+### 使用
+
+```jsx
+import {BrowserRouter, Router} from 'react-router-dom'
+import Home from './pages/home'
+
+class App extends Component {
+  render () {
+    return (
+    	<div>
+      	<BrowserRouter>
+          <div>
+          	<Route exact path='/' render={Home} />
+          	<Route exact path='/detail' render={()=>(<div>detail</div>)} />
+          </div>
+        </BrowserRouter>
+      </div>
+    )
+  }
+}
+```
+
+### 跳转
+
+使用 `Link` 标签包裹：
+
+```jsx
+import {Link} from 'react-router-dom'
+
+class Home extends Component {
+  render () {
+    return (
+    	<Link to='/detail'>
+      	<SomeImg />
+      </Link>
+    )
+  }
+}
+```
+
+和 `Link` 类似的，还有 `Redirect` 标签，用于重定向：
+
+```jsx
+import {Redirect} from 'react-router-dom'
+
+class Home extends Component {
+  render () {
+    return (
+    	<Redirect to='/login'>
+      	<SomeView />
+      </Redirect>
+    )
+  }
+}
+```
+
+#### 自动重定向
+
+上面演示的是需要点击的跳转和重定向，但是有时候需要自动的重定向比如未登录的时候直接跳转登录页。
+
+为了达到这个效果，我们可以使用一个自闭合的 `Redirect` 标签：
+
+```jsx
+import {Redirect} from 'react-router-dom'
+
+class Home extends Component {
+  render () {
+    return (
+      {
+        this.props.login ? (
+        	<HomeView />
+        ) : (
+					<Redirect to='/login' />
+    		)
+      }
+
+    )
+  }
+}
+```
+
+应该是 `Redirect` 会在渲染的时候判断是否有子元素，以此作为依据是否直接重定向。
+
+### 页面传参
+
+页面之间传参可以有两种方式，一种是动态路由，一种是直接传参。
+
+#### 动态路由
+
+动态路由用于从上个页面传递参数给下个页面。设置总共分为三步：
+
+##### 路由设置动态路由
+
+```jsx
+import {BrowserRouter, Router} from 'react-router-dom'
+import Home from './pages/home'
+
+class App extends Component {
+  render () {
+    return (
+    	<div>
+      	<BrowserRouter>
+          <div>
+          	<Route exact path='/' render={Home} />
+          	<Route exact path='/detail/:id' render={()=>(<div>detail</div>)} />
+          </div>
+        </BrowserRouter>
+      </div>
+    )
+  }
+}
+```
+
+可以看到，和上面使用唯一的不同在于 `path='/detail/:id'`。其中 `:id` 表示接收端会接收到一个叫 id 的参数
+
+##### 跳转前页面传参
+
+```js
+import {Link} from 'react-router-dom'
+
+class Home extends Component {
+  render () {
+    return (
+    	<Link to='/detail/2'>
+      	<SomeImg />
+      </Link>
+    )
+  }
+}
+```
+
+可以看到，和用 Link 跳转唯一的不同在于 `to='/detail/2'`，跳转页面多了一个参数，这个参数会在跳转后的页面通过 id 取到。
+
+##### 跳转后的页面获取参数
+
+```js
+class Detail extends Component {
+	componentDidMount () {
+    const id = this.props.match.params.id
+  }
+}
+```
+
+id 就通过 prop 获取到。
+
+#### 直接传参
+
+直接传参不需要配置路由，直接在跳转前的页面拼接要传递的参数：
+
+```jsx
+import {Link} from 'react-router-dom'
+
+class Home extends Component {
+  render () {
+    return (
+    	<Link to='/detail?id=2'>
+      	<SomeImg />
+      </Link>
+    )
+  }
+}
+```
+
+参数需要自己手动解析获取：
+
+```jsx
+class Detail extends Component {
+  componentDidMount () {
+    const idString = this.props.location.search		// ?id=2
+  }
+} 
+```
+
+### 异步组件
+
+单页应用会把所有的页面打包到一个 bundle 中，这就会造成 bundle 庞大的问题，需要将页面拆分为异步组件。
+
+```bash
+npm install --save react-loadable
+```
+
+```jsx
+// detail/loadable.js
+import React from 'react'
+import Loadable from 'react-loadable'
+
+const LoadableComponent = Loadable({
+  loader: () => import('./index.js'),
+  loading() {
+  	return (<div>我正在加载，这是加载时候的提示</div>)
+	}
+})
+
+export default () => <LoadableComponent />
+```
+
+之后使用到详情页的地方不再引用原来的组件，而是引用这个异步组件：
+
+```jsx
+import {BrowserRouter, Router} from 'react-router-dom'
+import Detail from './pages/detail/loadable'
+
+class App extends Component {
+  render () {
+    return (
+    	<div>
+      	<BrowserRouter>
+          <div>
+          	<Route exact path='/detail' render={Detail} />
+          	<Route exact path='/' render={()=>(<div>home</div>)} />
+          </div>
+        </BrowserRouter>
+      </div>
+    )
+  }
+}
+```
+
+### withRouter
+
+`withRouter`  和 redux 中 connect 方法将 store 中的相应属性和方法传递给视图的作用一样，当你在路由组件中使用的视图被其他视图嵌套的时候，能够帮助你直接过去到路由相关的参数。
+
+比如上面的 Detail，它是无法从它的 props 中拿到 loacation 或者 match 属性的，因为它被一部组建包裹了。使用 `withRouter` 就可以将路由相关的属性通过虫洞，直接交给视图：
+
+```jsx
+import {withRouter} from 'react-router-dom'
+
+class Detail extends Component {
+  componentDidMount () {
+    const idString = this.props.location.search		// ?id=2
+  }
+}
+
+export default withRouter(Detail)
+```
+
+
 
 ## CSS 技巧
 
@@ -256,15 +514,15 @@ float 和 absolute 类似，可以将视图脱离于默认的排布，只不过 
 > node-modules/.bin/create-react-app my-app
 ```
 
-### 实践技巧
+## 实践技巧
 
-#### 请求添加 cookie
+### 请求添加 cookie
 
 axios 默认的请求是不会添加 cookie 的，需要在请求的 option 字段中添加 `withCredentials: true` 这个选项才行。
 
 这个选项要求请求不能跨域，或者跨域的域名在服务端 `access-control-allow-origin` 允许的域名中。
 
-#### 设置 cookie
+### 设置 cookie
 
 要想服务端通过 `set-cookie`能够成功设置 cookie 的前提是**请求不能跨域**名。跨域名的请求是无法设置 cookie 的。
 
