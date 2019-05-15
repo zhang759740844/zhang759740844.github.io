@@ -291,6 +291,8 @@ router.get('/', async (ctx) => {
 })
 ```
 
+> 如果客户端需要拿到 cookie，那么必须设置 httpOnly 为 false
+
 ### 设置 Session
 
 **session** 是另一种记录客户状态的机制，不同的是 **Cookie** 保存在客户端浏览器中，而
@@ -532,11 +534,36 @@ package.json 中设置环境变量：
 
 ### 允许跨域
 
-…. 使用细节
+跨域的请求需要借助第三方的库 `koa-cors` 进行允许跨域设置：
 
-如果设置了 `access-control-allow-origin` 为 `*`，那么就是允许跨域了。但是跨域的请求无法获取该域名下的 cookie 信息。
+```bash
+npm install koa-cors
+```
+
+使用：
+
+```js
+app.use(cors({
+  origin: function (ctx) {
+    if (ctx.url === '/cors') {
+      return '*' // 允许来自所有域名请求
+    }
+    return 'http://localhost:3000'
+  },
+  exposeHeaders: ['WWW-Authenticate', 'Server-Authorization'],
+  credentials: true,
+  allowMethods: ['GET', 'POST', 'DELETE'], // 设置允许的HTTP请求类型
+  allowHeaders: ['Content-Type', 'Authorization', 'Accept']
+}))
+```
+
+其中 origin 字段对应于 `access-control-allow-origin`，通过它设置哪些站点发起哪些请求可以进行跨域。上面🌰表示，请求路径为 `/cors` 的这个请求可以进行跨域，但是不能获取 cookie 信息，而 `http://localhost:3000` 这个域名下的所有请求都可以进行跨域，且可以获取 cookie 信息，是受信的站点。
+
+如果设置了 `access-control-allow-origin` 为 `*`，那么就是允许跨域了。但是跨域的客户端请求，无法携带该域名下的 cookie 信息给服务端。
 
 必须设置 `access-control-allow-origin` 为一个特定的域名，而不是 `*`。这样 `Access-Control-Allow-Credentials` 才会被默认置位 true，才可以跨域使用 cookie。
+
+> 所以这是一个三级保证。没有 *，那么无法发出请求，没有特定的域名，没有发送带 cookie 的请求。
 
 ### 连接 Mysql
 
@@ -696,5 +723,7 @@ pm2 log <AppName>/<id>
 pm2 monit <AppName>/<id>
 ```
 
+### 命令行
 
+node 写脚本需要配合 shell 语法，`shelljs` 是一个封装的很晚上的库
 
