@@ -759,6 +759,12 @@ function _mergeReducers(obj, arr, res) {
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/redux_4.png?raw=true)
 
+> **这里是一个非常重要的注释，用来探讨 publicHandlers 和全局的 reducer 的适用场景**
+>
+> publicHandlers 的适用场景是，其他人的变动要通知我做出相应变动的情况。即多对一。
+>
+> 全局 reducer 的适用场景是，我的变动要通知其他人的变动的情况。即一对多。
+
 注册模块的逻辑就是这样。现在需要把各个部分糅合到一起。hanzo 提供了 `start` 方法：
 
 ```javascript
