@@ -1248,14 +1248,6 @@ import {default as myName} from './myName'
 
 其实就是 as 的语法糖。注意，import 的时候就不需要大括号了。
 
-### 与 CommonJS 中 require()，module.exports 的不同
-
-`module.exports = {}` 直接导出一个对象。`let a = require('../module')`直接从路径获取导出的对象。
-
-> 这种方式导出的是一个整的对象，如果要导出多个，需要作为对象的各个属性。而 **ES6 的导出相当于直接将导出对象解构赋值了**。
->
-> 另外，从写法上来说，CommonJS 中是使用赋值的方式，即有 '=‘，而 ES6 则没有等于号
-
 ### ES6 和 CommonJs 在引用方式的差异
 
 CommonJS的一个模块，就是一个脚本文件。**`require`命令第一次执行的时候，加载该脚本，然后执行整个脚本**
@@ -1266,37 +1258,13 @@ ES6模块的运行机制与CommonJS不一样，**它遇到模块加载命令`imp
 >
 > 而 `import` 是强制静态化的
 
-### 模块加载
+### 混用产生的问题
 
-不论是 ES6 或者 CommonJS，加载模块一般有两种方式。无相对路径，有相对路径：
+export 和 module.exports 都是导出模块，但是最好不要在一个文件中一起使用。混用会产生一定的问题。
 
-```javascript
-// 无相对路径的
-import JPush from 'react-native-jpush'
-import { Actions } from 'hanzojs/router/mobile'
+首先，ES6 的 export 在 webpack 打包后都会变成 CommonJS 的语法。因此 export 最终会变为 CommonJS 的 exports。当 exports 和 module.exports 同时存在的时候，最终导出的将会是 module.exports 的对象。exports 导出的对象会被覆盖。
 
-// 有相对路径的
-import { App } from './app'
-import { Card} from '../../componects/comp/card'
-```
-
-#### 无相对路径
-
-对于无相对路径的加载，**都是 node_module 中的文件**。一般要根据模块所在父模块，确定可能安装的目录。
-
-首先在当前**文件 X** 的父目录下的 `node_modules` 文件夹中，尝试**加载 X.js**，如果没有，尝试将其当做文件夹，寻找文件夹下的 `index.js` 文件。
-
-如果没有，则到父目录的父目录中的 `node_modules` 文件夹中继续寻找。直到全局的 `node_modules` 中。如果都没有，则抛出找不到文件。
-
-[具体可见例子](http://www.ruanyifeng.com/blog/2015/05/require.html)
-
-#### 有相对路径
-
-有相对路径省去了找安装目录的过程，直接在相对路径中寻找**文件名或者目录名**。
-
-还是先将其当成文件名，找对应文件，如果没有文件，则将其当成目录，找对应目录下的 `index.js` 文件。
-
-
+> 这个结论非常重要。牢记这个结论在混用的时候就能明白为什么很多时候 import 的时候是 undefined 的了。
 
 ## 归类
 

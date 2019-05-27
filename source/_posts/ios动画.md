@@ -7,7 +7,7 @@ tags: [Animation]
 
 ## 视图动画
 
-###UIView动画
+### UIView动画
 
 #### 首尾式动画
 
@@ -53,6 +53,33 @@ tags: [Animation]
 self.customView.center=CGPointMake(200, 300);
 [UIView commitAnimations];
 ```
+
+> 注意点：
+>
+> UIView 的动画在开始的时候，它的 frame 就已经到了目的位置，运动的只是 UIView 的 layer。因此，在 UIView 执行动画的时候，运动中的视图是无法相应点击事件的。因此，如果要视图能够相应点击事件，就需要在寻找点击响应者的时候，判断点击的点是否在 UIView 的 layer 的 frame 里。代码如下：
+
+```objc
+// 设置动画
+[UIView animateKeyframesWithDuration:20 delay:0 options:UIViewKeyframeAnimationOptionAllowUserInteraction animations:^{
+            self.btn.frame = CGRectMake(100, 300, 100, 100);
+        } completion:^(BOOL finished) {
+            NSLog(@"xly--%@",@"finished");
+            ret = YES;
+        }];
+
+// 点击事件寻找第一响应者的方法。判断点击坐标 p 是否在 self.layer.presentationLayer 中
+- (BOOL)pointInside:(CGPoint)point withEvent:(UIEvent *)event {
+    if (self.animationAllowUserInteraction) {
+        CGPoint p = [self convertPoint:point toView:self.superview];
+        if ([self.layer.presentationLayer hitTest:p]) {
+            return YES;
+        }
+    }
+     return [super pointInside:point withEvent:event];
+}
+```
+
+
 
 ### UIView 关键帧动画
 
@@ -161,8 +188,3 @@ ca.duration=2.0;
 //添加动画
 [self.iconView.layer addAnimation:ca forKey:nil];
 ```
-
-## 控制器动画
-
-### Modal 动画
-

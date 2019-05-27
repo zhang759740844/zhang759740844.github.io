@@ -197,7 +197,7 @@ UIReturnKeyEmergencyCall, 紧急呼叫按钮
 
 #### 全屏触摸关闭
 
-监听手势，当点击开始时，关闭 textfied
+监听手势，当点击开始时，关闭 textfield
 
 ```objc
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event{
