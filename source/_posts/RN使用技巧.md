@@ -13,6 +13,42 @@ tags:
 
 <!--more-->
 
+### 函数式组件
+
+函数式组件即通过调用一个方法返回一个组件。比如返回一个 class：
+
+```jsx
+start (TopLevelNavigator) {
+  let store = this.getStore()
+  return class extends Component {
+    render () {
+      return (
+        <Provider store={store}>
+          <TopLevelNavigator />
+        </Provider>
+      )
+    }
+  }
+}
+```
+
+上面通过调用一个 start 方法，返回一个新的组件的类。不过对于无状态的组件来说，可以有更好的写法。因为 class 也是一种 function，因此我们可以写成返回一个 function:
+
+```jsx
+start (TopLevelNavigator) {
+  let store = this.getStore()
+  return (props) => (
+        <Provider store={store}>
+          <TopLevelNavigator {...props}/>
+        </Provider>
+      )
+    }
+  }
+}
+```
+
+这样的写法更加直观。
+
 ### PureComponent 和 Component
 
 PureComponent 和 Component 的不同在于前者提供了一个 `shouldComponentUpdate`  的默认实现。

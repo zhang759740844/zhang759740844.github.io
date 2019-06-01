@@ -43,6 +43,52 @@ textView.placeholderTextColor = [UIColor redColor];
 
 使用非常简单。只要传入当前 textfield 所在的控制器即可。可以通过设置 `IQKeyboardReturnHandler` 的 delegate 设置所有 textfield 的 delegate。也可以自己设置每个 textfield 的 delegate。
 
+### IQKeyboardManager
+
+#### 在某个页面禁用 IQKeyboardManager
+
+```objc
+ - (void)viewWillAppear:(BOOL)animated{
+    [super viewWillAppear:animated];
+    //写入这个方法后,这个页面将没有这种效果
+    [IQKeyboardManager sharedManager].enable = NO;
+}
+- (void)viewWillDisappear:(BOOL)animated{
+    [super viewWillDisappear:animated];
+    //最后还设置回来,不要影响其他页面的效果
+    [IQKeyboardManager sharedManager].enable = YES;
+}
+```
+
+#### 点击空白处可以隐藏键盘
+
+```objc
+[IQKeyboardManager sharedManager].shouldResignOnTouchOutside = YES;
+```
+
+#### 隐藏键盘上的 toolbar
+
+```objc
+[IQKeyboardManager sharedManager].enableAutoToolbar = NO;
+```
+
+除了这种一刀切的隐藏或者显示 toolbar 之外，IQKeyboardManager 还提供了两个数组属性，用于标识特例 ViewController：
+
+```objc
+@property(nonatomic, strong, nonnull, readwrite) NSMutableSet<Class> *disabledToolbarClasses;
+@property(nonatomic, strong, nonnull, readwrite) NSMutableSet<Class> *enabledToolbarClasses;
+```
+
+这两个属性分别可以设置在 `enableAutoToobar` 为 YES 的时候，不显示 toobar 的 ViewController；`enableAutoToobar` 为 NO 的时候，显示 toobar 的 ViewController。
+
+`disableToolbarClasses` 默认为：
+
+```objc
+[UIAlertController, _UIAlertControllerTextFieldViewController]
+```
+
+
+
 ## 源码解析
 
 ### IQTextView
@@ -347,6 +393,26 @@ IQKeyboardReturnKeyHandler 实例接管了 textfield 的相关方法。在 `text
 
 其实理解了设置 returnkeytype 的逻辑，这里设置下一个响应者的逻辑也就明了了。还是获得排序后的 textfield 数组，只要把下一个 textfield 设置为第一响应者就可以了。
 
+### IQKeyboardManager
+
+#### 注册
+
+IQKeyboardManager 通过 `+(void)load` 方法自动创建自身：
+
+```objc
++(void)load
+{
+    //Enabling IQKeyboardManager. Loading asynchronous on main thread
+    [self performSelectorOnMainThread:@selector(sharedManager) withObject:nil waitUntilDone:NO];
+}
+```
+
+我们常说不要在 load 方法中做太多耗时操作，会影响应用的启动速度。所以，我们可以把要做的初始化操作异步去执行。来看初始化方法：
+
+```objc
+
+```
+
 
 
 ## 小技巧
@@ -394,5 +460,23 @@ IQKeyboardReturnKeyHandler 实例接管了 textfield 的相关方法。在 `text
 
     return nil;
 }
+```
+
+3. 在 load 方法中异步执行初始化操作
+
+```objc
++(void)load
+{
+    [self performSelectorOnMainThread:@selector(sharedManager) withObject:nil waitUntilDone:NO];
+}
+
+```
+
+4. 宏定义一个不存在的点
+
+宏定义定义一个不存在的点，然后提供用作初始化。
+
+```objc
+#define kIQCGPointInvalid CGPointMake(CGFLOAT_MAX, CGFLOAT_MAX)
 ```
 
