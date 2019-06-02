@@ -257,3 +257,5 @@ OSSpinLock > dispatch_semaphore > pthread_mutex > NSLock > NSRecursiveLock > NSC
 4. 两个线程同时读取值 1。
 5. 线程2执行 99 次，写回。此时内存为 99
 6. 线程1执行1次，写回。此时内存为 2
+
+问题的关键在于，一个线程的写入与读取这两个操作之间，可以穿插别的线程的写入操作。

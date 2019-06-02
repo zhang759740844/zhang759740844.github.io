@@ -225,7 +225,7 @@ end
 - s.resource_bundles 表示将资源文件创建为某个 bundle
 - s.frameworks 表示类库依赖的framework
 - s.dependency 表示依赖的第三方类库，如果有多个要写多个 s.dependency
-- s.subspec 表示依赖的子 podspec
+- s.subspec 表示依赖的子 podspec。
 
 其中要说明的是： 
 
@@ -251,11 +251,11 @@ end
    ​```
    ```
 
-   所以可以把subspec当做一个小型的pod来看。来看一下用 subspec 后，在 pod install 后得到如下文件结构：
+   所以可以把subspec当做一个小型的pod来看。来看一下用 subspec 后，在 pod install 后得到如下文件结构。使用了 subspec 后，subspec 会单独变成一个文件夹：
 
 ![subspec](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_cocoapods_sub.png?raw=true)
 
-（上面说的 *你的库* 指的是你在做的库，*私有库* 指的是在你私有远端仓库而不是在官方仓库里的库）
+
 
 #### 添加文件
 
