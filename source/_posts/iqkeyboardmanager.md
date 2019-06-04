@@ -407,11 +407,87 @@ IQKeyboardManager 通过 `+(void)load` 方法自动创建自身：
 }
 ```
 
-我们常说不要在 load 方法中做太多耗时操作，会影响应用的启动速度。所以，我们可以把要做的初始化操作异步去执行。来看初始化方法：
+我们常说不要在 load 方法中做太多耗时操作，会影响应用的启动速度。所以，我们可以把要做的初始化操作异步去执行。下面来看初始化方法
+
+##### 注册通知
+
+注册的通知主要包含两部分。一部分是键盘的弹出与隐藏，另一部分是 `UITextField` 和 `UITextView` 的编辑的回调。具体通知的处理方法后文解析。
 
 ```objc
+-(void)registerAllNotifications
+{
+    //  注册键盘相关通知
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardDidShow:) name:UIKeyboardDidShowNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardDidHide:) name:UIKeyboardDidHideNotification object:nil];
 
+    //  注册 UITextField 的编辑通知
+    [self registerTextFieldViewClass:[UITextField class]
+     didBeginEditingNotificationName:UITextFieldTextDidBeginEditingNotification
+       didEndEditingNotificationName:UITextFieldTextDidEndEditingNotification];
+
+    //  注册 UITextView 的编辑通知
+    [self registerTextFieldViewClass:[UITextView class]
+     didBeginEditingNotificationName:UITextViewTextDidBeginEditingNotification
+       didEndEditingNotificationName:UITextViewTextDidEndEditingNotification];
+}
+
+// 注册开始编辑和结束编辑的通知
+-(void)registerTextFieldViewClass:(nonnull Class)aClass
+  didBeginEditingNotificationName:(nonnull NSString *)didBeginEditingNotificationName
+    didEndEditingNotificationName:(nonnull NSString *)didEndEditingNotificationName
+{
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(textFieldViewDidBeginEditing:) name:didBeginEditingNotificationName object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(textFieldViewDidEndEditing:) name:didEndEditingNotificationName object:nil];
+}
 ```
+
+##### 创建一个 `UITapGestureRecognizer`
+
+这个手势用来在点击 `UITextField` 以外的区域的时候收起键盘
+
+```objc
+// 为点击屏幕取消第一响应者这个功能创建一个手势
+strongSelf.resignFirstResponderGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapRecognized:)];
+// 设置该手势不取消事件传递
+strongSelf.resignFirstResponderGesture.cancelsTouchesInView = NO;
+// 设置手势代理为自身
+[strongSelf.resignFirstResponderGesture setDelegate:self];
+// 将手势默认设为不启用
+strongSelf.resignFirstResponderGesture.enabled = strongSelf.shouldResignOnTouchOutside;
+// 点击外部区域是否取消第一响应者
+[self setShouldResignOnTouchOutside:NO];
+
+- (void)tapRecognized:(UITapGestureRecognizer*)gesture  // (Enhancement ID: #14)
+{
+    if (gesture.state == UIGestureRecognizerStateEnded)
+    {
+        //Resigning currently responder textField.
+        [self resignFirstResponder];
+    }
+}
+```
+
+##### 配置键盘遮挡相关的一些类
+
+下面的这些配置用于设置 Textfield 在哪些类中 IQKeyboardManager 能够启用，或者关闭。一般使用场景不多。见名思意。
+
+```objc
+strongSelf.disabledDistanceHandlingClasses = [[NSMutableSet alloc] initWithObjects:[UITableViewController class],[UIAlertController class], nil];
+strongSelf.enabledDistanceHandlingClasses = [[NSMutableSet alloc] init];
+
+strongSelf.disabledToolbarClasses = [[NSMutableSet alloc] initWithObjects:[UIAlertController class], nil];
+strongSelf.enabledToolbarClasses = [[NSMutableSet alloc] init];
+
+strongSelf.toolbarPreviousNextAllowedClasses = [[NSMutableSet alloc] initWithObjects:[UITableView class],[UICollectionView class],[IQPreviousNextView class], nil];
+
+strongSelf.disabledTouchResignedClasses = [[NSMutableSet alloc] initWithObjects:[UIAlertController class], nil];
+strongSelf.enabledTouchResignedClasses = [[NSMutableSet alloc] init];
+strongSelf.touchResignedGestureIgnoreClasses = [[NSMutableSet alloc] initWithObjects:[UIControl class],[UINavigationBar class], nil];
+```
+
+#### 
 
 
 
@@ -419,7 +495,7 @@ IQKeyboardManager 通过 `+(void)load` 方法自动创建自身：
 
 到最后了总结一下看 IQKeyboardManager 源码学到的一些技巧。
 
-1. 对一个数组排序：
+### 对一个数组排序：
 
 ```objc
 [SomeViewArray sortedArrayUsingComparator:^NSComparisonResult(UIView *view1, UIView *view2) {
@@ -442,7 +518,7 @@ IQKeyboardManager 通过 `+(void)load` 方法自动创建自身：
 }];
 ```
 
-2. 通过响应链获得当前视图的 ViewController
+### 通过响应链获得当前视图的 ViewController
 
 ```objc
 -(UIViewController*)viewContainingController
@@ -462,7 +538,7 @@ IQKeyboardManager 通过 `+(void)load` 方法自动创建自身：
 }
 ```
 
-3. 在 load 方法中异步执行初始化操作
+### 在 load 方法中异步执行初始化操作
 
 ```objc
 +(void)load
@@ -472,7 +548,7 @@ IQKeyboardManager 通过 `+(void)load` 方法自动创建自身：
 
 ```
 
-4. 宏定义一个不存在的点
+### 宏定义一个不存在的点
 
 宏定义定义一个不存在的点，然后提供用作初始化。
 
