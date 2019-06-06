@@ -646,7 +646,17 @@ strongSelf.touchResignedGestureIgnoreClasses = [[NSMutableSet alloc] initWithObj
 
 ##### 调整视图偏移
 
+随后来到调整偏移的方法 `optimizedAdjustPosition` 中，它在主线程中调用。因为届时将会对 UI 进行调整：
 
+```objc
+-(void)optimizedAdjustPosition{
+    __weak typeof(self) weakSelf = self;
+    // 添加到主线程中z异步执行
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        [self adjustPosition];
+    }];
+}
+```
 
 
 
