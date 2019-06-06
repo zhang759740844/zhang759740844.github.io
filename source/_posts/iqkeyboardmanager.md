@@ -60,6 +60,17 @@ textView.placeholderTextColor = [UIColor redColor];
 }
 ```
 
+除了上面的直接禁用和启用，IQKeyboardManager 也可以设置在禁用的时候在部分 ViewController 上启用，或者在启动的时候在部分 ViewController 上禁用：
+
+```objc
+// 在整体禁用的时候可以启动 IQKeyboardManager 的类
+[[IQKeyboardManager sharedManager].enabledDistanceHandlingClasses addObject: yourViewControllerClass];
+// 在整体启动的时候需要禁用 IQKeyboardManager 的类
+[[IQKeyboardManager sharedManager].disabledDistanceHandlingClasses addObject: yourViewControllerClass];
+```
+
+
+
 #### 点击空白处可以隐藏键盘
 
 ```objc
@@ -443,6 +454,8 @@ IQKeyboardManager 通过 `+(void)load` 方法自动创建自身：
 }
 ```
 
+> 注册之外的所有逻辑都在这些通知方法内
+
 ##### 创建一个 `UITapGestureRecognizer`
 
 这个手势用来在点击 `UITextField` 以外的区域的时候收起键盘
@@ -487,7 +500,155 @@ strongSelf.enabledTouchResignedClasses = [[NSMutableSet alloc] init];
 strongSelf.touchResignedGestureIgnoreClasses = [[NSMutableSet alloc] initWithObjects:[UIControl class],[UINavigationBar class], nil];
 ```
 
-#### 
+#### textFieldViewDidBeginEditing
+
+在这个开始编辑的方法中，主要做了两件事：
+
+1. 根据需要添加或移除 toolbar
+2. 根据需要调整视图偏移
+
+##### 添加或移除 toolbar
+
+首先会调用 `privateIsEnableAutoToobar` 方法，判断是否需要显示 toobar。这个判断逻辑就是根据外部设置的 `enable` 变量的值，然后还有前面提到的当前 textfield 所在的 ViewController 是否是 `enable` 的特例。伪代码如下：
+
+```objc
+- (Bool) privateIsEnableAutoToobar {
+  if (开启IQKeyboardManager) {
+    if (textfield 在禁止的 ViewController 中) {
+      return NO;
+    }
+} else {
+    if (textfield 在允许的 ViewController 中，并且不是 UIAlertController 和 TextFieldViewController ) {
+      return YES;
+    }
+	}
+}
+```
+
+如果允许添加。那么就会调用 `addToolbarIfRequired` 方法。主要是在 toolbar 中添加各种 button。伪代码如下：
+
+```objc
+- (void)addToolbarIfRequired {
+  if (textfield 能够添加 inputAccessoryView && textfield 的 inputAccessoryView 为 nil) {
+    if (有自定义的图片 toolbarDoneBarButtonItemImage) {
+      用这个 toolbarDoneBarButtonItemImage 初始化一个 toolbar 右边的 done 按钮
+    } else if (有自定义的文字 toolbarDoneBarButtonItemText) {
+      用这个 toolbarDoneBarButtonItemText 初始化一个 toobar 右边的 done 按钮
+    } else {
+      初始化默认的右边的 toolbar 的 done 按钮
+    }
+    
+    if (当前 textfield 没有兄弟 textfield) {
+      // 只有一个就不用添加左边的前一个后一个的按钮了，就直接返回
+      return
+    } else {
+      if (有自定义的图片) {
+        初始化带图片的 prev 的按钮以及 next 按钮
+      } else if (有自定义的文字) {
+        初始化带文字的 prev 按钮以及 next 按钮
+      } else {
+        初始化默认的 prev 按钮以及 next 按钮
+      }
+    }
+    
+    if (textfield 实现了 keyboardAppearance 方法) {
+      根据 keyboard 的模式设置 toolbar 的样式
+    }
+    
+    if (shouldShowToolbarPlaceholder 属性为 YES) {
+      将 textfield 的 placeholder 的样式复制给 toolbar 的 titleBarButton
+    } else {
+      隐藏 toolbar 的 titleBarButton
+    }
+    
+    if (当前 textfield 是第一个) {
+      设置 prev 按钮 enabled 为 NO
+    } else if (当前 textfield 是最后一个) {
+      设置 next 按钮 enabled 为 NO
+    } else {
+      设置 prev 和 next 按钮 enabled 为 YES
+    }
+    // 最后通过设置好的 prev 和 next 和 placeholder 和 done 创建 IQToolbar。并将 toolbar 设置为 textfield 的 inputAccessview
+    [textfield setInputAccessView: toolbar];
+  }
+}
+```
+
+代码很简单，就是很繁琐，伪代码都写了这么多。可以看到，IQKeyboardManager 很人性化的为 toobar 上左右的按钮都设置了自定义的图片和文字(虽然一般不会有人去改)
+
+完成按钮的点击事件可以理解为就是取消 textfield 的第一响应者。prev 按钮和 next 按钮实现上稍微复杂一点，但是思想上是非常简单的。以 prev 按钮为例：
+
+```objc
+-(void)previousAction:(IQBarButtonItem*)barButton {
+  if ([self canGoPrevious]) {
+    [self goPrevious];
+  }
+  ....省略以一部分 firstResponder 转移成功后自定义的处理逻辑(一般不会使用就省略不看了)
+}
+```
+
+逻辑就是能跳到前面一个就跳到前面一个：
+
+```objc
+-(BOOL)canGoPrevious {
+  // 获取当前视图的所有兄弟 textfield 
+  NSArray<UIView*> *textFields = [self responderViews]
+  // 获取当前 textfield 在这些 textfield 的 index
+  NSUInteger index = [textFields indexOfObject:_textFieldView];
+  // 如果 textfield 的 index 不是第一个
+  if (index != NSNotFound && index > 0) {
+    return YES;
+  } else {
+    return NO;
+  }
+}
+
+-(BOOL)goPrevious {
+  // 获取当前视图的所有兄弟 textfield 
+  NSArray<__kindof UIView*> *textFields = [self responderViews];
+  // 获取当前 textfield 在这些 textfield 的 index
+  NSUInteger index = [textFields indexOfObject:_textFieldView];
+  // 如果 textfield 的 index 不是第一个
+  if (index != NSNotFound && index > 0) {
+    UITextField *nextTextField = textFields[index-1];
+    UIView *textFieldRetain = _textFieldView;
+    // 上一个 textfield 获取焦点
+    BOOL isAcceptAsFirstResponder = [nextTextField becomeFirstResponder];
+    if (isAcceptAsFirstResponder == NO) {
+      [textFieldRetain becomeFirstResponder];
+    }
+    return isAcceptAsFirstResponder;
+  } else {
+    return NO;
+  }
+}
+```
+
+有没有很熟悉？和处理 return 键的逻辑类似。拿到所有兄弟 textfield，然后判断当前 textfield 是否是第一个。不是的话就让上一个获取焦点。
+
+说完了添加 IQToolbar，现在再来快速看一下如果 `privateIsEnableAutoToolbar` 为 NO 情况下移除 toolbar
+
+```objc
+-(void)removeToolbarIfRequired {
+    NSArray<UIView*> *siblings = [self responderViews];
+    for (UITextField *textField in siblings) {
+        UIView *toolbar = [textField inputAccessoryView];
+        if ([textField respondsToSelector:@selector(setInputAccessoryView:)] &&
+            ([toolbar isKindOfClass:[IQToolbar class]] && (toolbar.tag == kIQDoneButtonToolbarTag || toolbar.tag == kIQPreviousNextButtonToolbarTag))) {
+            textField.inputAccessoryView = nil;
+            [textField reloadInputViews];
+        }
+    }
+}
+```
+
+移除的方法更简单。直接找到所有兄弟 textfield，如果它们的 inputAccessoryView 是 IQToolbar 类型，那么就清空。
+
+##### 调整视图偏移
+
+
+
+
 
 
 
@@ -554,5 +715,32 @@ strongSelf.touchResignedGestureIgnoreClasses = [[NSMutableSet alloc] initWithObj
 
 ```objc
 #define kIQCGPointInvalid CGPointMake(CGFLOAT_MAX, CGFLOAT_MAX)
+```
+
+### 计算方法的执行时间
+
+方法的执行时间可以通过分别获取方法开始执行和执行完毕的时间，然后相减：
+
+```objc
+CFTimeInterval startTime = CACurrentMediaTime();
+CFTimeInterval elapsedTime = CACurrentMediaTime() - startTime;
+```
+
+### iOS 发出输入键盘的声音
+
+iOS 提供了一个方法提供播放键盘声音：
+
+```objc
+[[UIDevice currentDevice] playInputClick]
+```
+
+比如通讯录选择了首字母可以使用这个方法播放声音。
+
+### 设置随键盘弹出的视图
+
+在没看代码前，你可能会认为 IQKeyboardManager 是通过动画的方式将 IQToolbar 展示在 keyboard 上的。其实 iOS 提供了相关的属性。可以直接将自定义视图设置为 textfield 的 inputAccessoryView 就可以实现效果：
+
+```objc
+[textfield setInputAccessView: yourView];
 ```
 
