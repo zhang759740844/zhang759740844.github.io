@@ -204,7 +204,7 @@ dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
 
 //线程2
 dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-    if ([lock tryLockWhenCondition:0]) {
+    if ([lock lockWhenCondition:0]) {
         NSLog(@"线程2");
         [lock unlockWithCondition:1];
         NSLog(@"线程2解锁成功");
@@ -213,6 +213,8 @@ dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
     }
 });
 ```
+
+`NSConditionLock` 就针对于多个线程在复制场景下的同步。
 
 ### 信号量
 
@@ -236,6 +238,10 @@ dispatch_semaphore_signal(signal);
 虽然 Semaphore=1时可以看成互斥锁，但是它们真正的使用场景是有差别的。
 
 锁是服务于共享资源的；而semaphore是服务于多个线程间的执行的逻辑顺序的。比如，a 和 b 执行完了再执行 c，就可以通过信号量实现，但是无法通过互斥锁实现。
+
+> 这其实没有解释二元信号量和互斥锁的区别。
+>
+> 二元信号量和互斥锁的区别在《程序员的自我修养》中提及，信号量可以在非当前线程释放，而互斥锁只能在当前线程释放。具体参见该读书笔记
 
 ###  速度比较
 
