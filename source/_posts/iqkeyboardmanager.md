@@ -502,12 +502,9 @@ strongSelf.touchResignedGestureIgnoreClasses = [[NSMutableSet alloc] initWithObj
 
 #### textFieldViewDidBeginEditing
 
-在这个开始编辑的方法中，主要做了两件事：
+在这个开始编辑的方法中，主要就是根据需要添加或移除 toolbar：
 
-1. 根据需要添加或移除 toolbar
-2. 根据需要调整视图偏移
-
-##### 添加或移除 toolbar
+##### 判断是否允许添加
 
 首先会调用 `privateIsEnableAutoToobar` 方法，判断是否需要显示 toobar。这个判断逻辑就是根据外部设置的 `enable` 变量的值，然后还有前面提到的当前 textfield 所在的 ViewController 是否是 `enable` 的特例。伪代码如下：
 
@@ -524,6 +521,8 @@ strongSelf.touchResignedGestureIgnoreClasses = [[NSMutableSet alloc] initWithObj
 	}
 }
 ```
+
+##### 在 IQToolbar 上添加按钮
 
 如果允许添加。那么就会调用 `addToolbarIfRequired` 方法。主要是在 toolbar 中添加各种 button。伪代码如下：
 
@@ -576,6 +575,8 @@ strongSelf.touchResignedGestureIgnoreClasses = [[NSMutableSet alloc] initWithObj
 
 代码很简单，就是很繁琐，伪代码都写了这么多。可以看到，IQKeyboardManager 很人性化的为 toobar 上左右的按钮都设置了自定义的图片和文字(虽然一般不会有人去改)
 
+##### 按钮点击事件
+
 完成按钮的点击事件可以理解为就是取消 textfield 的第一响应者。prev 按钮和 next 按钮实现上稍微复杂一点，但是思想上是非常简单的。以 prev 按钮为例：
 
 ```objc
@@ -626,6 +627,8 @@ strongSelf.touchResignedGestureIgnoreClasses = [[NSMutableSet alloc] initWithObj
 
 有没有很熟悉？和处理 return 键的逻辑类似。拿到所有兄弟 textfield，然后判断当前 textfield 是否是第一个。不是的话就让上一个获取焦点。
 
+##### 移除 IQToolbar
+
 说完了添加 IQToolbar，现在再来快速看一下如果 `privateIsEnableAutoToolbar` 为 NO 情况下移除 toolbar
 
 ```objc
@@ -644,6 +647,46 @@ strongSelf.touchResignedGestureIgnoreClasses = [[NSMutableSet alloc] initWithObj
 
 移除的方法更简单。直接找到所有兄弟 textfield，如果它们的 inputAccessoryView 是 IQToolbar 类型，那么就清空。
 
+#### keyboardWillShow
+
+键盘弹出的通知中，就要调整视图偏移了。这个方法中保证了键盘弹出后，我们的键盘不会阻挡 UITextField
+
+##### 拿到键盘弹出的各种参数
+
+主要拿到键盘弹出的动画类型，动画时间以及键盘的大小
+
+```objc
+-(void)keyboardWillShow:(NSNotification*)aNotification
+{
+    _kbShowNotification = aNotification;
+	
+    //  Getting keyboard animation.
+    NSInteger curve = [[aNotification userInfo][UIKeyboardAnimationCurveUserInfoKey] integerValue];
+    _animationCurve = curve<<16;
+
+    //  Getting keyboard animation duration
+    CGFloat duration = [[aNotification userInfo][UIKeyboardAnimationDurationUserInfoKey] floatValue];
+    
+    //Saving animation duration
+    if (duration != 0.0)    _animationDuration = duration;
+    
+    //  Getting UIKeyboardSize.
+    _kbSize = [[aNotification userInfo][UIKeyboardFrameEndUserInfoKey] CGRectValue];
+
+    ...
+}
+```
+
+这里我稍微修了下代码中的逻辑。因为原来的逻辑中针对多种情况以及 bug 增加了很多对我们了解主流程不必要的代码。
+
+##### 保存 frame 的位置
+
+在键盘弹出调整位置前，把 frame 的原始位置保存起来，这样就可以在键盘收起后，将 frame 移回原来的位置：
+
+```objc
+_topViewBeginOrigin = rootController.view.frame.origin;
+```
+
 ##### 调整视图偏移
 
 随后来到调整偏移的方法 `optimizedAdjustPosition` 中，它在主线程中调用。因为届时将会对 UI 进行调整：
@@ -658,7 +701,53 @@ strongSelf.touchResignedGestureIgnoreClasses = [[NSMutableSet alloc] initWithObj
 }
 ```
 
+整个 `adjustPosition` 的方法非常长，还是以伪代码的方式了解一下过程：
 
+```objc
+- (void)adjustPosition {
+  // 实际的键盘大小
+  CGSize kbSize = keyboardWillShow 中拿到的键盘的大小 + textfield 距离键盘的高度
+  // 移动的距离
+  CGFloat move = MIN(textfield的y + textfield的高度 + 键盘的高度 + 底部因为tabbar或者 iphoneX 留下的间隙 - 屏幕的高度, textfield的y - 顶部navigationBar 的高度 - statusBar 的高度)
+    
+  // 找到能直接滚动的 UIScrollView
+  UIScrollView *superView = (UIScrollView*)[textFieldView superviewOfClassType:[UIScrollView class]];
+  while (superView) {
+    superView 可滚动结束，不可滚动，继续往上找
+  }
+  
+	// 省略 lastScrollView 相关内容，该内容用于修复相关 bug
+  ...
+  if (textfield 存在可以滚动的 scrollView，并且能够滚动的距离超过需要滚动的距离) {
+    动画方式设置 contentOffset
+  }
+  
+  if (textfield 不存在于 scrollView 上，或者不能滚动) {
+    动画设置 rootViewController 的 origin.y 向上移动。即整个 rootViewController 向上移动
+  }
+}
+```
+
+move 的计算有讲究，移动的范围要既不能被 keyboard 挡住，又不能被顶出屏幕显示的范围。所以要比较底下需要往上顶的高度，以及最高能往上多少，取其中较小的。
+
+关于设置 textfield 所在的 scrollView 的 contentOffset。如果你写过类似微信的聊天界面可能有出现过一个问题就是当输入弹出键盘的时候，navigationBar 也移动了上去。这是因为你要输入的瞬间，底部的输入框被 IQKeyboardManager 认为要向上移，但是底部的输入框没有可以滚动的 scrollView，因此就把 rootViewController 的 y 向上移动了，在我们看来就是整个界面都顶了上去。
+
+#### keyboardWillHide
+
+在 keyboardWillHide 方法中进行扫尾工作，包括将 scrollView 滚回到原来的位置。
+
+```objc
+- (void)keyboardWillHide:(NSNotification*)aNotification {
+  if (存在滚动的 scrollView) {
+    动画方式将 scrollView 滚回原处
+  }
+  动画方式将 rootViewController 滚回原处
+    
+  将 show 时候设置的各种变量设置回原始值
+}  
+```
+
+实际上在结束输入的时候，还有其他的事件通知触发，同样也是进行一些扫尾工作，就不做更多的介绍了。
 
 
 
@@ -719,14 +808,6 @@ strongSelf.touchResignedGestureIgnoreClasses = [[NSMutableSet alloc] initWithObj
 
 ```
 
-### 宏定义一个不存在的点
-
-宏定义定义一个不存在的点，然后提供用作初始化。
-
-```objc
-#define kIQCGPointInvalid CGPointMake(CGFLOAT_MAX, CGFLOAT_MAX)
-```
-
 ### 计算方法的执行时间
 
 方法的执行时间可以通过分别获取方法开始执行和执行完毕的时间，然后相减：
@@ -754,3 +835,6 @@ iOS 提供了一个方法提供播放键盘声音：
 [textfield setInputAccessView: yourView];
 ```
 
+## 总结
+
+看完了 IQKeyboardManager 源码，解决了我一直以来的疑惑。另外，IQKeyboardManager 不愧为一个经久不衰的第三方库。其中为了解决特定情况下的 bug，增加了很多解决 bug 的逻辑和变量，为阅读源码增加了许多难度。不过，这些针对 bug 的逻辑其实不是探寻原理的必要之路，没有必要把一整个工程的代码都理解透彻，跳过它们，可以更快速的定位到库的核心。
