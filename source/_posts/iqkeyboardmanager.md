@@ -60,6 +60,17 @@ textView.placeholderTextColor = [UIColor redColor];
 }
 ```
 
+除了上面的直接禁用和启用，IQKeyboardManager 也可以设置在禁用的时候在部分 ViewController 上启用，或者在启动的时候在部分 ViewController 上禁用：
+
+```objc
+// 在整体禁用的时候可以启动 IQKeyboardManager 的类
+[[IQKeyboardManager sharedManager].enabledDistanceHandlingClasses addObject: yourViewControllerClass];
+// 在整体启动的时候需要禁用 IQKeyboardManager 的类
+[[IQKeyboardManager sharedManager].disabledDistanceHandlingClasses addObject: yourViewControllerClass];
+```
+
+
+
 #### 点击空白处可以隐藏键盘
 
 ```objc
@@ -407,11 +418,336 @@ IQKeyboardManager 通过 `+(void)load` 方法自动创建自身：
 }
 ```
 
-我们常说不要在 load 方法中做太多耗时操作，会影响应用的启动速度。所以，我们可以把要做的初始化操作异步去执行。来看初始化方法：
+我们常说不要在 load 方法中做太多耗时操作，会影响应用的启动速度。所以，我们可以把要做的初始化操作异步去执行。下面来看初始化方法
+
+##### 注册通知
+
+注册的通知主要包含两部分。一部分是键盘的弹出与隐藏，另一部分是 `UITextField` 和 `UITextView` 的编辑的回调。具体通知的处理方法后文解析。
 
 ```objc
+-(void)registerAllNotifications
+{
+    //  注册键盘相关通知
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardDidShow:) name:UIKeyboardDidShowNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardDidHide:) name:UIKeyboardDidHideNotification object:nil];
 
+    //  注册 UITextField 的编辑通知
+    [self registerTextFieldViewClass:[UITextField class]
+     didBeginEditingNotificationName:UITextFieldTextDidBeginEditingNotification
+       didEndEditingNotificationName:UITextFieldTextDidEndEditingNotification];
+
+    //  注册 UITextView 的编辑通知
+    [self registerTextFieldViewClass:[UITextView class]
+     didBeginEditingNotificationName:UITextViewTextDidBeginEditingNotification
+       didEndEditingNotificationName:UITextViewTextDidEndEditingNotification];
+}
+
+// 注册开始编辑和结束编辑的通知
+-(void)registerTextFieldViewClass:(nonnull Class)aClass
+  didBeginEditingNotificationName:(nonnull NSString *)didBeginEditingNotificationName
+    didEndEditingNotificationName:(nonnull NSString *)didEndEditingNotificationName
+{
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(textFieldViewDidBeginEditing:) name:didBeginEditingNotificationName object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(textFieldViewDidEndEditing:) name:didEndEditingNotificationName object:nil];
+}
 ```
+
+> 注册之外的所有逻辑都在这些通知方法内
+
+##### 创建一个 `UITapGestureRecognizer`
+
+这个手势用来在点击 `UITextField` 以外的区域的时候收起键盘
+
+```objc
+// 为点击屏幕取消第一响应者这个功能创建一个手势
+strongSelf.resignFirstResponderGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapRecognized:)];
+// 设置该手势不取消事件传递
+strongSelf.resignFirstResponderGesture.cancelsTouchesInView = NO;
+// 设置手势代理为自身
+[strongSelf.resignFirstResponderGesture setDelegate:self];
+// 将手势默认设为不启用
+strongSelf.resignFirstResponderGesture.enabled = strongSelf.shouldResignOnTouchOutside;
+// 点击外部区域是否取消第一响应者
+[self setShouldResignOnTouchOutside:NO];
+
+- (void)tapRecognized:(UITapGestureRecognizer*)gesture  // (Enhancement ID: #14)
+{
+    if (gesture.state == UIGestureRecognizerStateEnded)
+    {
+        //Resigning currently responder textField.
+        [self resignFirstResponder];
+    }
+}
+```
+
+##### 配置键盘遮挡相关的一些类
+
+下面的这些配置用于设置 Textfield 在哪些类中 IQKeyboardManager 能够启用，或者关闭。一般使用场景不多。见名思意。
+
+```objc
+strongSelf.disabledDistanceHandlingClasses = [[NSMutableSet alloc] initWithObjects:[UITableViewController class],[UIAlertController class], nil];
+strongSelf.enabledDistanceHandlingClasses = [[NSMutableSet alloc] init];
+
+strongSelf.disabledToolbarClasses = [[NSMutableSet alloc] initWithObjects:[UIAlertController class], nil];
+strongSelf.enabledToolbarClasses = [[NSMutableSet alloc] init];
+
+strongSelf.toolbarPreviousNextAllowedClasses = [[NSMutableSet alloc] initWithObjects:[UITableView class],[UICollectionView class],[IQPreviousNextView class], nil];
+
+strongSelf.disabledTouchResignedClasses = [[NSMutableSet alloc] initWithObjects:[UIAlertController class], nil];
+strongSelf.enabledTouchResignedClasses = [[NSMutableSet alloc] init];
+strongSelf.touchResignedGestureIgnoreClasses = [[NSMutableSet alloc] initWithObjects:[UIControl class],[UINavigationBar class], nil];
+```
+
+#### textFieldViewDidBeginEditing
+
+在这个开始编辑的方法中，主要就是根据需要添加或移除 toolbar：
+
+##### 判断是否允许添加
+
+首先会调用 `privateIsEnableAutoToobar` 方法，判断是否需要显示 toobar。这个判断逻辑就是根据外部设置的 `enable` 变量的值，然后还有前面提到的当前 textfield 所在的 ViewController 是否是 `enable` 的特例。伪代码如下：
+
+```objc
+- (Bool) privateIsEnableAutoToobar {
+  if (开启IQKeyboardManager) {
+    if (textfield 在禁止的 ViewController 中) {
+      return NO;
+    }
+} else {
+    if (textfield 在允许的 ViewController 中，并且不是 UIAlertController 和 TextFieldViewController ) {
+      return YES;
+    }
+	}
+}
+```
+
+##### 在 IQToolbar 上添加按钮
+
+如果允许添加。那么就会调用 `addToolbarIfRequired` 方法。主要是在 toolbar 中添加各种 button。伪代码如下：
+
+```objc
+- (void)addToolbarIfRequired {
+  if (textfield 能够添加 inputAccessoryView && textfield 的 inputAccessoryView 为 nil) {
+    if (有自定义的图片 toolbarDoneBarButtonItemImage) {
+      用这个 toolbarDoneBarButtonItemImage 初始化一个 toolbar 右边的 done 按钮
+    } else if (有自定义的文字 toolbarDoneBarButtonItemText) {
+      用这个 toolbarDoneBarButtonItemText 初始化一个 toobar 右边的 done 按钮
+    } else {
+      初始化默认的右边的 toolbar 的 done 按钮
+    }
+    
+    if (当前 textfield 没有兄弟 textfield) {
+      // 只有一个就不用添加左边的前一个后一个的按钮了，就直接返回
+      return
+    } else {
+      if (有自定义的图片) {
+        初始化带图片的 prev 的按钮以及 next 按钮
+      } else if (有自定义的文字) {
+        初始化带文字的 prev 按钮以及 next 按钮
+      } else {
+        初始化默认的 prev 按钮以及 next 按钮
+      }
+    }
+    
+    if (textfield 实现了 keyboardAppearance 方法) {
+      根据 keyboard 的模式设置 toolbar 的样式
+    }
+    
+    if (shouldShowToolbarPlaceholder 属性为 YES) {
+      将 textfield 的 placeholder 的样式复制给 toolbar 的 titleBarButton
+    } else {
+      隐藏 toolbar 的 titleBarButton
+    }
+    
+    if (当前 textfield 是第一个) {
+      设置 prev 按钮 enabled 为 NO
+    } else if (当前 textfield 是最后一个) {
+      设置 next 按钮 enabled 为 NO
+    } else {
+      设置 prev 和 next 按钮 enabled 为 YES
+    }
+    // 最后通过设置好的 prev 和 next 和 placeholder 和 done 创建 IQToolbar。并将 toolbar 设置为 textfield 的 inputAccessview
+    [textfield setInputAccessView: toolbar];
+  }
+}
+```
+
+代码很简单，就是很繁琐，伪代码都写了这么多。可以看到，IQKeyboardManager 很人性化的为 toobar 上左右的按钮都设置了自定义的图片和文字(虽然一般不会有人去改)
+
+##### 按钮点击事件
+
+完成按钮的点击事件可以理解为就是取消 textfield 的第一响应者。prev 按钮和 next 按钮实现上稍微复杂一点，但是思想上是非常简单的。以 prev 按钮为例：
+
+```objc
+-(void)previousAction:(IQBarButtonItem*)barButton {
+  if ([self canGoPrevious]) {
+    [self goPrevious];
+  }
+  ....省略以一部分 firstResponder 转移成功后自定义的处理逻辑(一般不会使用就省略不看了)
+}
+```
+
+逻辑就是能跳到前面一个就跳到前面一个：
+
+```objc
+-(BOOL)canGoPrevious {
+  // 获取当前视图的所有兄弟 textfield 
+  NSArray<UIView*> *textFields = [self responderViews]
+  // 获取当前 textfield 在这些 textfield 的 index
+  NSUInteger index = [textFields indexOfObject:_textFieldView];
+  // 如果 textfield 的 index 不是第一个
+  if (index != NSNotFound && index > 0) {
+    return YES;
+  } else {
+    return NO;
+  }
+}
+
+-(BOOL)goPrevious {
+  // 获取当前视图的所有兄弟 textfield 
+  NSArray<__kindof UIView*> *textFields = [self responderViews];
+  // 获取当前 textfield 在这些 textfield 的 index
+  NSUInteger index = [textFields indexOfObject:_textFieldView];
+  // 如果 textfield 的 index 不是第一个
+  if (index != NSNotFound && index > 0) {
+    UITextField *nextTextField = textFields[index-1];
+    UIView *textFieldRetain = _textFieldView;
+    // 上一个 textfield 获取焦点
+    BOOL isAcceptAsFirstResponder = [nextTextField becomeFirstResponder];
+    if (isAcceptAsFirstResponder == NO) {
+      [textFieldRetain becomeFirstResponder];
+    }
+    return isAcceptAsFirstResponder;
+  } else {
+    return NO;
+  }
+}
+```
+
+有没有很熟悉？和处理 return 键的逻辑类似。拿到所有兄弟 textfield，然后判断当前 textfield 是否是第一个。不是的话就让上一个获取焦点。
+
+##### 移除 IQToolbar
+
+说完了添加 IQToolbar，现在再来快速看一下如果 `privateIsEnableAutoToolbar` 为 NO 情况下移除 toolbar
+
+```objc
+-(void)removeToolbarIfRequired {
+    NSArray<UIView*> *siblings = [self responderViews];
+    for (UITextField *textField in siblings) {
+        UIView *toolbar = [textField inputAccessoryView];
+        if ([textField respondsToSelector:@selector(setInputAccessoryView:)] &&
+            ([toolbar isKindOfClass:[IQToolbar class]] && (toolbar.tag == kIQDoneButtonToolbarTag || toolbar.tag == kIQPreviousNextButtonToolbarTag))) {
+            textField.inputAccessoryView = nil;
+            [textField reloadInputViews];
+        }
+    }
+}
+```
+
+移除的方法更简单。直接找到所有兄弟 textfield，如果它们的 inputAccessoryView 是 IQToolbar 类型，那么就清空。
+
+#### keyboardWillShow
+
+键盘弹出的通知中，就要调整视图偏移了。这个方法中保证了键盘弹出后，我们的键盘不会阻挡 UITextField
+
+##### 拿到键盘弹出的各种参数
+
+主要拿到键盘弹出的动画类型，动画时间以及键盘的大小
+
+```objc
+-(void)keyboardWillShow:(NSNotification*)aNotification
+{
+    _kbShowNotification = aNotification;
+	
+    //  Getting keyboard animation.
+    NSInteger curve = [[aNotification userInfo][UIKeyboardAnimationCurveUserInfoKey] integerValue];
+    _animationCurve = curve<<16;
+
+    //  Getting keyboard animation duration
+    CGFloat duration = [[aNotification userInfo][UIKeyboardAnimationDurationUserInfoKey] floatValue];
+    
+    //Saving animation duration
+    if (duration != 0.0)    _animationDuration = duration;
+    
+    //  Getting UIKeyboardSize.
+    _kbSize = [[aNotification userInfo][UIKeyboardFrameEndUserInfoKey] CGRectValue];
+
+    ...
+}
+```
+
+这里我稍微修了下代码中的逻辑。因为原来的逻辑中针对多种情况以及 bug 增加了很多对我们了解主流程不必要的代码。
+
+##### 保存 frame 的位置
+
+在键盘弹出调整位置前，把 frame 的原始位置保存起来，这样就可以在键盘收起后，将 frame 移回原来的位置：
+
+```objc
+_topViewBeginOrigin = rootController.view.frame.origin;
+```
+
+##### 调整视图偏移
+
+随后来到调整偏移的方法 `optimizedAdjustPosition` 中，它在主线程中调用。因为届时将会对 UI 进行调整：
+
+```objc
+-(void)optimizedAdjustPosition{
+    __weak typeof(self) weakSelf = self;
+    // 添加到主线程中z异步执行
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        [self adjustPosition];
+    }];
+}
+```
+
+整个 `adjustPosition` 的方法非常长，还是以伪代码的方式了解一下过程：
+
+```objc
+- (void)adjustPosition {
+  // 实际的键盘大小
+  CGSize kbSize = keyboardWillShow 中拿到的键盘的大小 + textfield 距离键盘的高度
+  // 移动的距离
+  CGFloat move = MIN(textfield的y + textfield的高度 + 键盘的高度 + 底部因为tabbar或者 iphoneX 留下的间隙 - 屏幕的高度, textfield的y - 顶部navigationBar 的高度 - statusBar 的高度)
+    
+  // 找到能直接滚动的 UIScrollView
+  UIScrollView *superView = (UIScrollView*)[textFieldView superviewOfClassType:[UIScrollView class]];
+  while (superView) {
+    superView 可滚动结束，不可滚动，继续往上找
+  }
+  
+	// 省略 lastScrollView 相关内容，该内容用于修复相关 bug
+  ...
+  if (textfield 存在可以滚动的 scrollView，并且能够滚动的距离超过需要滚动的距离) {
+    动画方式设置 contentOffset
+  }
+  
+  if (textfield 不存在于 scrollView 上，或者不能滚动) {
+    动画设置 rootViewController 的 origin.y 向上移动。即整个 rootViewController 向上移动
+  }
+}
+```
+
+move 的计算有讲究，移动的范围要既不能被 keyboard 挡住，又不能被顶出屏幕显示的范围。所以要比较底下需要往上顶的高度，以及最高能往上多少，取其中较小的。
+
+关于设置 textfield 所在的 scrollView 的 contentOffset。如果你写过类似微信的聊天界面可能有出现过一个问题就是当输入弹出键盘的时候，navigationBar 也移动了上去。这是因为你要输入的瞬间，底部的输入框被 IQKeyboardManager 认为要向上移，但是底部的输入框没有可以滚动的 scrollView，因此就把 rootViewController 的 y 向上移动了，在我们看来就是整个界面都顶了上去。
+
+#### keyboardWillHide
+
+在 keyboardWillHide 方法中进行扫尾工作，包括将 scrollView 滚回到原来的位置。
+
+```objc
+- (void)keyboardWillHide:(NSNotification*)aNotification {
+  if (存在滚动的 scrollView) {
+    动画方式将 scrollView 滚回原处
+  }
+  动画方式将 rootViewController 滚回原处
+    
+  将 show 时候设置的各种变量设置回原始值
+}  
+```
+
+实际上在结束输入的时候，还有其他的事件通知触发，同样也是进行一些扫尾工作，就不做更多的介绍了。
 
 
 
@@ -419,7 +755,7 @@ IQKeyboardManager 通过 `+(void)load` 方法自动创建自身：
 
 到最后了总结一下看 IQKeyboardManager 源码学到的一些技巧。
 
-1. 对一个数组排序：
+### 对一个数组排序：
 
 ```objc
 [SomeViewArray sortedArrayUsingComparator:^NSComparisonResult(UIView *view1, UIView *view2) {
@@ -442,7 +778,7 @@ IQKeyboardManager 通过 `+(void)load` 方法自动创建自身：
 }];
 ```
 
-2. 通过响应链获得当前视图的 ViewController
+### 通过响应链获得当前视图的 ViewController
 
 ```objc
 -(UIViewController*)viewContainingController
@@ -462,7 +798,7 @@ IQKeyboardManager 通过 `+(void)load` 方法自动创建自身：
 }
 ```
 
-3. 在 load 方法中异步执行初始化操作
+### 在 load 方法中异步执行初始化操作
 
 ```objc
 +(void)load
@@ -472,11 +808,33 @@ IQKeyboardManager 通过 `+(void)load` 方法自动创建自身：
 
 ```
 
-4. 宏定义一个不存在的点
+### 计算方法的执行时间
 
-宏定义定义一个不存在的点，然后提供用作初始化。
+方法的执行时间可以通过分别获取方法开始执行和执行完毕的时间，然后相减：
 
 ```objc
-#define kIQCGPointInvalid CGPointMake(CGFLOAT_MAX, CGFLOAT_MAX)
+CFTimeInterval startTime = CACurrentMediaTime();
+CFTimeInterval elapsedTime = CACurrentMediaTime() - startTime;
 ```
 
+### iOS 发出输入键盘的声音
+
+iOS 提供了一个方法提供播放键盘声音：
+
+```objc
+[[UIDevice currentDevice] playInputClick]
+```
+
+比如通讯录选择了首字母可以使用这个方法播放声音。
+
+### 设置随键盘弹出的视图
+
+在没看代码前，你可能会认为 IQKeyboardManager 是通过动画的方式将 IQToolbar 展示在 keyboard 上的。其实 iOS 提供了相关的属性。可以直接将自定义视图设置为 textfield 的 inputAccessoryView 就可以实现效果：
+
+```objc
+[textfield setInputAccessView: yourView];
+```
+
+## 总结
+
+看完了 IQKeyboardManager 源码，解决了我一直以来的疑惑。另外，IQKeyboardManager 不愧为一个经久不衰的第三方库。其中为了解决特定情况下的 bug，增加了很多解决 bug 的逻辑和变量，为阅读源码增加了许多难度。不过，这些针对 bug 的逻辑其实不是探寻原理的必要之路，没有必要把一整个工程的代码都理解透彻，跳过它们，可以更快速的定位到库的核心。
