@@ -61,7 +61,7 @@ Mac 上安装 *iFunBox*
 
 #### Cydia Substrate
 
-Cydia 自动安装了 Cydia Substrate，包含三个模块：
+Cydia Substrate  是一个框架，允许第三方开发者在越狱系统上打一些运行时的补丁和拓展一些方法，是**开发越狱插件的基石**。Cydia 自动安装了 Cydia Substrate，包含三个模块：
 
 1. **MobileHooker：用于替换系统和应用的方法**。提供 `MSHookMessageEx` 和 `MSHookFunction` hook OC 和 C 函数，
 2. **MobileLoader：用于将第三方动态库加载到运行的目标应用里**（注入 Reaveal 就是通过它）。首先通过环境变量 `DYLD_INSERT_LIBRARIES` 把自己加载到目标应用里，然后查找 `/Library/Mobile Substrate/DynamicLibraries/` 目录下所有的 plist 文件，如果 plist 文件的配置信息符合当前的应用，则通过 `dlopen` 函数打开对应的 dylib 文件
@@ -91,6 +91,9 @@ dumpdecrypted 会注入可执行文件，然后动态地从内存总 dump 出解
   1. `ps -A` 拿到正在运行的要注入的应用的完整路径（/var/mobile/Containers/…/{应用的名字}）
   2. 终端输入 `$DYLD_INSERT_LIBRARIES=dumpdecrypted.dylib {完整路径}` 进行注入
 5. 最终在 `/var/root` 目录下，得到的 `{应用名}.decrypted` 就是脱壳后的 mach-o。
+6. 可以选择使用命令 `$otool -l {引用名}.decrypted | grep crypt` 查看加密标识，如果有输出 `cryptid 0` 标识该架构已经被解密了
+
+> otool 可以用来查看 mach-o 的段信息，一样作用的还有 MachOView，是一个图形化的界面。
 
 #### Clutch
 
