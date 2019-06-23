@@ -240,6 +240,34 @@ cy# @import test
 cy# ChildVcs(#0x12345678)
 ```
 
+> TODO： 增加获取属性和方法的相关库方法
+
+#### Apple Configurator 2
+
+#### 获取 ipa 包
+
+我们可以通过 Apple Configurator 2 获取应用的 ipa 包。
+
+手机连接上 Mac 之后，Apple Configurator 2 中会显示出手机的信息。这个时候点击添加应用，在 app store 中搜索你想要获取资源的引用：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/assets_1.png?raw=true)
+
+搜索到之后点击下载。如果手机中没有目标应用，第一次就直接安装了，安装成功后再次搜索该应用下载。这个时候就会提示已经有该应用了，是否要替换：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/assets_2.png?raw=true)
+
+这个时候不要做任何的点击。在终端中进入到 Apple Configurator 2 的缓存目录下：`~/Library/Group Containers/K36BKF7T3D.group.com.apple.configurator/Library/Caches/Assets/TemporaryItems/MobileApps/` 你会发现目标应用的 ipa 包。
+
+原因在于，Apple Configurator 2 下载的文件会临时保存在该临时目录下。如果安装完毕，就会立刻删除该 ipa 包。由于之前已经下载了该应用，Apple Configurator 2 弹窗提示是否需要替换，此时的 ipa 包还没来得及删除，可以复制出来。
+
+#### 获取 Assets.car 中的资源文件
+
+把 ipa 包复制出来后，使用解压工具对其进行解压。在 `payload` 文件夹下有资源包。
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/assets_3.png?raw=true)
+
+这个包里已经可以看到很多资源文件了，但是我们需要找到的是 `Assets.car` 这个压缩文件，这里面才是真正的我们需要的图片资源。这个`Assets.car`文件的解压需要用到[https://github.com/pcjbird/AssetsExtractor](https://link.jianshu.com/?t=https%3A%2F%2Fgithub.com%2Fpcjbird%2FAssetsExtractor)使用起来非常方便。把 `Assets.car` 拖进该工具，指定输出目录就可以得到最终的全部资源文件
+
 ## 分析与调试
 
 ### 静态分析
@@ -683,5 +711,9 @@ CPU 的三大组成：
 - CS 代表代码段的起始地址。IP 表示偏移地址。每读取一条指令，**IP=IP + 所读取指令的长度**。
 - SS 表示栈的起始位置。SP 表示栈的偏移地址。BP 是入参和临时变量的分界，通过 BP 及偏移量拿到入参和临时变量。
 
+## ARM64 汇编入门
 
+###寄存器
+
+### 
 
