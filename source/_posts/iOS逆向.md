@@ -282,16 +282,24 @@ Hopper 和可以将 Mach-o 代码反编译为汇编代码、OC或者Swift伪代�
 
 #### LLDB 调试
 
-LLDB 通过 debugserver 和 app 通信
+LLDB 通过 debugserver 和 app 通信。当 Xcode 调试手机时，Xcode 会将 debugserver 文件复制到手机中，以便在手机上启动一个服务，等待 Xcode 进行远程调试。只有设备连接到计算机真机调试时，debugserver 文件才会安装到设备的 `/Developer/user/bin` 目录下。 
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/逆向_1.png?raw=true)
 
-默认情况下，*/Devloper/usr/bin/debugserver* 缺少权限，只能使用 xcode 调试。因此，我们需要对 debugserver 重签名，获得两个权限： `get-task-allow` 和 `task_for_pid-allow`
+但是默认情况下，*/Developer/usr/bin/debugserver* 缺少权限，只能使用 xcode 调试。因此，我们需要对 debugserver 重签名，获得两个权限： `get-task-allow` 和 `task_for_pid-allow`
 
 如何给 debugserver 添加权限:
 
-1. 将 debugserver 从目录拷贝到 mac
+1. 将 debugserver 从目录拷贝到 mac。目录就是上述的 */Developer/usr/bin/debugserver* 
 2. 使用 ldid 导出 debugserver 的权限到 debugserver.entilements 文件
+
+ldid 是帮助修改 iPhone 上二进制授权文件的工具。通过 homebrew 安装：
+
+```bash
+brew install ldid
+```
+
+安装完后，导出 debugserver 的权限：
 
 ```shell
 $ldid -e debugserver > debugserver.entilements
@@ -313,7 +321,7 @@ $codesign -d --entitlements -debugserver
 $codesign -f -s - --entitlements debugserver.entitlements debugserver
 ```
 5. 将重签名后的 debugserver 拖到手机 *device/usr/bin* 目录下，这样可以直接使用该命令
-6. 手机端开启 server：
+6. 手机端开启 server。开启调试后，进程会进入断电，被暂停：
 ```shell
 $debugserver *:{任意端口，如10010} -a {进程名}
 ```
@@ -326,6 +334,10 @@ $lldb
 # 连接成功自动进入断点，需要继续运行app
 (lldb) c
 ```
+
+##### debug 获取进程加载基地址
+
+
 
 #### lldb 使用
 
