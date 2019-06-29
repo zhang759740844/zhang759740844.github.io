@@ -379,7 +379,8 @@ export THEOS=~/theos
 # 修改环境变量,这样就可以在任意位置执行 `~/theos/bin` 路径下命令了
 export PATH=~/theos/bin:$PATH
 ```
-3. 递归下载 theos `git clone --recursive https://github.com/theos/theos.git $THEOS`
+3. 执行 `source ~/.zshrc` 重置 zshrc 配置。
+4. 递归下载 theos `git clone --recursive https://github.com/theos/theos.git $THEOS`
 
 ##### 使用 theos 创建 tweak
 
@@ -410,9 +411,11 @@ $make package
 $make install
 ```
 
+相当于给原来的应用注入了一个动态库。可以在 `/Library/MobileSubstrate/DynamicLibraries` 中查看新安装的 `dylib` 和 `plist` 文件。
+
 ##### tweak 实现注意点
 
-1. hook 的方法中的参数以及 self 一般都是 id 类型，所以不能用ongoing点语法，而要使用 get 方法：
+1. hook 的方法中的参数以及 self 一般都是 id 类型，所以不能用点语法，而要使用 get 方法：
 ```objc
 - (id)tableView:(id)tableView cellForRowAtIndexPath:(id)indexPath {
 	int num = [indexPath section];
@@ -464,10 +467,19 @@ UIImage *myImage = [UIImage imageWithCOntentOfFile:@"/{自己创建的文件夹�
 
 可以将头文件快速转换成已经包含打印信息的 xm 文件（自动添加 `%log` 语句）：
 ```shell
-$logify.pl xxx.h > Tweak.xm
+$logify.pl xxx.h > {你想取的任意名字}.xm
 ```
 
+通过修改 makefile 中的配置，将生成的 .xm 文件加入到编译文件中。直接添加到原来的 `Tweak.xm` 之后即可：
+
+```
+{your project name}_FILES = Tweak.xm {你取的名字}.xm
+```
+
+
+
 但是经常会编译不过，需要手动修改：
+
 1. 未定义头文件：报错 `unknown type name ‘XXX’`，在头部声明 `@class XXX;`,或者将 class 类型改为 id
 2. 未声明协议：报错`no type or protocol named 'XXX'`，在头部声明 `@protocol XXX`
 3. 不能存在 weak：报错 `cannot create __weak reference`，替换掉所有的 `__weak` 为空字符串
@@ -481,7 +493,9 @@ HBLogDebug(@"=0x%x", (unsigned int)r);
 HBLogDebug(@"=0x%@", r);
 ```
 
+#### MonkeyDev
 
+MonkeyDev 的具体使用可以到 [MonkeyDev](https://github.com/AloneMonkey/MonkeyDev/wiki) Wiki 中查看
 
 ## 逆向进阶
 
@@ -559,7 +573,7 @@ Load dylibs -> Rebase -> Bind -> ObjCruntime -> Initializers
 
 5. 通过 Load Command 找到 `LC_MAIN` 即 main 函数位置，执行
 
-#### Mach-O 文件
+### Mach-O 文件
 
 Mach-O 是苹果的可执行文件，结构由三部分组成：
 - Header：文件类型，目标架构类型
@@ -576,28 +590,15 @@ Mach-O 是苹果的可执行文件，结构由三部分组成：
 - `__DATA` 数据段，读写，包括可读写的全局变量等(如 `__DATA,__data` 保存初始化过的可变数据，又如 `__DATA.__objc_classlist` 保存所有类实体的指针，指向 __data 中保存的 objc_class 实例）
 - `__LINKEDIT` 动态链接器需要使用的信息，包括重定向信息，绑定信息，懒加载信息等。只读
 
-> 内存中的分段在最下部介绍
-
-##### 内存中的分段简单介绍
-
-可执行程序主要分为 6 段：
-
-1. 代码段：存放代码
-2. 数据段：存放初始化过的静态变量，全局对象。
-3. BSS 段：存放未初始化过的静态变量。
-4. 堆段：动态分配内存区域
-5. 内存映射段：链接的动态库的信息
-6. 栈段：调用函数的函数栈
-
-以上分配依次从低地址向高地址。栈内地址由高向低。
-
-这些地址本生是虚拟地址。实际内存中并不是连续的。会在获取的时候通过一张映射表，获取最终的物理地址。
-
 #### 懒加载和非懒加载
 
 在之前说的dyld执行流程中有一环叫做 binding，即绑定符号的地址。iOS 系统为了加快系统启动速度，将符号分成了懒加载符号和非懒加载符号。
 
-非懒加载符号在 dyld 加载时就会绑定真实的值。懒加载符号不会，只有第一次去调用它时才会绑定真实的地址，第二次调用直接使用真实地址
+非懒加载符号在 dyld 加载时就会绑定真实的值。懒加载符号不会，只有第一次去调用它时才会绑定真实的地址，第二次调用直接使用真实地址。
+
+如系统方法 print 的绑定过程如下图所示：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/bind_1.jpeg?raw=true)
 
 ### hook
 
