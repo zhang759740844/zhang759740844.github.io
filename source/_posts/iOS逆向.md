@@ -588,7 +588,31 @@ Mach-O 是苹果的可执行文件，结构由三部分组成：
 
 - `__TEXT` 代码段，只读，包括函数，和只读的字符串(如  `__TEXT,__text` 保存所有代码，又如 `__TEXT.__objc_classname` 保存 Objective-C 类名称)
 - `__DATA` 数据段，读写，包括可读写的全局变量等(如 `__DATA,__data` 保存初始化过的可变数据，又如 `__DATA.__objc_classlist` 保存所有类实体的指针，指向 __data 中保存的 objc_class 实例）
-- `__LINKEDIT` 动态链接器需要使用的信息，包括重定向信息，绑定信息，懒加载信息等。只读
+
+#### 代码段和数据段的具体组成
+
+__TEXT 包含以下 section：
+
+- __text：程序可执行代码区域
+- __stubs：简介符号存根，跳转到懒加载指针表
+- __stub_helper：帮助解决懒加载符号加载的辅助函数
+- __objc_methname：方法名
+- __objc_classname：类名
+- __objc_methtype：方法签名
+- __cstring：c风格字符串
+
+__DATA 包含以下 section：
+
+- __nl_symbol_ptr：非懒加载指针表，在 dyld 加载时会立即绑定
+- __la_symbol_ptr：懒加载指针表，第一次调用才绑定值
+- __got：费懒加载全局指针表
+- __mod_init_func：constructor 函数
+- __mod_term_func： destructor 函数
+- __cfstring：OC 字符串
+- __objc_classlist：程序中类的列表
+- __objc_nlclslist：程序中实现了 +load 方法的类
+- __objc_protolist：协议的列表
+- __objc_classrefs：被应用的类列表
 
 #### 懒加载和非懒加载
 
