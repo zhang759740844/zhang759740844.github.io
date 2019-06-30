@@ -341,6 +341,8 @@ $lldb
 
 可以在 lldb 中通过 `image list -o -f` 拿到正在 debug 的进程的所有动态库的信息。其中第一项的第一列一般就是当前进程的 ALSR 偏移地址。
 
+拿到 ALSR 偏移地址，就可以通过虚拟内存偏移获取真实的虚拟内存地址，然后可以读取响应地址的变量后者给响应地址的方法打断点。
+
 #### lldb 使用
 
 - 打印相关：
@@ -623,6 +625,10 @@ __DATA 包含以下 section：
 如系统方法 print 的绑定过程如下图所示：
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/bind_1.jpeg?raw=true)
+
+### ARM 汇编
+
+
 
 ### hook
 
