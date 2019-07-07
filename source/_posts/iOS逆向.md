@@ -696,9 +696,11 @@ hook函数 -> 判断参数 -> 返回结果
 
 #### 反注入
 
-可以定期调用 `_dyld_get_image_name()` 
+可以定期调用 `_dyld_get_image_name()` 方法，获取正在加载的动态库名，比较是否是白名单内的动态库名来实现注入检测。
 
 #### hook 检测
+
+hook 包括 Method Swizzle，符号表替换，inline hook 等。不同的 hook 方式，需要制定不同的检测方案
 
 **Method Swizzle**
 
@@ -712,9 +714,11 @@ fishhook 是基于懒加载符号表和非懒加载符号表进行替换的，�
 
 #### 完整性校验
 
+逆向过程设计到对文件 load command 的修改，对文件进行重签名，修改 BundleId。可以从上述几个方面校验
+
 **load command**
 
-直接读取 Mach-O load command 中的 `LC_LOAD_DYLIB` 
+直接读取 Mach-O load command 中的 `LC_LOAD_DYLIB` ，判断是否有非白名单动态库
 
 **代码校验**
 
@@ -723,6 +727,18 @@ fishhook 是基于懒加载符号表和非懒加载符号表进行替换的，�
 **重签名校验** 
 
 判断 bundle ID 是否被修改
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -761,10 +777,3 @@ CPU 的三大组成：
 - AX，BX，CX，DX 为数据寄存器，存放操作的数据
 - CS 代表代码段的起始地址。IP 表示偏移地址。每读取一条指令，**IP=IP + 所读取指令的长度**。
 - SS 表示栈的起始位置。SP 表示栈的偏移地址。BP 是入参和临时变量的分界，通过 BP 及偏移量拿到入参和临时变量。
-
-## ARM64 汇编入门
-
-###寄存器
-
-### 
-
