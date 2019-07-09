@@ -607,7 +607,7 @@ __DATA 包含以下 section：
 
 - __nl_symbol_ptr：非懒加载指针表，在 dyld 加载时会立即绑定
 - __la_symbol_ptr：懒加载指针表，第一次调用才绑定值
-- __got：费懒加载全局指针表
+- __got：非懒加载全局指针表
 - __mod_init_func：constructor 函数
 - __mod_term_func： destructor 函数
 - __cfstring：OC 字符串
@@ -615,6 +615,8 @@ __DATA 包含以下 section：
 - __objc_nlclslist：程序中实现了 +load 方法的类
 - __objc_protolist：协议的列表
 - __objc_classrefs：被应用的类列表
+
+
 
 #### 懒加载和非懒加载
 
