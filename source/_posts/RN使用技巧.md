@@ -331,7 +331,30 @@ onMoveShouldSetPanResponder: (evt, gestureState) => Math.abs(gestureState.dx) > 
 
 我们在 `FlatList` 布局的时候获取到它的高度设置为 state 即可。
 
+### standard 进行代码校验
 
+使用 standard 进行代码规范校验：
+
+```bash
+npm install --save-dev standard
+```
+
+然后在 package.json 中配置:
+
+```json
+{
+  "standard": {
+    "parser": "babel-eslint",
+    "globals": [
+      "fetch"
+    ],
+    "ignore": []
+  }
+}
+
+```
+
+可以在 globals 中设置需要忽略的全局对象或者方法
 
 ### husky hook git commit
 
