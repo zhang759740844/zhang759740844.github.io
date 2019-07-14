@@ -33,15 +33,31 @@ fishhook 作用于系统符号的 Lazy Binding 过程中。Lazy Binding 的过�
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/fishhook4.png?raw=true)
 
-在 `__Text,__stubs` 中有一个对应于 NSLog 的方法。它的 offset 是 00006BF0。但是我们实际的地址是 0x10470ebf0，这两个地址显然是不匹配的。这是因为加载到内存中的可执行文件都会被加上一个随机数，即 ALSR 技术。这个地址每次加载都是随机的，因此如果你做了同样的尝试，肯定和我的不一样。我们可以通过 lldb 中执行 `image list` 查看这个地址：
+在 `__Text,__stubs` 中有一个对应于 NSLog 的方法。它的 offset 是 00006BF0。但是我们实际的地址是 0x10 470ebf0，这两个地址显然是不匹配的。这是因为 MachOView 中的 offset 是相对于 `__Text` 段开始的 offset。如果要换算到实际地址，就需要加上 `__Text` 段的实际地址。以下是地址的换算关系：
+
+> 虚拟地址 + ALSR = 实际地址
+>
+> `__Text` 的虚拟地址 + ALSR = `__Text` 的实际地址
+>
+> `__Text` 的虚拟地址 + 对象的 offset = 对象的虚拟地址
+>
+> `__Text` 的实际地址 + 对象的 offset = 对象的实际地址
+
+我们可以通过 lldb 中执行 `image list` 查看 `__Text` 段的实际地址：
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/fishhook5.png?raw=true)
 
-如上图所示，`image list` 能列举出当前应用加载的所有动态库。其中第一个就是当前应用的地址，也就是 0x0000000104708000
+如上图所示，`image list` 能列举出当前应用加载的所有动态库。其中第一个就是当前应用的地址，也就是 0x0000000104708000。即
 
->  可执行文件 offset + ALSR 地址 = 实际内存中的地址
+>  0x00006BF0 + 0x104708000 = 0x10470ebf0
+
+> 由于 `__Text` 虚拟地址默认是 0x100000000，因此，我们还能计算得到  ALSR 地址:
 >
-> 0x00006BF0 + 0x104708000 = 0x10470ebf0
+> 0x104708000 - 0x100000000 = 0x4708000
+>
+> 当然，ALSR 地址并不是我们关注的重点，只是略带提及。
+>
+> 如果要直接获取 ALSR 地址，可以使用 `image list -o -f` 指令，就会默认减去 `__Text` 段的虚拟地址
 
 那么这个地址上的方法是什么呢？可以在 lldb 中通过 `dis` 命令反汇编输出：
 
@@ -65,7 +81,7 @@ fishhook 作用于系统符号的 Lazy Binding 过程中。Lazy Binding 的过�
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/fishhook9.png?raw=true)
 
-在 0x8010 的地址上的 data 为 0x0000000100006C2C，静态分析的地址，默认会有 0x100000000 的偏移，这在 TEXT 段的 Load Commands 中有所体现：
+在 0x8010 的地址上的 data 为 0x0000000100006C2C。前面说到， `__Text` 虚拟地址默认是 0x100000000，这在 TEXT 段的 Load Commands 中有所体现：
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/fishhook10.png?raw=true)
 

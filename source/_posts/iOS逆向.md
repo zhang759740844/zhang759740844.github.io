@@ -133,17 +133,25 @@ class-dump 主要是分析 mach-o 文件，进行**加载符号**，**解析协�
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/macho3.png?raw=true)
 
-可以看到 `_objc_protolist` 段中包含两个协议信息。字段 offset 表示相对于文件的偏移。对于瘦二进制，相对于文件的偏移其实就是相对于当前架构模块的位置偏移。因为当前架构模块的起始位置是 0。但是对于胖二进制，一个文件中包含多个架构的模块，相对文件偏移要减去当前架构模块的起始位置才是真正的相对模块的偏移：
+可以看到 `_objc_protolist` 段中包含两个协议信息。字段 offset 表示可执行文件加载到内存中后的相对偏移，**这个偏移是相对于 `__Text` 段的。**
 
-> 相对于当前架构的偏移 = 相对于文件的偏移 offset - 模块的起始位置
+再看字段 Data 的内容，它表示加载到内存中时候的虚拟地址。先简单罗列一下虚拟地址，实际地址，offset 这三者的关系：
 
-再看字段 Data，表示加载到内存中时候的虚拟地址，如果我们知道虚拟地址的起始位置就能知道 data 所表示的位置相对于当前架构的偏移了。虚拟地址的起始位置在 __Text 段中可以找到：
+> 虚拟地址 + ALSR = 实际地址
+>
+> `__Text` 的虚拟地址 + ALSR = `__Text` 的实际地址
+>
+> `__Text` 的虚拟地址 + 对象的 offset = 对象的虚拟地址
+>
+> `__Text` 的实际地址 + 对象的 offset = 对象的实际地址
+
+因此，如果我们知道 `__Text` 的虚拟地址，就能知道 data 所表示的位置的 offset 了。`__Text` 段的虚拟地址的起始位置在 `__Text` 段中可以找到：
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/macho4.png?raw=true)
 
-> 相对于当前架构的偏移 = 虚拟地址 - 虚拟地址的起始地址
+> **因为在 `__Text` 段之前还有一个 `_PAGEZERO` 段，它的大小固定为 0x100000000**
 
-将上面两个公式联等，可以计算出 data 相对于文件的偏移为 8D30。我们来到了 __data 段：
+因此可以计算出 data 的相对偏移为 8D30。我们来到了 __data 段：
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/macho5.png?raw=true)
 
@@ -339,9 +347,7 @@ $lldb
 
 由于 ALSR 的原因，进程的虚拟地址不是从 0x0 开始的，会有一个随机偏移量。因此，当我们要读取运行的程序的内存的时候就需要知道这个 ALSR 的偏移量。
 
-可以在 lldb 中通过 `image list -o -f` 拿到正在 debug 的进程的所有动态库的信息。其中第一项的第一列一般就是当前进程的 ALSR 偏移地址。
-
-拿到 ALSR 偏移地址，就可以通过虚拟内存偏移获取真实的虚拟内存地址，然后可以读取响应地址的变量后者给响应地址的方法打断点。
+可以在 lldb 中通过 `image list -o -f` 拿到正在 debug 的进程的所有动态库的信息。其中第一项的第一列一般就是当前进程的基地址（不是ALSR地址）。
 
 #### lldb 使用
 
@@ -511,6 +517,10 @@ Address space layout randomization 地址空间布局随机化
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/逆向_4.png?raw=true)
 
+> image list -o -f 拿到的是减去 `__Text` 段基地址的偏移，即 ASLR
+>
+> image list 拿到的则是 `__Text` 的实际地址偏移，即基地址 + ASLR 地址
+
 获得了偏移地址后，在通过 hopper 获得未使用 ALSR 的方法的地址，两者相加，就是该方法实际在内存中的地址了，可以为其设置断点：
 
 ```shell
@@ -577,6 +587,8 @@ Load dylibs -> Rebase -> Bind -> ObjCruntime -> Initializers
 
 ### Mach-O 文件
 
+#### MachO 文件基本构成
+
 Mach-O 是苹果的可执行文件，结构由三部分组成：
 - Header：文件类型，目标架构类型
 - Load Commands：描述载入内存的有哪些段，段有多大，从哪里开始
@@ -588,8 +600,18 @@ Mach-O 是苹果的可执行文件，结构由三部分组成：
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/macho1.png?raw=true)
 
-- `__TEXT` 代码段，只读，包括函数，和只读的字符串(如  `__TEXT,__text` 保存所有代码，又如 `__TEXT.__objc_classname` 保存 Objective-C 类名称)
+具体看一下 Macho 的 Load Command，它包含了 Macho 中各个段的基本信息：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/macho_10.png?raw=true)
+
+一般可执行文件会分为许多个 section，section 又会根据权限的不同整合为多个 fragment
+
+，一般分为四个 fragment：
+
+- `__PAGEZERO` 空指针陷阱段，映射到虚拟内存空间的第一页，用于捕捉对 NULL 指针的引用
+- `__TEXT` 代码段，只读，包括函数，和只读的字符串(如  `__TEXT,__text` 保存所有代码，又如 `__TEXT.__objc_classname` 保存 Objective-C 类名称)__
 - `__DATA` 数据段，读写，包括可读写的全局变量等(如 `__DATA,__data` 保存初始化过的可变数据，又如 `__DATA.__objc_classlist` 保存所有类实体的指针，指向 __data 中保存的 objc_class 实例）
+- `__LINKEDIT`动态链接器需要使用的信息，包括重定位信息，绑定信息，懒加载信息等。
 
 #### 代码段和数据段的具体组成
 
@@ -742,7 +764,7 @@ fishhook 是基于懒加载符号表和非懒加载符号表进行替换的，�
 
 
 
-
+[]
 
 ## 8086简介
 
