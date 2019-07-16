@@ -449,13 +449,24 @@ objc_setAssociatedObject(self, s, @"value", OBJC_ASSOCIATION_COPY_NONATOMIC);
 
 所以相比较来说，方式4，6会简单些，方式6 尤为简便。
 
+> 关于 `*s`, `&s`, `s` 之间的关系：
+>
+> `s` 表示的是当前指向的地址上的值
+>
+> `*s` 可以拆分为两部分，`s` 取当前指向的地址上的值，`*` 取后面跟着的地址上的值。所以 `*s` 就是以当前指向的地址上的值为地址，再取值
+>
+> `&s` 取当前指针的地址值
+>
+> 关于二级指针的指向问题演示如下：
 
-
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/fishhook_15.png?raw=true)
 
 ### 第11条：理解objc_msgSend的作用
+
 这部分包括下面几个在[runtime](https://zhang759740844.github.io/2016/08/22/runtime原理/)中已经写得很详细了。
 
 ### 第12条：理解消息转发机制
+
 ### 第13条：用“方法调配技术”调试“黑盒方法”
 ### 第14条：理解“类对象”的用意
 ## 接口与API设计
