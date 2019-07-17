@@ -256,6 +256,8 @@ static void _rebind_symbols_for_image(const struct mach_header *header,
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/fishhook_12.png?raw=true)
 
+另外可以发现 `mach_header *header` 和 `intptr_t slide` 相差就是 0x100000000，也侧面印证了 `mach_header *header` 就是 `__Text` 段的实际起始地址
+
 #### `rebind_symbols_for_image` 方法
 
 进入 `rebind_symbols_for_image` 方法，这是一个非常重要的方法，我们可以将其分为几个阶段来看。
@@ -338,7 +340,7 @@ static void rebind_symbols_for_image(struct rebindings_entry *rebindings, const 
 
 这里通过 `linkedit` 计算基地址，所有的偏移量都是以基地址为参照的。计算公式上面也有写到。获取到基地址后，就可以通过前面获取到的静态符号表以及动态符号表的 load commands 中保存的偏移量计算得到符号表 `symtab`，字符串表 `strtab` 以及动态符号表 `indirect_symtab` 的位置了。
 
-##### 重绑定
+##### 跳转重绑定
 
 之后，重新遍历 load commands，获取 `__DATA` 段中的 `__nl_symbol_ptr` 和 `__la_symbol_ptr` 两个 section 的信息，然后执行真正的重绑定方法 `perform_rebinding_with_section`：
 
@@ -381,6 +383,8 @@ static void rebind_symbols_for_image(struct rebindings_entry *rebindings, const 
 
 #### 重绑定
 
+这是执行方法替换的最关键方法，我们先看一下代码：
+
 ```c
 static void perform_rebinding_with_section(struct rebindings_entry *rebindings, section_t *section, intptr_t slide, nlist_t *symtab, char *strtab, uint32_t *indirect_symtab) {
     // 在 Indirect Symbol table 中检索到 __la_symbol_ptr 或者 __nl_symbol_ptr 起始的位置
@@ -401,10 +405,6 @@ static void perform_rebinding_with_section(struct rebindings_entry *rebindings, 
         uint32_t strtab_offset = symtab[symtab_index].n_un.n_strx;
         // 获取符号名
         char *symbol_name = strtab + strtab_offset;
-        // 过滤掉符号名小于 4 位的符号
-        if (strnlen(symbol_name, 2) < 2) {
-            continue;
-        }
         // 取出 rebindings 结构体实例数组，开始遍历链表
         struct rebindings_entry *cur = rebindings;
         while (cur) {
@@ -434,9 +434,96 @@ static void perform_rebinding_with_section(struct rebindings_entry *rebindings, 
 }
 ```
 
+##### 获取 `__la_symbol_ptr` 或者 `__nl_symbol_ptr` 的符号在动态符号表的位置
 
+```c
+uint32_t *indirect_symbol_indices = indirect_symtab + section->reserved1;
+```
 
+`indirect_symtab` 是 Dynamic Symbol Table 段：
 
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/fishhook_16.png?raw=true)
 
+它汇集了 `__Text,__stubs` ,`__DATA,__nl_symbol_ptr`,`__DATA,__got`， `__DATA,__la_symbol_ptr` 这几个段的所有动态链接符号的所有信息。
 
+section 就是上面获取到的在 Load Command是中的 `__la_symbol_ptr` 以及 `__nl_symbol_ptr` 段的信息，它的 `reserved1` 就是该段在 Dynamic Symbol Table 中的位置。在 MachOView 中显示为 `Indirect Sym Index`:
 
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/fishhook_17.png?raw=true)
+
+由于 `indirect_symtab` 是 uint32 类型的指针，所以一个指针占用4个字节。因此偏移 `reserved1`即偏移 `reserved1` * 4 的地址。
+
+##### 获取 `__la_symbol_ptr` 或者 `__nl_symbol_ptr`的实际地址
+
+```c
+void **indirect_symbol_bindings = (void **)((uintptr_t)slide + section->addr);
+```
+
+之前我们说过一个公式：
+
+>  ASLR偏移 + 段的虚拟地址 = 段的实际地址
+
+`section->addr` 就是段的虚拟地址，`indirect_symbol_bindings` 就是指向段的实际地址。由于  `__la_symbol_ptr` 或者 `__nl_symbol_ptr` 段内保存的是一个个指向实际方法的指针，因此 `indirect_symbol_bindings` 就被声明为一个二级指针。
+
+##### 遍历 `__la_symbol_ptr` 或者 `__nl_symbol_ptr`替换符号实现方法
+
+```c
+for (uint i = 0; i < section->size / sizeof(void *); i++) {
+        uint32_t symtab_index = indirect_symbol_indices[i];
+        
+        uint32_t strtab_offset = symtab[symtab_index].n_un.n_strx;
+        char *symbol_name = strtab + strtab_offset;
+        struct rebindings_entry *cur = rebindings;
+        while (cur) {
+            for (uint j = 0; j < cur->rebindings_nel; j++) {
+                if (strcmp(&symbol_name[1], cur->rebindings[j].name) == 0) {
+                    if (cur->rebindings[j].replaced != NULL &&
+                        indirect_symbol_bindings[i] != cur->rebindings[j].replacement) {
+                        *(cur->rebindings[j].replaced) = indirect_symbol_bindings[i];
+                    }
+                    indirect_symbol_bindings[i] = cur->rebindings[j].replacement;
+                    goto symbol_loop;
+                }
+            }
+            cur = cur->next;
+        }
+    symbol_loop:;
+}
+```
+
+遍历 `__la_symbol_ptr` 或者 `__nl_symbol_ptr` 是为了将每一个动态符号和要替换的符号方法匹配，那么通过什么匹配的呢？通过符号名。也就是每个循环中的内容。
+
+根据符号在 Dynamic Symbol Tabel 的位置，拿到它在 Symbol Tabel 的索引位置 `symtab_index`，然后在 Symbol Tabel 的相应位置拿到他在 String Tabel 的偏移 `strtab_offset`。获取到偏移后就加上 string table 的基地址，拿到符号的位置，也就获得了符号名 `symbol_name`。
+
+符号名拿到后，就可以遍历自定义的要替换的符号数组 `rebindings`，一一匹配符号名和要替换的符号名是否匹配。如果匹配了，并且没有替换过(替没替换过只要判断 rebindings 结构体的 replaced 是否为空即可)，就让 `indirect_symbol_bindings` 相应的符号指向 rebindings 相应的 replacement 方法的地址。
+
+至此，fishhook 整个替换流程就结束了。
+
+## 总结
+
+到这里你一定被各种跳转和各种偏移绕晕了。下面我来整理一个过程：
+
+### lazy binding 过程
+
+1. lazy binding 的符号指向 `__TEXT,__stubs` ，调用的时候会执行 `__TEXT,__stubs` 指向的方法。它会调用 `__DATA,__la_symbol_ptr` 指向的地址上的方法。
+2. 未绑定时，`__DATA,__la_symbol_ptr` 指向的地址为 `___TEXT,stub_helper`，它会执行系统函数修改 `__DATA,__la_symbol_ptr` 的指向。
+3. 绑定后， `__DATA,__la_symbol_ptr`  指向实际的函数的地址
+
+### fishhook 替换过程
+
+1. 通过注册系统回调 `_dyld_register_func_for_add_image` 获取 image 的起始地址和 ASLR 偏移。
+2. 通过 image 的起始地址，加上 Header 的大小(Header 固定大小为 0x20)，得出 Load Commands 的起始地址
+3. 遍历 Load Commands 拿到 `__DATA,__nl_symbol_ptr` 和 `__DATA,__la_symbol_ptr` 的各项信息，包括段的位置，段的大小，段在 Dynamic Symbol Table 的起始索引 `reserved1`。
+4. 再次遍历 Load Commands 拿到静态符号表 `LC_SYMTAB`，获取 Symbol Table 和 String Table 的起始位置；拿到动态符号表 `LC_DYSYMTAB`  的起始位置;
+5. 根据第四步获取的起始位置，在 `LC_DYSYMTAB` 中遍历 `__DATA,__nl_symbol_ptr` 或者 `__DATA,__la_symbol_ptr` 的各个符号，获取它在 `LC_SYMTAB` 的索引。
+6. 根据这个索引，获取该符号在 `LC_SYMTAB`的信息，可以拿到它在 String Table 的 offset。这个 offset 保存着符号的名字。
+7. 拿到这个符号的名字和我们要替换的各个符号名做对比，如果相同，那么把 `__DATA,__nl_symbol_ptr` 或者 `__DATA,__la_symbol_ptr` 相应位置的符号指向要替换的方法的地址。至此，fishhook 替换完成
+
+## 参考
+
+[深入理解fishhook](<https://www.jianshu.com/p/828ec78d4ae1>)
+
+[巧用符号表 - 探求 fishhook 原理](<https://www.desgard.com/fishhook-1/>)
+
+[ios逆向 - mach-o文件分析](<https://www.jianshu.com/p/37f10bb70c50>)
+
+[深入理解fishhook](<https://www.jianshu.com/p/828ec78d4ae1>)
