@@ -202,7 +202,17 @@ export LANG=en_US.UTF-8
 还要为模拟器配置 SSL 证书。配置证书相对麻烦。首先进入 `~/.mitmproxy`目录，这个目录下有五六个证书，其中一个是符合要求的。需要下载[一个 python 脚本](https://github.com/ADVTOOLS/ADVTrustStore#how-to-use-advtruststore) 来导入证书。下载后执行：
 
 ```shell
-iosCertTrustManager.py -a mitmproxy-ca-cert.pem
+./iosCertTrustManager.py -a mitmproxy-ca-cert.pem
 ```
 
 这个脚本只能导入 pem  格式的证书。执行时会问你是否将其添加到某个模拟器中，按 y 即可。添加成后需要重启模拟器就能够抓取 https 的包了。
+
+### 模拟器抓包提示Certificate Verification Error for www.xxxx.com: unable to get local issuer certificate
+
+使用：
+
+```bash
+mitmproxy -p 8080 --ssl-insecure
+```
+
+忽略安全校验
