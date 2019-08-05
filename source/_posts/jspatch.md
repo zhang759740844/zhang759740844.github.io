@@ -290,7 +290,7 @@ global.NO = 0
 global.nsnull = _OC_null (JSContext 传入，上面有提及)
 ```
 
-### 改写修复 js 文件
+### 改写修复文件
 
 现在开始执行修复文件，拿到 js 代码后调用了`[JPEngine evaluteScript:script];` 方法。这个方法兜兜转转来到了 JPEngine 的  `_evaluteScript:withSourceURL:` 方法中。方法实现很简单，但是却是实现修复的第一个重点：
 
@@ -327,4 +327,178 @@ global.nsnull = _OC_null (JSContext 传入，上面有提及)
 JSPatch 作者考虑到开发者的习惯，仍然保留了 `UIView.alloc().init()` 这样的链式写法。但是在初始化的时候对实现内容作了正则替换，将匹配到的方法名取出，改为调用一个通用方法 `__c()`，并将方法名作为参数传入。因此，做了正则替换后的实现变为：`UIView.__c('alloc')().__c('init')()`。
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/jspatch_2.png?raw=true)
+
+### 定义要重写的类方法与实例方法
+
+#### js 端定义
+
+要修复bug那么肯定要定位到要修复的类的某个方法。js 全局对象下的方法 `defineClass` 提供了这个入口。方法比较长，总共做了几件事，如下所示：
+
+1. 设置关联属性
+2. hook 定义的方法，并将修改后的方法传给 oc
+3. 将该类的方法实现保存到 `__ocCls` 中
+4. 创建全局类对象
+
+接下来我们一个一个看。
+
+##### 设置关联属性
+
+```js
+global.defineClass = function(declaration, properties, instMethods, clsMethods) {
+  ...
+ 	// 如果存在 properties，在实例方法列表中增加各种 get set 方法
+  if (properties) {
+    properties.forEach(function(name){
+      // 设置属性的 get 方法
+      if (!instMethods[name]) {
+        // 将 get 方法设置到实例方法中
+        instMethods[name] = _propertiesGetFun(name);
+      }
+      // 设置属性的 set 方法
+      var nameOfSet = "set"+ name.substr(0,1).toUpperCase() + name.substr(1);
+      if (!instMethods[nameOfSet]) {
+        // 将 set 方法设置到实例方法中
+        instMethods[nameOfSet] = _propertiesSetFun(name);
+      }
+    });
+  }
+  ...
+}
+```
+
+oc 的属性都需要提供其 get set 方法。因此，这一段代码主要就是查看实例方法中有没有相应的 get set 方法，没有的话就添加。关联属性的 get set 方法通过 `_propertiesGetFun` 和 `_propertiesSetFun` 完成：
+
+```js
+// 返回属性的 get 方法
+var _propertiesGetFun = function(name){
+  return function(){
+    var slf = this;
+    if (!slf.__ocProps) {
+      // 获取 oc 的关联属性
+      var props = _OC_getCustomProps(slf.__obj)
+      if (!props) {
+        props = {}
+        _OC_setCustomProps(slf.__obj, props)
+      }
+      // 将 oc 的关联属性赋给 js 端对象的 __ocProps
+      slf.__ocProps = props;
+    }
+    return slf.__ocProps[name];
+  };
+}
+
+// 返回属性的 set 方法
+var _propertiesSetFun = function(name){
+  return function(jval){
+    var slf = this;
+    if (!slf.__ocProps) {
+      var props = _OC_getCustomProps(slf.__obj)
+      if (!props) {
+        props = {}
+        _OC_setCustomProps(slf.__obj, props)
+      }
+      slf.__ocProps = props;
+    }
+    slf.__ocProps[name] = jval;
+  };
+}
+```
+
+oc 端设置关联对象的方法如下：
+
+```objc
+context[@"_OC_getCustomProps"] = ^id(JSValue *obj) {
+    id realObj = formatJSToOC(obj);
+    return objc_getAssociatedObject(realObj, kPropAssociatedObjectKey);
+};
+context[@"_OC_setCustomProps"] = ^(JSValue *obj, JSValue *val) {
+    id realObj = formatJSToOC(obj);
+    objc_setAssociatedObject(realObj, kPropAssociatedObjectKey, val, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+};
+```
+
+可以看到，无论 js 端设置了多少 property，在 oc 端，都作为一个属性保存在 key 为 `kPropAssociatedObjectKey` 的关联属性中。oc 端拿到了这个关联属性后返回给 js 端，js 端的对象则以 `_ocProps` 属性接收。两者指向的地址相同，因此，之后对于 property 的改变只需直接修改 js 端对象的 `_ocProps` 属性就行。
+
+##### hook 方法并传给 oc
+
+oc 中实现 aop 非常麻烦，而 js 端直接操作函数指针就可以完成。
+
+```js
+// realClsName 是 js 中直接截取的类名
+var realClsName = declaration.split(':')[0].trim()
+// 预处理要定义的方法，对方法进行切片，处理参数
+_formatDefineMethods(instMethods, newInstMethods, realClsName)
+_formatDefineMethods(clsMethods, newClsMethods, realClsName)
+// 在 OC 中定义这个类，返回的值类型为 {cls: xxx, superCls: xxx}
+var ret = _OC_defineClass(declaration, newInstMethods, newClsMethods)
+// className 是从 OC 中截取的 cls 的名字。本质上和 realClsName 是一致的
+var className = ret['cls']
+var superCls = ret['superCls']
+```
+
+主要过程在于 `_formatDefineMethods` 中：
+
+```js
+
+```
+
+## 补充
+
+### js 方法补充
+
+#### `_formatOCToJS`
+
+这个方法用于将 js 端接收到的 OC 对象转换为 js 对象：
+
+```js
+/// 把 oc 转化为 js 对象
+var _formatOCToJS = function(obj) {
+  // 如果 oc 端返回的直接是 undefined 或者 null，那么直接返回 false
+  if (obj === undefined || obj === null) return false
+  if (typeof obj == "object") {
+    // js 传给 oc 时会把自己包裹在 __obj 中。因此，存在 __obj 就可以直接拿到 js 对象
+    if (obj.__obj) return obj
+    // 如果是空，那么直接返回 false。因为如果返回 null 的话，就无法调用方法了。
+    if (obj.__isNil) return false
+  if (obj instanceof Array) {
+    // 如果是数组，要对每一个 oc 转 js 一下
+    var ret = []
+    obj.forEach(function(o) {
+      ret.push(_formatOCToJS(o))
+    })
+    return ret
+  }
+  if (obj instanceof Function) {
+    return function() {
+      var args = Array.prototype.slice.call(arguments)
+      // 如果 oc 传给 js 的是一个函数，那么 js 端调用的时候就需要先把 js 参数转为 oc 对象，调用。
+      var formatedArgs = _OC_formatJSToOC(args)
+      for (var i = 0; i < args.length; i++) {
+        if (args[i] === null || args[i] === undefined || args[i] === false) {
+          formatedArgs.splice(i, 1, undefined)
+        } else if (args[i] == nsnull) {
+          formatedArgs.splice(i, 1, null)
+        }
+      }
+      // 在调用完 oc 方法后，又要 oc 对象转为 js 对象回传给 oc
+      return _OC_formatOCToJS(obj.apply(obj, formatedArgs))
+    }
+  }
+  if (obj instanceof Object) {
+    // 如果是一个 object 并且没有 __obj，那么把所有的 key 都 format 一遍
+    var ret = {}
+    for (var key in obj) {
+      ret[key] = _formatOCToJS(obj[key])
+    }
+    return ret
+  }
+  return obj
+}
+```
+
+具体的过程做了详尽的注释。这里还要提一点，关于空对象的判断。由于 OC 的动态性，OC 中的 nil 发送消息会不响应任何方法。而 js 端的 undefined 或者 null 调用方法时则会直接报错。
+
+因此，为了能让 js 端在接收到 oc 端的 nil 对象时也能调用，而不报错，针对 undefined， null 以及某些 OC 方法在返回空对象时手动返回的 `{__isNil: true}`， 这个方法都会将其解析为 bollean 值 false。
+
+js 端空对象的调用在不报错后，还要阻止其针对 bollean 值 false 的消息转发。因此，之后在执行 `__c()` 调用 oc 方法时就会提前判断是否是 bollean 类型。如果是就说明是空对象，直接返回 false，而不进行消息转发。
 
