@@ -1,5 +1,5 @@
-title: JSPatch 源码解析
-date: 2018/7/31 14:07:12  
+outitle: JSPatch 源码解析(一)
+date: 2019/8/1 14:07:12  
 categories: iOS
 tags: 
 
@@ -10,6 +10,8 @@ tags:
 JSPatch 虽然被禁，但是它的源码是非常值得学习的。可以说，是我看过的各个库中设计的最巧妙也是知识点最多的开源库。非常有学习价值。
 
 <!--more-->
+
+这是这个源码解析的第一部分
 
 ## Demo 演示
 
@@ -330,7 +332,7 @@ JSPatch 作者考虑到开发者的习惯，仍然保留了 `UIView.alloc().init
 
 ### 定义要重写的类方法与实例方法
 
-#### js 端定义
+#### js 端定义类
 
 要修复bug那么肯定要定位到要修复的类的某个方法。js 全局对象下的方法 `defineClass` 提供了这个入口。方法比较长，总共做了几件事，如下所示：
 
@@ -424,81 +426,402 @@ context[@"_OC_setCustomProps"] = ^(JSValue *obj, JSValue *val) {
 oc 中实现 aop 非常麻烦，而 js 端直接操作函数指针就可以完成。
 
 ```js
-// realClsName 是 js 中直接截取的类名
-var realClsName = declaration.split(':')[0].trim()
-// 预处理要定义的方法，对方法进行切片，处理参数
-_formatDefineMethods(instMethods, newInstMethods, realClsName)
-_formatDefineMethods(clsMethods, newClsMethods, realClsName)
-// 在 OC 中定义这个类，返回的值类型为 {cls: xxx, superCls: xxx}
-var ret = _OC_defineClass(declaration, newInstMethods, newClsMethods)
-// className 是从 OC 中截取的 cls 的名字。本质上和 realClsName 是一致的
-var className = ret['cls']
-var superCls = ret['superCls']
+global.defineClass = function(declaration, properties, instMethods, clsMethods) {
+  ...
+  // realClsName 是 js 中直接截取的类名
+  var realClsName = declaration.split(':')[0].trim()
+  // 预处理要定义的方法，对方法进行切片，处理参数
+  _formatDefineMethods(instMethods, newInstMethods, realClsName)
+  _formatDefineMethods(clsMethods, newClsMethods, realClsName)
+  // 在 OC 中定义这个类，返回的值类型为 {cls: xxx, superCls: xxx}
+  var ret = _OC_defineClass(declaration, newInstMethods, newClsMethods)
+  // className 是从 OC 中截取的 cls 的名字。本质上和 realClsName 是一致的
+  var className = ret['cls']
+  var superCls = ret['superCls']
+  ...
+}
 ```
 
 主要过程在于 `_formatDefineMethods` 中：
 
 ```js
-
-```
-
-## 补充
-
-### js 方法补充
-
-#### `_formatOCToJS`
-
-这个方法用于将 js 端接收到的 OC 对象转换为 js 对象：
-
-```js
-/// 把 oc 转化为 js 对象
-var _formatOCToJS = function(obj) {
-  // 如果 oc 端返回的直接是 undefined 或者 null，那么直接返回 false
-  if (obj === undefined || obj === null) return false
-  if (typeof obj == "object") {
-    // js 传给 oc 时会把自己包裹在 __obj 中。因此，存在 __obj 就可以直接拿到 js 对象
-    if (obj.__obj) return obj
-    // 如果是空，那么直接返回 false。因为如果返回 null 的话，就无法调用方法了。
-    if (obj.__isNil) return false
-  if (obj instanceof Array) {
-    // 如果是数组，要对每一个 oc 转 js 一下
-    var ret = []
-    obj.forEach(function(o) {
-      ret.push(_formatOCToJS(o))
-    })
-    return ret
-  }
-  if (obj instanceof Function) {
-    return function() {
-      var args = Array.prototype.slice.call(arguments)
-      // 如果 oc 传给 js 的是一个函数，那么 js 端调用的时候就需要先把 js 参数转为 oc 对象，调用。
-      var formatedArgs = _OC_formatJSToOC(args)
-      for (var i = 0; i < args.length; i++) {
-        if (args[i] === null || args[i] === undefined || args[i] === false) {
-          formatedArgs.splice(i, 1, undefined)
-        } else if (args[i] == nsnull) {
-          formatedArgs.splice(i, 1, null)
+// 对 js 端定义的 method 进行预处理，取出方法的参数个数。hook 方法，预处理方法的参数，将其转为 js 对象。
+var _formatDefineMethods = function(methods, newMethods, realClsName) {
+  for (var methodName in methods) {
+    if (!(methods[methodName] instanceof Function)) return;
+    (function(){
+      var originMethod = methods[methodName]
+      // 把原来的 method 拿出来，新的 method 变成了一个数组，第一个参数是原来方法的调用参数的个数，第二个参数是
+      // 因为runtime修复类的时候无法直接解析js实现函数，也就无法知道参数个数，但方法替换的过程需要生成方法签名，所以只能从js端拿到js函数的参数个数，并传递给OC。
+      newMethods[methodName] = [originMethod.length, function() {
+        try {
+          // js 端执行的方法，需要先把参数转为 js 的类型
+          var args = _formatOCToJS(Array.prototype.slice.call(arguments))
+          // 暂存之前的 self 对象
+          var lastSelf = global.self
+          // oc 调用 js 方法的时候，默认第一个参数是 self
+          global.self = args[0]
+          if (global.self) global.self.__realClsName = realClsName
+          // oc 调用方法的时候前两个参数分别为 caller 和 Selecter。真正调用 js 方法需要把这两个参数先去除
+          args.splice(0,1)
+          // 调用 js 方法
+          var ret = originMethod.apply(originMethod, args)
+          // 恢复 原始的 self 指向
+          global.self = lastSelf
+          return ret
+        } catch(e) {
+          _OC_catch(e.message, e.stack)
         }
-      }
-      // 在调用完 oc 方法后，又要 oc 对象转为 js 对象回传给 oc
-      return _OC_formatOCToJS(obj.apply(obj, formatedArgs))
-    }
+      }]
+    })()
   }
-  if (obj instanceof Object) {
-    // 如果是一个 object 并且没有 __obj，那么把所有的 key 都 format 一遍
-    var ret = {}
-    for (var key in obj) {
-      ret[key] = _formatOCToJS(obj[key])
-    }
-    return ret
-  }
-  return obj
 }
 ```
 
-具体的过程做了详尽的注释。这里还要提一点，关于空对象的判断。由于 OC 的动态性，OC 中的 nil 发送消息会不响应任何方法。而 js 端的 undefined 或者 null 调用方法时则会直接报错。
+这里存在三个要点：
 
-因此，为了能让 js 端在接收到 oc 端的 nil 对象时也能调用，而不报错，针对 undefined， null 以及某些 OC 方法在返回空对象时手动返回的 `{__isNil: true}`， 这个方法都会将其解析为 bollean 值 false。
+1. 这个方法是要添加到 oc 端的，oc 端需要知道参数个数，但是 oc 端无法直接获取，只能通过解析方法名。因此就把解析参数个数的工程放在了 js 中进行。js 端在将方法传给 oc 前，先把参数个数拿到，然后以数组形式传递。
+2. oc 调用 js 方法时传递的参数需要预处理，比如调用对象原本是 js 传递过去的，就会被 `{__obj: xxx}` 包裹，再比如 oc 的空对象的处理。
+3. oc 传来的参数第一个是方法的调用上下文，第二个是 Selector。因此需要把调用上下文设置给全聚的 self，以便在方法中使用。在调用方法前，还需要把这个上下文和 Selector 从参数列表中取出，因为 js 调用的时候是不需要这两个参数的。
 
-js 端空对象的调用在不报错后，还要阻止其针对 bollean 值 false 的消息转发。因此，之后在执行 `__c()` 调用 oc 方法时就会提前判断是否是 bollean 类型。如果是就说明是空对象，直接返回 false，而不进行消息转发。
+js 方法预处理完成后，就会调用 `_OC_defineClass` 方法，在 OC 中添加相应方法。这个方法是 JSPatch 中最重要的方法了，在后面会解释，先跳过。
 
+##### 将该类的方法实现保存到 `__ocCls` 中
+
+对于定义好的方法，js 端需要把这些方法保存起来。毕竟真正的实现还是在 js 端进行的。因此定义了一个所有类的方法的暂存地：`__ocCls`。所有的类的所有方法都会被保存在这个对象中。 
+
+```js
+global.defineClass = function(declaration, properties, instMethods, clsMethods) {
+  ...
+  // 初始化该类的类方法和实例方法到 _ocCls 中
+  _ocCls[className] = {
+    instMethods: {},
+    clsMethods: {},
+  }
+  // 如果父类被 defineClass 过，那么要把父类的方法扔到子类中去。子类调用父类中实现的方法的时候，直接调用
+  if (superCls.length && _ocCls[superCls]) {
+    for (var funcName in _ocCls[superCls]['instMethods']) {
+      _ocCls[className]['instMethods'][funcName] = _ocCls[superCls]['instMethods'][funcName]
+    }
+    for (var funcName in _ocCls[superCls]['clsMethods']) {
+      _ocCls[className]['clsMethods'][funcName] = _ocCls[superCls]['clsMethods'][funcName]
+    }
+  }
+  // 把方法存到 _ocCls 对应的类中。和 _formatDefineMethods 的差别在于这个方法不需要把参数个数提取出来
+  _setupJSMethod(className, instMethods, 1, realClsName)
+  _setupJSMethod(className, clsMethods, 0, realClsName)
+  ...
+}
+```
+
+如果父类实现了某些方法，那么子类中需要先把这些方法保存起来。这样如果调用了子类没有实现的这些方法的时候就可以直接调用父类相应的实现。
+
+这个想法是对的，但是我认为有点问题在于，这样的话就需要先对父类 `defineClass` 才能定义子类，否则子类就没法拿到父类实现的方法了。因此，定义类的时候一定要注意，先定义父类的 class，再定义子类的。
+
+`_setupJSMethod` 其实也是一个很简单的方法，其实就是把上下文名从 this 切换为 self：
+
+```js
+// 替换 this 为 self
+var _wrapLocalMethod = function(methodName, func, realClsName) {
+  return function() {
+    var lastSelf = global.self
+    global.self = this
+    this.__realClsName = realClsName
+    var ret = func.apply(this, arguments)
+    global.self = lastSelf
+    return ret
+  }
+}
+
+// 保存方法到 _ocCls 中
+var _setupJSMethod = function(className, methods, isInst, realClsName) {
+  for (var name in methods) {
+    var key = isInst ? 'instMethods': 'clsMethods',
+        func = methods[name]
+    _ocCls[className][key][name] = _wrapLocalMethod(name, func, realClsName)
+  }
+}
+```
+
+> js 端定义这个 `__ocCls` 的目的是在 JS 端执行定义的方法并且调用到其他定义方法的时候，可以不用重走一遍 OC 的消息转发，而是直接调用 js 端方法，加快方法执行速度。
+
+##### 通过 require 方法创建全局类对象
+
+`defineClass` 的最终返回了一个 `require()` 方法产生的对象：
+
+```js
+global.defineClass = function(declaration, properties, instMethods, clsMethods) {
+  ...
+  return require(className)
+}
+```
+
+在 `require(xxx)` 某一个类后，会在 js 的全局对象上增加该类的对象，比如：
+
+```js
+// js 中 require 一个 UIViewController
+require('UIViewController')
+
+// 会在全局下创建一个 UIViewController 对象
+global: {
+  UIViewController: {
+    __clsName: 'UIViewController'
+  }
+}
+```
+
+具体的实现如下：
+
+```js
+var _require = function(clsName) {
+  if (!global[clsName]) {
+    global[clsName] = {
+      __clsName: clsName
+    }
+  }
+  return global[clsName]
+}
+
+// 全局创建对象的方法，直接为 require 的类创建一个它的对象
+global.require = function() {
+  var lastRequire
+  for (var i = 0; i < arguments.length; i ++) {
+    arguments[i].split(',').forEach(function(clsName) {
+      lastRequire = _require(clsName.trim())
+    })
+  }
+  return lastRequire
+}
+```
+
+至此，js 段定义类结束
+
+#### OC 端定义类
+
+前面 js 预处理过后就会来到 OC 的 `defineClass` 方法中。这个方法也比较长，
+
+1. 将类名、父类名、协议名取出
+2. 创建类以及给类添加协议
+3. 添加和重写方法
+
+##### 取出类名协议名
+
+```objc
+static NSDictionary *defineClass(NSString *classDeclaration, JSValue *instanceMethods, JSValue *classMethods)
+{
+    // 扫描字符串做匹配
+    NSScanner *scanner = [NSScanner scannerWithString:classDeclaration];
+    NSString *className;
+    NSString *superClassName;
+    NSString *protocolNames;
+    // 扫描到 : 了，把之前的放到 className 中
+    [scanner scanUpToString:@":" intoString:&className];
+    // 如果没有扫描到底，那么就说明有父类或者协议
+    if (!scanner.isAtEnd) {
+        scanner.scanLocation = scanner.scanLocation + 1;
+        // 扫描出来父类
+        [scanner scanUpToString:@"<" intoString:&superClassName];
+        if (!scanner.isAtEnd) {
+            scanner.scanLocation = scanner.scanLocation + 1;
+            // 扫描协议名
+            [scanner scanUpToString:@">" intoString:&protocolNames];
+        }
+    }
+    // 如果不存在父类，那么父类就是 NSObject
+    if (!superClassName) superClassName = @"NSObject";
+    // 修改一下类名和父类名，把前后的空白字符去掉
+    className = trim(className);
+    superClassName = trim(superClassName);
+    // 把 protocol 切开拆分成数组
+    NSArray *protocols = [protocolNames length] ? [protocolNames componentsSeparatedByString:@","] : nil;
+  	...
+}
+```
+
+其实就是解析传进来的 `NSString *classDeclaration` 字符串。其实这个直接在 js 解析就可以了。这种 js 解析一遍，OC 又解析一遍的做法有点累赘。
+
+##### 创建类以及给类添加协议
+
+解析好类名和协议名之后就是创建了：
+
+```objc
+static NSDictionary *defineClass(NSString *classDeclaration, JSValue *instanceMethods, JSValue *classMethods)
+{
+  	...
+    // 反射为类名
+    Class cls = NSClassFromString(className);
+    if (!cls) {
+        // 如果子类没有实例化成功，那么实例化父类
+        Class superCls = NSClassFromString(superClassName);
+        // 如果父类也没有实例化成功
+        if (!superCls) {
+            // 直接报错
+            _exceptionBlock([NSString stringWithFormat:@"can't find the super class %@", superClassName]);
+            return @{@"cls": className};
+        }
+        // 存在父类，不存在子类，那么创建一个子类时
+        cls = objc_allocateClassPair(superCls, className.UTF8String, 0);
+        objc_registerClassPair(cls);
+    }
+    
+    // 如果有协议，那么拿到所有的协议名，给类增加协议
+    if (protocols.count > 0) {
+        for (NSString* protocolName in protocols) {
+            Protocol *protocol = objc_getProtocol([trim(protocolName) cStringUsingEncoding:NSUTF8StringEncoding]);
+            class_addProtocol (cls, protocol);
+        }
+    }
+  	...
+}
+```
+
+##### 添加和重写方法
+
+```objc
+static NSDictionary *defineClass(NSString *classDeclaration, JSValue *instanceMethods, JSValue *classMethods)
+{
+  	...
+    // 增加方法
+    for (int i = 0; i < 2; i ++) {
+        BOOL isInstance = i == 0;
+        JSValue *jsMethods = isInstance ? instanceMethods: classMethods;
+        // 如果是类方法那么要取出 cls 的 metaClass，否则直接拿出 cls
+        Class currCls = isInstance ? cls: objc_getMetaClass(className.UTF8String);
+        // 把 JSValue 转化成 字典
+        NSDictionary *methodDict = [jsMethods toDictionary];
+        
+        for (NSString *jsMethodName in methodDict.allKeys) {
+            // 通过 methodName 拿到 method 实例
+            // method 实例是一个数组，第一个元素表示 method 有几个入参，第二个c元素表示方法实例
+            JSValue *jsMethodArr = [jsMethods valueForProperty:jsMethodName];
+            int numberOfArg = [jsMethodArr[0] toInt32];
+            // 把方法中的 _ 都转为  :
+            NSString *selectorName = convertJPSelectorString(jsMethodName);
+            
+            // 如果尾部没有：，那么添加：
+            if ([selectorName componentsSeparatedByString:@":"].count - 1 < numberOfArg) {
+                selectorName = [selectorName stringByAppendingString:@":"];
+            }
+            
+            JSValue *jsMethod = jsMethodArr[1];
+            if (class_respondsToSelector(currCls, NSSelectorFromString(selectorName))) {
+                // TODO: 如果当前类实现了 selectorName 的方法，那么用现在的方法代替原来的方法
+                overrideMethod(currCls, selectorName, jsMethod, !isInstance, NULL);
+            } else {
+                // 如果当前类没有实现 selectorName 方法，那么添加这个方法
+                BOOL overrided = NO;
+                for (NSString *protocolName in protocols) {
+                    char *types = methodTypesInProtocol(protocolName, selectorName, isInstance, YES);
+                    if (!types) types = methodTypesInProtocol(protocolName, selectorName, isInstance, NO);
+                    if (types) {
+                        overrideMethod(currCls, selectorName, jsMethod, !isInstance, types);
+                        free(types);
+                        overrided = YES;
+                        break;
+                    }
+                }
+                if (!overrided) {
+                    if (![[jsMethodName substringToIndex:1] isEqualToString:@"_"]) {
+                        NSMutableString *typeDescStr = [@"@@:" mutableCopy];
+                        for (int i = 0; i < numberOfArg; i ++) {
+                            [typeDescStr appendString:@"@"];
+                        }
+                        overrideMethod(currCls, selectorName, jsMethod, !isInstance, [typeDescStr cStringUsingEncoding:NSUTF8StringEncoding]);
+                    }
+                }
+            }
+        }
+    }
+  	...
+}
+```
+
+首先是对方法进行预处理，js 端定义的方法都是以下划线为分割的，形如：`tableView_didSelectRowAtIndexPath`，在 OC 中要转的 `tableView:didSelectRowAtIndexPath:` 的形式。这个过程在 `convertJSSelectorString()` 方法中完成：
+
+```objc
+// 获取真正的方法名
+// 总的来说就是方法中可能存在两种情况，一种是 __ 一种是 _
+// _ 本地转为了 :，__ 被转为了 _
+static NSString *convertJPSelectorString(NSString *selectorString)
+{
+    // 用 - 代替 __
+    NSString *tmpJSMethodName = [selectorString stringByReplacingOccurrencesOfString:@"__" withString:@"-"];
+    // 用 ： 代替 _
+    NSString *selectorName = [tmpJSMethodName stringByReplacingOccurrencesOfString:@"_" withString:@":"];
+    // 用 _ 代替 -
+    return [selectorName stringByReplacingOccurrencesOfString:@"-" withString:@"_"];
+}
+```
+
+接下来就要给类添加方法了，规则是：
+
+- 对于已经存在的方法：直接获取方法签名，然后传入 `overrideMethod`，修改原来的方法实现的函数指针。
+
+- 对于不存在的的方法：
+  - 是某个协议中的方法：获取协议中该方法的函数签名，并传入 `overrideMethod` 实现方法。
+  - 不是某个协议的方法：即 js 新增的方法，自定义方法签名为 `@@:{参数个数个 @}` 的形式，表示所有入参和返回值都是 id 类型。传入 `overrideMethod`，实现方法。
+
+由此可见，最重要的方法是 `overrideMethod`。
+
+##### 重写方法 `overrideMethod`
+
+`overrideMethod` 实现了 js 方法对 oc 方法的实现和替换。它的主要做了三件事：
+
+1. 替换目标类的消息转发方法 `forwardInvocation:` 为自定义方法  `JPForwardInvocation:`
+2. 各个类的方法命名为 `_JP${方法名}` 保存到 `_JSOverideMethods` 字典中的对应类中
+3. 替换原方法实现为 `msgForward`， 保存原方法实现为 `ORIG${原方法名}`
+
+通过替换方法实现为 `mgsForward` 实现消息转发，通过替换 `forwardInvocation:` 实现在消息转发时调用自己的方法，完成 hook。
+
+>  OC 端定义的字典 `_JSOverideMethods`保存函数指针。消息转发的时候可以找到 js 端方法
+
+```objc
+// 将方法替换为 msgForwardIMP
+static void overrideMethod(Class cls, NSString *selectorName, JSValue *function, BOOL isClassMethod, const char *typeDescription)
+{
+    // 通过字符串获取SEL
+    SEL selector = NSSelectorFromString(selectorName);
+    
+    // 没有类型签名的时候获取原来的方法的类型签名
+    if (!typeDescription) {
+        Method method = class_getInstanceMethod(cls, selector);
+        typeDescription = (char *)method_getTypeEncoding(method);
+    }
+    
+    // 获取原来方法的 IMP
+    IMP originalImp = class_respondsToSelector(cls, selector) ? class_getMethodImplementation(cls, selector) : NULL;
+    
+    // 获取消息转发处理的系统函数实现 IMP
+    IMP msgForwardIMP = _objc_msgForward;
+
+    // 将cls中原来 forwardInvocaiton: 的实现替换成 JPForwardInvocation:函数实现.
+    if (class_getMethodImplementation(cls, @selector(forwardInvocation:)) != (IMP)JPForwardInvocation) {
+        IMP originalForwardImp = class_replaceMethod(cls, @selector(forwardInvocation:), (IMP)JPForwardInvocation, "v@:@");
+        // 为cls添加新的SEL(ORIGforwardInvocation:)，指向原始 forwardInvocation: 的实现IMP.
+        if (originalForwardImp) {
+            class_addMethod(cls, @selector(ORIGforwardInvocation:), originalForwardImp, "v@:@");
+        }
+    }
+
+    // 添加一个新的方法 ORIG${原方法名}
+    if (class_respondsToSelector(cls, selector)) {
+        NSString *originalSelectorName = [NSString stringWithFormat:@"ORIG%@", selectorName];
+        SEL originalSelector = NSSelectorFromString(originalSelectorName);
+        if(!class_respondsToSelector(cls, originalSelector)) {
+            class_addMethod(cls, originalSelector, originalImp, typeDescription);
+        }
+    }
+    
+    NSString *JPSelectorName = [NSString stringWithFormat:@"_JP%@", selectorName];
+    
+    // 初始化 _JSOverideMethods 字典
+    _initJPOverideMethods(cls);
+    // 记录新SEL对应js传过来的待替换目标方法的实现.
+    _JSOverideMethods[cls][JPSelectorName] = function;
+    
+    // 把原来的方法替换为 msgForward 的实现，实现方法转发
+    class_replaceMethod(cls, selector, msgForwardIMP, typeDescription);
+}
+```
+
+(太长了，编辑器太卡了，转至下一篇。。。)
