@@ -437,7 +437,6 @@ static id callSelector(NSString *className, NSString *selectorName, JSValue *arg
                             _TMPMemoryPool = [[NSMutableDictionary alloc] init];
                         }
                         // 把 JPBoxing 放到 markArray 数组中
-                        // TODO: 为什么？
                         if (!_markArray) {
                             _markArray = [[NSMutableArray alloc] init];
                         }
@@ -494,11 +493,164 @@ static id callSelector(NSString *className, NSString *selectorName, JSValue *arg
 }
 ```
 
+注意，如果期待的入参的 typeencoding 是 `^@`，即方法需要一个二级指针作为参数的时候。会创建一个 `_TMPMemoryPool` 字典，以及一个 `_markArray` 数组，并把参数 push 到数组中。这两个对象会在执行完成是用到，下面再说。
+
 ##### 执行并返回结果给 js
 
-执行的时候会判断是否是父类方法，如果执行的是父类方法，那么会把它预存在 `_currInvokeSuperClsName` 字典中。因为前面我们处理父类方法的时候是给子类添加 `SUPER_XXX` 的 SEL。在后面消息转发时，在 `_JSOverideMethods` 字典中保存的则是 `XXX` 的 SEL。因此，保存在 `_currInvokeSuperClsName` 字典中就是要说明这是调用的父类的方法，到父类的重写方法中找。
+执行的时候会判断是否是父类方法，如果执行的是父类方法，那么会把它预存在 `_currInvokeSuperClsName` 字典中。因为前面我们处理父类方法的时候是给子类添加 `SUPER_XXX` 的 SEL。在后面消息转发时，在 `_JSOverideMethods` 字典中保存的则是 `XXX` 的 SEL。因此，保存在 `_currInvokeSuperClsName` 字典中就是要说明这是调用的父类的方法，要把 `SUPER_` 前缀去掉，到父类的重写方法中找。
+
+```objc
+static void overrideMethod(Class cls, NSString *selectorName, JSValue *function, BOOL isClassMethod, const char *typeDescription)
+{
+  	...
+      
+		// 如果执行的是子类，那么在 _currInvokeSuperClsName 中保存
+    if (superClassName) _currInvokeSuperClsName[selectorName] = superClassName;
+    // 执行方法
+    [invocation invoke];
+    // 执行完方法后从 _currInvokeSuperClsName 移除
+    if (superClassName) [_currInvokeSuperClsName removeObjectForKey:selectorName];
+		
+		...
+}
+```
+
+在方法执行完成后，会对 `_TMPMemoryPool` 和 `_markArray` 进行处理。具体场景再补充中说，这里只是添加注释：
+
+```objc
+static void overrideMethod(Class cls, NSString *selectorName, JSValue *function, BOOL isClassMethod, const char *typeDescription)
+{
+  	...
+  	
+    if ([_markArray count] > 0) {
+        for (JPBoxing *box in _markArray) {
+            // pointer 是一个二级指针
+            // 执行完方法后，二级指针会被指向一个指针
+            void *pointer = [box unboxPointer];
+            // 让 obj 指向二级指针pointer指向的指针指向的值
+            id obj = *((__unsafe_unretained id *)pointer);
+            if (obj) {
+                @synchronized(_TMPMemoryPool) {
+                    // 如果二级指针指向的地址确实存在，那么就把 obj 暂时保存起来，防止被回收了。
+                    // 因为上面的 obj 是 unsafe_unretained 的
+                    [_TMPMemoryPool setObject:obj forKey:[NSNumber numberWithInteger:[(NSObject*)obj hash]]];
+                }
+            }
+        }
+    }
+ 	   
+    ...
+}
+```
+
+最后对 OC 执行返回的结果 JS 化。这里存在一个内存泄漏的问题。即当动态调用的方法是 `alloc`，`new`，`copy`，`mutableCopy` 时，ARC 不会在尾部插入 `release` 语句，即多了一次引用计数，需要通过 `(__bridge_transfer id)` 将 c 对象转为 OC 对象，并自动释放一次引用计数，以此来达到引用计数的平衡：
+
+```objc
+    char returnType[255];
+    strcpy(returnType, [methodSignature methodReturnType]);
+    
+    id returnValue;
+    // 不是 void 类型
+    if (strncmp(returnType, "v", 1) != 0) {
+        // 是 id 类型需要判断是不是创建新对象
+        if (strncmp(returnType, "@", 1) == 0) {
+            void *result;
+            // 拿到返回值
+            [invocation getReturnValue:&result];
+            
+            //For performance, ignore the other methods prefix with alloc/new/copy/mutableCopy
+            if ([selectorName isEqualToString:@"alloc"] || [selectorName isEqualToString:@"new"] ||
+                [selectorName isEqualToString:@"copy"] || [selectorName isEqualToString:@"mutableCopy"]) {
+                // 针对 alloc 等方法，需要通过 __bridge_transfer 减去引用计数
+                returnValue = (__bridge_transfer id)result;
+            } else {
+                returnValue = (__bridge id)result;
+            }
+            // 将 OC 转为 JS 返回
+            return formatOCToJS(returnValue);
+            
+        } else {
+            // 其他的各种类型 返回 JSValue
+            switch (returnType[0] == 'r' ? returnType[1] : returnType[0]) {
+                    
+                #define JP_CALL_RET_CASE(_typeString, _type) \
+                case _typeString: {                              \
+                    _type tempResultSet; \
+                    [invocation getReturnValue:&tempResultSet];\
+                    returnValue = @(tempResultSet); \
+                    break; \
+                }
+                    
+                JP_CALL_RET_CASE('c', char)
+                JP_CALL_RET_CASE('C', unsigned char)
+                JP_CALL_RET_CASE('s', short)
+                JP_CALL_RET_CASE('S', unsigned short)
+                JP_CALL_RET_CASE('i', int)
+                JP_CALL_RET_CASE('I', unsigned int)
+                JP_CALL_RET_CASE('l', long)
+                JP_CALL_RET_CASE('L', unsigned long)
+                JP_CALL_RET_CASE('q', long long)
+                JP_CALL_RET_CASE('Q', unsigned long long)
+                JP_CALL_RET_CASE('f', float)
+                JP_CALL_RET_CASE('d', double)
+                JP_CALL_RET_CASE('B', BOOL)
+
+                case '{': {
+                    NSString *typeString = extractStructName([NSString stringWithUTF8String:returnType]);
+                    #define JP_CALL_RET_STRUCT(_type, _methodName) \
+                    if ([typeString rangeOfString:@#_type].location != NSNotFound) {    \
+                        _type result;   \
+                        [invocation getReturnValue:&result];    \
+                        return [JSValue _methodName:result inContext:_context];    \
+                    }
+                    JP_CALL_RET_STRUCT(CGRect, valueWithRect)
+                    JP_CALL_RET_STRUCT(CGPoint, valueWithPoint)
+                    JP_CALL_RET_STRUCT(CGSize, valueWithSize)
+                    JP_CALL_RET_STRUCT(NSRange, valueWithRange)
+                    @synchronized (_context) {
+                        NSDictionary *structDefine = _registeredStruct[typeString];
+                        if (structDefine) {
+                            size_t size = sizeOfStructTypes(structDefine[@"types"]);
+                            void *ret = malloc(size);
+                            [invocation getReturnValue:ret];
+                            NSDictionary *dict = getDictOfStruct(ret, structDefine);
+                            free(ret);
+                            return dict;
+                        }
+                    }
+                    break;
+                }
+                case '*':
+                case '^': {
+                    void *result;
+                    [invocation getReturnValue:&result];
+                    returnValue = formatOCToJS([JPBoxing boxPointer:result]);
+                    if (strncmp(returnType, "^{CG", 4) == 0) {
+                        if (!_pointersToRelease) {
+                            _pointersToRelease = [[NSMutableArray alloc] init];
+                        }
+                        [_pointersToRelease addObject:[NSValue valueWithPointer:result]];
+                        CFRetain(result);
+                    }
+                    break;
+                }
+                case '#': {
+                    Class result;
+                    [invocation getReturnValue:&result];
+                    returnValue = formatOCToJS([JPBoxing boxClass:result]);
+                    break;
+                }
+            }
+            return returnValue;
+        }
+    }
+    return nil;
+}
+```
 
 #### OC 消息转发
+
+
 
 
 
@@ -655,3 +807,10 @@ static char *methodTypesInProtocol(NSString *protocolName, NSString *selectorNam
 ### 如何处理可变参数？
 
 ### JS 端对于空对象调用方法如何处理的？
+
+### `__bridge_transfer`,`__bridge`,`__bridge_retain` 的区别？
+
+### NSInvocation 的 `getArgument` 引发的 double release 如何处理？
+
+### JPBoxing 的作用？
+
