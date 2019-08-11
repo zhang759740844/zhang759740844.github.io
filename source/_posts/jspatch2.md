@@ -650,9 +650,219 @@ static void overrideMethod(Class cls, NSString *selectorName, JSValue *function,
 
 #### OC 消息转发
 
+jspatch 想要 hook 任意的方法，就需要让所有被 hook 的方法走一个统一的入口。这个统一的入口通过让所有被替换的方法走消息转发，并且 hook 消息转发的 `forwardInvocation()` 方法实现，无论这个方法是 JS 调用的还是 OC 调用的。
 
+主要过程如下：
 
+1. 获取被重写的方法的 JS 实现
+   1. 如果没有重写的 JS 方法，那么执行原来的方法实现
+2. 准备提供给 JS 的参数
+   1. 执行上下文，方法的实际调用者 self
+   2. 方法的实际参数
+3. 针对调用父类方法的特殊处理
+4. 执行 JS 重写方法，并对将返回结果设回 NSInvocation
+5. 针对 dealloc 方法的特殊处理
 
+##### 获取被重写方法的 JS 实现
+
+`JPForwardInvocation` 是一个静态方法，它的前两个参数分别是 `self` 和 `selector`。主要通过 `getJSFunctionInObjectHierachy()` 方法获取 JS 替换方法的实现
+
+```objc
+// 自己的替换方法, 可以看到调用方法前两个参数一个是 self，一个是 selecter， 对应于方法签名的  @:
+static void JPForwardInvocation(__unsafe_unretained id assignSlf, SEL selector, NSInvocation *invocation)
+{
+    BOOL deallocFlag = NO;
+    id slf = assignSlf;
+    BOOL isBlock = [[assignSlf class] isSubclassOfClass : NSClassFromString(@"NSBlock")];
+    
+    NSMethodSignature *methodSignature = [invocation methodSignature];
+    NSInteger numberOfArguments = [methodSignature numberOfArguments];
+    NSString *selectorName = isBlock ? @"" : NSStringFromSelector(invocation.selector);
+    NSString *JPSelectorName = [NSString stringWithFormat:@"_JP%@", selectorName];
+    // 判断 JSPSEL 是否有对应的 js 函数的实现，如果没有就原始方法的消息转发的流程
+    // （被 defineClass 过的类会被替换 forwardInvocation 方法。如果有方法没有被实现，且没有被 JS重写。那么就会走原始的 forwardInvocation 要找到的是 ORIGforwardInvocation 方法）
+    JSValue *jsFunc = isBlock ? objc_getAssociatedObject(assignSlf, "_JSValue")[@"cb"] : getJSFunctionInObjectHierachy(slf, JPSelectorName);
+    if (!jsFunc) {
+        JPExecuteORIGForwardInvocation(slf, selector, invocation);
+        return;
+    }
+  
+  	...
+}
+```
+
+`getJSFunctionInObjectHierachy()` 方法查找当前类是否有 JS 实现，如果没有，就从父类中查找。如果父类中也都没有实现，那么就要走原本的消息转发逻辑了。
+
+```objc
+// 判断这个方法是否有 js 方法的实现。 后续通过这个判断结果走原始转发流程还是走 js 方法的调用
+// 这是一个递归方法
+static JSValue *getJSFunctionInObjectHierachy(id slf, NSString *selectorName)
+{
+    Class cls = object_getClass(slf);
+    // 如果是正在在 js 中调用 oc 一个类中的 super 的方法，那么就通过 _currInvokeSuperClsName 记录下来。因为在调用的过程中由于是 super 方法，selector 会有一个 SUPER_ 的前缀。消息转发到这里的时候需要知道当前调用的其实是一个 super 的方法，需要把 SUPER_ 去除。
+    if (_currInvokeSuperClsName[selectorName]) {
+        cls = NSClassFromString(_currInvokeSuperClsName[selectorName]);
+        selectorName = [selectorName stringByReplacingOccurrencesOfString:@"_JPSUPER_" withString:@"_JP"];
+    }
+    JSValue *func = _JSOverideMethods[cls][selectorName];
+    // 遍历父类找这个方法
+    while (!func) {
+        cls = class_getSuperclass(cls);
+        if (!cls) {
+            return nil;
+        }
+        func = _JSOverideMethods[cls][selectorName];
+    }
+    return func;
+}
+```
+
+原本的 `forwardInvocation:` 指向了 SEL `ORIDforwardInvocation:`。拿到它对应的函数指针，并且执行：
+
+```objc
+// 方法的原本的 forward 流程
+static void JPExecuteORIGForwardInvocation(id slf, SEL selector, NSInvocation *invocation)
+{
+    // 拿到原始的被替换的 forwardInvocation： ORIDforwardInvocation, 然后调用原始的转发方法
+    SEL origForwardSelector = @selector(ORIGforwardInvocation:);
+    
+    if ([slf respondsToSelector:origForwardSelector]) {
+        NSMethodSignature *methodSignature = [slf methodSignatureForSelector:origForwardSelector];
+        if (!methodSignature) {
+            _exceptionBlock([NSString stringWithFormat:@"unrecognized selector -ORIGforwardInvocation: for instance %@", slf]);
+            return;
+        }
+        // 调用原始的转换方法
+        NSInvocation *forwardInv= [NSInvocation invocationWithMethodSignature:methodSignature];
+        [forwardInv setTarget:slf];
+        [forwardInv setSelector:origForwardSelector];
+        [forwardInv setArgument:&invocation atIndex:2];
+        [forwardInv invoke];
+    } else {
+        // 如果不存在原始的转发方法，就调用父类的转发方法
+        // 这里应该是保底逻辑，一般来说，不会出现调用没有 forwardInvocation 方法的情况
+        Class superCls = [[slf class] superclass];
+        Method superForwardMethod = class_getInstanceMethod(superCls, @selector(forwardInvocation:));
+        void (*superForwardIMP)(id, SEL, NSInvocation *);
+        superForwardIMP = (void (*)(id, SEL, NSInvocation *))method_getImplementation(superForwardMethod);
+        superForwardIMP(slf, @selector(forwardInvocation:), invocation);
+    }
+}
+```
+
+##### 准备传给 JS 的参数
+
+先要把 `self` 取出来，放到参数数组中。类对象就用一个包含 `__clsName` 的对象表示，实例对象则用 `JPBoxing` 包裹。另外，对于 `dealloc` 方法要注意不能使用 weak 修饰。在 `dealloc` 期间，不能使用 weak：
+
+```objc
+static void JPForwardInvocation(__unsafe_unretained id assignSlf, SEL selector, NSInvocation *invocation)
+{
+  	...
+      
+//  从NSInvocation中获取调用的参数，把self与相应的参数都转换成js对象并封装到一个集合中
+//  js端重写的函数，传递过来是JSValue类型，用callWithArgument:调用js方法，参数也要是js对象.
+    NSMutableArray *argList = [[NSMutableArray alloc] init];
+    if (!isBlock) {
+        if ([slf class] == slf) {
+            // 如果调用的是类方法，那么给入参列表的第一个参数就是一个包含  __clsName 的 object
+            [argList addObject:[JSValue valueWithObject:@{@"__clsName": NSStringFromClass([slf class])} inContext:_context]];
+        } else if ([selectorName isEqualToString:@"dealloc"]) {
+            // 对于被释放的对象，使用 assign 来保存 self 的指针
+            // 因为在 dealloc 的时候，系统不让将 self 赋值给一个 weak 对象。（在 dealloc 的时候应该会有一些操作 weak 字典的步骤，所以不能再这个阶段再操作 weak）
+            // assign 和 weak 的区别在于 assign 在指向的对象销毁的时候不会把当前指针置为 nil
+            // 所以这里最终要自己确保不会在 dealloc 后调用 slf 的方法
+            [argList addObject:[JPBoxing boxAssignObj:slf]];
+            deallocFlag = YES;
+        } else {
+            // 否则用 weak 包裹
+            [argList addObject:[JPBoxing boxWeakObj:slf]];
+        }
+    }
+  
+  	...
+}
+```
+
+之后就是取出 `NSInvocation` 中的各个参数了。这个过程是 `callSelector` 中设置 `NSInvocation` 的逆过程。基本一致，所以不重复贴代码了。
+
+##### 调用父类方法的特殊处理
+
+```objc
+static void JPForwardInvocation(__unsafe_unretained id assignSlf, SEL selector, NSInvocation *invocation)
+{
+  	...
+     
+    // 如果当前调用的方法是 js 引起的，并且 js 调用了一个 super 的方法。那么会在 _currInvokeSuperClsName 中保存一个调用的方法名。这个方法名被加上了前缀 SUPER_。 因此真正调用的时候要把这个前缀替换为 _JP。这样才能找到保存在 JSOverrideMethods 字典中的相应方法
+    if (_currInvokeSuperClsName[selectorName]) {
+        Class cls = NSClassFromString(_currInvokeSuperClsName[selectorName]);
+        NSString *tmpSelectorName = [[selectorName stringByReplacingOccurrencesOfString:@"_JPSUPER_" withString:@"_JP"] stringByReplacingOccurrencesOfString:@"SUPER_" withString:@"_JP"];
+        // 如果父类没有重写相应的方法
+        if (!_JSOverideMethods[cls][tmpSelectorName]) {
+            NSString *ORIGSelectorName = [selectorName stringByReplacingOccurrencesOfString:@"SUPER_" withString:@"ORIG"];
+            [argList removeObjectAtIndex:0];
+            // 如果父类没有重写这个方法那么就是调用 oc 的方法，oc 直接调用父类的相应方法
+            id retObj = callSelector(_currInvokeSuperClsName[selectorName], ORIGSelectorName, [JSValue valueWithObject:argList inContext:_context], [JSValue valueWithObject:@{@"__obj": slf, @"__realClsName": @""} inContext:_context], NO);
+            id __autoreleasing ret = formatJSToOC([JSValue valueWithObject:retObj inContext:_context]);
+            [invocation setReturnValue:&ret];
+            return;
+        }
+    }
+  
+  	...
+}     
+```
+
+##### 执行 JS 方法，并将结果设置到 NSInvocation
+
+准备好参数后，只要调用 `callWithArguments` 就可以同步获取到执行结果。由于是消息转发，因此要将得到的结果还要通过 `setReturnValue:` 设置给 NSInvocation。
+
+```objc
+static void JPForwardInvocation(__unsafe_unretained id assignSlf, SEL selector, NSInvocation *invocation)
+{
+  	...
+    // 转化为 js 的参数形式，将对象包裹为 {__obj: obj, __clsName: xxx} 的形式
+    NSArray *params = _formatOCToJSList(argList);
+    char returnType[255];
+    // 获取方法的返回参数的签名
+    strcpy(returnType, [methodSignature methodReturnType]);
+  
+  	// 判断 returnType 的符号签名
+    switch (returnType[0] == 'r' ? returnType[1] : returnType[0]) {
+        // 先调用 js 重写的方法，得到 返回值 jsval
+
+        // 如果 jsval 不是空，并且需要 isPerformInOC，那么获取其 callback 方法，
+        // 执行完后拿到数据转为 js 后调用 callback 方法
+
+        // 如果 jsval 没有 isPerformInOC，那么就是执行完 js 方法后直接往下走
+				...
+        (省略了各种类型判断)
+    }
+}
+```
+
+##### 针对 dealloc 方法的特殊处理
+
+如果是一般的方法，用 JS 替换了原方法执行就完事了。但是 dealloc 方法则有点特殊，它的原始方法必须要执行，不然怎么完成资源回收。因此，在方法执行的最后会判断当前执行的是不是 dealloc 方法，如果是，那么默认调用它的实现：
+
+```objc
+static void JPForwardInvocation(__unsafe_unretained id assignSlf, SEL selector, NSInvocation *invocation)
+{
+  	...
+      
+    // 如果这个方法是 dealloc 方法
+    if (deallocFlag) {
+        slf = nil;
+        Class instClass = object_getClass(assignSlf);
+        // 拿到 dealloc 方法实现
+        Method deallocMethod = class_getInstanceMethod(instClass, NSSelectorFromString(@"ORIGdealloc"));
+        void (*originalDealloc)(__unsafe_unretained id, SEL) = (__typeof__(originalDealloc))method_getImplementation(deallocMethod);
+        // 调用
+        originalDealloc(assignSlf, NSSelectorFromString(@"dealloc"));
+    }
+}
+```
+
+至此，OC 端的消息转发过程结束。
 
 ## 补充
 
@@ -763,11 +973,87 @@ global.defineJSClass = function(declaration, instMethods, clsMethods) {
 
 #### 将 js 对象转为 OC 对象 `formatJSToOC`
 
+针对几种特殊情况做处理，包括类型为 `JPBoxing` 类型，包含 `__obj`,`__clsName`,`__isBlock` 字段：
+
+```objc
+static id formatJSToOC(JSValue *jsval)
+{
+    id obj = [jsval toObject];
+    if (!obj || [obj isKindOfClass:[NSNull class]]) return _nilObj;
+    
+    // 如果是 JPBoxing 类型的，那么解包
+    if ([obj isKindOfClass:[JPBoxing class]]) return [obj unbox];
+    // 如果是数组类型的，那么把数组里的所有都 format 一遍
+    if ([obj isKindOfClass:[NSArray class]]) {
+        NSMutableArray *newArr = [[NSMutableArray alloc] init];
+        for (int i = 0; i < [(NSArray*)obj count]; i ++) {
+            [newArr addObject:formatJSToOC(jsval[i])];
+        }
+        return newArr;
+    }
+    // 如果是字典类型的
+    if ([obj isKindOfClass:[NSDictionary class]]) {
+        // 如果内部有 __obj 字段
+        if (obj[@"__obj"]) {
+            // 拿到 __obj 对应的对象
+            id ocObj = [obj objectForKey:@"__obj"];
+            if ([ocObj isKindOfClass:[JPBoxing class]]) return [ocObj unbox];
+            return ocObj;
+        } else if (obj[@"__clsName"]) {
+            // 如果存在 __clsName 对象，那么把 clsName 对应的 Class 拿出
+            return NSClassFromString(obj[@"__clsName"]);
+        }
+        // 如果是 block
+        if (obj[@"__isBlock"]) {
+            Class JPBlockClass = NSClassFromString(@"JPBlock");
+            if (JPBlockClass && ![jsval[@"blockObj"] isUndefined]) {
+                return [JPBlockClass performSelector:@selector(blockWithBlockObj:) withObject:[jsval[@"blockObj"] toObject]];
+            } else {
+                return genCallbackBlock(jsval);
+            }
+        }
+        NSMutableDictionary *newDict = [[NSMutableDictionary alloc] init];
+        for (NSString *key in [obj allKeys]) {
+            [newDict setObject:formatJSToOC(jsval[key]) forKey:key];
+        }
+        return newDict;
+    }
+    return obj;
+}
+```
+
 
 
 #### 将 OC 对象转为 js `formatOCToJS`
 
+将 OC 对象转为 JS 对象，为了方便 JS 调用，提前将 OC 对象的类取出，以 `{__obj: xxx, __clsName: xxx}` 的形式包裹：
 
+```objc
+// 把 oc 对象转为 js 对象 （增加了 __obj __clsName 等字段）
+static NSDictionary *_wrapObj(id obj)
+{
+    if (!obj || obj == _nilObj) {
+        return @{@"__isNil": @(YES)};
+    }
+    return @{@"__obj": obj, @"__clsName": NSStringFromClass([obj isKindOfClass:[JPBoxing class]] ? [[((JPBoxing *)obj) unbox] class]: [obj class])};
+}
+
+static id formatOCToJS(id obj)
+{
+    if ([obj isKindOfClass:[NSString class]] || [obj isKindOfClass:[NSDictionary class]] || [obj isKindOfClass:[NSArray class]] || [obj isKindOfClass:[NSDate class]]) {
+        return _autoConvert ? obj: _wrapObj([JPBoxing boxObj:obj]);
+    }
+    if ([obj isKindOfClass:[NSNumber class]]) {
+        return _convertOCNumberToString ? [(NSNumber*)obj stringValue] : obj;
+    }
+    if ([obj isKindOfClass:NSClassFromString(@"NSBlock")] || [obj isKindOfClass:[JSValue class]]) {
+        return obj;
+    }
+    return _wrapObj(obj);
+}
+```
+
+这里通过 `formatOCToJS` 转换后是一个包裹对象，传到 JS 端后还需要通过 `_formatOCToJS` 拿到 JS 真正想要的东西。
 
 #### 获取 protocol 中的某个方法的签名 `methodTypesInProtocol`
 
@@ -796,6 +1082,10 @@ static char *methodTypesInProtocol(NSString *protocolName, NSString *selectorNam
 }
 ```
 
+### 新建协议
+
+### block 执行
+
 ## 问题
 
 ### 整体调用流程是什么？
@@ -813,4 +1103,10 @@ static char *methodTypesInProtocol(NSString *protocolName, NSString *selectorNam
 ### NSInvocation 的 `getArgument` 引发的 double release 如何处理？
 
 ### JPBoxing 的作用？
+
+### 关于 block 的处理？
+
+### 如何重写 dealloc 方法？
+
+### 如何处理主线程子线程中
 

@@ -462,7 +462,7 @@ var _formatDefineMethods = function(methods, newMethods, realClsName) {
           // oc 调用 js 方法的时候，默认第一个参数是 self
           global.self = args[0]
           if (global.self) global.self.__realClsName = realClsName
-          // oc 调用方法的时候前两个参数分别为 caller 和 Selecter。真正调用 js 方法需要把这两个参数先去除
+          // oc 调用 js 方法的时候，第一个参数是 self，因此要把它去掉。
           args.splice(0,1)
           // 调用 js 方法
           var ret = originMethod.apply(originMethod, args)
