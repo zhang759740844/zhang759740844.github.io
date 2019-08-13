@@ -77,9 +77,27 @@ _weak typeof(self) weakSelf = self;	//弱引用指针
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_1.png?raw=true)
 
+将上图和下图做对照，可以发现，两者的结构基本一致：
+
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_13.png?raw=true)
+
+> 注意看上面的 block 结构体，在结构体内部也创建了一个同名的变量 age，它的值和外部的 age 相同。因此，内部 age 修改了并不会影响外部 age。
+
 ### block 变量捕获
 
 变量有五种形式，auto 局部变量、static 局部变量、auto 全局变量、static 全局变量、成员变量。
+
+#### 为什么要有变量的捕获
+
+因为如果是引用外部局部变量，局部变量会在作用域结束后回收。局部变量回收了，闭包肯定就 crash 了。因此需要进行变量的捕获。
+
+#### 变量如何捕获的
+
+捕获方式是在内部创建一个同名的变量，赋给它相同的值或者指向相同的地址。这样虽然代码上看起来是同一个变量，但是其实是两个变量。
+
+#### 为什么不让使用者直接修改使用到的外部变量
+
+上面说到，block 中使用的外部变量其实不是正真的外部变量，而是新创建的和外部同名的变量。因此，就算可以改，改的也只是内部的同名变量的指向。因此，编译器索性就不让改了。
 
 #### 局部变量
 
@@ -97,11 +115,13 @@ block不需要捕获全局变量，因为全局变量无论在哪里都可以访
 
 #### 成员变量
 
-成员变量是比较特殊的，**即使block中使用的是实例对象的属性，block中捕获的仍然是实例对象，并通过实例对象通过不同的方式去获取使用到的属性**
+成员变量是比较特殊的，**即使block中使用的是实例对象的属性，block中捕获的仍然是实例对象，并通过实例对象 get 方法去获取使用到的属性**
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_6.png?raw=true)
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_5.png?raw=true)
+
+> 因为点语法实质是调用方法，所以捕获的是 self
 
 ### block 的类型
 
@@ -123,13 +143,11 @@ __NSMallocBlock__ （ _NSConcreteMallocBlock ）
 
 #### 三种类型的定义
 
-**没有访问auto变量的block是*`__NSGlobalBlock__`*类型的，存放在数据段中。*
- *访问了auto变量的block是*`__NSStackBlock__`*类型的，存放在栈中。*
- `__NSStackBlock__`*类型的block调用copy成为*`__NSMallocBlock__`*类型并被复制存放在堆中。**
+**没有访问auto变量的block是*`__NSGlobalBlock__`*类型的，存放在数据段中。访问了auto变量的block是`__NSStackBlock__`类型的，存放在栈中。`__NSStackBlock__`类型的block调用copy成为*`__NSMallocBlock__`类型并被复制存放在堆中。**
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_9.png?raw=true)
 
-栈 block 相当于一个局部变量，当超出作用域，就面临着被回收的风险。ARC 下，很多情况中，会自动帮我们执行一次 copy。
+栈 block 相当于一个局部变量，当超出作用域，就面临着被回收的风险。ARC 下，很多情况中，会自动帮我们执行一次 copy，比如赋值。
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_10.png?raw=true)
 
@@ -145,11 +163,15 @@ __NSMallocBlock__ （ _NSConcreteMallocBlock ）
 
 ### __block 关键字
 
-block 会捕获外部变量的值或者指向的对象，因而无法在 block 中修改外部变量的值或者指向的地址。那么如何做到能改变外部变量的值或者指向呢？没有什么是不能通过一个中间层做到的。
+上面说到，block 内部会创建一个和外部同名的变量具有相同的值，或者指向相同的地址。那么这样就无法做到外部修改外部变量的值，block 内部做相应的变化；block 内部修改变量的值，外部变量做相应的变化。
 
-因此，我们可以把要使用的变量包在一个对象中。这样，block 捕获外部的对象，对象无法修改地址，但是内部真正要使用的变量则可以自由的改变值或者地址。
+那么如何才能做到内外的修改能够同步呢？见下图：
 
-iOS 提供了  `__block` 来达到这个目的。`__block` 修饰的变量，编译期会自动将其包装为一个对象，原本被修饰的变量会作为对象的一个属性。
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_14.png?raw=true)
+
+赋值操作都会引起外部变量和内部变量的表示的值或地址的不同。要解决这种不同只有通过一层中间层来解决。**外部变量和内部变量都指向相同的地址。而对于外部变量或者内部变量的修改都转为对包裹的对象的修改，而不是切换外部变量或者内部变量的指向。**
+
+iOS 提供了  `__block` 来达到这个目的。`__block` 修饰的变量，编译器会自动将其包装为一个对象，原本被修饰的变量会作为对象的一个属性。
 
 > 只有要修改变量的值或者地址的时候才使用` __block`，比如修改 NSMutableArray 这种则不需要使用 `__block`
 
