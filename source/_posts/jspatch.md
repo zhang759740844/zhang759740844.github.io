@@ -1,4 +1,4 @@
-outitle: JSPatch 源码解析(一)
+title: JSPatch 源码解析(一)
 date: 2019/8/1 14:07:12  
 categories: iOS
 tags: 
@@ -9,9 +9,9 @@ tags:
 
 JSPatch 虽然被禁，但是它的源码是非常值得学习的。可以说，是我看过的各个库中设计的最巧妙也是知识点最多的开源库。非常有学习价值。
 
-<!--more-->
+这是这个源码解析的第一部分。主要通过一个 Demo 演示如何定义 JS 修复文件。
 
-这是这个源码解析的第一部分
+<!--more-->
 
 ## Demo 演示
 
@@ -442,7 +442,7 @@ global.defineClass = function(declaration, properties, instMethods, clsMethods) 
 }
 ```
 
-主要过程在于 `_formatDefineMethods` 中：
+主要过程在 `_formatDefineMethods` 中：
 
 ```js
 // 对 js 端定义的 method 进行预处理，取出方法的参数个数。hook 方法，预处理方法的参数，将其转为 js 对象。
@@ -452,7 +452,7 @@ var _formatDefineMethods = function(methods, newMethods, realClsName) {
     (function(){
       var originMethod = methods[methodName]
       // 把原来的 method 拿出来，新的 method 变成了一个数组，第一个参数是原来方法的调用参数的个数，第二个参数是
-      // 因为runtime修复类的时候无法直接解析js实现函数，也就无法知道参数个数，但方法替换的过程需要生成方法签名，所以只能从js端拿到js函数的参数个数，并传递给OC。
+      // 因为runtime 添加方法的时候需要设置函数签名，因此需要知道方法中参数个数。这里直接在 js 中将参数个数取出
       newMethods[methodName] = [originMethod.length, function() {
         try {
           // js 端执行的方法，需要先把参数转为 js 的类型
@@ -482,7 +482,7 @@ var _formatDefineMethods = function(methods, newMethods, realClsName) {
 
 1. 这个方法是要添加到 oc 端的，oc 端需要知道参数个数，但是 oc 端无法直接获取，只能通过解析方法名。因此就把解析参数个数的工程放在了 js 中进行。js 端在将方法传给 oc 前，先把参数个数拿到，然后以数组形式传递。
 2. oc 调用 js 方法时传递的参数需要预处理，比如调用对象原本是 js 传递过去的，就会被 `{__obj: xxx}` 包裹，再比如 oc 的空对象的处理。
-3. oc 传来的参数第一个是方法的调用上下文，第二个是 Selector。因此需要把调用上下文设置给全聚的 self，以便在方法中使用。在调用方法前，还需要把这个上下文和 Selector 从参数列表中取出，因为 js 调用的时候是不需要这两个参数的。
+3. oc 传来的参数第一个是方法的调用上下文。因此需要把调用上下文设置给全局的 self，以便在方法中使用。在调用方法前，还需要把这个上下文和 Selector 从参数列表中取出，因为 js 调用的时候是不需要这个参数的。
 
 js 方法预处理完成后，就会调用 `_OC_defineClass` 方法，在 OC 中添加相应方法。这个方法是 JSPatch 中最重要的方法了，在后面会解释，先跳过。
 
@@ -543,7 +543,12 @@ var _setupJSMethod = function(className, methods, isInst, realClsName) {
 }
 ```
 
-> js 端定义这个 `__ocCls` 的目的是在 JS 端执行定义的方法并且调用到其他定义方法的时候，可以不用重走一遍 OC 的消息转发，而是直接调用 js 端方法，加快方法执行速度。
+> OC 中会保存一份方法实现在 `_JPOverideMethods` 字典中。还会在 js 端保存在 `__ocCls` 中。保存两份的目的是在 JS 端执行定义的方法并且调用到其他定义方法的时候，可以不用重走一遍 OC 的消息转发，而是直接调用 js 端方法。
+>
+> 这样的好处有两点：
+>
+> 1. 是不用走消息转发，加快执行速度。
+> 2. 区分了调用场景后更容易设置调用上下文。对于 OC，调用的上下文是通过参数传递的，拿第一个参数将其赋给 global.self。对于 js，调用的上下文时 this，把发赋给 global.self
 
 ##### 通过 require 方法创建全局类对象
 
@@ -765,7 +770,7 @@ static NSString *convertJPSelectorString(NSString *selectorString)
 
 ##### 重写方法 `overrideMethod`
 
-`overrideMethod` 实现了 js 方法对 oc 方法的实现和替换。它的主要做了三件事：
+`overrideMethod` 实现了 js 方法对 oc 方法的实现和替换。它主要做了三件事：
 
 1. 替换目标类的消息转发方法 `forwardInvocation:` 为自定义方法  `JPForwardInvocation:`
 2. 各个类的方法命名为 `_JP${方法名}` 保存到 `_JSOverideMethods` 字典中的对应类中
