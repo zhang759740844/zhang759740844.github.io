@@ -1,26 +1,19 @@
-title: 《Objective-C 高级编程》读书笔记
+title: iOS 中的自动引用计数
 date: 2017/5/13 10:07:12  
 categories: iOS
 tags:
-	- 学习笔记
+
+- 学习笔记
+
 ---
 
-对这本书做一下读书笔记
+对这本书做一下《oc 高级编程》的读书笔记
 
 <!--more-->
-
-# 自动引用计数
 
 ## 内存管理/引用计数
 
 ### 内存管理的思考方式
-
-**引用计数的思考方式**：
-
-- 自己生成的对象，自己持有
-- 非自己生成的对象，自己也能持有
-- 不再需要自己持有的对象时释放
-- 非自己持有的对象无法释放
 
 **对象操作与OC 方法的对应:**
 
@@ -62,7 +55,7 @@ id obj = [NSMutableArray array];
 // 自己持有对象
 ```
 
-通过 `retaion` 方法，非自己生成的对象也可以成为自己持有。
+通过 `retain` 方法，非自己生成的对象也可以成为自己持有。
 
 #### 不再需要自己持有的对象时释放
 
@@ -99,8 +92,6 @@ id obj1 = [obj0 allocObject];
 
 由于外部是通过 `allocObject` 生成的，所以内部不用 `[obj autorelease]`
 
----
-
 上面的例子把 `allocObject` 中不用 `alloc` 创建，这个时候就会添加 `retain` 了：
 
 ```objc
@@ -121,10 +112,6 @@ id obj1 = [obj0 allocObject];
 由于外部是符合命名规范的，因此，内部不添加 `autorelease` 方法。
 
 > 其实可以这么理解，方法内如果是用 `alloc` 创建对象并返回的，那么不用 `retain`；如果不用 `alloc` 创建对象的，会自动插入 `retain`，所以不管怎样引用计数器必然加一。这个时候，由于方法是带有 `alloc` 等字眼的，编译器不会在方法中的最后添加 `release` 方法。因此，外部就不用再 retain 了，因为内部已经加过一了。
-
----
-
-
 
 那么如果是类似 ` [NSMutableArray array]` 方式，该如何取得对象呢？以自定义一个 `object` 方法为例：
 
@@ -188,9 +175,7 @@ id obj1 = [obj0 object];
 
 其实就是将要释放的对象添加到 `NSAutoreleasePool` 中的数组中去。当 `NSAutoreleasePool` 将要销毁时，对数组中的所有对象调用 `release` 方法。
 
-## ARC规则
-
-### 所有权修饰符
+## ARC 中的所有权修饰符
 
 ARC 有效时，对象类型上必须附加所有权修饰符：
 
@@ -208,7 +193,7 @@ id obj = [[NSObject alloc] init];
 => id __strong obj = [[NSObject alloc] init];
 ```
 
-如果指定了变量的作用于：
+如果指定了变量的作用域：
 
 ```objc
 {
@@ -421,393 +406,76 @@ weak 表和引用计数器表相同，作为散列表被实现。如果使用 we
 
 和苹果 `autorelease` 实现中的说明完全相同。
 
+## oc 对象指针与 c 指针的转换
 
+### `__bridge` `__bridge_transfer` 和 `__bridge_retained` 的区别
 
-# Blocks
+我们在将将 c 指针和 oc 对象指针之间做转换的时候会用到上述几个修饰符。**它们都会将 c 指针转为 oc 对象指针**。差别在于：
 
-## Blocks 模式
+- `__bridge`：ARC 不会插入 `retain` 和 `release` ，即生命周期和 c 指针一致
+- `__bridge_retained` ： ARC 会插入一条 `retain`，不会插入 `release`
+- `__bridge_transfer`：ARC 会插入一条 `release`，不会插入 `retain`
 
-### Block 语法
+### 解决 NSInvocation `getArgument` 引发的 Double Release
 
-Block的格式:
-
-> ^ 返回值类型 （参数列表） {表达式}
-
-其中，返回值类型和参数列表可以省略。
-
-###  Block 类型变量
-
-先来看一下 C语言的函数指针：
-
-```c
-int (*funcptr)(int)
-```
-
-声明 Block 类型变量和 C语言几乎一致，除了将 `*` 改为 `^`，示例如下：
+从 NSInvocation 中获取参数会这样取：
 
 ```objc
-int (^blk)(int)
+id arg;
+[invocation getArgument:&arg atIndex:i];
 ```
 
-Block 可以作为右值，返回类型，参数类型。可以使用 `typedef` 定义：
+一般情况下赋值操作会成对的插入 `retain` 和 `release`：
 
 ```objc
-typedef int (^blk_t)(int);
-=>
-blk_t blk;
-```
-
-这样，`blk_t` 就**从变量名，变成了变量类型**。
-
-### 截获自动变量值
-
-Block 表达式截获所使用的自动变量的值，即保存该自动变量的瞬间值。因为 Block 表达式保存了自动变量的值，所以在执行 Block 语法后，即使改写 Block 中使用的自动变量的值也不会影响 Block 执行时自动变量的值。这就是自动变量值的截获。
-
-### __block说明符
-
-自动变量值截获只能保存执行 Block 语法瞬间的值。保存后就不能改写该值。如果尝试改写截获的自动变量值，会产生编译错误。
-
-若想在 Block 语法的表达式中将值赋给在 Block 语法外声明的自动变量，需要在该自动变量上附加 `__block` 说明符。
-
-对于截获的 OC 对象，我们可以修改对象的内容，但是不能修改对象的地址指向，否则还是需要使用 `__block`。
-
-## Blocks 的实现
-
-### Block的实质
-
-clang(LLVM 编译器)通过 “-rewrite-objc” 选项可以将含有 Block 语法的源代码变换为 C语言源代码：
-
-```objc
-clang -rewrite-objc 源代码文件名
-```
-
-比如一个最简单的 Block ：
-
-```objc
-int main(){
-  void (^blk)(void) = ^{printf("Block\n");};
-  blk();
-  return 0;
+- (void)method {
+id arg = [SomeClass getSomething];
+// [arg retain]
+...
+// [arg release]  退出作用域前release
 }
 ```
 
-其中，`^{printf("Block\n"};` 可以转化为：
+但是 ARC 下由于 arg 不是赋值操作，因此没有加入 `[arg retain]`。但是在结尾的时候还是调用了  `[arg release]` 就会造成 crash：
 
 ```objc
-static void __main_block_func_0(struct __main_block_impl_0 *__cself){
-  printf("Block\n");
+id arg;
+[invocation getArgument:&arg atIndex:i];
+// [arg release];
+```
+
+我们有两种方式解决这个问题，一种是通过 `__unsafe_unretained` 修饰符，告诉编译器不要插入 `[arg release]` 和 `[arg retain]`
+
+```objc
+__unsafe_unretained id arg;
+[invocation getReturnValue:&arg];
+```
+
+还有一种方式就是通过上面提到的 `__bridge`，同样告诉编译器不要插入  `[arg release]` 和 `[arg retain]`
+
+```objc
+id returnValue;
+void *result;
+[invocation getReturnValue:&result];
+returnValue = (__bridge id)result;
+```
+
+> 这种操作指针的还是通过  `__bridge` 比较好
+
+### 解决 NSInvocation 创建对象后 `getReturnValue` 引发的内存泄漏
+
+前面说过，当方法名开头是 alloc / new / copy / mutableCopy 时，返回的对象是 retainCount = 1 的。因此，需要在作用于结束的时候添加 `release` ，释放引用计数。但是通过 `__bridge` 将 c 对象转为 oc 对象的时候会省略 `release` 。因此，要使用 `__bridge_transfer`，仍然插入 `release`：
+
+```objc
+id returnValue;
+void *result;
+[invocation getReturnValue:&result];
+if ([selectorName isEqualToString:@"alloc"] || [selectorName isEqualToString:@"new"]) {
+    returnValue = (__bridge_transfer id)result;
+} else {
+    returnValue = (__bridge id)result;
 }
 ```
-
-通过 Blocks 使用的匿名函数实际上被作为简单的 C语言函数来处理。另外，根据 Block 语法所属的函数名和该 Block 语法在该函数出现的顺序值(此处为0)来给经 clang 变换的函数命名。
-
-该函数的参数 `__cself` 相当于 OC 中的 `self`，是 `__main_block_impl_0` 结构体的指针：
-
-```objc
-struct __main_block_impl_0{
-  struct __block_impl impl;
-  struct __main_block_desc_0 *Desc;
-}
-//其中：
-struct __block_impl{
-  void *isa;
-  int Flags;
-  int Reserved;
-  void *FuncPtr;
-}  
-struct __main_block_desc_0{
-  unsigned long reserved;
-  unsigned long Block_size;
-}
-```
-
-来看一下该实例的构造方法：
-
-```objc
-__main_block_impl_0(void *fp, struct __main_block_desc_0 *desc, int flag=0){
-  impl.isa = &_NSConcreteStackBlock;
-  impl.Flags = flags;
-  impl.FuncPtr = fp;
-  Desc =desc;
-}
-```
-
-第一个参数是由 Block 语法转换的 C 语言函数指针，本例中将会传入上面的 `__main_block_func_0`，第二个参数是作为静态全局变量初始化的 `__main_block_desc_0` 结构体实例指针，该指针内保存了 `__main_block_impl_0` 结构体实例的大小。
-
-观察上面的构造方法 `impl.isa = &_NSConcreteStackBlock;` ，其 `isa` 指针指向了 `&NSConcreteStackBlock`，说明 **Block 的实质是 Objective-C 的对象**。
-
-通过上面的构造方法，我们看 `void (^blk)(void) = ^{printf("Block\n");};` 的转换后的代码：
-
-```objc
-struct __main_block_impl_0 tmp = (void (*)(void))&__main_block_impl_0((void *)__main_block_func_0, &__main_block_desc_0_DATA);
-void (*blk)(void) = &tmp;
-```
-
-该源码将 **栈上（因为这里的所有结构体并没有 malloc 内存，所以都是保存在栈上的）**生成的 `__main_block_impl_0` 结构体实例的指针，赋值给 `__main_block_impl_0` 结构体指针类型的变量 `blk`。
-
-继续查看 `blk()` 的转换后的代码：
-
-```objc
-((void (*)(struct __block_impl *))(struct __block_impl *)blk)->FuncPtr)((struct __block_impl *)blk);
-简化后 =>
-(*blk->impl.FuncPtr)(blk);
-```
-
-就是调用了 `blk` 中保存的函数指针，并将 `blk` 作为 `__cself` 传入。
-
-### 截获自动变量值
-
-前面的 Block 中没有用到任何自动变量，所以`__main_block_impl_0` 中只有两个成员：`__block_impl` 和 `__main_block_desc_0`。如果 Block 中用到了自动变量，将会添加相应参数，如在 Block 中用到了 `char *fmt` 和 `int val` ，那么结构体，构造函数等都要相应添加：
-
-```objc
-struct __main_block_impl_0{
-  struct __block_impl impl;
-  struct __main_block_desc_0 *Desc;
-  const char *fmt;
-  int val;
-}
-```
-
-所谓“截获自动变量值”，意味着在执行 Block 语法所使用的自动变量值被保存到 Block 的结构体实例（即 Block 自身）中
-
-### __block 说明符
-
-上面说到 Block 会截取自动变量值，并且 Block 内部不能修改自动变量值，否则会抛出异常。如果想要在 Block 中修改外部变量的值，需要在变量上添加 `__block` 说明符，加上这个说明符后，这就不再是个简单的变量了，它为自身创建了一个结构体。比如一个 `int` 类型的变量 `val`,它变成了一个结构体实例 `__Block_byref_val_0`:
-
-```objc
-struct __Block_byref_val_0{
-  void *__isa;
-  __Block_byref_val_0 *__forwarding;
-  int __flags;
-  int __size;
-  int val;
-};
-```
-
-其中 `__forwarding` 持有指向自身的指针，`val` 保存了 `int` 的值。
-
-```objc
-__block int val = 10;
-转换后=>
-__Block_byref_val_0 val = {
-  0,
-  &val,
-  0,
-  sizeof(__Block_byref_val_0),
-  10
-};
-```
-
-比如一个给 `__block` 变量赋值的代码将会转换成下面：
-
-```objc
-^(val = 1;)
-=>
-static void __main_block_func_0(struct __main_block_impl_0 *__cself){
-  __Block_byref_val_0 *val = __cself->val;
-  (val->__forwarding->val) = 1;
-}
-```
-
-### Block 存储域
-
-Block 转换为 Block 结构体类型的自动变量，`__block` 变量转换为 `__block` 变量的结构体类型的自动变量。**所谓结构体类型的自动变量，即栈上生成的该结构体的实例。**
-
-Block 也是 OC 对象。将 Block 当做 OC 对象来看时，该 Block 类为 `_NSConcreteStackBlock`，类似的还有：
-
-- _NSConcreteStackBlock
-- _NSConcreteGlobalBlock 
-- _NSConcreteMallocBlock
-
-设置在栈上的 Block，如果其所属的变量作用域结束，该 Block 就被废弃了。由于 `__block` 变量也配置在栈上，同样的，如果其所属的变量作用域结束，则该 `__block` 变量也会被废弃。Blocks 提供了将 Block 和 `__block` 从栈上复制到堆上的方法来解决这个问题。复制到堆上的 Block 将 `_NSConcreteMallocBlock` 类对象写入 Block 的结构体实例的成员变量 isa：
-
-```objc
-impl.isa = &_NSConcreteMallocBlock;
-```
-
-通过 `copy` 方法，将 Block 从栈上复制到堆上：
-
-```objc
-[^{NSLog(@"haha")} copy];
-```
-
-### __block 变量存储域
-
-前面说到 `__block` 产生的结构体 `__Block_byref_val_0` 中会有一个 `forwarding` 的指针，一般指向自己。那么这个指针存在的意义是什么呢？
-
-对于一个 `__block` 和 Block 变量，原本是保存在栈上的。当 Block 被复制到堆上后，其中使用到的 `__block` 变量也会从栈中复制到堆上，并被 Block 持有。如下图：
-
-![复制](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/MallocBlock.JPG?raw=true)
-
-现在，需要在 Block 内外修改 `__block` 的值，即 `^{++val;}` 和 `++val;` 都能够修改值，这就体现了 `forwarding` 这个指针的目的了：
-
-
-
-![复制](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/forwardingBlock.jpg?raw=true)
-
-在变换 Block 语法的函数中，该变量 val 为复制到堆上的 `__block` 变量用结构体实例，而使用的与 Block 无关的变量 val，为复制前栈上的 `__block` 变量用结构体实例。
-
-栈上的 `__block` 变量用结构体实例在 `__block` 变量从栈复制到堆上时，会将成员变量 `__forwarding` 的值替换为复制目标堆上的 `__block` 变量用结构体实例的地址。通过该功能，无论在 Block 语法中、Block 语法外使用 `__block` 变量，还是 `__block` 变量配置在栈上还是堆上，都可以顺利地访问同一个 `__block` 变量。
-
-### 截获对象
-
-比较下面两段代码中， Block 块中的打印日志：
-
-```objc
-// 代码段一
-blk_t blk;
-{
-  id array = [[NSMutableArray alloc] init];
-  blk = [^(id obj){
-    [array addObject:obj];
-    NSLog(@"array count = %ld",[array count]);
-  } copy];
-}
-blk([[NSObject alloc] init]);
-blk([[NSObject alloc] init]);
-blk([[NSObject alloc] init]);
-
-// 代码段二
-blk_t blk;
-{
-  id array = [[NSMutableArray alloc] init];
-  blk = ^(id obj){
-    [array addObject:obj];
-    NSLog(@"array count = %ld",[array count]);
-  };
-}
-blk([[NSObject alloc] init]);
-blk([[NSObject alloc] init]);
-blk([[NSObject alloc] init]);
-```
-
-输出：
-
-```objc
-// 代码段一
-array count = 1
-array count = 1
-array count = 1
-  
-// 代码段二
-强制结束
-```
-
-因为下面的代码没有 copy 到堆上，所以 array 也就仍然存储在栈上，即使 Block 截获了对象，它也会随着变量作用域的结束而被废弃。
-
-所以除了下面的情况，推荐调用 Block 的 copy 方法：
-
-- Block 作为函数返回值返回时
-- 将 Block 赋值给类的附有 `__strong` 修饰符的 `id` 类型或 Block 类型成员变量时
-- 向方法命中含有 `usingBlock` 的 Cocoa 框架方法或 GCD 的 API 中传递 Block 时
-
-### __block 变量和对象
-
-上面的例子如果改成下面将会输出什么结果呢：
-
-```objc
-// 代码段一
-blk_t blk;
-{
-  id array = [[NSMutableArray alloc] init];
-  id __weak array2 = array;
-  blk = [^(id obj){
-    [array2 addObject:obj];
-    NSLog(@"array2 count = %ld",[array2 count]);
-  } copy];
-}
-blk([[NSObject alloc] init]);
-blk([[NSObject alloc] init]);
-blk([[NSObject alloc] init]);
-
-// 代码段二
-blk_t blk;
-{
-  id array = [[NSMutableArray alloc] init];
-  __block id __weak array2 = array;
-  blk = [^(id obj){
-    [array2 addObject:obj];
-    NSLog(@"array2 count = %ld",[array2 count]);
-  } copy];
-}
-blk([[NSObject alloc] init]);
-blk([[NSObject alloc] init]);
-blk([[NSObject alloc] init]);
-```
-
-输出：
-
-```objc
-// 代码段一
-array2 count = 0
-array2 count = 0
-array2 count = 0
-// 代码段二
-array2 count = 0
-array2 count = 0
-array2 count = 0
-```
-
-虽然都用了 copy 方法，但是代码段一由于弱引用了 `array`，导致 `array` 在作用域外被回收，`array2` 被置为 `nil`。同样的，即使增加了 `__block` 修饰符，也只是改变 `array2` 的结构，引用计数该回收的时候还是回收了，所以对结果没有任何影响。
-
-### Block 循环引用
-
-Block 有可能会引起循环引用是被熟知的了，一般是使用 `__weak` 说明符的方式打破引用循环，如：
-
-```objc
-- (id)init{
-  self = [super init];
-  id __weak tmp = self;
-  blk = ^{NSLog(@"self = %@", tmp);};
-  return self;
-}
-```
-
-除了使用 `__weak` 还可以使用 `__block`，在 Block 内使用完后，手动将变量置为 `nil`:
-
-```objc
-- (id)init{
-  self = [super init];
-  __block id tmp = self;
-  blk = ^{
-    NSLog(@"self = %@", tmp);
-    tmp = nil;
-  };
-  return self;
-}
-```
-
-使用上面方法的优点是可以手动控制对象的持有时间，而缺点是必须要执行 Block，否则会产生引用循环。
-
-# GCD
-
-API 的使用在我另外一篇 GCD 的总结中有详细的记述[GCD队列](https://zhang759740844.github.io/2016/08/02/GCD队列/)，不详细描述了。
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
