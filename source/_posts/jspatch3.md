@@ -722,4 +722,4 @@ C 函数的调用通过 JSContext 注入
 
 [JSPatch 实现原理详解系列](<https://mp.weixin.qq.com/s?__biz=MzIzNTQ2MDg2Ng==&mid=2247483662&idx=1&sn=c7d9ee27eff35688180bdc840d31120b&scene=4#wechat_redirect>)
 
-[探究Block之MethodSignature](<https://www.jianshu.com/p/1849068b7833>)
+[探究Block之MethodSignature](<https://www.jianshu.com/p/1849068b7833>)(文章中关于 block 方法签名处有结论性的错误，堆 block 中含有 copy 和 dispose 方法，而全局 block 没有这两个方法，它的验证试验的结论也是错的。)
