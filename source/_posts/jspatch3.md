@@ -470,7 +470,7 @@ static id genCallbackBlock(JSValue *jsVal)
     // 新建一个二级指针 invoke 指向 p 的当前位置
     void(**invoke)(void) = (void (**)(void))p;
     // p 在增加一个 void* 和两个 ptr 的大小，p指向的的是 signature
-  	// （堆 block，方法签名存在于 copy 上)
+  	// hook 的 block 一定是个不使用外部变量的全局 block，所以没有 copy 和 dispose 函数。因此直接满足下面的公式
     p += sizeof(void *) + sizeof(uintptr_t) * 2;
     // 新建一个二级指针 signature 指向 p 的当前位置
     const char **signature = (const char **)p;
