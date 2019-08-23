@@ -421,13 +421,14 @@ static BOOL aspect_isCompatibleBlockSignature(NSMethodSignature *blockSignature,
         signaturesMatch = NO;
     }else {
         if (blockSignature.numberOfArguments > 1) {
-            // 拿到 index 为 1 的参数,即签名里的 @?。如果不是，就表示参数不对
+            // Aspects 规定，如果有参数，第一个必须是 AspectInfo
             const char *blockType = [blockSignature getArgumentTypeAtIndex:1];
             if (blockType[0] != '@') {
                 signaturesMatch = NO;
             }
         }
         // Argument 0 is self/block, argument 1 is SEL or id<AspectInfo>. We start comparing at argument 2.
+      	// index 为 0 的参数是 self 或者 block，index 为 1 的参数，是 SEL 或者 Aspects 规定的 AspectInfo 类型，因此从 index 为 2 的参数开始比较
         // The block can have less arguments than the method, that's ok.
         // 一个一个参数对比
         if (signaturesMatch) {
@@ -452,7 +453,7 @@ static BOOL aspect_isCompatibleBlockSignature(NSMethodSignature *blockSignature,
 }
 ```
 
-比较两者的签名主要是比较入参的类型要一致。block 和普通方法的不同在于 block 的签名中不存在 SEL。普通方法的签名 index 为 0 的参数是调用者，即 `@`，index 为 1 的参数是 SEL，即 `:`，而 block 由于不存在 SEL，其 index 为 1 的参数为调用者 `@?`，不存在 index 为 0 参数。这么做我猜测可能是处于内存对齐的考虑。
+比较两者的签名主要是比较入参的类型要一致。block 和普通方法的不同在于 block 的签名中不存在 SEL。普通方法的签名 index 为 0 的参数是调用者，即 `@`，index 为 1 的参数是 SEL，即 `:`，而 block 由于不存在 SEL，其 index 为 0 的参数还是调用者，即 `@`，而 index 为 1 的参数就是真正的参数了。Aspects 为了将 block 签名和普通方法签名一致，所以做了限制，只要有参数，第一个一定是一个无关的 `AspectInfo` 实例。
 
 在创建好 `AspectsIdentifier` 后，将实例存放到 `AspectContainer` 中。
 
@@ -584,19 +585,184 @@ static Class aspect_hookClass(NSObject *self, NSError **error) {
 
 ### 执行
 
+方法执行时会直接进入消息转发流程:
 
+```objc
+// This is a macro so we get a cleaner stack trace.
+#define aspect_invoke(aspects, info) \
+for (AspectIdentifier *aspect in aspects) {\
+    [aspect invokeWithInfo:info];\
+    if (aspect.options & AspectOptionAutomaticRemoval) { \
+        aspectsToRemove = [aspectsToRemove?:@[] arrayByAddingObject:aspect]; \
+    } \
+}
 
-### 移除 hook
+// This is the swizzled forwardInvocation: method.
+/// msgForward 执行的方法
+static void __ASPECTS_ARE_BEING_CALLED__(__unsafe_unretained NSObject *self, SEL selector, NSInvocation *invocation) {
+    NSCParameterAssert(self);
+    NSCParameterAssert(invocation);
+    SEL originalSelector = invocation.selector;
+	SEL aliasSelector = aspect_aliasForSelector(invocation.selector);
+    /// invocation 的 selector 转为原方法
+    invocation.selector = aliasSelector;
+    /// 获取这个对象对应的 AspectsContainer
+    AspectsContainer *objectContainer = objc_getAssociatedObject(self, aliasSelector);
+    /// 获取这个对象的 isa 对应的 AspectContainer，如果没有就一直到父类找
+    AspectsContainer *classContainer = aspect_getContainerForClass(object_getClass(self), aliasSelector);
+    AspectInfo *info = [[AspectInfo alloc] initWithInstance:self invocation:invocation];
+    NSArray *aspectsToRemove = nil;
 
+    // Before hooks.
+    /// 执行 container 相应生命周期的所有 aspect
+    aspect_invoke(classContainer.beforeAspects, info);
+    aspect_invoke(objectContainer.beforeAspects, info);
 
+    // Instead hooks.
+    BOOL respondsToAlias = YES;
+    /// 如果替换数组存在，那么替换，否则执行原方法
+    if (objectContainer.insteadAspects.count || classContainer.insteadAspects.count) {
+        aspect_invoke(classContainer.insteadAspects, info);
+        aspect_invoke(objectContainer.insteadAspects, info);
+    }else {
+        Class klass = object_getClass(invocation.target);
+        do {
+            if ((respondsToAlias = [klass instancesRespondToSelector:aliasSelector])) {
+                [invocation invoke];
+                break;
+            }
+        }while (!respondsToAlias && (klass = class_getSuperclass(klass)));
+    }
+
+    // After hooks.
+    aspect_invoke(classContainer.afterAspects, info);
+    aspect_invoke(objectContainer.afterAspects, info);
+
+    // If no hooks are installed, call original implementation (usually to throw an exception)
+    /// 调用原方法
+    if (!respondsToAlias) {
+        invocation.selector = originalSelector;
+        SEL originalForwardInvocationSEL = NSSelectorFromString(AspectsForwardInvocationSelectorName);
+        if ([self respondsToSelector:originalForwardInvocationSEL]) {
+            ((void( *)(id, SEL, NSInvocation *))objc_msgSend)(self, originalForwardInvocationSEL, invocation);
+        }else {
+            [self doesNotRecognizeSelector:invocation.selector];
+        }
+    }
+
+    // Remove any hooks that are queued for deregistration.
+    [aspectsToRemove makeObjectsPerformSelector:@selector(remove)];
+}
+```
+
+整个过程就是从关联对象中取出 `AspectContainer` 实例，然后执行其中各个时间点的回调。你可能会很疑惑它获取关联对象和执行的语句：
+
+```objc
+// 获取
+AspectsContainer *objectContainer = objc_getAssociatedObject(self, aliasSelector);
+AspectsContainer *classContainer = aspect_getContainerForClass(object_getClass(self), aliasSelector);
+// 执行
+aspect_invoke(classContainer.afterAspects, info);
+aspect_invoke(objectContainer.afterAspects, info);
+```
+
+为什么既有从对象中获取关联对象，又有从对象的 isa 指向中获取关联对象的情况呢？对于 hook 类来说，实例的执行都应该是通过后者，从类中获取的。但是对于 hook 类来说，他们的关联对象是存在实例中的。如果即 hook 了实例的某个方法，又 hook 了实例所在的类的同一个方法，那么两份 hook 都应该执行。
+
+如果 hook 时候传入的 options 为 `AspectOptionAutomaticRemoval`，那么会在执行完毕后调用 `AspectIdentifier` 实例的 `remove` 方法移除 hook。
+
+方法执行过程在 `invokeWithInfo` 方法中：
+
+```objc
+/// 执行这个 NSInvocation
+- (BOOL)invokeWithInfo:(id<AspectInfo>)info {
+    /// 创建一个 blockInvocation
+    NSInvocation *blockInvocation = [NSInvocation invocationWithMethodSignature:self.blockSignature];
+    /// 拿出原始的 Invocation
+    NSInvocation *originalInvocation = info.originalInvocation;
+    NSUInteger numberOfArguments = self.blockSignature.numberOfArguments;
+
+    // Be extra paranoid. We already check that on hook registration.
+    /// 在创建的时候已经校验过了，这里再校验一次
+    if (numberOfArguments > originalInvocation.methodSignature.numberOfArguments) {
+        AspectLogError(@"Block has too many arguments. Not calling %@", info);
+        return NO;
+    }
+
+    /// 设置block中的上下文
+    if (numberOfArguments > 1) {
+        /// block 比较特殊，设置它的 NSInvocation 时， index 为 0 的 argument 为 self, index 从 1 开始就是正常入参了
+        /// 普通的 NSInvocation，index 为 0 的 argument 是 self，index 为 1 的 argument 是 SEL
+        /// Aspects 为了让 block 的参数也从 2 开始，默认将参数 1 设置为 AspectInfo
+        [blockInvocation setArgument:&info atIndex:1];
+    }
+    
+	void *argBuf = NULL;
+    /// 依次从原始的 Invocation 中将参数取出设置到  blockInvocation 中
+    for (NSUInteger idx = 2; idx < numberOfArguments; idx++) {
+        const char *type = [originalInvocation.methodSignature getArgumentTypeAtIndex:idx];
+		NSUInteger argSize;
+		NSGetSizeAndAlignment(type, &argSize, NULL);
+        
+		if (!(argBuf = reallocf(argBuf, argSize))) {
+            AspectLogError(@"Failed to allocate memory for block invocation.");
+			return NO;
+		}
+        
+		[originalInvocation getArgument:argBuf atIndex:idx];
+		[blockInvocation setArgument:argBuf atIndex:idx];
+    }
+    
+    /// 执行这个 block
+    [blockInvocation invokeWithTarget:self.block];
+    
+    if (argBuf != NULL) {
+        free(argBuf);
+    }
+    return YES;
+}
+```
+
+和之前获取参数的时候类似，这里把参数一个个从 NSInvocation 中设置进去。最后通过 `invokeWithTarget` 执行 block。
+
+## 总结
+
+Aspects 的核心原理和 JSPatch 是一致的。当然，它比 JSPatch 还是简单了许多。如果你理解了 JSPatch 中消息转发的过程，Aspects 理解起来就很简单了。
 
 ## 问题
 
+### 如何实现的 Aspects
+
+把 hook 方法的 block 以关联对象的形式保存在类或者实例上。同时把 hook 的方法的 IMP 指向 `_msg_forward` 使其调用进行消息转发。并且 hook 消息转发方法 `forwardInvocation` 方法，回到关联对象中寻找相关的 block，找到执行
+
+### block 的方法签名和普通方法的方法签名有什么不同
+
+block 没有 SEL，因此，只有 index 为 0 的参数为 self，index 为 1 的参数就是普通入参了。
+
+普通方法的 index 为 0 的参数为 self，index 为 1 的参数是 SEL，index 为 2 的参数才是普通入参
+
 ### 为什么一个继承链上只允许 hook 一次同名方法
+
+因为如果子类和父类都 hook 了同一方法，当子类中调用 super 方法的时候，最终消息转发会以子类为 sender，走到消息转发。这样消息转发的时候就会以为是子类调用的方法，就会产生无穷递归调用自身。
 
 ### 如何实现 hook 实例对象的方法
 
+hook 实例对象的方法类似 kvo，创建一个新类，并把对象的 isa 指向新类。
+
 ### class 方法和 object_getClass 方法的区别是什么
+
+`[xxx class]` 实例对象返回类对象，类对象返回自身
+
+`object_getClass(xxx)` 返回的都是当前 isa
+
+
+
+## 参考
+
+[静下心来读源码之Aspects](<https://juejin.im/post/5ab1b8996fb9a028e25d6c37#heading-17>)
+
+[从 Aspects 源码中我学到了什么？](https://lision.me/aspects/)(写的一般，有些重要的点都直接略过了，可能作者没看懂吧)
+
+
 
 
 
