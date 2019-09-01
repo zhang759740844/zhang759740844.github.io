@@ -17,9 +17,9 @@ Grand Central Dispatch或者GCD，是一套低层API，提供了一种新的方�
 - **Synchronous vs. Asynchronous 同步 vs. 异步**
   在 GCD 中，这些术语描述当一个函数相对于另一个任务完成，此任务是该函数要求 GCD 执行的。一个同步函数只在完成了它预定的任务后才返回。一个异步函数，刚好相反，会立即返回，预定的任务会完成但不会等它完成。因此，一个异步函数不会阻塞当前线程去执行下一个函数。
 
-> 同步异步是对线程说的
+> **同步异步是对线程说的**
 >
-> 串行并行是对队列说的
+> **串行并行是对队列说的**
 
 ### 队列分类
 1. **Serial Queues 串行队列**
@@ -49,15 +49,18 @@ Grand Central Dispatch或者GCD，是一套低层API，提供了一种新的方�
 ### 提交 Job
 向一个队列提交Job很简单：调用dispatch_async或dispatch_sync函数，传入一个队列和一个block。队列会在轮到这个block执行时执行这个block的代码。
 
-1. **dispatch_async**
-   dispatch_async 函数会立即返回, block会在后台异步执行。
+#### dispatch_async
+
+dispatch_async 函数会立即返回, block会在后台异步执行。
+
 ```objc
 dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         [self goDoSomethingLongAndInvolved];
         NSLog(@"Done doing something long and involved");
 });
 ```
-	在典型的Cocoa程序中，你很有可能希望在任务完成时更新界面，这就意味着需要在主线程中执行一些代码。你可以简单地完成这个任务——使用嵌套的dispatch，在外层中执行后台任务，在内层中将任务dispatch到main queue：
+在典型的Cocoa程序中，你很有可能希望在任务完成时更新界面，这就意味着需要在主线程中执行一些代码。你可以简单地完成这个任务——使用嵌套的dispatch，在外层中执行后台任务，在内层中将任务dispatch到main queue：
+
 ```objc
 dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         [self goDoSomethingLongAndInvolved];
@@ -66,10 +69,13 @@ dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         });
 });
 ```
-2. **dispatch_sync**
-   dispatch_sync 同步执行 block，函数不返回，一直等到 block 执行完毕。一般情况下是在**当前线程**中完成，因为派发同步任务，本身就要等到任务完成才能继续执行，那么就没有必要再开一个线程去专门执行这个同步任务，执行完后，再返回该线程了。但是如果在其他线程里往主队列里派发同步任务，那么这个同步任务还是会在主线程里执行，当前线程阻塞。
+#### dispatch_sync
 
-实际编程经验告诉我们，尽可能避免使用 dispatch_sync，嵌套使用同一个队列时极易产生程序死锁，比如嵌套调用主线程：
+dispatch_sync 同步执行 block，函数不返回，一直等到 block 执行完毕。一般情况下是在**当前线程**中完成，因为派发同步任务，本身就要等到任务完成才能继续执行，那么就没有必要再开一个线程去专门执行这个同步任务，执行完后，再返回该线程了。但是如果在其他线程里往主队列里派发同步任务，那么这个同步任务还是会在主线程里执行，当前线程阻塞。
+
+> **执行到 dispatch_sync 的时候，表示这个 block 必须要在当前线程立刻执行完**
+
+实际编程经验告诉我们，尽可能避免使用 dispatch_sync，**嵌套使用一个串行队列时极易产生程序死锁**，比如嵌套调用主线程：
 
 ![gcd_死锁](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/gcd_死锁.png?raw=true)
 
@@ -84,15 +90,24 @@ dispatch_async(dispatch_get_global_queue(0, 0), ^{
 });
 ```
 
-原因是并行队列中任务一虽被提交仍然是在queue的队尾，在任务二之后，但是因为是并行的，所以任务一并不会一直等任务二结束才去执行，而是直接执行完。此时任务二的因为任务一的结束，sync阻塞也就消除，任务二得以执行。
+原因是并行队列中任务一虽被提交仍然是在queue的队尾，在任务二之后，但是因为是并行的，所以任务一并不会一直等任务二结束才去执行，而是直接执行完。此时任务二因为任务一的结束，sync阻塞也就消除，任务二得以执行。
 
 
 
 ### 总结
 
-**队列是串行或并发的，操作队列的函数是同步或者异步执行的（也就是在当前线程执行完返回和立即返回另开线程执行的区别）。串行队列其实就相当于加了一个资源锁，无论在多少个线程里，只有当队列中前一个元素执行完，后一个元素的代码块才能继续执行，并行队列则没有任何要求，有需要执行就立即执行。** 
+队列是串行或并发的，操作队列的函数是同步或者异步执行的（也就是在当前线程执行完返回和立即返回另开线程执行的区别）。串行队列其实就相当于加了一个资源锁，无论在多少个线程里，只有当队列中前一个元素执行完，后一个元素的代码块才能继续执行，并行队列则没有任何要求，有需要执行就立即执行。 
 
-比如下面写在主线程里的示例的四种组合：
+所以：
+
+1. **串行队列要求队列前的必须先执行完，才能执行后面**。并行队列无要求
+2. **dispatch_sync 要求当前代码块必须先执行完，才能执行后面**。dispatch_async 无要求
+
+因此，dispatch_sync 和 串行队列在一起嵌套使用时，会容易产生死锁。
+
+####  示例1
+
+在主线程里的示例的四种组合的输出：
 
 ```objc
 for (int i = 1; i < 10; i++) {  
@@ -104,13 +119,40 @@ for (int i = 1; i < 10; i++) {
 NSLog(@"over");
 ```
 
-结论:
+结果:
 - 串行同步队列：运行在主线程里，先依次打印 `i` 后，再打印 `over`。
 - 串行异步队列：先打印 `over`，再依次打印 `i`。由于是异步的，`over` 执行在主线程里毋庸置疑，打印 `i` 时，新建了一个线程。为什么是一个呢？因为串行队列，代码块依次执行。创建新线程，执行，销毁，再创建新线程的操作太耗时。所以编译器优化后，仅创建了一个新线程。
 - 并行同步队列：运行在主线程里，先依次打印 `i` 后，再打印 `over`。现在看起来和串行同步队列一样对不对？那么什么时候才不同呢？假如你手动开了一个线程，并且在那个线程里，又运行了一遍上面的代码。串行同步队列由于有锁，执行当前代码块的时候，另一个线程处于阻塞状态，只能等到当前代码块执行完毕才能跳到另一个线程；并行同步队列没有锁，可能代码块没有执行完，由于线程的时间片用完了，就立即跳到另外一个线程上去执行了。
 - 并行异步队列：先打印 `over`，然后瞎JB打印`i`。
 
+#### 示例2
 
+```objc
+    dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+    NSLog(@"1");
+    dispatch_sync(queue, ^{
+        NSLog(@"2");
+        NSLog(@"thread = %@", [NSThread currentThread]);
+        dispatch_sync(queue, ^{
+            NSLog(@"3");
+            NSLog(@"thread = %@", [NSThread currentThread]);
+        });
+        NSLog(@"4");
+    });
+```
+
+结果：
+
+```
+1
+2
+main thread
+3
+main thread
+4
+```
+
+因为线程和 dispatch_async 以及 dispatch_sync 有关。因此，在上例中 dispatch_sync 时在主线程中，所以打印的也是主线程。虽然都是在主线程中，但是是并行队列，并不会发生死锁。只有 dispatch_sync 获取串行队列的时候才会发生死锁。
 
 
 
@@ -333,11 +375,12 @@ for (int i = 0; i < 100; i++) {
 ### 问题
 
 - 串行并行，同步异步的区别？
-- 如何创建串行/并行队列？
-- 如何获取全局队列/主队列？
-- 如何提交一个同步或者异步的Job？
+  - 串行
+
 - 什么情况下会造成死锁？
-- 如何使用 `dispatch_time_t `？如何使用 `dispatch_after`？
+  - dispatch_sync 一个串行队列的时候
+
+- 如何使用 `dispatch_time_t `？如何使用 `dispatch_after`?
 - `dispatch_after` 作为倒计时准确么？什么情况下会不准？
 - 如何使用 `dispatch_once`？
 - 如何创建和使用 `dispatch_group`?
