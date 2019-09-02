@@ -154,7 +154,28 @@ main thread
 
 因为线程和 dispatch_async 以及 dispatch_sync 有关。因此，在上例中 dispatch_sync 时在主线程中，所以打印的也是主线程。虽然都是在主线程中，但是是并行队列，并不会发生死锁。只有 dispatch_sync 获取串行队列的时候才会发生死锁。
 
+#### 示例3
 
+```objc
+dispatch_async(global_queue, ^{
+  NSLog(@"1");
+  [self performSelector:@selector(printLog) withObject:nil afterDelay:0];
+  NSLog(@"3");
+}}
+               
+- (void)printLog {
+  NSLog(@"2");
+}
+```
+
+结果：
+
+```
+1
+3
+```
+
+这个例题不会出现打印2。在GCD生成的子线程中是没有 runloop 的，如果 `performSelector:withObject:afterDelaty:` 想要执行成功，必须要有 runloop。因此不打印 `2`
 
 
 
