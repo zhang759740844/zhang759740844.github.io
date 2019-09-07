@@ -1,4 +1,4 @@
-title: KVO
+title: KVO 实践及 FBKVOController 原理
 date: 2016/11/17 14:07:12  
 categories: iOS
 tags: 
@@ -88,7 +88,7 @@ KVO 是 Object-C 中定义的一个通知机制，其定义了一种对象间监
 
 KVC 会触发 KVO。即使成员变量没有 get set 方法，KVC 手动调用 `willChangeValueForKey:` 和 `didChangeValueForKey:`。
 
-## `KVOController`
+## KVOController
 
 ### KVO 存在的问题
 
@@ -158,7 +158,7 @@ NSPointerFunctionsStrongMemory|NSPointerFunctionsObjectPointerPersonality
 
 最后创建了一个 `pthread_mutex_t`
 
-####   #### 注册观察方法
+####  注册观察方法
 
 注册观察方法外部调用的方法：
 
@@ -443,8 +443,8 @@ NSPointerFunctionsStrongMemory|NSPointerFunctionsObjectPointerPersonality
 
 NSMapTable 相比较 NSDictionary 的优势有：
 
-1. NSDictionary 必须是 key-obj 的形式；NSMapTable 则是 obj-obj 的形式
-2. NSDictionary 的 obj 是强引用；NSMapTable 可以自己决定是强引用还是弱引用。如果弱引用回收后，会自动删除。
+1. NSDictionary 必须是 key-obj 的形式，key 必须是满足 NSCopying 协议的；NSMapTable 则是 obj-obj 的形式
+2. NSDictionary 的 obj 是强引用；NSMapTable 的 key 和 value 都可以自己决定是强引用还是弱引用。如果弱引用回收后，会自动删除。
 
 #### 创建
 
@@ -469,7 +469,13 @@ personality option 在我的理解中是针对 key 的，它决定是否使用�
 
 copy option 选项表明是否执行对象的 copy 方法，深拷贝一个新的对象进行存储。
 
+#### NSArray 和 NSPointerArray 的区别
 
+NSPointerArray 可以保存 NULL，因此，NSPointerArray 中的对象可以是 weak 的，销毁直接将该位置职位 null
+
+#### NSHashTable 和 NSSet 区别
+
+NSHashTable 是可变的，且 NSHashTable 可以放弱引用对象
 
 ## 参考
 

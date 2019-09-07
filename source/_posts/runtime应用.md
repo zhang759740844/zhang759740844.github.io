@@ -578,9 +578,9 @@ static void myclasstest(id self, SEL _cmd, int a) //self和_cmd是必须的，�
                 method_getImplementation(originalMethod), 
                 method_getTypeEncoding(originalMethod)); 
 ```
-`addMethod`会让当前类的方法(IMP)指向新的实现(SEL)，使用`replaceMethod`再将新的方法(IMP)指向原先的实现(SEL)，这样就完成了交换操作。现在通过旧方法`SEL`来调用，就会实现新方法的`IMP`，通过新方法的`SEL`来调用，就会实现旧方法的`IMP`。
+`addMethod`会让当前类的方法(IMP)指向新的实现(SEL)，使用`replaceMethod`再**将新的方法(IMP)指向原先的实现(SEL)**。现在通过旧方法`SEL`来调用，就会实现新方法的`IMP`，通过新方法的`SEL`来调用，就会实现旧方法的`IMP`。
 
-如果添加失败了，就是第二情况(方法已经在当前类中实现过了)。这时可以通过`method_exchangeImplementations`直接交换两个`method_t`的`IMP`:
+如果添加失败了，就是第二情况(**方法已经在当前类中实现过了**)。这时可以通过`method_exchangeImplementations`直接交换两个`method_t`的`IMP`:
 ```objc
 else {
     method_exchangeImplementations(originalMethod, overrideMethod);
@@ -610,6 +610,7 @@ method_setImplementation(m2, imp1);
 // Method swizzledMethod = class_getClassMethod(aClass, swizzledSelector);
 ```
 `object_getClass((id)self)` 与 `[self class]` 返回的结果类型都是 `Class`,但前者为元类,后者为其本身,因为此时 `self` 为 `Class` 而不是实例.注意 `[NSObject class]` 与 `[object实例 class]` 的区别：
+
 ```objc
 + (Class)class {
     return self;
@@ -624,5 +625,23 @@ method_setImplementation(m2, imp1);
 最后，`xxx_viewWillAppear:`方法的定义看似是递归调用引发死循环，其实不会的。因为`[self xxx_viewWillAppear:animated]`消息会动态找到`xxx_viewWillAppear:`方法的实现，而它的实现已经被我们与`viewWillAppear:`方法实现进行了互换，所以这段代码不仅不会死循环，如果你把`[self xxx_viewWillAppear:animated]换成[self viewWillAppear:animated]`反而会引发死循环。
 
 > Demo 详见RuntimeLearn
+
+### 危险性
+
+#### 要在 load 方法中
+
+Method swizzling不是原子性操作。如果在+load方法里面写，是没有问题的，但是如果写在+initialize方法中就会出现一些奇怪的问题。并且在 +initialize 中写也有可能被覆盖。
+
+#### Copy父类的方法带来 hook 父类失效的问题
+
+如果 hook 了为重写父类方法的子类的方法。那么会添加父类的方法到子类中。如果父类中也hook了该方法，就可能会产生问题。
+
+如果父类的分类的 load 方法的先执行的时候，先发生替换，子类再替换，那么没有问题。
+
+但是如果子类的分类的 load 方法先执行的时候，那么子类先 hook 了父类方法，父类再  hook 自己的方法。那么子类调用的时候就不会走父类的 hook 方法了。
+
+> 主要原因就是我们能保证父类的 load 方法先于子类的 load 方法执行。但是不能保证父类的分类的 load 方法先于子类的分类的 load 方法先执行。
+
+
 
 

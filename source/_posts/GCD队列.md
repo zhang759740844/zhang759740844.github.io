@@ -254,6 +254,8 @@ dispatch_once(&onceToken, ^{
 
 一定要注意的是 `dispatch_once_t` **必须是全局或 static 变量**。否则使用时会导致非常不好排查的 bug。
 
+dispatch_once 递归调用会产生死锁。
+
 #### dispatch_group
 一个dispatch group可以用来将多个block组成一组以监测这些Block全部完成或者等待全部完成时发出的消息。
 - *dispatch_group_create*创建一个调度任务组
