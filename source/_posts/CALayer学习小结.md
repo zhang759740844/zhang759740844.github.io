@@ -420,7 +420,7 @@ CPU 计算内容交由 GPU 渲染，GPU 渲染完成后放入帧缓冲区。随�
 
 ### 视图圆角
 
-设置视图的 `cornerRadius`本身并不会触发离屏渲染，真正产生离屏渲染的是 `maskToBounds` 。
+设置视图的 `cornerRadius`本身并不会触发离屏渲染，需要和 `maskToBounds` 一起设置才会产生。
 
 一般情况下，直接设置圆角即可。
 

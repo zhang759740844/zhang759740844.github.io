@@ -11,6 +11,7 @@ runLoop 虽然平时很少用到，但是面试的时候问的多啊。那我也
 
 ## 概念
 ### 什么是RunLoop
+
 以下是一个 iOS 程序的 main 函数：
 
 ```objc
@@ -184,7 +185,12 @@ RunLoop 的核心就是一个 `mach_msg()`，RunLoop 调用这个函数去接收
 ### AutoreleasePool
 Autorelease 对象什么时候释放？答案当然不是“当前作用域大括号结束时释放”。**在没有手加 Autorelease Pool 的情况下，Autorelease 对象是在当前的 runloop 迭代结束时或者线程销毁时释放的，当有 runloop 的情况下，系统在每个 runloop 循环中都加入了自动释放池 Push 和 Pop。**
 
-> 手动调用了 autorelease 方法的对象，比如 `[[[Person alloc] init] autorelease]`，会在当前线程插入创建一个 `AutoreleasePool`。如果是 ARC 下编译器自动插入的 `[person release]`，则会直接减少引用计数。而不会延迟释放
+> 什么情况下会自动创建 autoreleasepool？
+>
+> 1. 手动调用了 autorelease 方法的对象，比如 `__autorelease Person *p = [[Person alloc] init]`，会在当前线程插入创建一个 `AutoreleasePool`。
+> 2. 调用**非** alloc，new 开头方法的时候，比如 `NSString *str = [NSString stringwithForamt:@"&ld", 123123123123123]`,会将对象加入 `AutoreleasePool`
+>
+> 如果是 ARC 下编译器自动插入的 `[person release]`，则会直接减少引用计数。而不会延迟释放
 
 #### 原理
 

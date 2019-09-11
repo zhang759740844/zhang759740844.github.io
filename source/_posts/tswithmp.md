@@ -1,9 +1,9 @@
 title: 小程序 typescript 实践
 date: 2019/7/12 14:07:12  
-categories: JavaScript
+categories: MiniProgram
 tags: 
 
- - 小程序
+ - typescript
 	
 ---
 
