@@ -12,6 +12,75 @@ tags:
 
 <!--more-->
 
+### `__attribute__` 的使用
+
+`__attribute__` 是编译指令，一般以`__attribute__(xxx)`的形式出现在代码中，方便开发者向编译器表达某种要求。
+
+#### constructor
+
+`__attribute__((constructor))` 加上这个属性的函数会在可执行文件 load 时被调用。可以理解为在 main() 函数调用前执行：
+
+```c++
+__attribute__((constructor))
+static void beforeMain(void) {
+    NSLog(@"beforeMain");
+}
+__attribute__((destructor))
+static void afterMain(void) {
+    NSLog(@"afterMain");
+}
+int main(int argc, const char * argv[]) {
+    NSLog(@"main");
+    return 0;
+}
+
+// Console:
+// "beforeMain" -> "main" -> “afterMain"
+```
+
+constructor 和 +load 都是在 main 函数执行前调用，但 +load 比 constructor 更加早一丢丢，因为 dyld（动态链接器，程序的最初起点）在加载 image（可以理解成 Mach-O 文件）时会先通知 objc runtime 去加载其中所有的类，每加载一个类时，它的 +load 随之调用，全部加载完成后，dyld 才会调用这个 image 中所有的 constructor 方法。所以 constructor 是一个干坏事的绝佳时机：
+
+1. 所有Class都已经加载完成
+2. main 函数还未执行
+3. 无需像 +load 还得挂载在一个Class中
+
+#### section
+
+通常情况下，编译器会将对象放置于DATA段的*data*或者*bss*节中。但是，有时我们需要将数据放置于特殊的自定义 section 中，此时*section*可以达到目的。例如，BeeHive中就把module注册数据存在__DATA数据段里面的“BeehiveMods”section中。
+
+```objc
+char * kShopModule_mod __attribute((used, section("__DATA,""BeehiveMods"""))) = """ShopModule""";
+```
+
+其中 `used` 告诉编译器，即使它没有被使用，也不要优化掉。
+
+### nil Null Nil NSNull 区别
+
+nil 定义某实例对象为空：
+
+```objc
+NSObject* obj = nil;
+```
+
+Nil 定义类为空
+
+```objc
+Class someClass = Nil;
+```
+
+NULL 用于 c 语言数据类型的指针为空：
+
+```objc
+char *pointerToChar = NULL;
+```
+
+NSNull 是空对象，放在 NSArray 中
+
+```objc
+NSMutableDictionary *mutableDictionary = [NSMutableDictionary dictionary];
+mutableDictionary[@"someKey"] = [NSNull null];
+```
+
 ### SafeArea
 
 iOS11 提供了 `safeAreaLayoutGuide` 和 `safeAreaInsets` 来帮助刘海屏的适配。

@@ -5,12 +5,13 @@ tags:
 	- 学习笔记
 ---
 
-runLoop 虽然平时用不到，但是面试的时候问的多啊。那我也就来了解一下 runLoop 的原理。
+runLoop 虽然平时很少用到，但是面试的时候问的多啊。那我也就来了解一下 runLoop 的原理。
 
 <!--more-->
 
 ## 概念
 ### 什么是RunLoop
+
 以下是一个 iOS 程序的 main 函数：
 
 ```objc
@@ -109,8 +110,8 @@ RunLoop 对象处理的事件源分为两种：Input sources 和 Timer sources�
 
 ##### Input Source
 Input Source 也就是 CFRunLoopSourceRef 有两个版本:Source0(Custom Input Sources)和 Source1(Port-Based Sources)：
-- **Source0** 只包含了一个回调（函数指针），它并**不能主动触发事件**。使用时，你需要先调用 `CFRunLoopSourceSignal(source)`，将这个 Source 标记为待处理，然后手动调用 `CFRunLoopWakeUp(runloop)` 来唤醒 RunLoop，让其处理这个事件。
-- **Source1** 包含了一个 mach_port 和一个回调（函数指针），被用于通过内核和其他线程相互发送消息。这种 Source **能主动唤醒 RunLoop 的线程**。
+- **Source0** 只包含了一个回调（函数指针），**非基于Port的**，它并**不能主动触发事件**。主要处理触摸事件，performSelectors 等
+- **Source1** 包含了一个 mach_port 和一个回调（函数指针），**基于Port的**，被用于通过内核和其他线程相互发送消息。这种 Source **能主动唤醒 RunLoop 的线程**。
 
 ##### Time Source
 基于时间的触发器，它和 NSTimer 是 Toll-Free Bridging 的，可以混用。其包含一个时间长度和一个回调（函数指针）。当其加入到 RunLoop 时，RunLoop 会注册对应的时间点，当时间点到时，RunLoop 会被唤醒以执行那个回调。
@@ -170,6 +171,7 @@ CFRunLoopRemoveTimer(CFRunLoopRef rl, CFRunLoopTimerRef timer, CFStringRef mode)
 可以看到，实际上 RunLoop 就是这样一个函数，其内部是一个 do-while 循环。当你调用 CFRunLoopRun() 时，线程就会一直停留在这个循环里；直到超时或被手动停止，该函数才会返回。
 
 ### RunLoop 的底层实现
+
 从上面代码可以看到，RunLoop 的核心是基于 mach port 的，其进入休眠时调用的函数是 `mach_msg()`。为了实现消息的发送和接收，`mach_msg()` 函数实际上是调用了一个 Mach 陷阱 (trap)，即函数 `mach_msg_trap()`，陷阱这个概念在 Mach 中等同于系统调用。当你在用户态调用 `mach_msg_trap()` 时会触发陷阱机制，切换到内核态；内核态中内核实现的 `mach_msg()` 函数会完成实际的工作，如下图：
 ![runloop_6](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/runloop_6.png?raw=true)
 
@@ -181,48 +183,22 @@ RunLoop 的核心就是一个 `mach_msg()`，RunLoop 调用这个函数去接收
 苹果使用 RunLoop 实现了诸多功能
 
 ### AutoreleasePool
-Autorelease 对象什么时候释放？答案当然不是“当前作用域大括号结束时释放”。在没有手加 Autorelease Pool 的情况下，Autorelease 对象是在当前的 runloop 迭代结束时释放的，而它能够释放的原因是系统在每个 runloop 迭代中都加入了自动释放池 Push 和 Pop。
+Autorelease 对象什么时候释放？答案当然不是“当前作用域大括号结束时释放”。**在没有手加 Autorelease Pool 的情况下，Autorelease 对象是在当前的 runloop 迭代结束时或者线程销毁时释放的，当有 runloop 的情况下，系统在每个 runloop 循环中都加入了自动释放池 Push 和 Pop。**
 
-#### 一个例子
+> 什么情况下会自动创建 autoreleasepool？
+>
+> 1. 手动调用了 autorelease 方法的对象，比如 `__autorelease Person *p = [[Person alloc] init]`，会在当前线程插入创建一个 `AutoreleasePool`。
+> 2. 调用**非** alloc，new 开头方法的时候，比如 `NSString *str = [NSString stringwithForamt:@"&ld", 123123123123123]`,会将对象加入 `AutoreleasePool`
+>
+> 如果是 ARC 下编译器自动插入的 `[person release]`，则会直接减少引用计数。而不会延迟释放
 
-```objc
-__weak id reference = nil;
-- (void)viewDidLoad {
-    [super viewDidLoad];
-    NSString *str = [NSString stringWithFormat:@"sunnyxx"];
-    // str是一个autorelease对象，设置一个weak的引用来观察它
-    reference = str;
-}
-- (void)viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
-    NSLog(@"%@", reference); // Console: sunnyxx
-}
-- (void)viewDidAppear:(BOOL)animated {
-    [super viewDidAppear:animated];
-    NSLog(@"%@", reference); // Console: (null)
-}
-```
+#### 原理
 
-可以看到，在 `viewDidLoad` 方法后，一直到 `viewWillAppear` 字符串 reference 都没有被销毁，直到 `viewDidAppear` 方法后，才置为 `null`(这里创建字符串用的是 `stringWithFormat`，是在堆中创建一个对象，而不是在常量区)。由于这个 vc 在 `loadView` 之后便 add 到了 window 层级上，所以 `viewDidLoad` 和 `viewWillAppear` 是在同一个 `runloop` 调用的，因此在 `viewWillAppear` 中，这个 autorelease 的变量依然有值。
-
-当然，我们也可以手动干预Autorelease对象的释放时机：
-
-```objc
-- (void)viewDidLoad {
-    [super viewDidLoad];
-    @autoreleasepool {
-        NSString *str = [NSString stringWithFormat:@"sunnyxx"];
-    }
-    NSLog(@"%@", str); // Console: (null)
-}
-```
-
-#### AutoreleasePool 原理
 ARC下，我们使用 `@autoreleasepool{}` 来使用一个 AutoreleasePool，随后编译器将其改写成下面的样子：
 
 ```objc
 void *context = objc_autoreleasePoolPush();
-// {}中的代码
+{}中的代码
 objc_autoreleasePoolPop(context);
 ```
 
@@ -255,7 +231,7 @@ objc_autoreleasePoolPop(context);
 
 
 ### 事件响应
-苹果注册了一个 Source1 (基于 mach port 的) 用来接收系统事件，其回调函数为 `__IOHIDEventSystemClientQueueCallback()`。
+**苹果注册了一个 Source1 (基于 mach port 的) 用来接收系统事件**，其回调函数为 `__IOHIDEventSystemClientQueueCallback()`。
 
 当一个硬件事件(触摸/锁屏/摇晃等)发生后，首先由 IOKit.framework 生成一个 IOHIDEvent 事件并由 SpringBoard 接收。 SpringBoard 只接收按键(锁屏/静音等)，触摸，加速，接近传感器等几种 Event，随后用 mach port 转发给需要的 App 进程。随后苹果注册的那个 Source1 就会触发`__IOHIDEventSystemClientQueueCallback()` 回调，并调用 `_UIApplicationHandleEventQueue()` 进行应用内部的分发。
 
@@ -306,8 +282,8 @@ iOS 中，关于网络请求的接口自下至上有如下几层:
 
 NSURLConnectionLoader 中的 RunLoop 通过一些基于 mach port 的 Source 接收来自底层 CFSocket 的通知。当收到通知后，其会在合适的时机向 CFMultiplexerSource 等 Source0 发送通知，同时唤醒 Delegate 线程的 RunLoop 来让其处理这些通知。CFMultiplexerSource 会在 Delegate 线程的 RunLoop 对 Delegate 执行实际的回调。
 
-
 ### AFNetworking
+
 AFURLConnectionOperation 这个类是基于 NSURLConnection 构建的，其希望能在后台线程接收 Delegate 回调。为此 AFNetworking 单独创建了一个线程，并在这个线程中启动了一个 RunLoop：
 
 ```objc
@@ -348,7 +324,13 @@ RunLoop 启动前内部必须要有至少一个 Timer/Observer/Source，所以 A
 
 当需要这个后台线程执行任务时，AFNetworking 通过调用 `[NSObject performSelector:onThread:..]` 将这个任务扔到了后台线程的 RunLoop 中。
 
+### 检测卡顿
 
+卡顿的发生可以通过一次 runloop 从开始到结束的时间间隔来间接判断。
+
+注册 observer 记录 runloop 开启的时间，并且在 runloop 结束的时候清空，然后创建一个子线程，每隔一定时间去检测当前时间和 runloop 开启时记录的时间是否大于某一个阈值。
+
+当大于某个阈值的时候表明产生了卡顿，记录下卡顿时候的堆栈
 
 ## 问题
 
@@ -364,11 +346,15 @@ RunLoop 启动前内部必须要有至少一个 Timer/Observer/Source，所以 A
 - autoreleasepool 的实现原理？
 - 手势识别、界面更新的基本过程是什么？
 
-  ​
-
+  
 
 ## 参考
+
 [黑幕背后的Autorelease](http://blog.sunnyxx.com/2014/10/15/behind-autorelease/)
+
 [初识 Run Loop](http://itangqi.me/2016/04/14/the-first-meet-with-runloop/?utm_source=tuicool&utm_medium=referral)
+
 [深入理解RunLoop](http://blog.ibireme.com/2015/05/18/runloop/)
+
+[runloop退出](<https://mp.weixin.qq.com/s/6fawtC6u-yMQvqUOvXrvOg>)
 

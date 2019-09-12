@@ -1,6 +1,6 @@
 title: 如何创建私有npm
 date: 2018/8/13 14:07:12  
-categories: Javascript
+categories: JavaScript
 tags: 
 	- npm
 	

@@ -6,12 +6,15 @@ tags: [Runtime]
 ---
 
 最近尝试往category中添加实例变量失败，但是可以添加方法。于是，研究了一下runtime的实现和使用。runtime的原理展开来分析的话还是挺复杂的。下载了最新的源码（objc4-680）,发现和现在网上的多数教程还是有出入的，跟进起来很困难。
-所以尝试自己整理了一下，加了一些自己的理解，具体细节可能有些小出入。参考文章：[Objective-C Runtime](http://yulingtianxia.com/blog/2014/11/05/objective-c-runtime/)	
+所以尝试自己整理了一下，加了一些自己的理解，具体细节可能有些小出入。参考文章：[Objective-C Runtime](http://yulingtianxia.com/blog/2014/11/05/objective-c-runtime/)
+
 <!--more-->
 
 ## Runtime基础
+
 在Objective-C中，使用`[receiver message]`语法并不会马上执行`receiver`对象的`message`方法的代码，而是向`receiver`发送一条`message`消息。
 其实`[receiver message]`被编译器转化为:
+
 ```objc
 id objc_msgSend ( id self, SEL op, ... );
 ```
@@ -105,7 +108,7 @@ struct class_rw_t {
 其中，`const class_ro_t *ro`包含了所有**成员变量**的一维数组以及**各个基础的(base)属性、方法和协议**
 `method_array_t methods`、`property_array_t properties`、`protocol_array_t protocols`则包含了所有**拓展的属性方法和协议**。**注意：这里的属性只是getset方法，不包含成员变量。**
 
-> 基础的属性和方法和拓展的方法没有存在一个对象中，所以不能在 extension 中添加成员变量。但是完全用 runtime 创建的类是可以动态添加的。
+> 基础的属性和方法和拓展的方法没有存在一个对象中，所以不能在 category 中添加成员变量。但是完全用 runtime 创建的类是可以动态添加的。
 
 具体如何应用可看下一篇。
 
@@ -147,7 +150,10 @@ struct ivar_t {
 }
 ```
 
+> 访问私有变量可以通过 kvc 和 runtime 的 `class_getInstanceVariable`，两种方式获取。
+
 #### property_t
+
 `property_list_t`和`property_array_t`内都是`property_t`类型:
 
 ```objc
@@ -174,6 +180,7 @@ struct protocol_t : objc_object {
 ```
 
 #### Ivar,Method,Category,objc_property_t
+
 外部可以通过一系列的方法获得类的信息，诸如：`class_copyIvarList`,`class_copyPropertyList`等方法，可以获得类的实例变量和属性，对应的类型是`Ivar`、`objc_property_t`，它们分别是`ivar_t`,`property_t`类型的指针。
 
 ```objc
@@ -184,7 +191,25 @@ typedef struct property_t *objc_property_t;
 ```
 
 ## 消息
+
+### 几种函数派发方式
+
+函数的派发方式，常见的有三种：
+
+1. 直接派发
+2. 函数表派发
+3. 消息派发
+
+直接派发速度最快，例如 c++ 中的函数调用，编译时直接拿到函数的地址。
+
+函数表派发回味每一个类维护一个函数表，大部分语言称之为**虚函数表**，里面记录着所有的函数，如果父类函数被 override 的话，表里面只保存被 override 之后的函数。运行时会根据这个表去决定要调用的函数。如 Java。
+
+c++ 中要在父类方法中用 `virtual` 修饰，才会将直接派发转为函数表派发，实现多态。Java 可以通过 final 修饰指定为直接派发。
+
+消息派发就是 OC 的实现方式。
+
 ### objc_msgSend函数
+
 看起来像是`objc_msgSend`返回了数据，其实`objc_msgSend`从不返回数据而是你的方法被调用后返回了数据。下面详细叙述下消息发送步骤：
 1. 检测这个 `selector` 是不是要忽略的。比如有了垃圾回收就不理会 `retain`, `release` 这些函数了。
 2. 检测这个 `target` 是不是 `nil` 对象。ObjC 的特性是允许对一个 `nil`对象执行任何一个方法不会 Crash，因为会被忽略掉。
@@ -225,12 +250,12 @@ struct objc_super { id receiver; Class class; };
 
 这里调用`class`只是举例，所有调用`super`的方法，最后都变成了`self`的调用。
 
-> 其实就是即使是 [super class] **调用的是父类的 class 方法**，但是**接收对象永远还是 self**(验证过，此结论正确)
+> 其实就是即使是 [super class] **调用的是父类的 class 方法**，但是**接收对象永远还是 self**
 >
 > `objc_super -> receiver` 永远是子类
 
-
 ## Category 的实现原理
+
 ### 概述
 runtime 依赖于 dyld 动态加载，在 objc-os.mm 文件中可以找到入口，它的调用栈简单整理如下:
 ```objc
@@ -242,6 +267,7 @@ void _objc_init(void)
         		└──static void attachCategories(Class cls, category_list *cats, bool flush_caches)
 ```
 ### Category 相关的数据结构
+
 首先来了解一下一个 Category 是如何存储的，在 objc-runtime-new.h 中可以看到如下定义：
 ```objc
 struct category_t {
@@ -309,7 +335,21 @@ void attachLists(List* const * addedLists, uint32_t addedCount) {
 ```
 需要注意的是，无论执行哪种逻辑，参数列表中的方法都会被添加到二维数组的前面。因此 category 中定义的同名方法不会替换类中原有的方法，但是对原方法的调用实际上会调用 category 中的方法。
 
+### load 方法的执行
 
++load 方法在 Class 和 Category 中都会有一个数组保存。在 runtime load_image 的时候，会一次调用 Class 和 Category 的 load 方法。
+
+load 方法的调用顺序是先调用父类的再调用子类的，先调用 Class 的，再调用 Category 的。
+
+#### 和 `+initialize` 方法的异同
+
+- `+load` 方法会被特殊对待全部执行，而 `+initialize` 方法则只会像普通方法一样会被分类覆盖。
+
+- `+initialize` 方法在类传递第一个消息之前执行。`+load` 在分类添加到 runtime 时执行。
+
+- `+initialize` 方法先执行父类方法，再执行子类方法。`+load` 也是这样
+
+  
 
 ## 问题
 

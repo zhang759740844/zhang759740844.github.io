@@ -5,6 +5,8 @@ tags: [Animation]
 
 -----
 
+<!--more-->
+
 ## 视图动画
 
 ### UIView动画

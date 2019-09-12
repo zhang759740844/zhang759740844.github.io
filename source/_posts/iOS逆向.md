@@ -449,13 +449,26 @@ $make install
 ```objc
 UIImage *myImage = [UIImage imageWithCOntentOfFile:@"/{自己创建的文件夹层级}/{文件名}"]
 ```
-6. 有时候调用 get 方法或者 `%new` 的方法，有时会报 **instance method not found** 的错误，这需要我们再在实现的 xm 文件顶部声明一下该类或者方法：
+6. 有时候调用原有方法或者 `%new` 的方法，有时会报 **instance method not found** 的错误，这需要我们再在实现的 xm 文件顶部声明一下该方法。类名任意，只要表示该方法声明过即可：
 ```objc
-@interface {类名}
+@interface {任意类名}
 -(id){你的方法名}；
 @end
 ```
 7. 有时候使用某个类的时候还会报类不存在的错误。如果是使用自己创建的类直接 `#import "{类名}"` 即可。如果是被 hook 文件已经 import 的类，需要使用 `@class` 提前声明一下。
+8. 可以通过关联对象的方式给实例添加属性
+9. 如果要分多个文件编写，需要在 `makefile` 中配置相应文件，以空格分隔。针对文件量过多的情况，可以使用通配符表示一个文件夹内的文件。使用的时候直接直接 import，但是要把路径写完整，路径以 `Tweak.xm`  为基准。
+
+```makefile
+TWEAK_NAME = ${your tweak name}
+${your project name}_FILES = ${以当前文件夹为基准的文件路径+文件名} ${以当前文件夹为基准的文件路径+文件名} ${以当前文件夹为基准的文件路径+文件名}
+```
+
+![makefile](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/tweak_1.png?raw=true)
+
+ ![import](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/tweak_2.png?raw=true)
+
+![通配符](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/tweak_3.png?raw=true)
 
 ##### Tweak 实现原理
 
@@ -480,7 +493,7 @@ $logify.pl xxx.h > {你想取的任意名字}.xm
 
 通过修改 makefile 中的配置，将生成的 .xm 文件加入到编译文件中。直接添加到原来的 `Tweak.xm` 之后即可：
 
-```
+```makefile
 {your project name}_FILES = Tweak.xm {你取的名字}.xm
 ```
 
