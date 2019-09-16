@@ -12,6 +12,7 @@ tags: [Runtime]
 ## 给category添加属性
 ### 原理
 **对象关联**允许开发者对已经存在的类在 Category 中添加自定义的属性：
+
 ```objc
 OBJC_EXPORT void objc_setAssociatedObject(id object, const void *key, id value, objc_AssociationPolicy policy) __OSX_AVAILABLE_STARTING(__MAC_10_6, __IPHONE_3_1);
 ```
@@ -631,6 +632,8 @@ method_setImplementation(m2, imp1);
 #### 要在 load 方法中
 
 Method swizzling不是原子性操作。如果在+load方法里面写，是没有问题的，但是如果写在+initialize方法中就会出现一些奇怪的问题。并且在 +initialize 中写也有可能被覆盖。
+
+如果不写在 +load 中可能会因为多线程难以保证另一个线程中不会同时调用交换方法，从而导致程序不按预期执行。
 
 #### Copy父类的方法带来 hook 父类失效的问题
 

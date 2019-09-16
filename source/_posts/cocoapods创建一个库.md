@@ -244,11 +244,9 @@ end
    我们拿AFNetworking.podspec来看:
 
    ```ruby
-   ​```
    pod 'AFNetworking/Reachability'
    或者
    pod 'AFNetworking',:subspecs=>['Reachability','Security']
-   ​```
    ```
 
    所以可以把subspec当做一个小型的pod来看。来看一下用 subspec 后，在 pod install 后得到如下文件结构。使用了 subspec 后，subspec 会单独变成一个文件夹：
