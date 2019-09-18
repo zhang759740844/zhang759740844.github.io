@@ -12,6 +12,53 @@ tags:
 
 <!--more-->
 
+### 浏览器缓存策略
+
+从浏览器的缓存中可以学到一些有关客户端缓存方案的实现方式
+
+#### Cache-Control
+
+Cache-Control 提供一个 max-age 字段，用于描述过期时间。浏览器是否再次请求数据决定于:
+
+```
+浏览器当前时间 > 浏览器上次请求时间 + max-age
+```
+
+#### Last-Modified/If-Modified-Since
+
+浏览器每次请求后，服务器会返回一个资源在服务端上次更新的时间。下次请求的时候会带上这个时间。如果服务端发现这个时间之后没有更新过资源就会返回 304，让浏览器用本地数据
+
+但是如果碰到某些文件会被定期生成, 而内容其实并没有发生任何变化的情况，这种情况下 Last-Modified改变了, 但这种情况其实应该返回304。因此设计了 ETag 方式。
+
+ETag 用于唯一的标识一个文件。如果两个文件 ETag 相同，那么就表示两个文件是一致的，不会重复返回。
+
+> 这两种方式：
+>
+> - 一种是用于客户端是否要去请求。
+> - 一种是用于客户端请求了服务端是否要返回数据。
+
+### atomic 与线程安全
+
+`atomic`的原子粒度是Getter/Setter，但对多行代码的操作不能保证原子性：
+
+```objc
+@property (atomic, assign) int num;
+
+// thread A
+for (int i = 0; i < 10000; i++) {
+    self.num = self.num + 1;
+    NSLog(@"Thread A: %d\d ",self.num);
+}
+
+// thread B
+for (int i = 0; i < 10000; i++) {
+    self.num = self.num + 1;
+    NSLog(@"Thread B: %d\d ",self.num);
+}
+```
+
+最终的结果不一定是 20000，因为这个过程包含了，读取 num，给 num 加一，写 num 三个操作。读写是原子性的，但是这三个操作不是原子性的。
+
 ### `__attribute__` 的使用
 
 `__attribute__` 是编译指令，一般以`__attribute__(xxx)`的形式出现在代码中，方便开发者向编译器表达某种要求。
