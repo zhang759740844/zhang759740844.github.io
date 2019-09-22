@@ -2,6 +2,7 @@ title: FMDB 及其封装框架的实现过程
 date: 2017/11/30 10:07:12  
 categories: iOS
 tags:
+
 	- 学习笔记
 ---
 
@@ -175,6 +176,7 @@ select avg(prod_price) as avg_price from products;
 ##### count() 求数量
 
 ```sql
+ // 排除 prod_price 为 null 的
 select count(prod_price) as num_price from  products;
 // count(*) 表示所有行数
 select count(*) as all_row from products;
@@ -201,7 +203,7 @@ select vend_id, count(*) as num_prods from products group by vend_id;
 
 #### 过滤分组
 
-`having` 在数据分组和进行过滤，`where` 在数据分组前进行过滤
+**`having` 在数据分组后进行过滤，`where` 在数据分组前进行过滤**
 
 ```sql
 select vend_id, count(*) as num_prods from products where prod_price >= 10 group by vend_id having count(*) >= 2;
@@ -234,6 +236,18 @@ select vend_name, prod_name, prod_price from vendors, products where vendors.ven
 上面从供应商(`vendors`) 和商品(`products`)两张表中取 `vend_name`,`prod_name`,`prod_price` 这三列的数据。通过 `vend_id` 进行关联。
 
 相当于在运行时把两张表通过主键和外键关联，结合成了一张表。
+
+#### 外连接
+
+要查询表A中所有满足条件的行，并顺便把表B中的相应行取出来：
+
+```sql
+SELECT * FROM player LEFT JOIN team on player.team_id = team.team_id where player.age < 30
+```
+
+从 player 表中把年纪小于 30 的都取出来，并且把 player 对应的 team 的相关信息从 team 表中取出。
+
+on 关键字用于配合 left join，找到 player 相关的 team
 
 ### 增删改
 
@@ -342,6 +356,53 @@ drop column vend_num;
 ```sql
 drop table customer2;
 ```
+
+## 数据库基础
+
+### 事务
+
+什么是事务？事务就有四大特性：ACID
+
+- A：原子性
+- C：一致性
+- I：隔离性
+- D：持久性
+
+### 并发存在异常
+
+- **脏读**：读到了其他事务还没有提交的数据。
+- 不可重复读：对某数据进行读取，发现两次读取的结果不同，也就是说没有读到相同的内容。这是因为有其他事务对这个数据同时进行了修改或删除。
+- 幻读：事务A根据条件查询得到了N条数据，但此时事务B更改或者增加了M条符合事务A查询条件的数据，这样当事务A再次进行查询的时候发现会有N+M条数据，产生了幻读。
+
+### 数据库设计范式
+
+设计数据库模型的时候，需要对内部属性之间的联系的合理化程度进行定义。这种规范叫做范式(NF)。
+
+1NF 指的是数据库表中的任何属性都是原子性的，不可再分。
+
+2NF 指的数据表里的非主属性都要和这个数据表的候选键有完全依赖关系。比如:
+
+```
+一张表中的字段如下
+(球员编号, 比赛编号) → (姓名, 年龄, 比赛时间, 比赛场地，得分)
+
+需要拆分为两行表=>
+(球员编号) → (姓名，年龄)
+(比赛编号) → (比赛时间, 比赛场地)
+```
+
+3NF 在满足 2NF 的同时，对任何非主属性都不传递依赖于候选键。比如：
+
+```
+(球员编号) → (姓名，年龄，球队名称，球队教练)
+=>
+(球员编号) → (姓名，年龄)
+(球队名称) → (球队教练)
+```
+
+> 超键：能唯一标识元组的属性集叫做超键。
+>
+> 候选键：如果超键不包括多余的属性，那么这个超键就是候选键。
 
 ## FMDB
 
