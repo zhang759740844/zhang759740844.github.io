@@ -2,7 +2,10 @@ title: iOS 中的网络框架
 date: 2017/9/19 10:07:12  
 categories: iOS
 tags:
-	- 架构
+
+- 架构
+- 源码解析
+
 ---
 
 最近在看巩固网络请求相关的知识。准备把 AFNetworking 以及基于 AFNetworking 的一些封装库看一看，了解一下原理。这一篇将探究一下 AFNetworking 的两个封装库 Casa 的 CTNetworking，以及猿题库的 YTKNetwork 的实现过程。

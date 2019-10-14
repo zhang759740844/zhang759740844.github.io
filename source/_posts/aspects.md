@@ -39,6 +39,10 @@ Aspects 提供了两个方法来实现三种类型的 hook：
 
 两个方法中，前者处理的是类型 1，2；后者处理的是类型 3。
 
+> 非常有意思，如果你要 hook 1，比如你有一个类 `Test`,你要 hook `Test` 所有实例对象的  `-(void)test` 方法，你要通过 `Test` 去调用。
+>
+> 如果你要 hook 2，比如你要 hook `Test` 的类方法 `+(void)test` ，你要通过 `object_getClass(Test)` 去调用。
+
 ## 涉及的类
 
 Aspects 在实现的过程中，涉及到一些类的使用，提前了解它们有助于我们之后的流程分析。
@@ -133,7 +137,7 @@ Aspects 在实现的过程中，涉及到一些类的使用，提前了解它们
 
 `AspectTracker` 的目的是要保存继承链上对于某个方法的 hook 的情况。这是为了在 hook 的时候校验并保证**同一个继承链上只能有一个类被 hook**。至于这样的目的，后面再细说。
 
-> 几乎所有对 Aspects 的源码解析都没有对 `AspectTracker` 的意义进行解释。只是照本宣科的说明继承链尚只能有一个类被 hook，而没有说明为什么要设计成这样。
+> 其实这个原因我疑惑了很久，看了很多文章，但是几乎所有对 Aspects 的源码解析都没有对 `AspectTracker` 的意义进行解释。只是照本宣科的说明继承链上只能有一个类被 hook，而没有说明为什么要设计成这样。
 
 ## 流程
 
@@ -320,7 +324,7 @@ int main(int argc, char *argv[]) {
 
 因此，Aspects 的作者禁止了同一个继承链上的多次 hook。当然这是为了解决这种无限循环的无奈之举。禁用某些操作以达到安全性，当然这也限制了一些实际需求的实现。
 
-JSPatch 对 Super 的调用时为子类创建一个方法，并将父类的 IMP 与其对应。这在父类进行了 hook，并且子类调用父类方法的时候也是会出现同样的问题的。不过 JSPatch 并没有做和 Aspect 相类似的处理。
+> JSPatch 在执行到 super 方法的时候会判断 super 方法是否被重写，如果被重写了那么执行重写的 JS 方法。而不是像 Aspects 中非常武断的只是不让一个继承链 hook 一次。
 
 #### 创建 `AspectsContainer` 实例
 
@@ -342,6 +346,8 @@ static AspectsContainer *aspect_getContainerForObject(NSObject *self, SEL select
 ```
 
 方法很简单，就是先查看这个对象上有没有方法名对应的关联对象，有就取出，没有就创建。
+
+> **这就说明了，类对象和元类对象都是可以设置关联对象的**
 
 #### 创建 `AspectsIdentifier` 实例
 
@@ -406,6 +412,28 @@ static NSMethodSignature *aspect_blockMethodSignature(id block, NSError **error)
 	const char *signature = (*(const char **)desc);
 	return [NSMethodSignature signatureWithObjCTypes:signature];
 }
+```
+
+`AspectBlockRef` 的结构如下：
+
+```objc
+typedef struct _AspectBlock {
+    __unused Class isa;
+    AspectBlockFlags flags;
+    __unused int reserved;
+    void(__unused *invoke)(struct _AspectBlock *block, ...);
+    struct {
+        unsigned long int reserved;
+        unsigned long int size;
+        // requires AspectBlockFlagsHasCopyDisposeHelpers
+        void (*copy)(void *dst, const void *src);
+        void (*dispose)(const void *);
+        // requires AspectBlockFlagsHasSignature
+        const char *signature;
+        const char *layout;
+    } * descriptor;
+    // imported variables
+} * AspectBlockRef;
 ```
 
 ##### 比较 block 的签名和 hook 的方法签名
@@ -498,7 +526,7 @@ static void aspect_prepareClassAndHookSelector(NSObject *self, SEL selector, NSE
 
 替换在 `aspect_hookClass` 中实现。这是一个比较重要也比较有技巧性的方法。如注释上写的，对于 hook 对象主要区分为三种情况：
 
-1. hook 的是类对象
+1. hook 的是类对象(包括元类对象，以下都简称为类对象)
 2. hook 的是 kvo 对象
 3. hook 的是实例对象
 
@@ -666,7 +694,7 @@ aspect_invoke(classContainer.afterAspects, info);
 aspect_invoke(objectContainer.afterAspects, info);
 ```
 
-为什么既有从对象中获取关联对象，又有从对象的 isa 指向中获取关联对象的情况呢？对于 hook 类来说，实例的执行都应该是通过后者，从类中获取的。但是对于 hook 类来说，他们的关联对象是存在实例中的。如果即 hook 了实例的某个方法，又 hook 了实例所在的类的同一个方法，那么两份 hook 都应该执行。
+为什么既有从对象中获取关联对象，又有从对象的 isa 指向中获取关联对象的情况呢？对于 hook 类来说，实例的执行都应该是通过后者，从类中获取的。但是对于 hook 实例来说，他们的关联对象是存在实例中的。如果既 hook 了实例的某个方法，又 hook 了实例所在的类的同一个方法，那么两份 hook 都应该执行。
 
 如果 hook 时候传入的 options 为 `AspectOptionAutomaticRemoval`，那么会在执行完毕后调用 `AspectIdentifier` 实例的 `remove` 方法移除 hook。
 
@@ -728,39 +756,26 @@ aspect_invoke(objectContainer.afterAspects, info);
 
 Aspects 的核心原理和 JSPatch 是一致的。当然，它比 JSPatch 还是简单了许多。如果你理解了 JSPatch 中消息转发的过程，Aspects 理解起来就很简单了。
 
-## 问题
-
-### 如何实现的 Aspects
-
-把 hook 方法的 block 以关联对象的形式保存在类或者实例上。同时把 hook 的方法的 IMP 指向 `_msg_forward` 使其调用进行消息转发。并且 hook 消息转发方法 `forwardInvocation` 方法，回到关联对象中寻找相关的 block，找到执行
-
-### block 的方法签名和普通方法的方法签名有什么不同
-
-block 没有 SEL，因此，只有 index 为 0 的参数为 self，index 为 1 的参数就是普通入参了。
-
-普通方法的 index 为 0 的参数为 self，index 为 1 的参数是 SEL，index 为 2 的参数才是普通入参
-
-### 为什么一个继承链上只允许 hook 一次同名方法
-
-因为如果子类和父类都 hook 了同一方法，当子类中调用 super 方法的时候，最终消息转发会以子类为 sender，走到消息转发。这样消息转发的时候就会以为是子类调用的方法，就会产生无穷递归调用自身。
-
-### 如何实现 hook 实例对象的方法
-
-hook 实例对象的方法类似 kvo，创建一个新类，并把对象的 isa 指向新类。
-
-### class 方法和 object_getClass 方法的区别是什么
-
-`[xxx class]` 实例对象返回类对象，类对象返回自身
-
-`object_getClass(xxx)` 返回的都是当前 isa
 
 
+## 思考题
+
+1. 如何 hook 类方法？
+2. 如何 hook 实例对象的方法？
+3. block 的方法签名和普通方法的方法签名有什么不同？
+4. 如何拿到 block 的方法签名？
+5. 为什么 Aspects 中一个方法同一个继承链上只能 hook 一次？可以怎么改进？
+6. 怎样判断一个实例对象是否进行过 kvo？
+7. aspect 中怎么判断一个对象的 `forwardInvocation` 是否已经被 hook 过？
+8. 如何判断一个对象是类对象还是实例对象？
+9. `[self class]` 和 `object_getClass(self)` 的区别是什么？
+10. 关联对象能否作用于类和元类？
 
 ## 参考
 
 [静下心来读源码之Aspects](<https://juejin.im/post/5ab1b8996fb9a028e25d6c37#heading-17>)
 
-[从 Aspects 源码中我学到了什么？](https://lision.me/aspects/)(写的一般，有些重要的点都直接略过了，可能作者没看懂吧)
+[从 Aspects 源码中我学到了什么？](https://lision.me/aspects/)(写的太简略了)
 
 
 

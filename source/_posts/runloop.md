@@ -82,7 +82,7 @@ CFRunLoopRef CFRunLoopGetCurrent() {
 
 从上面的代码可以看出，**线程和 RunLoop 之间是一一对应的**(这也就解释了前面关系图中 CFRunLoop 和 Thread 连线中的两个`1`的意义)，其关系是保存在一个全局的 Dictionary 里。线程刚创建时并没有 RunLoop，如果你不主动获取，那它一直都不会有，**所以一个子线程，你想要它有 RunLoop 就必须在该线程内调用 `NSRunLoop *runLoop =[NSRunLoop currentRunLoop]`。如果你想启动这个 RunLoop，则要继续调用 `[runLoop run]`**。**但是注意，一般不需要开启子线程的 runLoop，因为这会让子线程一直存在，不会回收。**RunLoop 的创建是发生在第一次获取时，RunLoop 的销毁是发生在线程结束时。**你只能在一个线程的内部获取其 RunLoop（主线程除外）**。
 
-推荐一个链接[深入研究 runloop 与线程保活](https://bestswifter.com/runloop-and-thread/)
+
 
 
 
@@ -323,6 +323,49 @@ RunLoop 启动前内部必须要有至少一个 Timer/Observer/Source，所以 A
 ```
 
 当需要这个后台线程执行任务时，AFNetworking 通过调用 `[NSObject performSelector:onThread:..]` 将这个任务扔到了后台线程的 RunLoop 中。
+
+### RN 中的线程保活
+
+RN 会开启一个 jsThread，用于通过 `performSelector:onThread:withObject:waitUntilDone:` 方法将异步执行任务。
+
+RN 中开启runloop的方式和 AF 中的不同：
+
+```objc
+// in some func
+_jsThread = [[NSThread alloc] initWithTarget:[self class]
+                                      selector:@selector(runRunLoop)
+                                        object:nil];
+_jsThread.name = RCTJSThreadName;
+_jsThread.qualityOfService = NSOperationQualityOfServiceUserInteractive;
+[_jsThread start];
+
++ (void)runRunLoop
+{
+  @autoreleasepool {
+    RCT_PROFILE_BEGIN_EVENT(RCTProfileTagAlways, @"-[RCTCxxBridge runJSRunLoop] setup", nil);
+
+    // copy thread name to pthread name
+    pthread_setname_np([NSThread currentThread].name.UTF8String);
+
+    // Set up a dummy runloop source to avoid spinning
+    CFRunLoopSourceContext noSpinCtx = {0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+    CFRunLoopSourceRef noSpinSource = CFRunLoopSourceCreate(NULL, 0, &noSpinCtx);
+    CFRunLoopAddSource(CFRunLoopGetCurrent(), noSpinSource, kCFRunLoopDefaultMode);
+    CFRelease(noSpinSource);
+
+    RCT_PROFILE_END_EVENT(RCTProfileTagAlways, @"");
+
+    // run the run loop
+    while (kCFRunLoopRunStopped != CFRunLoopRunInMode(kCFRunLoopDefaultMode, ((NSDate *)[NSDate distantFuture]).timeIntervalSinceReferenceDate, NO)) {
+      RCTAssert(NO, @"not reached assertion"); // runloop spun. that's bad.
+    }
+  }
+}
+```
+
+通过添加 source 给 runloop 的方式使线程保活。通过 `CFRunLoopRunInMode()` 方法开启 runloop 循环。runloop 开启后，之后的代码时不会执行的，所以只有当 runloop 停下来之后才会进行 while 判断。
+
+RN 这种方式是可以取消 runloop 循环的，而 AF 的则不行，因为 RN 为 Runloop 设置了一个无穷大的过期时间，而 AF 的 runloop 则是会循环调用，取消一次下次还会开启。具体可见[深入研究 Runloop 与线程保活](<https://bestswifter.com/runloop-and-thread/>)
 
 ### 检测卡顿
 

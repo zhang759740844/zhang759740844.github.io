@@ -12,6 +12,27 @@ tags:
 
 <!--more-->
 
+### 后台任务
+
+app进入后台，会停止所有线程；需要在 `applicationDidEnterBackground` 中调用 `beginBackgroundTaskWithExpirationHandler` 申请更多的app执行时间，以便结束某些任务:
+
+```objc
+- (void)applicationDidEnterBackground:(UIApplication *)application {
+    _backtaskIdentifier = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^(void){
+      
+      	... 任何后台任务要做的事
+          
+        // 取消后台任务，在id不是UIBackgroundTaskInvalid的情况下，通过 endbackgroundTask 停止任务，并将id设置回invalid
+        if (_backtaskIdentifier!=UIBackgroundTaskInvalid) {
+            [[UIApplication sharedApplication] endBackgroundTask:_backtaskIdentifier];
+            _backtaskIdentifier = UIBackgroundTaskInvalid;
+        }
+    }];  
+}
+```
+
+其中 `_backtaskIdentifier` 是 `UIBackgroundTaskIdentifier` 类型
+
 ### 浏览器缓存策略
 
 从浏览器的缓存中可以学到一些有关客户端缓存方案的实现方式
@@ -273,6 +294,14 @@ BOOL RCTIsMainQueue()
 ```
 
 其实就是在主线程中添加了一个 key-value 映射，只有在主线程的情况下，才能拿到这个 key-value
+
+还有一种方式，通过获取当前队列的 label 和 主队列的 label 进行比较：
+
+```objc
+dispatch_queue_get_label(DISPATCH_CURRENT_QUEUE_LABEL) == dispatch_queue_get_label(dispatch_get_main_queue())
+```
+
+
 
 ### 模拟器弹出键盘
 

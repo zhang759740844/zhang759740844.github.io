@@ -541,6 +541,16 @@ YYAsyncLayer 的代码也就几百行，非常的精简，但是蕴含着精华�
 - 给 runloop 增加 observer，在 runloop 即将结束的时候运行耗时逻辑，以防止阻塞主线程
 - 创建处理器数量个串行队列作为 GCD 的执行队列，最大程度上利用多核 CPU 的优势。
 
+## 思考题
+
+1. 为什么会产生卡顿？
+2. CPU 和 GPU 的职责有哪些？
+3. CPU 方面如何优化？
+4. GPU 如何优化？
+5. YYAsyncLayer 为什么可以异步渲染？
+6. YYAsyncLayer 在何时执行渲染？
+7. YYAsyncLayer 如何通过串行队列实现异步的？
+
 ## 参考
 
 [iOS 保持界面流畅的技巧](<https://blog.ibireme.com/2015/11/12/smooth_user_interfaces_for_ios/>)啥也不说了，经典中的经典

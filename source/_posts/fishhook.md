@@ -151,7 +151,7 @@ void hookNSLog(NSString *format, ...){
 }
 
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event{
-    funcDlog(@"原有NSLog函数");
+    NSLog(@"原有NSLog函数");
 }
 
 @end
@@ -517,6 +517,15 @@ for (uint i = 0; i < section->size / sizeof(void *); i++) {
 5. 根据第四步获取的起始位置，在 `LC_DYSYMTAB` 中遍历 `__DATA,__nl_symbol_ptr` 或者 `__DATA,__la_symbol_ptr` 的各个符号，获取它在 `LC_SYMTAB` 的索引。
 6. 根据这个索引，获取该符号在 `LC_SYMTAB`的信息，可以拿到它在 String Table 的 offset。这个 offset 保存着符号的名字。
 7. 拿到这个符号的名字和我们要替换的各个符号名做对比，如果相同，那么把 `__DATA,__nl_symbol_ptr` 或者 `__DATA,__la_symbol_ptr` 相应位置的符号指向要替换的方法的地址。至此，fishhook 替换完成
+
+## 思考题
+
+1. 为什么需要动态链接？
+2. 什么是 Lazy Binding？
+3. 为什么 fishhook 可以重新绑定符号？这和动态链接有什么关系？
+4. 懒绑定的符号存在哪个段中？
+5. 系统的 Lazy Binding 是如何实现的？
+6. 如何拿到  Load Command 的偏移？
 
 ## 参考
 

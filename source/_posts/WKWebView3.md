@@ -422,7 +422,7 @@ function _callWVJBCallbacks() {
 
 #### JS 调用原生
 
-JS 调用原生的方法上面已经分析过了，就是 `window.WebViewJavascriptBridge。callHandler` 方法，会来到 `decidePolicyForNavigationAction` 方法，并且进入 `WKFlushMessageQueue` 方法中：
+JS 调用原生的方法上面已经分析过了，就是 `window.WebViewJavascriptBridge`的`callHandler` 方法，会来到 `decidePolicyForNavigationAction` 方法，并且进入 `WKFlushMessageQueue` 方法中：
 
 ```objc
 - (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler {

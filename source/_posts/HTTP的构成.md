@@ -93,8 +93,10 @@ ETag 是请求资源文件的哈希值。在客户端请求后，服务端把资
 
 ### HTTP2.0 的改进
 
-1. 为了解决这些问题，HTTP 2.0 会对 HTTP 的头进行一定的压缩，将原来每次都要携带的大量 key value 在两端建立一个索引表，对相同的头只发送索引表中的索引。
-2. HTTP 2.0 还将所有的传输信息分割为更小的消息和帧，并对它们采用二进制格式编码。常见的帧有**Header 帧**，用于传输 Header 内容，并且会开启一个新的流。再就是**Data 帧**，用来传输正文实体。多个 Data 帧属于同一个流。这些帧可以打散乱序发送， 然后根据每个帧首部的流标识符重新组装，并且可以根据优先级，决定优先处理哪个流的数据。基于此，可以实现串行请求的并行处理。如下图：
+1. **header压缩**，如上文中所言，对前面提到过HTTP1.x的header带有大量信息，而且每次都要重复发送，HTTP2.0使用encoder来减少需要传输的header大小，通讯双方各自cache一份header fields表，既避免了重复header的传输，又减小了需要传输的大小。
+2. **服务端推送**（server push），同SPDY一样，HTTP2.0也具有server push功能。
+3. **多路复用**（MultiPlexing），即连接共享，即每一个request都是是用作连接共享机制的。一个request对应一个id，这样一个连接上可以有多个request，每个连接的request可以随机的混杂在一起，接收方可以根据request的 id将request再归属到各自不同的服务端请求里面。
+4. **新的二进制格式**（Binary Format），HTTP1.x的解析是基于文本。HTTP2.0将文本转为二级制传输。如下图：
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/tcp_3.png?raw=true)
 

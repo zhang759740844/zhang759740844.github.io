@@ -15,7 +15,7 @@ tags:
 
 ### loadRequest 无 Cookie
 
-WKWebView 不会在请求的时候自动到 `NSHTTPCookieStorage` 中获取 cookie。所以需要我们在  `loadRequest` 前，手动从 `NSHTTPCookieStorage` 中拿到 Cookie，并将处理好的 Cookie String在 request header 中设置 Cookie, 解决首个请求 Cookie 带不上的问题：
+WKWebView 不会在请求的时候自动到 `NSHTTPCookieStorage` 中获取 cookie(UIWebView 可以)。所以需要我们在  `loadRequest` 前，手动从 `NSHTTPCookieStorage` 中拿到 Cookie，并将处理好的 Cookie String在 request header 中设置 Cookie, 解决**首个请求** Cookie 带不上的问题：
 
 ```objc
 NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"http://www.baidu.com"]];
@@ -54,6 +54,12 @@ NSString *cookie = [marr componentsJoinedByString:@";"];
 [request setValue:cookie forHTTPHeaderField:@"Cookie"];
 [self.webView loadRequest:request];
 ```
+
+重定向相关：
+
+当服务器发生重定向的时候，此时第一次在 RequestHeader 中写入的 Cookie 会丢失，还需要重新对重定向的 NSURLRequest 进行 RequestHeader 的 Cookie 处理 ，简单的说就是在 `webView:decidePolicyForNavigationAction:decisionHandler:` 的时候，判断此时 Request 是否有你要的 Cookie 没有就Cancel掉，修改Request 重新发起。
+
+> iOS 11 中包含 `WKHTTPCookieStore` 相关的 API，可以解决 WKWebView Cookie 的问题。
 
 ### JS 在执行的时候使用 document.cookie 读取不到 cookie
 
@@ -312,11 +318,9 @@ if ([(id)cls respondsToSelector:sel]) {
 
 优化主要集中在优化 WebView 初始化和减少不必要的请求。
 
-###优化 webview 初始化
+### 全局 WebView 与 WebViewPool
 
 webview 从不存在到存在的过程，系统需要进行一系列初始化。所有后续过程在这段时间完全阻塞。
-
-#### 全局 WebView 与 WebViewPool
 
 可以创建一个 WebViewPool 的单例对象，在 load 方法中监听应用启动成功的通知： `UIApplicationDidFinishLaunchingNotification`，初始化 Pool 对象，并且初始化任意个供复用的 WebView 实例，之后的复用很像 TableView Cell 的复用。
 
@@ -348,7 +352,7 @@ webview 从不存在到存在的过程，系统需要进行一系列初始化。
 }
 ```
 
-#### webView 数据预请求
+### webView 数据预请求
 
 在客户端初始化WebView的同时，直接由native开始网络请求数据。当页面初始化完成后，向native获取其代理请求的数据。如果此时 native 还没有拿到数据，那么 js 端做一个短暂的轮询。
 
@@ -418,6 +422,8 @@ webview 从不存在到存在的过程，系统需要进行一系列初始化。
 
 
 ## 参考
+
+
 
 [移动 H5 首屏秒开优化方案探讨](http://blog.cnbang.net/tech/3477/)
 

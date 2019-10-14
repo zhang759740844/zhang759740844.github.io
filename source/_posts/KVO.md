@@ -73,7 +73,9 @@ KVO 是 Object-C 中定义的一个通知机制，其定义了一种对象间监
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/kvo_1.png?raw=true)
 
-对象的 isa 指向可以通过 `someInstance->isa` 查看
+那么 `didChangeValueForKey` 是如何找到观察者的呢？添加观察者的时候，会以被观察的属性名作为键，观察者的列表作为值将观察的信息保存在一个 hashMap 中，通过关联对象的方式挂载在被观察对象上。当 `didChangeValueForKey` 调用的时候，就会在这个 hashMap 中找到对应的观察者列表，依次调用观察者的 `observeValueForKeyPath:ofObject:change:context:` 方法。
+
+那么多级 keypath 又是如何观察到的呢？添加观察者的时候，将递归创建子对象监听，子对象在将监听到的变化转发到上层。最上层则通知外部的观察者。
 
 ### 如何手动触发 KVO
 
@@ -87,6 +89,8 @@ KVO 是 Object-C 中定义的一个通知机制，其定义了一种对象间监
 ### KVC 触发 KVO
 
 KVC 会触发 KVO。即使成员变量没有 get set 方法，KVC 手动调用 `willChangeValueForKey:` 和 `didChangeValueForKey:`。
+
+因为新的类内部重写了 `setValue:forKey:` 方法。
 
 ## KVOController
 

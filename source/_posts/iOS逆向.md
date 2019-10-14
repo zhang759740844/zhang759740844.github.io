@@ -369,12 +369,17 @@ breakpoint set -n "-[ViewController touchesBegan:withEvent:]"
 	- `breakpoint list`：列出所有断点，包含编号
 	- `breakpoint enable/disable/delete {断点编号}`：断点操作
 - 内存断点相关
+
   - `watchpoint set variable {变量名}`：变量值变化的时候触发
-```shell
-watch set variable self->age
-```
-	- `watchpoint list`：列出所有内存断点
-	- `watchpoint enable/disable/delete {断点编号}`：内存断点操作
+  - `watchpoint list`：列出所有内存断点
+  - `watchpoint enable/disable/delete {断点编号}`：内存断点操作
+
+  ```shell
+  watch set variable self->age
+  ```
+
+  
+
 #### theos
 
 ##### 下载 theos

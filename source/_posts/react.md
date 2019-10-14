@@ -529,5 +529,7 @@ axios 默认的请求是不会添加 cookie 的，需要在请求的 option 字�
 之所以说是不能跨域名是因为 **cookie 是跨端口共享**的，即如果你的主站是 `localhost:3000` 请求的端口是 `localhost:3001`，那么 set-cookie 还是能够成功设置的。
 
 > 简单来说，跨域请求是不能读取 cookie 的。但是跨端口设置 cookie 是能成功的。
+>
+> 协议，域名，端口有一个不同就是跨域
 
 另外要说明一下， 使用 `localhost` 和本机 ip 这是两个不同的域名，一定是跨域的。所以要设置 cookie 的时候，不要主站用 localhost，请求用 ip，或者主站用 ip，请求用 localhost。

@@ -450,7 +450,7 @@ static id formatJSToOC(JSValue *jsval)
 }   
 ```
 
-普通的 block 走的是 `genCallbackBlock` 方法。它主要做了三件事：
+普通的 block 走的是 `genCallbackBlock` 方法。它主要做了五件事：
 
 1. 创建空的 block 实例
 2. 根据参数类型，生成 block 函数的签名，并设置给空 block
@@ -564,7 +564,7 @@ if (!success) { class_replaceMethod(cls, selector, (IMP)func, method_getTypeEnco
 }
 ```
 
-JSPatch 中的 block 的处理应该是参考了 Aspects 中对于 block 的处理方式。将 block 的 IMP 指向 ``_objc_msgForward`，并且替换了 NSBlock 的消息转发方法，所有相关 block 的执行都会走到 `JPForwardInvocation` 方法中：
+JSPatch 中的 block 的处理应该是参考了 Aspects 中对于 block 的处理方式。将 block 的 IMP 指向 `objc_msgForward`，并且替换了 NSBlock 的消息转发方法，所有相关 block 的执行都会走到 `JPForwardInvocation` 方法中:
 
 ```objc
 static void JPForwardInvocation(__unsafe_unretained id assignSlf, SEL selector, NSInvocation *invocation)
@@ -578,6 +578,19 @@ static void JPForwardInvocation(__unsafe_unretained id assignSlf, SEL selector, 
 ```
 
 判断如果是一个 block，就从关联属性中拿到 callback，然后执行。
+
+函数签名的获取方法 `methodSignatureForSelector` 也被替换为从 NSBlock 中直接获取：
+
+```objc
+NSMethodSignature *block_methodSignatureForSelector(id self, SEL _cmd, SEL aSelector) {
+    uint8_t *p = (uint8_t *)((__bridge void *)self);
+    p += sizeof(void *) * 2 + sizeof(int32_t) *2 + sizeof(uintptr_t) * 2;
+    const char **signature = (const char **)p;
+    return [NSMethodSignature signatureWithObjCTypes:*signature];
+}
+```
+
+> 因为 JSPatch 中的 block 都是没有用到外部变量的，所以是全局 block，不会存在 copy 和 dispose 函数，这和 Aspects 中的不同，Aspects 中的 block 时可能引用外部变量的，因此需要多做一步判断，通过 block 的 flag 判断 block 的类型。
 
 ## 总结
 
@@ -600,121 +613,27 @@ static void JPForwardInvocation(__unsafe_unretained id assignSlf, SEL selector, 
    1. oc 调用方法，主要是创建 `NSInvocation`，并根据 SEL 的函数函数签名将 js 传来的参数根据类型设置到 `NSInvocation` 上。然后执行
    2. 来到 `JPForwardInvocation` 实际执行方法，在 `_JSOverideMethods` 中找到对应的 js 实现，如果没有走原始的消息转发。将结果设置到 `NSInvocation` 的 returnValue 中
 
-## 问题
+## 思考题
 
-### JSPatch 是如何做到 hook 任意方法的
-
-hook 一个方法在 iOS 中有两种方式，一种是 method swizzling，一种是将原方法的实现 IMP 指向 `_objc_msgforward`，然后在 `forwardInvocation` 中处理
-
-JSPatch 就是使用的后者
-
-### 如何实现 js 端链式方法调用？
-
-js 端的方法在执行 `a.xxx(param)`的时候都会变为 `a.__c(xxx)(param)` 的形式，只需全局对象添加 `__c` 方法即可。执行的方法教给 OC 动态的去解析拿到。
-
-### 如何给实例对象添加属性
-
-所有 js 添加的属性都会统一保存在一个属性对象中，然后在 js 端把这个属性对象挂载在要添加的实例对象下。之后属性对象传给 OC，OC 以关联对象的形式保存。关联对象保证了 js  创建的属性的生命周期和实例对象一致。
-
-之后对于属性的读写都直接通过 js 端保存的属性对象，不需要再走 oc 的 bridge。
-
-### js 中的 self 是如何实现的
-
-self 被定义在 global 下，因此可以直接使用 self。在 oc 调用该方法的时候，会在第一个参数传递调用者。js 端拿到第一个参数把它赋给 self 即可在后面以 self 调用方法或获取属性。
-
-### 为什么 OC 端要保存一份定义的方法在 `_JSOverideMethods` 中，js 端也要要存一份方法在 `_ocCls` 中？
-
-因为前者是给 OC 调用的，后者是给 js 调用的。两者调用上下文的获取方式不同。前者通过方法的第一个参数传递，后者直接可以通过 this 拿到。
-
-### js 执行时如果遇到 OC 的 null 怎么办？
-
-如果 OC 返回的是 null，再调用 js 方法会直接出现异常。所以，对于 OC 返回的 null，需要做一层包装。可以返回 false，表示回传的是 null。
-
-### 怎样解决 NSNumber NSMutableArray 之类在转为 JS 后，不能调用其自有方法？
-
-### 如何处理调用父类方法的？
-
-调用 `self.super()` 的时候会给 js 对象加上一个 `__isSuper` 标记。OC 在发现 `__isSuper` 标记后会拿到当前类的父类的相应方法的 IMP，并将其以 `SUPER_xxx` 的 SEL 添加到子类上，由子类调用。
-
-### 如何处理可变参数？
-
-当传参个数大于函数签名所需参数个数的时候就是可变参数方法。OC 中通过 `va_list` 获取参数列表。JSPatch 中事先定义了不同参数个数的 `objc_msgSend` 方法，通过查看传参个数来决定调用哪个 `objc_msgSend` 方法。
-
-由于不同参数个数的 `objc_msgSend` 方法需要预先定义，不能预知调用的方法的实际参数类型。因此预先定义的 `objc_msgSend` 的所有参数都是 id 类型的。这就要求重写的可变参数的方法的函数签名中的已知参数也都是 id 类型的。
-
-### NSInvocation 的 `getArgument` 引发的内存引用计数错误如何解决？
-
-使用 `__bridge` 或者 `__unsafe_unretained` 修饰符告诉编译器不要插入 `retain` 或 `release`。不要改变对象原来的生命周期：
-
-```objc
-// __bridge
-id returnValue;
-void *result;
-[invocation getReturnValue:&result];
-returnValue = (__bridge id)result;
-
-// __unsafe_unretained
-__unsafe_unretained id arg;
-[invocation getReturnValue:&arg];
-```
-
-### NSInvocation 创建对象后 `getReturnValue` 引发的内存泄漏怎么解决？
-
-使用 `__bridge_transfer` 释放一次引用计数：
-
-```objc
-id returnValue;
-void *result;
-[invocation getReturnValue:&result];
-if ([selectorName isEqualToString:@"alloc"] || [selectorName isEqualToString:@"new"]) {
-    returnValue = (__bridge_transfer id)result;
-} else {
-    returnValue = (__bridge id)result;
-}
-```
-
-### 如何新增方法
-
-新增方法需要知道方法的函数签名。在 `defineClass` 中增加的方法由于方法签名都是从 OC 获取的，因此只能增加所有参数为 id 类型的方法
-
-JSPatch 中新增了另一个方法 `defineProtocol`，对于要新增的方法可以先通过该方法定义一个协议，并将协议添加到相应类上。增加协议方法的时候是需要提供参数类型的。
-
-### 如何重写 dealloc
-
-调用 dealloc 的方法的 SEL 必须是 `dealloc`，这是 OC 内部的校验。否则 ARC 不认为这是 dealloc 方法。
-
-因此，要实现正确调用 dealloc 方法，就必须要必须拿到替换的 IMP，并且调用的时候传入原始的 SEL：
-
-```objc
-if (deallocFlag) {
-    slf = nil;
-    Class instClass = object_getClass(assignSlf);
-    // 拿到 dealloc 方法实现
-    Method deallocMethod = class_getInstanceMethod(instClass, NSSelectorFromString(@"ORIGdealloc"));
-    void (*originalDealloc)(__unsafe_unretained id, SEL) = (__typeof__(originalDealloc))method_getImplementation(deallocMethod);
-    // 调用
-    originalDealloc(assignSlf, NSSelectorFromString(@"dealloc"));
-}
-
-```
-
-### 关于 block 的处理？
-
-block 的调用类似 aspects 中的处理：
-
-1. 创建一个空的 block
-2. 修改其函数指针指向 `_objc_msgForward`
-3. 根据 js 传来的类型修改 block 的函数签名
-4. 通过关联对象保存其函数实现
-5. 修改 NSBlock 的消息转发方法为 `JPForwardInvocation`
-
-执行的时候在 `JPForwardInvocation` 中判断是否是一个 block，是的话就从关联对象中取出函数实现执行即可。
-
-### 如何调用 C 函数
-
-C 函数的调用通过 JSContext 注入
-
-
+1. `require(xxx)` 做了什么？
+2. JS 中的链式调用时如何实现的？
+3. JS 端和 OC 端如何通信的？
+4. JS 端如何调用 OC 的某个对象的实例方法？
+5. OC 端拿到 JS 传来的对象方法名参数之后要如何调用？
+6. 如何实现方法替换？
+7. 为什么JS端新增方法要在 OC 中 `class_addMethod()` 再走一遍完整转发流程，而不是直接通过消息转发？
+8. 如何给类添加属性？
+9. self 关键字如何处理？
+10. OC 中无法动态获取 super，那么 super 方法如何调用的？
+11. JSBoxing 的作用是什么？
+12. OC 中的 nil 到 JS 中就变成了 null，就无法链式调用，那么要怎么解决？
+13. JS 如何支持自定义 struct 的？
+14. 可变参数方法如何调用？
+15. dealloc hook 的时候做了哪些特殊处理？
+16. JS 端重写的方法调用另一个 JS 端重写的方法，如何做到不用 JS -> OC -> JS 这样周转？
+17. `defineJSClass` 作用是什么？实现原理是怎么样的？
+18. 如何 hook 带有 block 的 OC 方法？
+19. JS 方法中如何调用 C 函数？
 
 ## 参考链接
 

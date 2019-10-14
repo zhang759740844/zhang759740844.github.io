@@ -41,7 +41,10 @@ objc_setAssociatedObject(self, associatedKey, nil, OBJC_ASSOCIATION_COPY_NONATOM
 
 objc_removeAssociatedObjects 方法将会移除源对象中所有的关联对象.
 
+**关联对象并不是存储在被关联对象本身内存中，而是存储在全局的统一的一个AssociationsManager中。其中管理着一个 AssociationsHashMap。键是设置关联对象的 object，值是保存这个 object 的所有关联对象的另一个 hashMap**
+
 ### 示例：
+
 新建 UIButton 的 Category，在其中设置clickBlock属性(UIButton+ClickBlock.h):
 ```objc
 typedef void(^clickBlock)(void);
