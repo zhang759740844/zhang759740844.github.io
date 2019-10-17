@@ -128,6 +128,7 @@ struct class_ro_t {
 ```
 #### method_t
 `method_list_t`和`method_array_t`内都是`method_t`类型:
+
 ```objc
 struct method_t {
     SEL name;
@@ -312,9 +313,13 @@ static void attachCategories(Class cls, category_list *cats, bool flush_caches) 
 
 首先，通过 `while` 循环，我们遍历所有的 category，也就是参数 `cats` 中的 `list` 属性。对于每一个 category，得到它的方法列表 `mlist` 并存入 `mlists` 中。换句话说，我们将所有 category 中的方法拼接到了一个大的二维数组中，数组的每一个元素都是装有一个 category 所有方法的容器。
 
-> 在上面的objc_class结构体中，ivars是objc_ivar_list（成员变量列表）指针；methodLists是指向objc_method_list指针的指针。在Runtime中，objc_class结构体大小是固定的，不可能往这个结构体中添加数据，只能修改。所以ivars指向的是一个固定区域，只能修改成员变量值，不能增加成员变量个数。methodList是一个二维数组，所以可以修改*methodLists的值来增加成员方法，虽没办法扩展methodLists指向的内存区域，却可以改变这个内存区域的值（存储的是指针）。因此，可以动态添加方法，不能添加成员变量。
+> 编译好之后 ivar 的结构就已经固定了，可以通过偏移地址来直接获取成员变量。但是对于方法，它在 Macho-O 中只保存了 `class_ro_t` 的部分，在 runtime 初始化的时候，会通过 runtime 到 mach-o 中的 `__data,_objc_catlist` 中取出所有的分类信息，然后将分类中的方法属性和协议插到 `class_rw_t` 的数组中（`class_rw_t` 应该是保存在堆上的），它的各个属性是指向 data 段的。
+>
+> 因为 `class_rw_t` 是堆上的，它的属性方法列表是一个二维数组，可以将 data 段中的各个方法数组添加到这个二维数组中，并且 `class_addMethod` 也可以用相同的方法添加到二维数组里，所以方法是可以动态添加的。
+>
+> 但是成员变量是保存在 `class_ro_t` 中的，它是保存在 data 段中有固定的空间的，无法扩大。因此成员变量无法动态添加。
 
-> 编译好了就不能改变 objc_class 的大小了。应该就是编译的时候可以拿到 category 文件的数量，但是无法拿到 category 里的具体内容。所以预先声明好了 mlists 的大小，至于每个 category 里的方法有多少，那个到运行时才决定，不保存在 objc_class 结构内。
+> 另外需要注意一点，不是所有分类都是放到 `__data,_objc_catlist` 中的。如果是自己的类的分类，编译后直接就把方法和原始类的方法丢在一起了。如果是其他动态库的分类，比如给 UIViewController 创建一个分类，那么是会保存在 `__data,_objc_catlist` 段中，通过 runtime 动态添加给 UIViewController的。
 
 在 `while` 循环外，我们得到了拼接成的方法，此时需要与类原来的方法合并:
 ```objc
