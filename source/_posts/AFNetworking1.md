@@ -501,6 +501,12 @@ static NSArray * AFPublicKeyTrustChainForServerTrust(SecTrustRef serverTrust) {
   - 取出服务端的证书的信任链上的所有证书并和 native 中的证书做比较。如果相等就说明可以用 native 中保存的证书对服务端的证书解密，即是要信任的证书。如果没有，就说明收到的证书不是服务端签发的，不可信
 - 如果要校验证书中的公钥，则是在上一步的基础上，取出证书中的公钥信息，进行比较。
 
+## 为什么AF3.0不需要常驻子线程了？
+
+首先，请求最好不要在主线程中做，因为这样可能会影响主线程效率。并且子线程需要保活，使其能够在后续的 NSURLConnection 的 delegate 中接收回调。因此， AF2.0 需要创建一个常驻子线程，在子线程中执行网络请求即可。
+
+AF3.0 使用 NSURLSession，不再需要在当前线程进行 delegate 回调
+
 
 
 

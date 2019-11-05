@@ -14,6 +14,8 @@ tags:
 
 ## 外部调动
 
+外部会在 disk 中获取到缓存 data 后调用解码方法，也会在 download 到 data 后调用解码方法。两者的解码操作基本一致，但是前者调用的 `SDImageCacheDefine.m` 中的方法，而后者调用的是 `SDImageLoader.m` 中的方法
+
 ### Cache 中的解码
 
 在从 disk 中拿到 `NSData` 之后，就会调用 `SDImageCacheDefine.m` 中的 `SDImageCacheDecodeImageData()` 方法，进行解码：
@@ -53,7 +55,7 @@ UIImage * _Nullable SDImageCacheDecodeImageData(NSData * _Nonnull imageData, NSS
         }
     }
     if (!image) {
-        /// 解码出 UIImage，从 data 转为 image
+        /// 从 data 转为 image
         image = [[SDImageCodersManager sharedManager] decodedImageWithData:imageData options:coderOptions];
     }
     if (image) {
@@ -86,17 +88,13 @@ UIImage * _Nullable SDImageCacheDecodeImageData(NSData * _Nonnull imageData, NSS
 
 如果是一个动图，并且不只解码第一帧，那么就会调用 `SDAnimatedImage` 的初始化方法把所有帧都解码出来。
 
-如果不是动图，那么就会通过 `SDImageCodersManager` 解码将 `NSData` 转为 `UIImage`。这是后面会详细分析的类。
-
-如果已经转好了 `UIImage` 还会再判断一次是否要解码。这个解码和上面的有什么不同呢？上面的解码是从 `NSData` → `UIImage` 的转换，而后面的解码是复制一份 `UIImage`。因为在得到 `UIImage` 实例之后，并不会立刻加载到内存中。默认只有在显示的时候才会在主线程中加载渲染。所以通过提前在子线程中把图片解压到内存中，提高渲染效率。这是一种空间换时间的做法。
-
-上述的两种解码会在下文详解。
+如果不是动图，那么就会通过 `SDImageCodersManager` 先用 `NSData` 创建  `UIImage`，再对 `UIImage` 解码。整个过程会在下文详解。
 
 ### Download 中的解码
 
 download 方式下的解码方法在 `SDImageLoader.m` 中。有两个方法 `SDImageLoaderDecodeImageData()` 和 `SDImageLoaderDecodeProgressiveImageData()`。
 
-前者和 Cache 中的方法是一样的，都是将下载或者内存加载的 `NSData` 转为 `UIImage`。后者则提供了一种渐进式加载图片的方式：
+**前者和 Cache 中的方法是一样的**，都是将下载或者内存加载的 `NSData` 转为 `UIImage`，再解码。后者则提供了一种渐进式加载图片的方式：
 
 ```objc
 UIImage * _Nullable SDImageLoaderDecodeProgressiveImageData(NSData * _Nonnull imageData, NSURL * _Nonnull imageURL, BOOL finished,  id<SDWebImageOperation> _Nonnull operation, SDWebImageOptions options, SDWebImageContext * _Nullable context) {
@@ -181,13 +179,17 @@ UIImage * _Nullable SDImageLoaderDecodeProgressiveImageData(NSData * _Nonnull im
 }
 ```
 
-其实和上面的方式也是类似的，只是他们的解码过程换成了渐进式的解码方式。
+和 cache 中做法相同的 `SDImageLoaderDecodeImageData()` 方法会在下载图片完成回调时进行；而渐进式解码 `SDImageLoaderDecodeProgressiveImageData()` 方法则会在下载过程中接收到一边接收数据一边进行。
 
 ## 编解码
 
-### SDImageCodersManager
+### SDImageCodersManager：解码器的管理者
 
-前面的外部调用调用的都是 `SDImageCodersManager`  的方法。它是一个单例类，内部在初始化的时候增加了多个实际的编解码类。每次在使用到的时候都会循环每一个实际的编解码类，来对图片进行编码或解码
+`SDImageCodersManager`  是一个单例类，内部在初始化的时候增加了多个实际的编解码类，**用于将 NSData 转化为 UIImage**。每次在使用到的时候都会循环每一个实际的编解码类，来对图片进行 data → image 的转换
+
+> 你可能会有疑问，NDData 到 UIImage 不是系统内置的方法就可以解决嘛？一般情况下是的，对于 png， jpeg 等格式，系统自带了转换方法。但是对于苹果不是默认支持的格式，比如 webp，就需要自己通过解码器将 NSData → UIImage。
+>
+> 由此可见，**NSData → UIImage 的过程也是一个解码的过程**
 
 #### 初始化方法
 
@@ -215,7 +217,7 @@ UIImage * _Nullable SDImageLoaderDecodeProgressiveImageData(NSData * _Nonnull im
 
 除了这三个内置的编解码类，我们还可以通过它提供的方法动态的添加和移除编解码器相关的类。
 
-#### 编解码
+#### 能否支持编解码
 
 解码要通过 `NSData` 进行解码。编码则是把 `UIImage` 根据 `SDImageFormat` 表示的图片类型转变为 `NSData`。和上面所说的一样，`SDImageCodersManager` 会调用内部的所有编解码类分别判断：
 
@@ -242,6 +244,8 @@ UIImage * _Nullable SDImageLoaderDecodeProgressiveImageData(NSData * _Nonnull im
     return NO;
 }
 ```
+
+#### 解码：从 NSData → UIImage
 
 在判断能否进行编解码之后，就会调用实际的编解码的类的相关方法：
 
@@ -279,9 +283,9 @@ UIImage * _Nullable SDImageLoaderDecodeProgressiveImageData(NSData * _Nonnull im
 
  以上就是 `SDImageCodersManager` 的全部内容了。本生作为一个 Manager，并没有太多的任务，所有的操作都是遍历内部的编解码类的列表，让它们来完成的。
 
-### SDImageCoderHelper
+### SDImageCoderHelper：UIImage 到 bitmap 的转换者
 
-如类名所示，它是一个帮助类。其中包含了一些辅助功能。
+上面 manager 中管理的是从 data 到 image 的解码，这个 helper 则是要把 UIImage 提前转化为 bitmap 以贡显示。
 
 #### SDImageFrame 和 UIImage 的互相转化
 
@@ -455,9 +459,9 @@ static NSUInteger gcdArray(size_t const count, NSUInteger const * const values) 
 
 在UI渲染的时候，实际上是把多个图层按像素叠加计算的过程，需要对每一个像素进行 RGBA 的叠加计算。当某个 layer 的是不透明的，也就是 opaque 为 YES 时，GPU 可以直接忽略掉其下方的图层，这就减少了很多工作量。这也是调用 CGBitmapContextCreate 时 bitmapInfo 参数设置为忽略掉 alpha 通道的原因。
 
-#### 将 UIImage 解码
+#### 解码：从 image 到 bitmap
 
-在我们使用 `UIImage` 的时候，创建的图片通常不会直接加载到内存，而是在渲染的时候再进行解压并加载到内存。这就会导致 `UIImage` 在渲染的时候效率上不是那么高效。为了提高效率通过 `decodedImageWithImage` 方法把图片提前解压加载到内存，这样这张新图片就不再需要重复解压了，提高了渲染效率。这是一种空间换时间的做法。
+image 要显示在屏幕上需要转化为 bitmap，这个操作往往是显示的时候在主线程中做的。为了提高效率，可以通过 `decodedImageWithImage` 方法把 image 提前转化为 bitmap，这样这张新图片就不再需要重复渲染了，提高了渲染效率：
 
 ```objc
 + (UIImage *)decodedImageWithImage:(UIImage *)image {
@@ -719,7 +723,7 @@ SDWebImage 的做法是，使用分块绘制的方式，读取一部分图片的
 }
 ```
 
-### SDImageIOCoder
+### SDImageIOCoder：内置图片类型的解码器
 
 `SDImageIOCoder` 支持 png，jpeg ，以及部分机型支持 HEIC HEIF 的解码以及渐进式加载。
 
@@ -818,7 +822,7 @@ SDWebImage 的做法是，使用分块绘制的方式，读取一部分图片的
 }
 ```
 
-#### 直接解码
+#### 直接解码：完整的 NSData → UIImage
 
 直接解码的方式非常简单粗暴，直接通过 `UIImage` 的方法：
 
@@ -839,7 +843,7 @@ SDWebImage 的做法是，使用分块绘制的方式，读取一部分图片的
 }
 ```
 
-#### 渐进式解码
+#### 渐进式解码：部分 NSData → UIImage
 
 渐进式解码提供了边下载边解码的功能。
 
@@ -959,9 +963,14 @@ SDWebImage 的做法是，使用分块绘制的方式，读取一部分图片的
 
 `UIImageJPEGRepresentation()` 类似的 API 也可以将 `UIImage` 转为 `NSData`，但是上面这种通过 imageIO api 的方式生成的 NSData 无论是从内存使用还是物理内存的占用上都有更好的表现。
 
-`SDImageGIFCoder` 和 `SDImageAPNGCoder` 类似，不同之处在于他们是多图的，因此在编码和解码的过程中需要对每一张图进行处理。和 `SDImageIOCoder` 处理方式类似，我就不再赘述了。
-
 ## 总结
+
+从本篇的解码过程中我们可以知道，不论是从 cache 还是 download，都需要通过 data 转化为通过 bitmap 展示的 image。其中解码过程会分为两步：
+
+1. 从 data → image
+2. 从 image → bitmap 形式的 image
+
+第一步由 `SDImageCodersManager` 管理，它通过内置的多个编解码器完成；第二部由 `SDImageCoderHelper` 完成，它会创建一个 bitmap，并把前面的  image 画到上面去生成一个新的 image。
 
 在编解码阶段我们能获取到的知识点有如下：
 

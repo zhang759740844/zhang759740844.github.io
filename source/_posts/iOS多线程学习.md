@@ -151,7 +151,6 @@ NSOperationQueue 一共有两种队列：主队列、自定义队列。其中自
 ```objc
 // 主队列获取方法
 NSOperationQueue *queue = [NSOperationQueue mainQueue];
-复制代码
 ```
 
 - 自定义队列（非主队列） 
@@ -161,7 +160,6 @@ NSOperationQueue *queue = [NSOperationQueue mainQueue];
 ```objc
 // 自定义队列创建方法
 NSOperationQueue *queue = [[NSOperationQueue alloc] init];
-复
 ```
 
 #### 将操作加入到队列中
@@ -551,9 +549,9 @@ dispatch_semaphore_signal(signal);
 
 锁是服务于共享资源的；而semaphore是服务于多个线程间的执行的逻辑顺序的。比如，a 和 b 执行完了再执行 c，就可以通过信号量实现，但是无法通过互斥锁实现。
 
-> 二元信号量和互斥锁的区别在《程序员的自我修养》中提及，信号量可以在非当前线程释放，而互斥锁只能在当前线程释放。
+> 二元信号量和互斥锁的区别在《程序员的自我修养》中提及，信号量作为 IPC 的一种方式，可以在非当前进程释放，而互斥锁只能在当前进程中释放。
 >
-> 但是 NSLock 实测是可以在不同线程释放的。所以上述结论也不准确。只要记住信号量可以允许 N 个信号量允许 N 个线程并发地执行任务。
+> 以上说法是关于进程的，在线程中的试验结果是都可以释放。
 
 ### 条件变量和信号量区别
 

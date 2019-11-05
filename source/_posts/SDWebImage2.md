@@ -18,7 +18,7 @@ tags:
 
 ### 初始化方法
 
-`SDImageCache` 是一个单例对象。它的初始化方法中会创建磁盘缓存对象 `_diskCache`，和内存缓存对象 `_diskCache`：
+`SDImageCache` 是一个单例对象。它的初始化方法中会创建磁盘缓存对象 `_diskCache`，和内存缓存对象 `_memoryCache`：
 
 ```objc
 + (nonnull instancetype)sharedImageCache {
@@ -671,7 +671,9 @@ Manager 会把下载下来的 image 或者 data 传入。然后根据缓存策�
  _ioQueue = dispatch_queue_create("com.hackemist.SDImageCache", DISPATCH_QUEUE_SERIAL);
 ```
 
+## 总结
 
+总的来说，就是通过 `SDImageCache` 去管理内存缓存 `SDMemoryCache` 和磁盘缓存 `SDDiskCache`
 
 缓存部分到此为止。
 

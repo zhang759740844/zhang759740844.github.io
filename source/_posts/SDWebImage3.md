@@ -745,7 +745,7 @@ didReceiveResponse:(NSURLResponse *)response
 
 ## 总结
 
-
+总的来说就是通过 `SDWebImageDownloader` 这个单例对象为每个请求创建一个 `SDWebImageDownloadToken` 实例来管理下载。同时 `SDWebImageDownloader` 也会保存每一个下载任务以供取消。`SDWebImageDownloadToken` 中又包含 `SWDweImageDownloaderOperation` 这个 NSOperation 的子类，用于真正的下载。
 
 
 

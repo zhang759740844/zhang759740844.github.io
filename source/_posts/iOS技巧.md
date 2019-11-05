@@ -229,6 +229,10 @@ static inline UIEdgeInsets sgm_safeAreaInset(UIView *view) {
 UIView *view = [[UIView alloc] initWithFrame:CGrect(x - SINGLE_LINE_ADJUST_OFFSET, 0, SINGLE_LINE_WIDTH, 100)];
 ```
 
+iOS设备上，有逻辑像素（point）和 物理像素（pixel)之分。point和pixel的比例是通过[[UIScreen mainScreen] scale]来制定的。在没有视网膜屏之前，1point = 1pixel；但是2x和3x的视网膜屏出来之后，1point等于2pixel或3pixel。
+
+在UI设计师提供的设计稿标注，和在代码中设置frame，其中x,y,width,height的单位是 **逻辑像素（point）**；GPU在渲染图形之前，系统会将**逻辑像素（point）**换算成 **物理像素（pixel）**。
+
 ### 缓存行高
 
 在cell离开屏幕后，保存行高：

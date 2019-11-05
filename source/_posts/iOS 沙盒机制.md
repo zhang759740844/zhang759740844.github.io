@@ -247,48 +247,52 @@ NSData *imageData = UIImagePNGRepresentation(aImage);
 
 可以通过 `NSURLConnection `类创建下载，不过该类在 iOS9 中被废弃了，取而代之的是 `NSURLSession` 类。我们下面只学习下该类的使用方式和技巧。
 
-#### 普通的 get 请求
+#### 普通的网络请求
 
 创建任务后，不会自动发送请求，需要手动开始任务：
 
 ```objc
- 	// 1.得到session对象
-    NSURLSession* session = [NSURLSession sharedSession];
-    NSURL* url = [NSURL URLWithString:@""];
+// 1.得到session对象
+NSURLSession* session = [NSURLSession sharedSession];
+NSURL* url = [NSURL URLWithString:@""];
 
-    // 2.创建一个task，任务
-    NSURLSessionDataTask* dataTask = [session dataTaskWithURL:url completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
-        // data 为返回数据
+// 2.创建一个task，任务
+NSURLSessionDataTask* dataTask = [session dataTaskWithURL:url completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+    // data 为返回数据
 		dispatch_async(dispatch_get_main_queue(), ^{
 			[_image setImage:[UIImage imageWithData:data]];
-        });
-    }];
+    });
+}];
 
-    // 3.开始任务
-    [dataTask resume];
+// 3.开始任务
+[dataTask resume];
 ```
 
-> 注意，completionHandler 这个回调是在后台线程中的，如果想要改变UI，就必须dispatch到主线程中去，否则会等待很长时间才能显示出来
+因为是主要讲下载文件的，所以这里省略了 Session 创建的具体过程。一般情况下，我们是需要为 Session 设置 delegate 的，以此监听下载情况，这里都省略了。 
+
+> 注意，`completionHandler` 这个回调是在后台线程中的，如果想要改变UI，就必须dispatch到主线程中去，否则会等待很长时间才能显示出来
 
 #### 下载文件
 
-使用 `NSURLSession` 就不需要边下载边写入等问题，苹果做好了封装：
+如果使用 `NSURLSessionDataTask` 下载文件，那么就要考虑边下边存的情况，如果文件很大，那么内存很容易爆炸。但是使用 `NSURLSessionDownloadTask` 就不需要边下载边写入等问题，苹果做好了封装。只需要在结束的时候将临时文件移动到目标文件目录中即可：
 
 ```objc
- 	NSURL* url = [NSURL URLWithString:@"http://dlsw.baidu.com/sw-search-sp/soft/9d/25765/sogou_mac_32c_V3.2.0.1437101586.dmg"];
+NSURL* url = [NSURL URLWithString:@"http://dlsw.baidu.com/sw-search-sp/soft/9d/25765/sogou_mac_32c_V3.2.0.1437101586.dmg"];
 
-    // 得到session对象
-    NSURLSession* session = [NSURLSession sharedSession];
+// 得到session对象
+NSURLSession* session = [NSURLSession sharedSession];
 
-    // 创建任务
-    NSURLSessionDownloadTask* downloadTask = [session downloadTaskWithURL:url completionHandler:^(NSURL *location, NSURLResponse *response, NSError *error) {
-
-    }];
-    // 开始任务
-    [downloadTask resume];
+// 创建任务
+NSURLSessionDownloadTask* downloadTask = [session downloadTaskWithURL:url completionHandler:^(NSURL *location, NSURLResponse *response, NSError *error) {
+	// ... 省略了将 location 下的文件移动到目标文件目录中的过程
+}];
+// 开始任务
+[downloadTask resume];
 ```
 
 这里回调参数没有了 `NSData`，多了一个 `location`，这个就是下载好的文件写入沙盒的地址，打印后发现下载好的文件被写入了 temp 文件夹下。
+
+> 这里直接在创建 downloadTask 的时候提供了结束的回调，其实也可以设置 delegate，比如要监听下载进度的时候，就必须使用 delegate 了。具体见下方
 
 所以我们需要将 temp 目录下的文件转移到不会被删除的 caches 目录下。
 
@@ -354,24 +358,26 @@ NSFileManager *mgr = [NSFileManager defaultManager];
 @end
 ```
 
-设置 delegate 回调时，`NSURLSession` 和 `NSURLSessionDownloadTask` 调用方法和上面下载文件中的方法略有不同：
+上面说到设置 delegate 时， `NSURLSessionDownloadTask` 创建方式有所不同：
 
 ```objc
-	// 得到session对象
-    NSURLSessionConfiguration* cfg = [NSURLSessionConfiguration defaultSessionConfiguration]; // 默认配置
+// 得到session对象
+NSURLSessionConfiguration* cfg = [NSURLSessionConfiguration defaultSessionConfiguration]; // 默认配置
 
-    NSURLSession* session = [NSURLSession sessionWithConfiguration:cfg delegate:self delegateQueue:[NSOperationQueue mainQueue]];
+NSURLSession* session = [NSURLSession sessionWithConfiguration:cfg delegate:self delegateQueue:[NSOperationQueue mainQueue]];
 
-    // 创建任务
-    NSURLSessionDownloadTask* downloadTask = [session downloadTaskWithURL:url];
+// 创建任务
+NSURLSessionDownloadTask* downloadTask = [session downloadTaskWithURL:url];
 
-    // 开始任务
-    [downloadTask resume];
+// 开始任务
+[downloadTask resume];
 ```
 
 #### 断点下载
 
-文件的暂停和恢复可以通过 `resume` 和 `suspend` 方法实现。但是这样做，程序退出后再开启就不能接着下载了。一般会使用 `cancelByProducingResumeData:` 方法:
+##### 主动暂停
+
+文件的暂停和恢复可以通过 `resume` 和 `suspend` 方法实现。但是这样做，程序退出后再开启就不能接着下载了。一般如果是主动暂停的话会使用 `cancelByProducingResumeData:` 方法:
 
 ```objc
 __weak typeof(self) selfVc = self;
@@ -392,9 +398,105 @@ self.downloadTask = [self.session downloadTaskWithResumeData:self.resumeData];
 [self.downloadTask resume]; // 开始任务
 ```
 
-具体下载的方法和示例详见：[iOS开发网络篇之文件下载、大文件下载、断点下载](http://www.jianshu.com/p/f65e32012f07) [demo](https://github.com/zhang759740844/MyOCDemo/tree/develop/HFDownLoad-master)
+##### 手动杀掉应用后的被动暂停
+
+不论是普通的 `NSURLSession` 还是可以在后台使用的 `NSURLSession`，它们在被手动杀掉后都会保存当前的 `NSURLSession` 信息，在下次启动并且创建了相同 Identifier 的 session 实例之后，就会自动调用 `NSURLSessionTaskDelegate` 中的 task 结束回调。由于是下载失败，所以 error 中会包含信息，可以从其中取出 resumeData，并重新创建下载：
+
+```objc
+- (void)URLSession:(NSURLSession *)session
+              task:(NSURLSessionTask *)task
+didCompleteWithError:(NSError *)error
+{
+    if (error) {
+        // check if resume data are available
+        if ([error.userInfo objectForKey:NSURLSessionDownloadTaskResumeData]) {
+            NSData *resumeData = [error.userInfo objectForKey:NSURLSessionDownloadTaskResumeData];
+          	// 重新创建一个 DownloadTask，并开始下载
+            NSURLSessionDownloadTask *task = [self.session] downloadTaskWithResumeData:resumeData];
+            [task resume];
+        }
+    }
+}
+```
+
+##### 各个系统版本导致的 resumeData 的错误
+
+iOS10.0 - 10.1 中使用系统的 `resumeData` 无法直接恢复下载，原因是`currentRequest`和`originalRequest` 的`NSKeyArchived`编码异常。获取到`resumeData`后，需要对它进行修正，使用修正后的`resumeData`创建downloadTask，再对downloadTask的`currentRequest`和`originalRequest`赋值，[Stack Overflow](https://stackoverflow.com/questions/39346231/resume-nsurlsession-on-ios10/39347461#39347461)上面有具体说明。
+
+iOS 11.0 - 11.2 中由于多次对downloadTask进行 `取消 - 恢复` 操作，生成的`resumeData`会多出一个key为`NSURLSessionResumeByteRange`的键值对，所以会导致直接下载成功（实际上没有），下载的文件大小直接变成0。需要把key为`NSURLSessionResumeByteRange`的键值对删除。
+
+#### 普通下载与后台下载
+
+普通下载后后台下载的区别在于创建的 `NSURLSession` 是普通的还是支持后台的，也就是创建时传入的 config 的区别：
+
+```objc
+// 支持后下载的 NSURLSession 的 config
+NSURLSessionConfiguration* sessionConfig = [NSURLSessionConfiguration backgroundSessionConfigurationWithIdentifier:@"some Identifier"];
+
+// 普通的 NSURLSession 的 config
+NSURLSessionConfiguration* sessionConfig = [NSURLSessionConfiguration default];
+```
+
+后台的 config 要求传入一个 Identifier，而普通的 config 则是默认的。
+
+##### 进入后台、应用 crash
+
+普通下载在后台 crash 时会立刻停止下载；而后台下载则不同，它在进入后台后，会和 background task 一样让应用获取 3 分钟的活动时间，时间到后还没下载完成的，会被系统的 watchdog 杀死，进而由另一个系统的进程继续下载。其他各种代码不严谨导致的 crash 也是一样，系统会创建另一个进程下载。
+
+在回到前台，或者重新创建 Session 之后，session 的代理方法会被继续调用。在重建 Session 的时候，可以通过 Session 的 `getTasksWithCompletionHandler:` 方法获取重建 Session 之后，恢复的之前的 downloadTask，并对其做一定的设置(比如你用一个包装类将 Task 包装了起来，Task 回调中使用的是包装类的方法，那么你就一定要在创建完 Session 之后立即获取所有的 Task，重建包装类。)
+
+##### 下载完成
+
+普通下载的下载完成就是正常的前台下载完成。而后台下载完成则区分各种情况：
+
+1. 应用在前台
+2. 应用在后台
+3. 应用被杀，且下载完成时应用没有被打开
+4. 应用被杀，且下载完成时应用被打开，且同时创建好相同 Identifier 的 Session
+5. 应用被杀，且下载完成时应用被打开，但没有创建相同 Identifier 的 Session
+
+1 就是走普通的回调
+
+2 全部 task 完成后回调下面方法激活 app：
+
+```objc
+//在应用处于后台，且后台任务下载完成时回调
+ - (void)application:(UIApplication *)application
+handleEventsForBackgroundURLSession:(NSString *)identifier 
+ completionHandler:(void (^)())completionHandler;
+```
+
+之后会调用 session 相关代理方法，最后调用:
+
+```objc
+/* 应用在后台，而且后台所有下载任务完成后，
+ * 在所有其他NSURLSession和NSURLSessionDownloadTask委托方法执行完后回调，
+ * 可以在该方法中做下载数据管理和UI刷新
+  */
+ - (void)URLSessionDidFinishEventsForBackgroundURLSession:(NSURLSession *)session;
+```
+
+> 最好将`handleEventsForBackgroundURLSession`中`completionHandler`保存，在该方法中待所有载数据管理和UI刷新做完后，再调用`completionHandler()`
+
+3 由于应用没有被打开，会先启动 app，回调 AppDelegate 中的 `didFinishLaunchingWithOptions:` 方法。随后会回调 2 中的 `handleEventsForBackgroundURLSession`。由于 2 在后台，Session 没有被清除，所以后面就可以直接回调 Session 的代理方法。而 3 此时刚刚重新启动，没有创建 Session，因此，需要在 `handleEventsForBackgroundURLSession` 方法中通过 Identifier 重建 Session，才能进行后续的回调方法。重建好 Session 之后的过程和 2 相同。
+
+4 由于在前台，且创建好了 Session，因此和 1 一样
+
+5 由于没有创建 Session，会调用 `handleEventsForBackgroundURLSession` 创建 Session，和 3 类似。
+
+![前台下载流程](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/download_2.png?raw=true)
+
+![后台下载流程](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/download_1.png?raw=true)
 
 
+
+## 参考
+
+[iOS使用NSURLSession进行下载（包括后台下载，断点下载）](<https://juejin.im/post/5c4ed0b0e51d4511dc730799#heading-12>) 写的非常好
+
+
+
+[iOS原生级别后台下载详解](<https://juejin.im/post/5c4ed0b0e51d4511dc730799#heading-17>)
 
 
 

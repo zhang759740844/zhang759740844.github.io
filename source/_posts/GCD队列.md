@@ -194,8 +194,6 @@ dispatch_apply([array count], queue, ^(size_t index){
 
 如果需要异步执行这些代码，只需要用dispatch_async方法，将所有代码推至后台。
 
-> 说实话，由于 dispatch_apply 是同步的，和 for 循环相比，差别不大。没有太大使用的必要
-
 #### dispatch_after
 延迟提交 block：
 
@@ -398,10 +396,8 @@ for (int i = 0; i < 100; i++) {
 ### 问题
 
 - 串行并行，同步异步的区别？
-  - 串行
 
 - 什么情况下会造成死锁？
-  - dispatch_sync 一个串行队列的时候
 
 - 如何使用 `dispatch_time_t `？如何使用 `dispatch_after`?
 - `dispatch_after` 作为倒计时准确么？什么情况下会不准？
