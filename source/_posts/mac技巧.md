@@ -9,22 +9,39 @@ tags:
 
 <!--more-->
 
+### 取消Mac工作区切换之后自动重排
+
+工作区切换后自动重排真是一个非常sb的功能。可能我原本将Xcode，Chrome，微信排好的顺序在切换了一次程序之后就变了。这是一直困扰我的一个问题。
+
+解决方法其实很简单，在“偏好设置”中选择“调度中心”，取消“勾选根据最近的使用情况自动重新排列 Spaces ”即可。
+
+### 隐藏 docker
+
+docker 非常占用桌面空间，如果你为常用应用设置了快捷键，并且使用 Alfred，那么你就可以摆脱 docker，将其隐藏。方式是将 docker 设置为不用时隐藏，然后通过命令行设置显示时间：
+
+```shell
+-- 设置鼠标到对应位置停顿十秒才会显示
+$ defaults write com.apple.dock autohide-delay -int 10
+-- 设置立刻重启docker
+$ killall Dock
+```
+
 ### 搜索目录下的文件
 
-### 使用 grep
+#### 使用 grep
 
 ```objc
 -- 搜索当前目录下名字带有 zachary 的文件。文件名使用正则表达式
-ls -R | grep zachary
+$ ls -R | grep zachary
 ```
 
 不过这样不带子文件夹的路径。只适合在当前文件夹下。
 
-### 使用 find
+#### 使用 find
 
 ```shell
 -- 搜索当前目录下名字带有 zachary 的文件。文件名使用通配符
-find ./ -name '*zachary*'
+$ find ./ -name '*zachary*'
 ```
 
 ### 拷贝文件到目标机器
