@@ -492,7 +492,7 @@ handleEventsForBackgroundURLSession:(NSString *)identifier
 
 ## 参考
 
-[iOS使用NSURLSession进行下载（包括后台下载，断点下载）](<https://juejin.im/post/5c4ed0b0e51d4511dc730799#heading-12>) 写的非常好
+[iOS使用NSURLSession进行下载（包括后台下载，断点下载）](<https://www.jianshu.com/p/1211cf99dfc3>) 写的非常好
 
 
 

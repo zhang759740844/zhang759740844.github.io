@@ -107,13 +107,11 @@ WKUserScript *js = [[WKUserScript alloc] initWithSource:jsSource injectionTime:W
 - (nullable WKNavigation *)loadHTMLString:(NSString *)string baseURL:(nullable NSURL *)baseURL;
 ```
 
-加载主 bundle 中的一个html需要使用`loadRequest:`方法。`loadReqest` 这种方式会把当前load的这个html文件的路径作为baseURL，以此寻找其他资源。
+比如加载主 bundle 中的一个html需要使用`loadRequest:`方法。`loadReqest` 这种方式会把当前load的这个html文件的路径作为baseURL，以此寻找其他资源。
 
 ```objc
 [self.webView loadRequest:[NSURLRequest requestWithURL:[NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource:@"test" ofType:@"html"]]]];
 ```
-
-但是要注意，如果**加载本地沙盒中的文件**，这个方法只能加载本地 `tmp` 目录下的文件，需要先将本地 HTML 文件的数据 copy 到 `tmp` 目录中，然后再使用 `loadRequest` 来加载。iOS9以上 `[WKWebView loadFileURL:allowingReadAccessToURL:]` 加载任意位置的文件。
 
 `loadHTMLString:baseURL:` 直接加载 html 字符串。`baseURL` 是 html 中资源的路径：
 

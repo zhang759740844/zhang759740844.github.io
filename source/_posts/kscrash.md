@@ -15,7 +15,7 @@ KSCrash 是 iOS 上一个知名的 crash 收集框架。包括腾讯刚开源的
 
 总体结构如下图：
 
-![](rasdhttps://github.com/zhang759740844/MyImgs/blob/master/MyBlog/kscrash_1.png?raw=true)
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/kscrash_1.png?raw=true)
 
 可以看到总共分为三大部分：
 
