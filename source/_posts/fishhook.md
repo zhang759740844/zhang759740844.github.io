@@ -512,10 +512,10 @@ for (uint i = 0; i < section->size / sizeof(void *); i++) {
 
 1. 通过注册系统回调 `_dyld_register_func_for_add_image` 获取 image 的起始地址和 ASLR 偏移。
 2. 通过 image 的起始地址，加上 Header 的大小(Header 固定大小为 0x20)，得出 Load Commands 的起始地址
-3. 遍历 Load Commands 拿到 `__DATA,__nl_symbol_ptr` 和 `__DATA,__la_symbol_ptr` 的各项信息，包括段的位置，段的大小，段在 Dynamic Symbol Table 的起始索引 `reserved1`。
-4. 再次遍历 Load Commands 拿到静态符号表 `LC_SYMTAB`，获取 Symbol Table 和 String Table 的起始位置；拿到动态符号表 `LC_DYSYMTAB`  的起始位置;
-5. 根据第四步获取的起始位置，在 `LC_DYSYMTAB` 中遍历 `__DATA,__nl_symbol_ptr` 或者 `__DATA,__la_symbol_ptr` 的各个符号，获取它在 `LC_SYMTAB` 的索引。
-6. 根据这个索引，获取该符号在 `LC_SYMTAB`的信息，可以拿到它在 String Table 的 offset。这个 offset 保存着符号的名字。
+3. 遍历 Load Commands 拿到 `__DATA,__nl_symbol_ptr` 和 `__DATA,__la_symbol_ptr` 的各项信息，包括段的位置，段的大小，段在 Dynamic Symbol Table 的起始索引 `reserved1`（也就是 MachOView 中的 Indirect Sym Index）。
+4. 再次遍历 Load Commands 拿到符号表的 LC： `LC_SYMTAB`，从中获取 Symbol Table 和 String Table 的起始位置；同时拿到动态符号表的 LC： `LC_DYSYMTAB`  获取动态符号表 `DYSYMTAB`的起始位置;
+5. 根据第四步获取的动态符号表的起始位置，以及第三步获取的起始索引，在 `DYSYMTAB` 中遍历 `__DATA,__nl_symbol_ptr` 或者 `__DATA,__la_symbol_ptr` 的各个符号，其中保存了它在 Symbol Table 中的的索引。
+6. 根据从动态符号表中得到的这个索引，获取该符号在 `SYMTAB`的信息，可以拿到它在 String Table 的 offset。这个 offset 保存着符号的名字。
 7. 拿到这个符号的名字和我们要替换的各个符号名做对比，如果相同，那么把 `__DATA,__nl_symbol_ptr` 或者 `__DATA,__la_symbol_ptr` 相应位置的符号指向要替换的方法的地址。至此，fishhook 替换完成
 
 ## 思考题

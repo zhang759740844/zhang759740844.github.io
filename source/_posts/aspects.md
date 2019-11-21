@@ -298,7 +298,8 @@ static BOOL aspect_isSelectorAllowedAndTrack(NSObject *self, SEL selector, Aspec
 }
 @end
 
-@interface B : A @end
+@interface B : A
+@end
 
 @implementation B
 - (void)foo {
