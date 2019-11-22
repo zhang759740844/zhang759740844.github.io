@@ -103,7 +103,7 @@ YYAsyncLayer 可以提供一个绘制自定义 CALayer 的自定义 UIView 组�
 
 在 VSync 信号到来后，系统图形服务会通过 CADisplayLink 等机制通知 App，App 主线程开始在 CPU 中计算显示内容，比如**视图的创建、布局计算、图片解码、文本绘制**等。随后 CPU 会将计算好的内容提交到 GPU 去，由 GPU 进行**变换、合成、渲染**。随后 GPU 会把渲染结果提交到帧缓冲区去，等待下一次 VSync 信号到来时显示到屏幕上。由于垂直同步的机制，如果在一个 VSync 时间内，CPU 或者 GPU 没有完成内容提交，则那一帧就会被丢弃，等待下一次机会再显示，而这时显示屏会保留之前的内容不变。这就是界面卡顿的原因。
 
-![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/asynclayer1.png?raw=true)
+![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/asynclayer_1.png?raw=true)
 
 因此，要解决卡顿问题，就要从 CPU 和 GPU 两个角度完成。
 
