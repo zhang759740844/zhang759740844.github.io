@@ -567,9 +567,9 @@ const mapStateToProps = (state) => {
 
 并不是。当你感觉到你是在父组件里通过复制代码为某些子组件提供数据时，就可以抽出一个容器组件了。只要你认为父组件过多了解子组件的数据或者 action，就可以抽取容器。
 
-## Hanzo 
+## Genji4rn 
 
-Hanzo.js 是一个借鉴了 Dva.js  的框架。集成了 router 以及 redux。这里主要讨论 redux 相关部分的 RN 中的实现。
+Genji4rn.js 是一个借鉴了 Dva.js  的框架。集成了 router 以及 redux。这里主要讨论 redux 相关部分的 RN 中的实现。
 
 ### 需求分析
 
@@ -579,7 +579,7 @@ Hanzo.js 是一个借鉴了 Dva.js  的框架。集成了 router 以及 redux。
 
 需要使用者提供的是，哪些方法以及哪些属性是需要作为 props 传入模块的， props 中的方法需要执行什么异步操作(`action`)，以及如何影响 props 中的属性的(`state`)。
 
-带着上面的想法，我们可以大概推测一下 hanzo 做了什么。
+带着上面的想法，我们可以大概推测一下 Genji4rn 做了什么。
 
 1. 为每一个模块设置一个 reducer。这个 reducer 应该和 state 中相应属性同名。每个 reducer 中应该包含很多的方法，这些方法代表着不同的 `action.type`  的处理方法。为了和其他模块的 `action.type` 的处理方法不重名，还需要为这些方法添加模块特有的前缀。在 `dispatch(action)` 的时候，`type` 就要是包含前缀的方法名。
 2. 隐藏任何关于 redux 的东西。state 不需要从 store 中取。设置 state 的时候，也不要出现 `dispatch` 方法。
@@ -589,10 +589,10 @@ Hanzo.js 是一个借鉴了 Dva.js  的框架。集成了 router 以及 redux。
 首先在 RN 的入口 index.ios.js 中：
 
 ```javascript
-import Hanzo from 'hanzojs/mobile'
+import Genji4rn from 'Genji4rnjs/mobile'
 import React, { Component } from 'react'
 
-const App = new Hanzo()
+const App = new Genji4rn()
 App.registerModule(require('./modules/properties'))
 App.registerModule(require('./modules/todoApp'))
 
@@ -611,10 +611,10 @@ class CRM extends Component {
 React.AppRegistry.registerComponent('reactNativeCrm', () => CRM);
 ```
 
-通过 Hanzo 实例的 `registerModule` 方法可以注册模块。模块示例如下：
+通过 Genji4rn 实例的 `registerModule` 方法可以注册模块。模块示例如下：
 
 ```javascript
-import { connect } from 'hanzojs'
+import { connect } from 'Genji4rnjs'
 import model from './model'
 
 module.exports = {
@@ -638,7 +638,7 @@ module.exports = {
 }
 ```
 
-引入了和方法相关的 model 以及和视图相关的 view。导出 models 主要是为了导出模块的 `state` 以及 `reducer`，以此创建 `store`。导出 view 的时候，使用了 hanzo 提供的 connect 把两者组合，其实就是相当于设置里 `mapStateToProps` 和 `mapDispatchToProps`。
+引入了和方法相关的 model 以及和视图相关的 view。导出 models 主要是为了导出模块的 `state` 以及 `reducer`，以此创建 `store`。导出 view 的时候，使用了 Genji4rn 提供的 connect 把两者组合，其实就是相当于设置里 `mapStateToProps` 和 `mapDispatchToProps`。
 
 一个标准的 model 写法如下：
 
@@ -656,17 +656,17 @@ module.exports = {
 }
 ```
 
-其中，namespace 就是当前模块名，对于多层级的 namespace，hanzo 会将其转为多层级的对象结构。namespace 会被作为当前模块的在全局的 `state` 树的名字，以及相对应的 `reducer` 的名字。
+其中，namespace 就是当前模块名，对于多层级的 namespace，Genji4rn 会将其转为多层级的对象结构。namespace 会被作为当前模块的在全局的 `state` 树的名字，以及相对应的 `reducer` 的名字。
 
 state 为当前模块的初始状态，也就是在 `state` 树中属性的具体值。
 
 handlers 为当前模块能调用的方法，会以 `mapDispatchToProps` 的形式传入 view。publicHandlers 为全局都能调用的方法，所以会加入到每一个模块的 `mapDispatchToProps` 中去。
 
-reducers 会被 hanzo 做进一步处理。先将数组中的各个方法组合成该模块的 reducer，然后将这些 reducer `combineReducer` 为一个大的 reducer。**这里 reducers 里的各个方法分别对应 `action` 的不同 type。**
+reducers 会被 Genji4rn 做进一步处理。先将数组中的各个方法组合成该模块的 reducer，然后将这些 reducer `combineReducer` 为一个大的 reducer。**这里 reducers 里的各个方法分别对应 `action` 的不同 type。**
 
-注册完模块，通过 hanzo 实例的 start 方法，返回一个视图，作为 RN 的根视图。
+注册完模块，通过 Genji4rn 实例的 start 方法，返回一个视图，作为 RN 的根视图。
 
-另外还有一块关于 middlerware 的方面。使用 hanzo 实例的 `use` 方法注册中间件：
+另外还有一块关于 middlerware 的方面。使用 Genji4rn 实例的 `use` 方法注册中间件：
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/redux_2.png?raw=true)
 
@@ -676,7 +676,7 @@ reducers 会被 hanzo 做进一步处理。先将数组中的各个方法组合�
 
 #### 注册相关（主要是设置 reducer）
 
-通过 hanzo 提供的初始化方法，可以创建一个包含所有信息的实例，相当于是之后所有视图以及逻辑的根：
+通过 Genji4rn 提供的初始化方法，可以创建一个包含所有信息的实例，相当于是之后所有视图以及逻辑的根：
 
 ```javascript
 const app = {
@@ -695,7 +695,7 @@ const app = {
   use, // add redux-middlewares, extra-reducers, etc
   registerModule, // register a module
   router, // config router
-  start, // start hanzo instance
+  start, // start Genji4rn instance
   getStore, // get redux store
   getRoutes, // get router config
   getModule, // get the register module
@@ -751,7 +751,7 @@ function _mergeReducers(obj, arr, res) {
 
 > 创建 reducer 的时候，其实就已经把 `defaultState` 传进去了。所以后面创建 store 的时候就不需要总的 `initialState` 了
 
-之后通过 `_mergeReducers` 方法把上面生成的各个 reducer 放到 hanzo 实例的 `_reducers` 的各个命名空间下。比如 `namespace` 为 `order/newOrder` 的模块，它的 reducer 就放在 hanzo 实例对象的 `_reducers.order.newOrder` 下，等待最后的 `combineReducer`。
+之后通过 `_mergeReducers` 方法把上面生成的各个 reducer 放到 Genji4rn 实例的 `_reducers` 的各个命名空间下。比如 `namespace` 为 `order/newOrder` 的模块，它的 reducer 就放在 Genji4rn 实例对象的 `_reducers.order.newOrder` 下，等待最后的 `combineReducer`。
 
 最后，把 `publicHandlers` 中的所有方法保存到 `GlobalContext` 中去。`publicHandlers` 中的方法所有模块都能通过 `GlobalContext` 获取并使用：
 
@@ -765,11 +765,11 @@ function _mergeReducers(obj, arr, res) {
 >
 > 全局 reducer 的适用场景是，我的变动要通知其他人的变动的情况。即一对多。
 
-注册模块的逻辑就是这样。现在需要把各个部分糅合到一起。hanzo 提供了 `start` 方法：
+注册模块的逻辑就是这样。现在需要把各个部分糅合到一起。Genji4rn 提供了 `start` 方法：
 
 ```javascript
 /**
- * start the whole hanzo instance
+ * start the whole Genji4rn instance
  * return React.Component
  */
 function start(container) {
@@ -830,12 +830,12 @@ function getStore() {
 }
 ```
 
-可以看到，先用 `applyMiddleware` 生成了中间件，中间件可以通过 hanzo 的 `use` 方法注册，一般会注册的中间件有： 
+可以看到，先用 `applyMiddleware` 生成了中间件，中间件可以通过 Genji4rn 的 `use` 方法注册，一般会注册的中间件有： 
 
 - redux-thunk：用来处理异步 action
 - redux-promise-middleware：为异步请求的 `action.type` 加上后缀。例如：`Loading`,`Success`,`Error` 等。
 
-这里 `initialState` 需要在创建 hanzo 实例的时候传入，一般是 `{}`。前面已经说了，创建 reducer 的时候，就已经把默认值传给每个 reducer 了。这里就不需要再为 `initialState` 创建值了。
+这里 `initialState` 需要在创建 Genji4rn 实例的时候传入，一般是 `{}`。前面已经说了，创建 reducer 的时候，就已经把默认值传给每个 reducer 了。这里就不需要再为 `initialState` 创建值了。
 
 不过这段的重点应该是 `getReducer` 方法：
 
@@ -873,7 +873,7 @@ function getReducer() {
 
 最终返回的 `appReducer` 中，包含了 router 的 reducer `navReducer` 还有用户的  `mergeReducers` 。
 
-这里 `mergeReducers` 的生成非常有意思。之前我们保存在 hanzo 实例的 `_reducer`里的 reducer 结构是两层的：`_reducers.order.newOrder`. 但是 `combineReducer` 只能把一层的 reducer 转化为一个大的 reducer。因此，这里使用了两次 `combineReducer`。比如刚才的例子，第一次将 `order` 下的各个 reducer `combineReducer` 后得到一个 `order` 的 `mergeReducers['order']`。然后再把 `order` 同一层级的 reducer `combineReducer` 到 `appReducer` 下。
+这里 `mergeReducers` 的生成非常有意思。之前我们保存在 Genji4rn 实例的 `_reducer`里的 reducer 结构是两层的：`_reducers.order.newOrder`. 但是 `combineReducer` 只能把一层的 reducer 转化为一个大的 reducer。因此，这里使用了两次 `combineReducer`。比如刚才的例子，第一次将 `order` 下的各个 reducer `combineReducer` 后得到一个 `order` 的 `mergeReducers['order']`。然后再把 `order` 同一层级的 reducer `combineReducer` 到 `appReducer` 下。
 
 ![](https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/redux_1.png?raw=true)
 
@@ -885,7 +885,7 @@ function getReducer() {
 
 前面已经成功隐藏了 `createStore`,`combineReducer`,`Provider`,`applymiddleware` 等方法，不过这还不够。对于用户来说，`dispatch(action)` 也没有必要让用户知道。使用者应该只需要提供一个方法，返回数据 `action.payload` 就行了，连 `action.type` 是什么用户都可以不必知道，由框架通过获取方法名推断得到。
 
-所以需要使用 hanzo 提供的 `connect` 方法：
+所以需要使用 Genji4rn 提供的 `connect` 方法：
 
 ```javascript
 module.exports.connect = function(state, model) {
@@ -1068,7 +1068,7 @@ store.getters.doneTodos // -> [{ id: 1, text: '...', done: true }]
 
 根据 redux 所倡导的，改变 store 的唯一方式还是通过 dispatch 一个 action，而不是直接修改 store。Redux 中，reducer 是一个纯函数，用于修改 state。Vuex 也提供了相应方式 `mutation` 。
 
-`mutation` 的写法非常类似 hanzo 中 `reducers` 的写法。mutation 中包含了很多的方法。方法接收 `initialState` 和一个值，即 `action.payload`。为什么不需要 `action.type` 了呢？因为方法名就是 type。比如下面的 `increment` 方法，就代表着这个 reducer 的 `action.type`
+`mutation` 的写法非常类似 Genji4rn 中 `reducers` 的写法。mutation 中包含了很多的方法。方法接收 `initialState` 和一个值，即 `action.payload`。为什么不需要 `action.type` 了呢？因为方法名就是 type。比如下面的 `increment` 方法，就代表着这个 reducer 的 `action.type`
 
 ```javascript
 mutations: {
@@ -1078,7 +1078,7 @@ mutations: {
 }
 ```
 
-不同的是，hanzo 中每个方法不能直接修改 state 值，要返回一个新的 state。而 `mutation` 的方法中直接修改 state。这种差异是由于 react 和 vue 响应式机制的不同而产生的。react 要通过比较 state 变化前后的不同，来找出需要重新渲染的组件。Vue 则是 state 的 set 方法通知页面中计算属性的改变。
+不同的是，Genji4rn 中每个方法不能直接修改 state 值，要返回一个新的 state。而 `mutation` 的方法中直接修改 state。这种差异是由于 react 和 vue 响应式机制的不同而产生的。react 要通过比较 state 变化前后的不同，来找出需要重新渲染的组件。Vue 则是 state 的 set 方法通知页面中计算属性的改变。
 
 触发方式上，Redux 中通过 `store.dispatch(action)` 依次触发所有 reducer。Vuex 中通过 `commit` 方法依次触发所有模块的 mutation，相当于把 `action` 拆成了 `action.type` 和 `action.payload` 分别传入：
 
@@ -1086,7 +1086,7 @@ mutations: {
 store.commit('increment', 10) 
 ```
 
-这里与 hanzo 不同的是，hanzo 把与 commit 相对应的 dispatch 封装在 handler 中的相关方法里。而 Vuex 还需要自己调用。如果模块存在命名空间，那么写起来会比较冗长，而 hanzo 会自动为方法添加命名空间的前缀：
+这里与 Genji4rn 不同的是，Genji4rn 把与 commit 相对应的 dispatch 封装在 handler 中的相关方法里。而 Vuex 还需要自己调用。如果模块存在命名空间，那么写起来会比较冗长，而 Genji4rn 会自动为方法添加命名空间的前缀：
 
 ```javascript
 store.commit('order/newOrder/increment', 10)
@@ -1122,7 +1122,7 @@ vue 里通过 `dispatch` 和 `commit` 手动替代了 redux-thunk 的功能。
 
 #### 基本使用
 
-当工程变大后，所有状态和方法都写在 store 中是不明智的。所以 react 中才有了 hanzo 之类的框架。Vuex 提供了专门的模块化方式：
+当工程变大后，所有状态和方法都写在 store 中是不明智的。所以 react 中才有了 Genji4rn 之类的框架。Vuex 提供了专门的模块化方式：
 
 ```javascript
 const moduleA = {
@@ -1218,7 +1218,7 @@ const store = new Vuex.Store({
 
 ### 总结
 
-Vuex 在 reducer 部分的处理和 hanzo 非常相似，都是将 `action.type` 转化为一个个方法，都可以为每一个 `action.type` 的方法添加命名空间。都可以在每一个模块的 reducer 中获取到当前模块的 state。
+Vuex 在 reducer 部分的处理和 Genji4rn 非常相似，都是将 `action.type` 转化为一个个方法，都可以为每一个 `action.type` 的方法添加命名空间。都可以在每一个模块的 reducer 中获取到当前模块的 state。
 
 但是在 dispatch 方法的几乎没有做太多的处理，还是需要使用者根据实际情况，去获取 store 调用 `store.dispatch` 或者 `store.commit` 方法，可以做进一步的封装，尤其是使用命名空间的情况下。
 
