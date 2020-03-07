@@ -1,0 +1,1362 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+
+
+
+
+  <meta name="keywords" content="Swift,RxSwift,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="学习 RxSwift，开始冲了个泊学会员看视频，发现看视频还不如直接看泊学文档。之后看到了这本书，果然看文档还不如看书。（泊学视频中的RxSwift 就是照搬了这本书的前两个 Section，例子也是照搬的）">
+<meta name="keywords" content="Swift,RxSwift">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RxSwift 的概念">
+<meta property="og:url" content="http://zhang759740844.github.io/2017/10/26/RxSwift一些概念/index.html">
+<meta property="og:site_name" content="Zachary&#39;s blog">
+<meta property="og:description" content="学习 RxSwift，开始冲了个泊学会员看视频，发现看视频还不如直接看泊学文档。之后看到了这本书，果然看文档还不如看书。（泊学视频中的RxSwift 就是照搬了这本书的前两个 Section，例子也是照搬的）">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_1.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_2.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_3.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_4.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_5.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_6.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_7.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_8.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_9.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_10.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_11.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_12.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_13.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_14.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_15.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_16.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_17.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_18.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_19.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_20.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_21.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_22.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_23.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_24.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_25.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_26.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_27.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_28.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_29.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_30.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_31.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_32.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_33.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_34.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_35.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_36.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_37.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_38.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_39.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_40.png?raw=true">
+<meta property="og:updated_time" content="2020-02-27T15:13:37.635Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="RxSwift 的概念">
+<meta name="twitter:description" content="学习 RxSwift，开始冲了个泊学会员看视频，发现看视频还不如直接看泊学文档。之后看到了这本书，果然看文档还不如看书。（泊学视频中的RxSwift 就是照搬了这本书的前两个 Section，例子也是照搬的）">
+<meta name="twitter:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_1.png?raw=true">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://zhang759740844.github.io/2017/10/26/RxSwift一些概念/">
+
+
+
+
+
+  <title>RxSwift 的概念 | Zachary's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Zachary's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">记录成长</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://zhang759740844.github.io/2017/10/26/RxSwift一些概念/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zachary Zhang">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Zachary's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">RxSwift 的概念</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-10-26T10:07:12+08:00">
+                2017-10-26
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>学习 RxSwift，开始冲了个泊学会员看视频，发现看视频还不如直接看泊学文档。之后看到了这本书，果然看文档还不如看书。（泊学视频中的RxSwift 就是照搬了这本书的前两个 Section，例子也是照搬的）</p>
+<a id="more"></a>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_1.png?raw=true" alt></p>
+<h2 id="着手-RxSwift"><a href="#着手-RxSwift" class="headerlink" title="着手 RxSwift"></a>着手 RxSwift</h2><h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>RxSwift 本质上是通过对新数据的顺序处理，来简化异步程序的开发。</p>
+<h4 id="RxSwift-基础"><a href="#RxSwift-基础" class="headerlink" title="RxSwift 基础"></a>RxSwift 基础</h4><p>RxSwift 由三部分组成：Observables，Operators 和 Schedulers。</p>
+<p><code>Observables&lt;T&gt;</code> 帮助一个程序产生一个带有数据的事件序列，允许一个或多个 Observers 响应事件并处理新的数据。Observables 能发送三种类型的事件：next 事件，completed 事件，error 事件。使用事件序列是最终的解耦方式，不再需要使用 delegate 或者闭包。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_2.png?raw=true" alt></p>
+<p>Operators 指的是有着异步的输入，然后产生没有副作用的输出的方法。它们能够组合在一起，实现复杂的逻辑。比如下图的 <code>filter</code> 和 <code>map</code> 的过程：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_3.png?raw=true" alt></p>
+<p>Schedulers 是 Rx 中的调度队列。我们可以通过 RxSwift 将同一个订阅在不同的调度队列中完成以达到最佳的性能：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_4.png?raw=true" alt></p>
+<h4 id="App-架构"><a href="#App-架构" class="headerlink" title="App 架构"></a>App 架构</h4><p>Rx 适合所有的架构。当然最匹配的还是 MVVM。MVVM 中有一层 ViewModel 能够暴露出各个 Observables 属性，你可以在 ViewController 中直接将其和 UI 绑定。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_5.png?raw=true" alt></p>
+<h4 id="RxCocoa"><a href="#RxCocoa" class="headerlink" title="RxCocoa"></a>RxCocoa</h4><p>RxSwift 提供了通用的 Rx API。开发的时候还需要 RxCocoa 配合 RxSwift 使用 UIKit 和 Cocoa。比如 RxCocoa 给 UISwitch 添加了一个 <code>rx.isOn</code> 属性，你可以订阅它来监听 UISwitch 的事件队列。</p>
+<h3 id="Observable"><a href="#Observable" class="headerlink" title="Observable"></a>Observable</h3><h4 id="Observable-的生命周期"><a href="#Observable-的生命周期" class="headerlink" title="Observable 的生命周期"></a>Observable 的生命周期</h4><p>一个 Observable 不发出任何事件，直到有订阅发生。订阅者发送 error 或者 completed 事件能结束订阅。当订阅结束，也就不会再发出任何事件了。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_6.png?raw=true" alt></p>
+<p>事件 event 是个枚举类型：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">enum</span> <span class="title">Event</span>&lt;<span class="title">Element</span>&gt; </span>&#123;</span><br><span class="line">  <span class="comment">/// Next element is produced. </span></span><br><span class="line">  <span class="keyword">case</span> next(<span class="type">Element</span>)</span><br><span class="line">  <span class="comment">/// Sequence terminated with an error. </span></span><br><span class="line">  <span class="keyword">case</span> error(<span class="type">Swift</span>.<span class="type">Error</span>)</span><br><span class="line">  <span class="comment">/// Sequence completed successfully. </span></span><br><span class="line">  <span class="keyword">case</span> completed</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="创建-Observables"><a href="#创建-Observables" class="headerlink" title="创建 Observables"></a>创建 Observables</h4><p><code>.just</code> 可以用来创建一个只有一个元素的 Observable：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> observable = <span class="type">Observable</span>&lt;<span class="type">Int</span>&gt;.just(one)</span><br></pre></td></tr></table></figure>
+<p><code>.of</code> 接收多个元素形成一个 Observable：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> observable2 = <span class="type">Observable</span>.of(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>)</span><br></pre></td></tr></table></figure>
+<p><code>.from</code> 接收一个数组，将数组元素生成一个 Observable：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> observable3 = <span class="type">Observable</span>.from([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>])</span><br></pre></td></tr></table></figure>
+<p><code>.empty</code> 提供 0 个元素的 Observable，只会触发 completed 事件。尽管 empty 不触发 next 事件，但是还需要明确泛型类型，所以使用 void 是最好的选择：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> observable4 = <span class="type">Observable</span>&lt;<span class="type">Void</span>&gt;.empty()</span><br></pre></td></tr></table></figure>
+<p><code>.never</code> 创建的 Observable 不会触发 next，也不会触发 completed：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> observable5 = <span class="type">Obnservable</span>&lt;<span class="type">Any</span>&gt;.never()</span><br></pre></td></tr></table></figure>
+<p><code>.create</code> 创建 Observable，需要传入一个入参为 observer，返回一个 Disposable 实例的闭包。在这个闭包里定义了所有将要发送的事件：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Observable</span>&lt;<span class="type">String</span>&gt;.create &#123; observer <span class="keyword">in</span> </span><br><span class="line">	<span class="comment">// 1 </span></span><br><span class="line">	observer.onNext(<span class="string">"1"</span>)</span><br><span class="line">	<span class="comment">// 2</span></span><br><span class="line">	observer.onCompleted()</span><br><span class="line">	<span class="comment">// 3 </span></span><br><span class="line">	observer.onNext(<span class="string">"?"</span>)</span><br><span class="line">	<span class="comment">// 4 </span></span><br><span class="line">	<span class="keyword">return</span> <span class="type">Disposables</span>.create()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注意前面生命周期中提及的，<code>onCompleted</code> 发生后，订阅结束。所以后面的 <code>observer.onNext(&quot;?&quot;)</code> 事件是无法接收到的。</p>
+<h4 id="订阅-Observables"><a href="#订阅-Observables" class="headerlink" title="订阅 Observables"></a>订阅 Observables</h4><p>通过 <code>.subScribe</code> 订阅 Observable，返回一个 <code>Disposable</code> 对象。</p>
+<p>下面是传入一个入参为事件 event 闭包的例子：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> disposable = observable.subScribe &#123; event <span class="keyword">in</span></span><br><span class="line">	<span class="keyword">if</span> <span class="keyword">let</span> element = event.element &#123; </span><br><span class="line">    	<span class="built_in">print</span>(element) </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>.subScribe</code> 还可以接受各种事件的回调闭包，比如 <code>onNext</code>,<code>onCompleted</code>,<code>onError</code>：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> disposable2 = observable.subscribe(onNext: &#123; element <span class="keyword">in</span> </span><br><span class="line">	<span class="built_in">print</span>(element) </span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<h4 id="取消订阅-Observables"><a href="#取消订阅-Observables" class="headerlink" title="取消订阅 Observables"></a>取消订阅 Observables</h4><p>如果不取消订阅，将会将会产生内存泄漏，取消订阅可以通过 <code>.dispose</code> 直接取消：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">disposable.dispose()</span><br></pre></td></tr></table></figure>
+<p>但是这种手动的取消非常的麻烦，RxSwift 提供了一个 <code>DisposeBag</code> 类型，用于自动回收，把订阅后返回的 <code>disposable</code> 对象直接加入 <code>DisposeBag</code>:</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> disposeBag = <span class="type">DisposeBag</span>()</span><br><span class="line">disposable.addDisposableTo(disposeBag)</span><br></pre></td></tr></table></figure>
+<p>当 <code>disposeBag</code> 回收的时候，会自动取消订阅。</p>
+<blockquote>
+<p>取消订阅有两种方式，一种是此处说的 disposebag，还有一种方式是订阅者调用 onCompleted 方法。比如线面的 Subjects 就可以直接调用取消：<code>subject.onCompleted()</code></p>
+</blockquote>
+<h3 id="Subjects"><a href="#Subjects" class="headerlink" title="Subjects"></a>Subjects</h3><h4 id="什么是-subjects？"><a href="#什么是-subjects？" class="headerlink" title="什么是 subjects？"></a>什么是 subjects？</h4><p>subjects 既是 Observable 又是 Observer。有四种类型：</p>
+<ul>
+<li>PublishSubject：订阅后接受事件</li>
+<li>BehaviorSubject：有初始值，新的订阅者会获得订阅前最新的事件</li>
+<li>ReplySubject：有一个 buffer，新的订阅者会获得 buffer 中缓存的事件</li>
+<li>Variable：包装了的 BehaviorSubject。把当前值作为状态，值改变时触发事件。新的订阅者同样会获得订阅前最新的事件。</li>
+</ul>
+<h4 id="PublishSubjects"><a href="#PublishSubjects" class="headerlink" title="PublishSubjects"></a>PublishSubjects</h4><p>PublishSubject 只有在订阅后才能接收到事件。流程如图所示，在事件1时并没有进行订阅，所以并没有收到事件；在事件1和事件2之间进行订阅，能收到事件2和事件3；在事件2和事件3之间订阅，能收到事件3：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_7.png?raw=true" alt></p>
+<p>示例代码如下，要注意初始化的时候要设置好泛型类型：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> disposeBag = <span class="type">DisposeBag</span>()</span><br><span class="line"><span class="comment">// 创建 PublishSubject</span></span><br><span class="line"><span class="keyword">let</span> subject = <span class="type">PublishSubject</span>&lt;<span class="type">Int</span>&gt;()</span><br><span class="line"><span class="comment">// 订阅</span></span><br><span class="line">subject.subscribe &#123; <span class="built_in">print</span>($<span class="number">0</span>.element ?? $<span class="number">0</span>) &#125;</span><br><span class="line">	.addDisposableTo(disposeBag)</span><br><span class="line"><span class="comment">// 发送事件</span></span><br><span class="line">subject.onNext(<span class="number">1</span>)							<span class="comment">//1</span></span><br><span class="line"><span class="comment">// 结束订阅</span></span><br><span class="line">subject.onCompleted()						<span class="comment">//completed</span></span><br><span class="line"><span class="comment">// 再次订阅</span></span><br><span class="line">subject.subscribe &#123; <span class="built_in">print</span>($<span class="number">0</span>.element ?? $<span class="number">0</span>) &#125;</span><br><span class="line">	.addDisposableTo(disposeBag)			<span class="comment">//completed</span></span><br><span class="line"><span class="comment">// 发送事件</span></span><br><span class="line">subject.onNext(<span class="number">2</span>)							<span class="comment">//什么也没有发生</span></span><br></pre></td></tr></table></figure>
+<p>要注意一点，当一个 subject 取消订阅后，再订阅，会直接受到一个 completed 事件，之后再发送 next 事件是没有任何响应的。</p>
+<h4 id="BehaviorSubjects"><a href="#BehaviorSubjects" class="headerlink" title="BehaviorSubjects"></a>BehaviorSubjects</h4><p>BehaviorSubjects 在订阅之后可以接到最近一次的事件。并且接受一个初始值，当订阅前没有事件时，将初始值作为事件值发送。如果所示，事件1和事件2之间订阅的时候，还是能收到事件1；事件2和事件3之间订阅的时候，还是能收到事件2：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_8.png?raw=true" alt></p>
+<p>示例代码如下，由于有初始值的类型推断，就不需要设置泛型了：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> disposeBag = <span class="type">DisposeBag</span>()</span><br><span class="line"><span class="comment">// 创建 BehaviorSubject</span></span><br><span class="line"><span class="keyword">let</span> subject = <span class="type">BehaviorSubject</span>(value: <span class="string">"Initial value"</span>)</span><br><span class="line"><span class="comment">// 订阅</span></span><br><span class="line">subject.subscribe &#123; <span class="built_in">print</span>($<span class="number">0</span>.element ?? $<span class="number">0</span>) &#125;</span><br><span class="line">	.addDisposableTo(bag)					<span class="comment">// Initial Value</span></span><br><span class="line"><span class="comment">// 发送事件</span></span><br><span class="line">subject.onNext(<span class="string">"X"</span>)							<span class="comment">// X</span></span><br><span class="line"><span class="comment">// 错误事件</span></span><br><span class="line">subject.onError(<span class="type">MyError</span>.anError)			<span class="comment">// anError</span></span><br><span class="line"><span class="comment">// 再次订阅</span></span><br><span class="line">subject.subscribe &#123; <span class="built_in">print</span>($<span class="number">0</span>.element ?? $<span class="number">0</span>) &#125;</span><br><span class="line">	.addDisposableTo(bag)					<span class="comment">// anError</span></span><br><span class="line"><span class="comment">// 发送事件</span></span><br><span class="line">subject.onNext(<span class="string">"X"</span>)							<span class="comment">// 没有任何事情发生</span></span><br></pre></td></tr></table></figure>
+<p>和 PublishSubject 类似的，当 subject 完成或者错误时，再订阅，就只会发出完成和错误事件，并且忽略后面的 next 事件。</p>
+<h4 id="ReplaySubjects"><a href="#ReplaySubjects" class="headerlink" title="ReplaySubjects"></a>ReplaySubjects</h4><p>ReplaySubject 有一个 buffer 用来暂存先前的事件值，初始化的时候设置缓存的大小。当有订阅时，将缓存的值发送。如图所示，当在事件2和事件3之间产生订阅的时候，缓存的事件1和事件2都触发了：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_9.png?raw=true" alt></p>
+<p>示例代码如下，还是要注意设置泛型，并且初始化方法是 <code>create(bufferSize:)</code></p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> disposeBag = <span class="type">DisposeBag</span>()</span><br><span class="line"><span class="comment">// 创建 ReplaySubject</span></span><br><span class="line"><span class="keyword">let</span> subject = <span class="type">ReplaySubject</span>&lt;<span class="type">String</span>&gt;.create(bufferSize: <span class="number">2</span>)</span><br><span class="line"><span class="comment">// 发送事件</span></span><br><span class="line">subject.onNext(<span class="string">"1"</span>)</span><br><span class="line">subject.onNext(<span class="string">"2"</span>)</span><br><span class="line"><span class="comment">// 订阅</span></span><br><span class="line">subject.subscribe &#123; <span class="built_in">print</span>($<span class="number">0</span>.element ?? $<span class="number">0</span>) &#125;</span><br><span class="line">	.addDisposableTo(bag)				<span class="comment">// 1    2</span></span><br><span class="line"><span class="comment">// 发送错误</span></span><br><span class="line">subject.onError(<span class="type">MyError</span>.annError)		<span class="comment">// annError</span></span><br><span class="line"><span class="comment">// 再次订阅</span></span><br><span class="line">subject.subscribe &#123; <span class="built_in">print</span>($<span class="number">0</span>.element ?? $<span class="number">0</span>) &#125;</span><br><span class="line">	.addDisposableTo(bag)				<span class="comment">// 1	2	annError</span></span><br><span class="line"><span class="comment">// 发送事件</span></span><br><span class="line">subject.onNext(<span class="string">"3"</span>)						<span class="comment">// 没有任何反应</span></span><br></pre></td></tr></table></figure>
+<p>注意，和前面都相同的是，由于之前 subject 已经发出错误事件，再次订阅的时候会立刻收到错误事件。不同的是，由于 ReplaySubject 有 buffer，所以仍然会先响应 buffer 中缓存的事件。</p>
+<h4 id="Variables"><a href="#Variables" class="headerlink" title="Variables"></a>Variables</h4><p>Variable 是 BehaviorSubject 的包装，将其值作为状态。当值变化时，触发事件，不再需要 <code>onNext()</code> 方法触发事件。Variable 不会出现 error，也不需要手动触发 completed 事件。</p>
+<p>代码示例如下：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> disposeBag = <span class="type">DisposeBag</span>()</span><br><span class="line"><span class="comment">// 创建 Variable</span></span><br><span class="line"><span class="keyword">var</span> variable = <span class="type">Variable</span>(<span class="string">"Initial value"</span>)</span><br><span class="line"><span class="comment">// 更改值</span></span><br><span class="line">variable.value = <span class="string">"New Value"</span></span><br><span class="line"><span class="comment">// 订阅</span></span><br><span class="line">variable.asObservable()</span><br><span class="line">	.subscribe &#123;</span><br><span class="line">        <span class="built_in">print</span>($<span class="number">0</span>.element)</span><br><span class="line">    &#125;.addDisposableTo(bag)			<span class="comment">// New Value</span></span><br></pre></td></tr></table></figure>
+<p>Variable 需要使用 <code>asObservable()</code> 方法将其转换为 Observable，值是其 <code>value</code> 属性。另外，由于是 BehaviorSubject 的包装，因此，订阅的时候会打印最后一次的事件值。</p>
+<h3 id="Subject-与-Observer-和-Observable-的区别"><a href="#Subject-与-Observer-和-Observable-的区别" class="headerlink" title="Subject 与 Observer 和 Observable 的区别"></a>Subject 与 Observer 和 Observable 的区别</h3><p>这一节是我自己的理解，可能在理解上有偏差。如果看到这里可以自己也思考一下。</p>
+<h4 id="Subject-与-Observable-的不同"><a href="#Subject-与-Observable-的不同" class="headerlink" title="Subject 与 Observable 的不同"></a>Subject 与 Observable 的不同</h4><p><code>onNext</code>，<code>onError</code>，<code>onCompleted</code> 都是 Observer 中的方法，但是本身并没有具体的实现。Observable 在订阅的时候传入了这几个方法的实现，所以在触发事件的时候，直接内部调用这些闭包响应事件即可。你可以把这个过程想象成 Observable 调用其内部的 Observer。<strong>所以 Observable 必须要能被订阅，订阅有什么用？用来传递事件处理方法</strong>。</p>
+<p>Subject 既是 Observable 又是 Observer，我们订阅完，传入事件的实现后，就可以直接调用 <code>observer.onNext()</code>。相当于，我们<strong>可以选择主动触发事件的时机</strong>，然后 Observer 响应事件。这很有用，比如处理 UI 交互，就必须要在任意时刻都能主动触发 <code>observer.onNext()</code> 方法。而单纯的 Observable 则不行，它是非常被动的，要么直接触发，要么延迟多久或者多少周期触发。</p>
+<h4 id="Subject-与-Observer-的不同"><a href="#Subject-与-Observer-的不同" class="headerlink" title="Subject 与 Observer 的不同"></a>Subject 与 Observer 的不同</h4><p>对于单纯的 Observer，由于没有这些事件方法的具体实现，所以我们也不能像 Subject 一样主动触发事件。但是<strong>有一些特殊的 Observer 本身在初始化的时候就提供了事件处理的方法</strong>，这种 Observer 不需要像 subscribe 一样订阅的时候传入事件处理方法，直接使用 <code>bindTo()</code> 绑定即可。</p>
+<p>不过也正是因为 Observer 提供了默认的事件处理方法，所以我们不能用其处理 UI 交互。因为 UI 交互的事件处理方法是要根据具体情况而定的。比如点击一个按钮我可能要让计数加一，或者让计数减一。</p>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p><strong>所以，在我的理解下，Observable 需要传递事件处理方法，所以可以定制，但不能主动触发；Observer 有默认事件处理方法，所以可以主动触发，但不能定制。</strong></p>
+<p><strong>因为 Subject 既能主动选择触发事件的时机，又能个性化事件处理的方法，所以一般交互的 UI 控件中的属性都是 Subject 类型。</strong></p>
+<h2 id="操作符的最佳实践"><a href="#操作符的最佳实践" class="headerlink" title="操作符的最佳实践"></a>操作符的最佳实践</h2><h3 id="过滤操作符"><a href="#过滤操作符" class="headerlink" title="过滤操作符"></a>过滤操作符</h3><h4 id="Igoring-operators"><a href="#Igoring-operators" class="headerlink" title="Igoring operators"></a>Igoring operators</h4><h5 id="ignoreElements"><a href="#ignoreElements" class="headerlink" title="ignoreElements"></a>ignoreElements</h5><p>ignoreElements 用来忽略所有的 <code>.next</code> 事件。所以用来指接受 completed 事件</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_10.png?raw=true" alt></p>
+<p>示例如下：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> strikes = <span class="type">PublishSubject</span>&lt;<span class="type">String</span>&gt;</span><br><span class="line">strikes.ignoreElements()</span><br><span class="line">	.subscribt &#123; <span class="built_in">print</span>(<span class="string">"You are out"</span>) &#125;</span><br><span class="line">	.addDisposableTo(bag)</span><br></pre></td></tr></table></figure>
+<h5 id="elementAt"><a href="#elementAt" class="headerlink" title="elementAt"></a>elementAt</h5><p>elementAt 只会获取索引序号的事件，忽略其他的所有 <code>.next</code>。索引序号从 0 开始:</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_11.png?raw=true" alt></p>
+<p>代码如下：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> strikes = <span class="type">PublishSubject</span>&lt;<span class="type">String</span>&gt;()</span><br><span class="line">strikes.elementAt(<span class="number">1</span>)</span><br><span class="line">	.subscribe &#123; <span class="built_in">print</span>(<span class="string">"You are out"</span>) &#125;</span><br><span class="line">	.addDisposableTo(bag)</span><br></pre></td></tr></table></figure>
+<h5 id="filter"><a href="#filter" class="headerlink" title="filter"></a>filter</h5><p>filter 接受一个断言闭包，入参为当前事件值。接受所有断言正确的事件。注意是接受而不是过滤掉：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_12.png?raw=true" alt></p>
+<p>代码如下：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Observable</span>.of(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>)</span><br><span class="line">	.<span class="built_in">filter</span> &#123; $<span class="number">0</span> % <span class="number">2</span> == <span class="number">0</span>&#125;</span><br><span class="line">	.subscribe &#123; <span class="built_in">print</span>($<span class="number">0</span>.elemetn ?? $<span class="number">0</span>) &#125;</span><br><span class="line">	.addDisposableTo(bag)</span><br></pre></td></tr></table></figure>
+<h4 id="Skipping-operators"><a href="#Skipping-operators" class="headerlink" title="Skipping operators"></a>Skipping operators</h4><p>上面一节是根据条件筛选；这一节是忽略到某个满足条件的，后面的全部接受。</p>
+<h5 id="skip"><a href="#skip" class="headerlink" title="skip"></a>skip</h5><p>skip 用来略过一定数量的 <code>.next</code>事件，然后开始接受。从 1 开始计数</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_13.png?raw=true" alt></p>
+<p>代码如下：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Observable</span>.of(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>)</span><br><span class="line">	.skip(<span class="number">2</span>)</span><br><span class="line">	.subscribe &#123; <span class="built_in">print</span>($<span class="number">0</span>.element ?? $<span class="number">0</span>)&#125;</span><br><span class="line">	.addDisposableTo(bag)</span><br></pre></td></tr></table></figure>
+<h5 id="skipWhile"><a href="#skipWhile" class="headerlink" title="skipWhile"></a>skipWhile</h5><p>skipWhile 是略过直到某个满足条件的事件发生。skipWhile 还有一个兄弟方法 skipWhileWithIndex，除了接受事件值，还接受事件序号，index 从 0 开始：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_14.png?raw=true" alt></p>
+<p>代码如下：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Observable</span>.of(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>)</span><br><span class="line">	.skipWhile &#123; $<span class="number">0</span> % <span class="number">2</span> == <span class="number">0</span> &#125;</span><br><span class="line">	.subscribe &#123; <span class="built_in">print</span>($<span class="number">0</span>.element ?? $<span class="number">0</span>)&#125;</span><br><span class="line">	.addDisposableTo(bag)</span><br></pre></td></tr></table></figure>
+<h5 id="skipUntil"><a href="#skipUntil" class="headerlink" title="skipUntil"></a>skipUntil</h5><p>skipUntil 是略过直到某个事件发生。就是当前 Observable 和另外一个 Observable 相关联，当特定的 Observable 的 <code>.next</code> 发生的时候，才开始接受事件：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_15.png?raw=true" alt></p>
+<p>代码如下：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> subject = <span class="type">PublishSubject</span>&lt;<span class="type">String</span>&gt;()</span><br><span class="line"><span class="keyword">let</span> trigger = <span class="type">PublishSubject</span>&lt;<span class="type">String</span>&gt;()</span><br><span class="line"></span><br><span class="line">subject.skipUntil(trigger)</span><br><span class="line">	.subscribe &#123; <span class="built_in">print</span>( $<span class="number">0</span>.element ?? $<span class="number">0</span>) &#125;</span><br><span class="line">	.addDisposableTo(bag)</span><br><span class="line"><span class="comment">// ... 当前时刻虽然订阅了，但是发送事件是无反应的</span></span><br><span class="line">trigger.onNext(<span class="string">"a"</span>)</span><br><span class="line"><span class="comment">// ... 由于 trigger 发送了 onNext 事件，现在 subject 可以接收到 next 事件了</span></span><br></pre></td></tr></table></figure>
+<h4 id="Taking-operators"><a href="#Taking-operators" class="headerlink" title="Taking operators"></a>Taking operators</h4><p>本小节和上一小结正好相反，这一小节是接受某个事件之前的所有事件，之后的都不接受。</p>
+<h5 id="take"><a href="#take" class="headerlink" title="take"></a>take</h5><p>take 和 skip 正好相反。take 是直到一定数量的事件发生后才开始取，而不是取到一定数量的时候停</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_16.png?raw=true" alt></p>
+<p>代码如下：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Observable</span>.of(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>)</span><br><span class="line">	.take(<span class="number">2</span>)</span><br><span class="line">	.subscribe &#123; <span class="built_in">print</span>($<span class="number">0</span>.element ?? $<span class="number">0</span>) &#125;</span><br><span class="line">	.addDisposableTo(bag)</span><br></pre></td></tr></table></figure>
+<h5 id="takeWhile"><a href="#takeWhile" class="headerlink" title="takeWhile"></a>takeWhile</h5><p>takeWhile 和 skipWhile 正好相反。takeWhile 是取到某个不满足条件的事件。takeWhile 还有一个兄弟方法 takeWhileWithIndex，除了事件值 value，还接受事件的序号 index：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_17.png?raw=true" alt></p>
+<p>代码如下：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Observable</span>.of(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>)</span><br><span class="line">	.takeWhileWithIndex &#123; v, i <span class="keyword">in</span> </span><br><span class="line">		v &gt; <span class="number">1</span> &amp;&amp; i &gt;<span class="number">1</span></span><br><span class="line">	&#125;.subscribe &#123; <span class="built_in">print</span>($<span class="number">0</span>.element ?? $<span class="number">0</span>) &#125;</span><br><span class="line">	.addDisposableTo(bag)</span><br></pre></td></tr></table></figure>
+<h5 id="takeUntil"><a href="#takeUntil" class="headerlink" title="takeUntil"></a>takeUntil</h5><p>takeUntil 和 skipUntil 相反。表示接受事件知道某个 Observable 的事件触发：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_18.png?raw=true" alt></p>
+<p>代码如下：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> subject = <span class="type">PublishSubject</span>&lt;<span class="type">String</span>&gt;()</span><br><span class="line"><span class="keyword">let</span> trigger = <span class="type">PublishSubject</span>&lt;<span class="type">String</span>&gt;()</span><br><span class="line"></span><br><span class="line">subject.takeUntil(trigger)</span><br><span class="line">	.subscribe &#123; <span class="built_in">print</span>($<span class="number">0</span>.element ?? $<span class="number">0</span> )&#125;</span><br><span class="line">	.addDisposableTo(bag)</span><br><span class="line"><span class="comment">// ... 此时一直接受 next 事件</span></span><br><span class="line">trigger.onNext(<span class="string">"x"</span>)</span><br><span class="line"><span class="comment">// ... 现在忽略所有的 next 事件了</span></span><br></pre></td></tr></table></figure>
+<h4 id="Distinct-operators"><a href="#Distinct-operators" class="headerlink" title="Distinct operators"></a>Distinct operators</h4><p>本小节的操作符可以防止重复事件</p>
+<h5 id="distinctUntilChanged"><a href="#distinctUntilChanged" class="headerlink" title="distinctUntilChanged"></a>distinctUntilChanged</h5><p>如果当前事件和前一个事件的事件值相同，那么忽略这个事件：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_19.png?raw=true" alt></p>
+<p>代码如下：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Observable</span>.of(<span class="number">1</span>, <span class="number">2</span>, <span class="number">2</span>, <span class="number">1</span>)</span><br><span class="line">	.distinctUntilChanged()</span><br><span class="line">	.subscribe &#123; <span class="built_in">print</span>($<span class="number">0</span>.elemet ?? $<span class="number">0</span>) &#125;</span><br><span class="line">	.addDisposableTo(bag)</span><br></pre></td></tr></table></figure>
+<p>distinctUntilChanged 还接受一个闭包，闭包入参为相邻事件的事件值，闭包返回值为 true 则忽略当前事件。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_20.png?raw=true" alt></p>
+<p>代码如下，当前一个事件值为 1，当前事件值为 2 的时候忽略当前事件：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Observable</span>.of(<span class="number">1</span>, <span class="number">2</span>, <span class="number">2</span>, <span class="number">1</span>)</span><br><span class="line">	.distinctUntilChanged &#123; a, b <span class="keyword">in</span></span><br><span class="line">		<span class="keyword">if</span> a == <span class="number">1</span> &amp;&amp; b == <span class="number">2</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">        &#125;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<h3 id="转换操作符"><a href="#转换操作符" class="headerlink" title="转换操作符"></a>转换操作符</h3><h4 id="转换元素"><a href="#转换元素" class="headerlink" title="转换元素"></a>转换元素</h4><h5 id="toArray"><a href="#toArray" class="headerlink" title="toArray"></a>toArray</h5><p>将事件序列的元素转换成一个数组，然后将这个数组作为事件值，触发 <code>.next</code> 事件：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_21.png?raw=true" alt></p>
+<p>代码示例：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Observable</span>.of(<span class="string">"A"</span>, <span class="string">"B"</span>, <span class="string">"C"</span>)</span><br><span class="line">	.toArray()</span><br><span class="line">	.subscribe(onNext: &#123; <span class="built_in">print</span>($<span class="number">0</span>) &#125;)</span><br><span class="line">	.addDisposableTo(bag)					<span class="comment">// ["A", "B", "c"]</span></span><br></pre></td></tr></table></figure>
+<h5 id="map"><a href="#map" class="headerlink" title="map"></a>map</h5><p>map 和数组中的 map 无异：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_22.png?raw=true" alt></p>
+<p>代码示例：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Observable</span>.of(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>)</span><br><span class="line">	.<span class="built_in">map</span>&#123; $<span class="number">0</span> * <span class="number">2</span>&#125;</span><br><span class="line">	.subscribe&#123; <span class="built_in">print</span>($<span class="number">0</span>.element ?? $<span class="number">0</span>) &#125;</span><br><span class="line">	.addDisposableTo(bag)</span><br></pre></td></tr></table></figure>
+<p>map 还有一个兄弟方法 mapWithIndex 带有一个索引：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_23.png?raw=true" alt></p>
+<p>代码示例：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Observable</span>.of(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>)</span><br><span class="line">	.mapWithIndex&#123; v, i <span class="keyword">in</span></span><br><span class="line">		i &gt; <span class="number">1</span> ? v * <span class="number">2</span> : v</span><br><span class="line">	&#125;.subscribe&#123; <span class="built_in">print</span>($<span class="number">0</span>.element ?? $<span class="number">0</span>) &#125;</span><br><span class="line">	.addDisposableTo(bag)</span><br></pre></td></tr></table></figure>
+<h4 id="转换内部-Observables"><a href="#转换内部-Observables" class="headerlink" title="转换内部 Observables"></a>转换内部 Observables</h4><h5 id="flatMap"><a href="#flatMap" class="headerlink" title="flatMap"></a>flatMap</h5><p>flatMap 主要就是<strong>将一个 Observable 中的每个元素都转换为一个 Observable，并且订阅</strong>。flatMap 需要一个闭包，传入当前 Observable 的事件值，返回一个新的 Observable。下面图示的例子中 Observable 的事件值类型为 Variable。传入一个 Variable，将其 value 属性扩大十倍：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_24.png?raw=true" alt></p>
+<p>代码示例：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> outter = <span class="type">PublishSubject</span>&lt;<span class="type">Variable</span>&lt;<span class="type">Int</span>&gt;&gt;</span><br><span class="line">outter.asObservable()</span><br><span class="line">	.flatMap &#123; </span><br><span class="line">		$<span class="number">0</span>.value *= <span class="number">10</span></span><br><span class="line">  		<span class="keyword">return</span> $<span class="number">0</span>.asObservable()</span><br><span class="line">	&#125;.subscribe(onNext: &#123; <span class="built_in">print</span>($<span class="number">0</span>) &#125;)</span><br><span class="line">	.addDisposableTo(bag)</span><br><span class="line"></span><br><span class="line">outter.onNext(<span class="type">Variable</span>(<span class="number">1</span>))</span><br><span class="line">outter.onNext(<span class="type">Variable</span>(<span class="number">2</span>))</span><br></pre></td></tr></table></figure>
+<h5 id="flatMapLatest"><a href="#flatMapLatest" class="headerlink" title="flatMapLatest"></a>flatMapLatest</h5><p>flatMapLatest 是 flatMap 和 switchlatest 的合体。在使用上和 flatMap 一致，但是它值订阅最新的 Observable：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_25.png?raw=true" alt></p>
+<p>看出区别了么？当有新的订阅产生的时候，旧的 Observable 就取消订阅了，所以这里由于订阅了绿色的 Observable，所以蓝色变为 30，并不会触发订阅；由于订阅了橙色的 Observable，所以绿色变为 50，也不会触发订阅。而 flatMap 则是全部都触发了订阅的。</p>
+<h3 id="关联操作符"><a href="#关联操作符" class="headerlink" title="关联操作符"></a>关联操作符</h3><h4 id="前缀与串联"><a href="#前缀与串联" class="headerlink" title="前缀与串联"></a>前缀与串联</h4><h5 id="startWith"><a href="#startWith" class="headerlink" title="startWith"></a>startWith</h5><p>startWith 接受一个事件值，将其插到当前事件序列的最前面，返回一个新的 Observable：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_26.png?raw=true" alt></p>
+<p>代码如下：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> numbers = <span class="type">Observable</span>.of(<span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>)</span><br><span class="line"><span class="keyword">let</span> observable = numbers.startWith(<span class="number">1</span>)</span><br><span class="line">observable.subscribe&#123; <span class="built_in">print</span>($<span class="number">0</span>.element ?? $<span class="number">0</span>) &#125;</span><br><span class="line">	.addDisposableTo(bag)</span><br></pre></td></tr></table></figure>
+<h5 id="concat"><a href="#concat" class="headerlink" title="concat"></a>concat</h5><p>concat 连接两个事件序列，生成一个新的事件序列：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_27.png?raw=true" alt></p>
+<p>代码如下，注意要用 <code>[]</code> 将事件序列当成一个数组：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> first = <span class="type">Observable</span>.of(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>)</span><br><span class="line"><span class="keyword">let</span> second = <span class="type">Observable</span>.of(<span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>)</span><br><span class="line"><span class="keyword">let</span> observable = <span class="type">Observable</span>.concat([first, second])</span><br><span class="line"></span><br><span class="line">observable.subscribe&#123; <span class="built_in">print</span>($<span class="number">0</span>.element ?? $<span class="number">0</span>) &#125;</span><br><span class="line">	.addDisposableTo(bag)</span><br></pre></td></tr></table></figure>
+<p>连个事件序列的泛型类型一定要相同，否则崩溃给你看😖</p>
+<h4 id="合并"><a href="#合并" class="headerlink" title="合并"></a>合并</h4><h5 id="merge"><a href="#merge" class="headerlink" title="merge"></a>merge</h5><p>merge 将元素为事件序列的事件序列自动拆开，成为一个新的事件序列。其实你也可以分开来写，让它们分别订阅，merge 主要就是用来减少事件序列的订阅的：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_28.png?raw=true" alt></p>
+<p>代码如下：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="keyword">left</span> = <span class="type">PublishSubject</span>&lt;<span class="type">String</span>&gt;()</span><br><span class="line"><span class="keyword">let</span> <span class="keyword">right</span> = <span class="type">PublishSubject</span>&lt;<span class="type">String</span>&gt;()</span><br><span class="line"><span class="comment">// 将两个事件序列作为事件值</span></span><br><span class="line"><span class="keyword">let</span> source = <span class="type">Observable</span>.of(<span class="keyword">left</span>.asObservable(), <span class="keyword">right</span>.asObservable())</span><br><span class="line"><span class="comment">// 将新的事件序列的元素合并，返回一个新的事件序列</span></span><br><span class="line"><span class="keyword">let</span> observable = source.merge()</span><br><span class="line"></span><br><span class="line">observable.subscribe&#123; <span class="built_in">print</span>($<span class="number">0</span>.element ?? $<span class="number">0</span>) &#125;</span><br><span class="line">	.addDisposableTo(bag)</span><br></pre></td></tr></table></figure>
+<p>注意，只有当内部的时间序列都 completed 后，merge 产生的事件序列才会 completed。</p>
+<h4 id="关联元素"><a href="#关联元素" class="headerlink" title="关联元素"></a>关联元素</h4><h5 id="combineLatest"><a href="#combineLatest" class="headerlink" title="combineLatest"></a>combineLatest</h5><p>当 combineLatest 中的子序列中的任意一个发出事件的时候，将会调用一个你提供的闭包。这个闭包将子序列的最近的事件值作为入参传入，得到的返回值作为事件值执行订阅的方法。主要用在同时监控多个源的状态。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_29.png?raw=true" alt></p>
+<p>上面图示中，当事件 1 触发的时候，由于另外一个序列没有事件发生过，所以不触发订阅，直到那一个序列发生了事件 4，才触发了订阅。</p>
+<p>代码如下：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="keyword">left</span> = <span class="type">PublishSubject</span>&lt;<span class="type">String</span>&gt;()</span><br><span class="line"><span class="keyword">let</span> <span class="keyword">right</span> = <span class="type">PublishSubject</span>&lt;<span class="type">String</span>&gt;()</span><br><span class="line"><span class="keyword">let</span> observable = <span class="type">Observable</span>.combineLatest(<span class="keyword">left</span>, <span class="keyword">right</span>, resultSelector: &#123;</span><br><span class="line">    lastLeft, lastRight <span class="keyword">in</span></span><br><span class="line">  	<span class="string">"\(lastLeft) \(lastRight)"</span></span><br><span class="line">&#125;)</span><br><span class="line">observable.subscribe(onNext: &#123; value <span class="keyword">in</span> </span><br><span class="line">		<span class="built_in">print</span>(value)</span><br><span class="line">	&#125;).addDisposableTo(bag)</span><br></pre></td></tr></table></figure>
+<p>另外需要说明的就是只有两个子序列都 completed，外部序列才会 completed。如果其中一个子序列先结束了，当另外一个序列触发事件的时候，使用的是结束的那个子序列结束前最后一次事件的事件值。其实上面的图中也有展示，right 先结束了，此时left 触发了事件 3，所以最终是将 3，6 的值作为事件值的。</p>
+<h5 id="zip"><a href="#zip" class="headerlink" title="zip"></a>zip</h5><p>和上面的 combineLatest 不同，zip 要求必须每个子序列都有新消息的时候，才触发事件：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_30.png?raw=true" alt></p>
+<p>可以看到，left 和 right 都必须有新的消息最终才能产生事件。由于 right 已经结束了，所以 sunny 永远不会接收到。</p>
+<p>代码如下：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="keyword">left</span> = <span class="type">PublishSubject</span>&lt;<span class="type">String</span>&gt;()</span><br><span class="line"><span class="keyword">let</span> <span class="keyword">right</span> = <span class="type">PublishSubject</span>&lt;<span class="type">String</span>&gt;()</span><br><span class="line"><span class="keyword">let</span> observable = <span class="type">Observable</span>.<span class="built_in">zip</span>(<span class="keyword">left</span>, <span class="keyword">right</span>) &#123;</span><br><span class="line">    lastLeft, lastRight <span class="keyword">in</span></span><br><span class="line">  	<span class="string">"\(lastLeft) \(lastRight)"</span></span><br><span class="line">&#125;)</span><br><span class="line">observable.subscribe(onNext: &#123; value <span class="keyword">in</span> </span><br><span class="line">		<span class="built_in">print</span>(value)</span><br><span class="line">	&#125;).addDisposableTo(bag)</span><br></pre></td></tr></table></figure>
+<p>需要注意的是，zip 不需要所有内部序列都完成，只要有一个 completed，整个事件序列就结束了。</p>
+<p>(确实这个挺像拉链的，名字起得很形象)</p>
+<h4 id="触发器"><a href="#触发器" class="headerlink" title="触发器"></a>触发器</h4><h5 id="withLatestFrom"><a href="#withLatestFrom" class="headerlink" title="withLatestFrom"></a>withLatestFrom</h5><p>当一个 Observable 触发的时候，获取另一个 Observable 的最新的事件值。很常用，比如点击按钮的时候要获取 textfield 的最新值：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_31.png?raw=true" alt></p>
+<p>text 不管怎么修改，当 button 点击的时候，都获得最新的 text 的值。</p>
+<p>代码如下：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> button = <span class="type">PublishSubject</span>&lt;<span class="type">Void</span>&gt;()</span><br><span class="line"><span class="keyword">let</span> textField = <span class="type">PublishSubject</span>&lt;<span class="type">String</span>&gt;()</span><br><span class="line"></span><br><span class="line">button.<span class="type">WithLatestFrom</span>(textField)</span><br><span class="line">	.subScribe &#123; <span class="built_in">print</span>($<span class="number">0</span>.element ?? $<span class="number">0</span>) &#125;</span><br><span class="line">	.addDisposableTo(bag)</span><br></pre></td></tr></table></figure>
+<h5 id="simple"><a href="#simple" class="headerlink" title="simple"></a>simple</h5><p>触发某个 Observable 获取另一个 Observable 的最新值。但是和 withLatestFrom 不同的是，当再次触发这个 Observable 的时候，如果另一个 Observable 没有更新值，那么不会触发事件，类似于 distinctUntilChanged：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_32.png?raw=true" alt></p>
+<p>代码如下：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="type">Observable</span> = textField.sample(button)</span><br></pre></td></tr></table></figure>
+<p>一定要注意这里啊，前面是 <code>button.withLatestFrom(textField)</code>，这里是 <code>textField.sample(button)</code>。</p>
+<h4 id="开关"><a href="#开关" class="headerlink" title="开关"></a>开关</h4><h5 id="amb"><a href="#amb" class="headerlink" title="amb"></a>amb</h5><p>当两个 Observable 中的任意一个触发的时候，取消订阅另一个，以后只接受当前 Observable 的事件。如图所示，由于 right 先出法，所以就取消了 left 的订阅，以后就只能接收到 right 的事件了：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_33.png?raw=true" alt></p>
+<p>代码如下：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="keyword">left</span> = <span class="type">PublishSubject</span>&lt;<span class="type">String</span>&gt;()</span><br><span class="line"><span class="keyword">let</span> <span class="keyword">right</span> = <span class="type">PublishSubject</span>&lt;<span class="type">String</span>&gt;()</span><br><span class="line"></span><br><span class="line"><span class="keyword">left</span>.amb(<span class="keyword">right</span>)</span><br><span class="line">	.subscribe &#123; <span class="built_in">print</span>($<span class="number">0</span>.element ?? $<span class="number">0</span>) &#125;</span><br><span class="line">	.addDisposableTo(bag)</span><br></pre></td></tr></table></figure>
+<h5 id="switchLatest"><a href="#switchLatest" class="headerlink" title="switchLatest"></a>switchLatest</h5><p>前面那个是被动的哪个 Observable 最先触发就一直订阅哪一个。这个是可以自己控制当前想要订阅那个 Observable：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_34.png?raw=true" alt></p>
+<p>如图所示，source 在选择 one 的时候，只接受 one 的事件，在选择 two 的时候，只接受 two 的事件。</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> one = <span class="type">PublishSubject</span>&lt;<span class="type">String</span>&gt;()</span><br><span class="line"><span class="keyword">let</span> two = <span class="type">PublishSubject</span>&lt;<span class="type">String</span>&gt;()</span><br><span class="line"><span class="keyword">let</span> three = <span class="type">PublishSubject</span>&lt;<span class="type">String</span>&gt;()</span><br><span class="line"></span><br><span class="line"><span class="comment">// source 的事件值类型是 Observable 类型</span></span><br><span class="line"><span class="keyword">let</span> source = <span class="type">PublishSubject</span>&lt;<span class="type">Observable</span>&lt;<span class="type">String</span>&gt;&gt;()</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> observable = source.switchLatest()</span><br><span class="line"><span class="keyword">let</span> disposable = observable.subscribe(onNext: &#123; value <span class="keyword">in</span> <span class="built_in">print</span>(value) &#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 选择Observable one</span></span><br><span class="line">source.onNext(one)</span><br><span class="line">one.onNext(<span class="string">"emit"</span>) 				<span class="comment">// emit</span></span><br><span class="line">two.onNext(<span class="string">"emit"</span>)				<span class="comment">// 没有 emit</span></span><br><span class="line"><span class="comment">// 选择Observable two</span></span><br><span class="line">source.onNext(two)</span><br><span class="line">two.onNext(<span class="string">"emit"</span>)				<span class="comment">// emit</span></span><br></pre></td></tr></table></figure>
+<p>还记得 flatMapLatest 吗？之前说过 flatMapLatest，就是 map + switchLatest</p>
+<h4 id="元素和序列的结合"><a href="#元素和序列的结合" class="headerlink" title="元素和序列的结合"></a>元素和序列的结合</h4><h5 id="reduce"><a href="#reduce" class="headerlink" title="reduce"></a>reduce</h5><p>Rx 中的 reduce 类似于 Swift 中的 reduce，将一个序列的所有事件值通过运算，得到一个最终的事件值，并触发事件：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_35.png?raw=true" alt></p>
+<p>代码如下：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Observable</span>.of(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>)</span><br><span class="line">	.<span class="built_in">reduce</span>(<span class="number">0</span>) &#123; summary, newValue <span class="keyword">in</span></span><br><span class="line">        <span class="keyword">return</span> summary + newValue</span><br><span class="line">    &#125;.subscribe &#123; <span class="built_in">print</span>($<span class="number">0</span>.element &amp;&amp; $<span class="number">0</span>) &#125;</span><br><span class="line">	.addDeposiableAt(bag)</span><br></pre></td></tr></table></figure>
+<h5 id="scan"><a href="#scan" class="headerlink" title="scan"></a>scan</h5><p>scan 和 reduce 的不同在于，reduce 是一锤子买卖，scan 每次接收到事件值时都会触发一个事件：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_36.png?raw=true" alt></p>
+<p>代码如下：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Observable</span>.of(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>)</span><br><span class="line">	.scan(<span class="number">0</span>, accumulator: +)</span><br><span class="line">	.subscribe(onNext: &#123; value <span class="keyword">in</span> <span class="built_in">print</span>(value) &#125;)</span><br><span class="line">	.addDeposiableTo(bag)</span><br></pre></td></tr></table></figure>
+<h3 id="基于时间的操作符"><a href="#基于时间的操作符" class="headerlink" title="基于时间的操作符"></a>基于时间的操作符</h3><h4 id="缓存操作符"><a href="#缓存操作符" class="headerlink" title="缓存操作符"></a>缓存操作符</h4><h5 id="replay"><a href="#replay" class="headerlink" title="replay"></a>replay</h5><p>这个操作符是针对<strong>一个 Observable，多个订阅者</strong>的。为 Observable 设置 replay ，当有新的订阅者订阅的时候，会立即触发最近的几个事件：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_37.png?raw=true" alt></p>
+<p>上面的是 Observable，每隔 1s 发出一次事件。下面是一个订阅者，在第 4s 的时候开始订阅。由于设置了 replay 的数量为 1，所以立刻重现之前的事件 3，再加上当前事件 4 的触发，所以再时刻 4，有两个事件一起触发了。</p>
+<p>代码如下：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> interval = <span class="type">Observable</span>&lt;<span class="type">Int</span>&gt;.interval(<span class="number">1</span>,</span><br><span class="line">    scheduler:<span class="type">MainScheduler</span>.instance).replay(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line"><span class="number">_</span> = interval.connect()</span><br><span class="line"></span><br><span class="line">delay(<span class="number">3</span>) &#123;</span><br><span class="line">    <span class="number">_</span> = interval.subscribe(onNext: &#123;</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">"Subscriber 2: Event - \($0) at \(stamp())"</span>)</span><br><span class="line">    &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这种一个 Observable，多个订阅者的情况叫做可连接 Observable，一般的 Observable 类型为 <code>Observable&lt;E&gt;</code>，这种类型为 <code>ConnectableObservable&lt;E&gt;</code>。所以需要使用 <code>.connect</code> 方法来表示 Observable 开始运行。</p>
+<p>如果要所有元素都重现，那么可以使用 <code>.replayAll()</code></p>
+<h5 id="buffer"><a href="#buffer" class="headerlink" title="buffer"></a>buffer</h5><p>buffer 用于将事件缓存，在某个条件下，一并发出。<code>buffer(timeSpan:count:scheduler:)</code> 接受一个最大时间跨度 timeSpan，一个事件最大发生数量 count。处理逻辑在于，当最大时间跨度内事件数量没有到时，发送一个事件，其事件值为当前事件跨度内发出的时间的事件值组成的数组，重置时间跨度；当时间跨度内发生的事件超过了最大发生数量时，立即发送一个事件值为这些事件值所组成的数组的事件，重置时间跨度：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_38.png?raw=true" alt></p>
+<p>如图，时间跨度为4，最大事件值为2。最开始什么时间也没有发生，所以发送一个 0 个元素的数组。之后某个时刻发出了三个事件，所以将前两个事件值合成为一个数组发送，剩余一个事件，重置时间跨度。后面事件数量没有到最大值，但是时间跨度到了，所以也发送一个事件的数组，重置时间跨度。最后又没有事件发生，发送 0 个元素的数组的事件。</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> interval = <span class="type">Observable</span>&lt;<span class="type">String</span>&gt;.interval(<span class="number">1</span>, scheduler: <span class="type">MainScheduler</span>.instance)</span><br><span class="line">					.buffer(timeSpan: <span class="number">4</span>, <span class="built_in">count</span>: <span class="number">2</span>, scheduler: <span class="type">MainScheduler</span>.instance)</span><br><span class="line"></span><br><span class="line"><span class="number">_</span> = interval.subscribe(onNext: $<span class="number">0</span>)</span><br><span class="line"></span><br><span class="line">interval.onNext(<span class="string">"🐈"</span>)</span><br><span class="line">interval.onNext(<span class="string">"🐈"</span>)</span><br><span class="line">interval.onNext(<span class="string">"🐈"</span>)</span><br></pre></td></tr></table></figure>
+<h4 id="时间平移操作符"><a href="#时间平移操作符" class="headerlink" title="时间平移操作符"></a>时间平移操作符</h4><h5 id="delaySubscription"><a href="#delaySubscription" class="headerlink" title="delaySubscription"></a>delaySubscription</h5><p>延迟订阅，在正式订阅前发生的事件都会被忽略：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_39.png?raw=true" alt></p>
+<p>如图，在 1 时刻开始订阅，由于延迟了 1.5s，所以前两个事件被忽略了。</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Observable</span>.of(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>)</span><br><span class="line">	.delaySubscription(<span class="type">RxTimeInterval</span>(delayInSeconds), scheduler: <span class="type">MainSchedular</span>.instance)</span><br><span class="line">	.subscribe&#123; <span class="built_in">print</span>($<span class="number">0</span>.element ?? $<span class="number">0</span>) &#125;</span><br></pre></td></tr></table></figure>
+<h5 id="delay"><a href="#delay" class="headerlink" title="delay"></a>delay</h5><p>delay 则将序列中的所有事件延迟执行，所以并不会忽略掉事件：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_40.png?raw=true" alt></p>
+<p>差别就在于，上面的忽略了1，2，而这里则仍是从事件 1 开始。</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Observable</span>.of(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>)</span><br><span class="line">	.delay(<span class="type">RxTimeInterval</span>(delayInSeconds), scheduler: <span class="type">MainSchedular</span>.instance)</span><br><span class="line">	.subscribe&#123; <span class="built_in">print</span>($<span class="number">0</span>.element ?? $<span class="number">0</span>) &#125;</span><br></pre></td></tr></table></figure>
+<h4 id="定时操作符"><a href="#定时操作符" class="headerlink" title="定时操作符"></a>定时操作符</h4><h5 id="interval"><a href="#interval" class="headerlink" title="interval"></a>interval</h5><p>Rx 中的定时不需要使用 NSTimer，也不需要使用 DispatchSource。interval 的使用非常简单，比如一个1s的定时器：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Observable</span>&lt;<span class="type">Int</span>&gt;.interval(<span class="number">1</span>, scheduler: <span class="type">MainScheduler</span>.instance)</span><br></pre></td></tr></table></figure>
+<p>事件值默认是从 0 开始发送，依次递增。如果你不想要从 0 开始，可以使用 map。不过一般我们不需要使用这个事件值。</p>
+<h5 id="timer"><a href="#timer" class="headerlink" title="timer"></a>timer</h5><p><code>timer(_:period:scheduler:)</code> 和 interval 的区别在于，可以设置一个重复次数 period。如果不设置，默认只执行一次：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Observable</span>&lt;<span class="type">Int</span>&gt;.timer(<span class="number">3</span>, period:<span class="number">3</span>, scheduler: <span class="type">MainScheduler</span>.instance)</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tag/Swift/" rel="tag"># Swift</a>
+          
+            <a href="/tag/RxSwift/" rel="tag"># RxSwift</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/10/20/Swift 技巧/" rel="next" title="《Swift 技巧》笔记">
+                <i class="fa fa-chevron-left"></i> 《Swift 技巧》笔记
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/11/03/RxCocoa应用/" rel="prev" title="RxCocoa 的应用">
+                RxCocoa 的应用 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.png" alt="Zachary Zhang">
+            
+              <p class="site-author-name" itemprop="name">Zachary Zhang</p>
+              <p class="site-description motion-element" itemprop="description">Stay Hungry. Stay Foolish!</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">116</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/zhang759740844" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:zch759740844@126.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#着手-RxSwift"><span class="nav-number">1.</span> <span class="nav-text">着手 RxSwift</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#简介"><span class="nav-number">1.1.</span> <span class="nav-text">简介</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#RxSwift-基础"><span class="nav-number">1.1.1.</span> <span class="nav-text">RxSwift 基础</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#App-架构"><span class="nav-number">1.1.2.</span> <span class="nav-text">App 架构</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#RxCocoa"><span class="nav-number">1.1.3.</span> <span class="nav-text">RxCocoa</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Observable"><span class="nav-number">1.2.</span> <span class="nav-text">Observable</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Observable-的生命周期"><span class="nav-number">1.2.1.</span> <span class="nav-text">Observable 的生命周期</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#创建-Observables"><span class="nav-number">1.2.2.</span> <span class="nav-text">创建 Observables</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#订阅-Observables"><span class="nav-number">1.2.3.</span> <span class="nav-text">订阅 Observables</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#取消订阅-Observables"><span class="nav-number">1.2.4.</span> <span class="nav-text">取消订阅 Observables</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Subjects"><span class="nav-number">1.3.</span> <span class="nav-text">Subjects</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#什么是-subjects？"><span class="nav-number">1.3.1.</span> <span class="nav-text">什么是 subjects？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#PublishSubjects"><span class="nav-number">1.3.2.</span> <span class="nav-text">PublishSubjects</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#BehaviorSubjects"><span class="nav-number">1.3.3.</span> <span class="nav-text">BehaviorSubjects</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#ReplaySubjects"><span class="nav-number">1.3.4.</span> <span class="nav-text">ReplaySubjects</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Variables"><span class="nav-number">1.3.5.</span> <span class="nav-text">Variables</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Subject-与-Observer-和-Observable-的区别"><span class="nav-number">1.4.</span> <span class="nav-text">Subject 与 Observer 和 Observable 的区别</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Subject-与-Observable-的不同"><span class="nav-number">1.4.1.</span> <span class="nav-text">Subject 与 Observable 的不同</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Subject-与-Observer-的不同"><span class="nav-number">1.4.2.</span> <span class="nav-text">Subject 与 Observer 的不同</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#总结"><span class="nav-number">1.4.3.</span> <span class="nav-text">总结</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#操作符的最佳实践"><span class="nav-number">2.</span> <span class="nav-text">操作符的最佳实践</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#过滤操作符"><span class="nav-number">2.1.</span> <span class="nav-text">过滤操作符</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Igoring-operators"><span class="nav-number">2.1.1.</span> <span class="nav-text">Igoring operators</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#ignoreElements"><span class="nav-number">2.1.1.1.</span> <span class="nav-text">ignoreElements</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#elementAt"><span class="nav-number">2.1.1.2.</span> <span class="nav-text">elementAt</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#filter"><span class="nav-number">2.1.1.3.</span> <span class="nav-text">filter</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Skipping-operators"><span class="nav-number">2.1.2.</span> <span class="nav-text">Skipping operators</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#skip"><span class="nav-number">2.1.2.1.</span> <span class="nav-text">skip</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#skipWhile"><span class="nav-number">2.1.2.2.</span> <span class="nav-text">skipWhile</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#skipUntil"><span class="nav-number">2.1.2.3.</span> <span class="nav-text">skipUntil</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Taking-operators"><span class="nav-number">2.1.3.</span> <span class="nav-text">Taking operators</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#take"><span class="nav-number">2.1.3.1.</span> <span class="nav-text">take</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#takeWhile"><span class="nav-number">2.1.3.2.</span> <span class="nav-text">takeWhile</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#takeUntil"><span class="nav-number">2.1.3.3.</span> <span class="nav-text">takeUntil</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Distinct-operators"><span class="nav-number">2.1.4.</span> <span class="nav-text">Distinct operators</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#distinctUntilChanged"><span class="nav-number">2.1.4.1.</span> <span class="nav-text">distinctUntilChanged</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#转换操作符"><span class="nav-number">2.2.</span> <span class="nav-text">转换操作符</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#转换元素"><span class="nav-number">2.2.1.</span> <span class="nav-text">转换元素</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#toArray"><span class="nav-number">2.2.1.1.</span> <span class="nav-text">toArray</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#map"><span class="nav-number">2.2.1.2.</span> <span class="nav-text">map</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#转换内部-Observables"><span class="nav-number">2.2.2.</span> <span class="nav-text">转换内部 Observables</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#flatMap"><span class="nav-number">2.2.2.1.</span> <span class="nav-text">flatMap</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#flatMapLatest"><span class="nav-number">2.2.2.2.</span> <span class="nav-text">flatMapLatest</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#关联操作符"><span class="nav-number">2.3.</span> <span class="nav-text">关联操作符</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#前缀与串联"><span class="nav-number">2.3.1.</span> <span class="nav-text">前缀与串联</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#startWith"><span class="nav-number">2.3.1.1.</span> <span class="nav-text">startWith</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#concat"><span class="nav-number">2.3.1.2.</span> <span class="nav-text">concat</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#合并"><span class="nav-number">2.3.2.</span> <span class="nav-text">合并</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#merge"><span class="nav-number">2.3.2.1.</span> <span class="nav-text">merge</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#关联元素"><span class="nav-number">2.3.3.</span> <span class="nav-text">关联元素</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#combineLatest"><span class="nav-number">2.3.3.1.</span> <span class="nav-text">combineLatest</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#zip"><span class="nav-number">2.3.3.2.</span> <span class="nav-text">zip</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#触发器"><span class="nav-number">2.3.4.</span> <span class="nav-text">触发器</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#withLatestFrom"><span class="nav-number">2.3.4.1.</span> <span class="nav-text">withLatestFrom</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#simple"><span class="nav-number">2.3.4.2.</span> <span class="nav-text">simple</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#开关"><span class="nav-number">2.3.5.</span> <span class="nav-text">开关</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#amb"><span class="nav-number">2.3.5.1.</span> <span class="nav-text">amb</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#switchLatest"><span class="nav-number">2.3.5.2.</span> <span class="nav-text">switchLatest</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#元素和序列的结合"><span class="nav-number">2.3.6.</span> <span class="nav-text">元素和序列的结合</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#reduce"><span class="nav-number">2.3.6.1.</span> <span class="nav-text">reduce</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#scan"><span class="nav-number">2.3.6.2.</span> <span class="nav-text">scan</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#基于时间的操作符"><span class="nav-number">2.4.</span> <span class="nav-text">基于时间的操作符</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#缓存操作符"><span class="nav-number">2.4.1.</span> <span class="nav-text">缓存操作符</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#replay"><span class="nav-number">2.4.1.1.</span> <span class="nav-text">replay</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#buffer"><span class="nav-number">2.4.1.2.</span> <span class="nav-text">buffer</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#时间平移操作符"><span class="nav-number">2.4.2.</span> <span class="nav-text">时间平移操作符</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#delaySubscription"><span class="nav-number">2.4.2.1.</span> <span class="nav-text">delaySubscription</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#delay"><span class="nav-number">2.4.2.2.</span> <span class="nav-text">delay</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#定时操作符"><span class="nav-number">2.4.3.</span> <span class="nav-text">定时操作符</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#interval"><span class="nav-number">2.4.3.1.</span> <span class="nav-text">interval</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#timer"><span class="nav-number">2.4.3.2.</span> <span class="nav-text">timer</span></a></li></ol></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zachary Zhang</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

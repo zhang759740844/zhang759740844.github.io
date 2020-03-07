@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+
+
+
+
+  <meta name="keywords" content="爬坑,Cocoapods,Vim,Xcode,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="这里主要总结一下开发 iOS 使用工具上遇到的一些问题。">
+<meta name="keywords" content="爬坑,Cocoapods,Vim,Xcode">
+<meta property="og:type" content="article">
+<meta property="og:title" content="iOS开发工具应用中的坑">
+<meta property="og:url" content="http://zhang759740844.github.io/2016/09/23/Xcode的使用/index.html">
+<meta property="og:site_name" content="Zachary&#39;s blog">
+<meta property="og:description" content="这里主要总结一下开发 iOS 使用工具上遇到的一些问题。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/cocoapods_xcode_1.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/cocoapods_xcode_2.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/codesign.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/XVim_1.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/XVim_2.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/podlock.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/安装psych.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/xcode调试.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/pragma.png?raw=true">
+<meta property="og:updated_time" content="2020-02-27T15:13:37.641Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="iOS开发工具应用中的坑">
+<meta name="twitter:description" content="这里主要总结一下开发 iOS 使用工具上遇到的一些问题。">
+<meta name="twitter:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/cocoapods_xcode_1.png?raw=true">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://zhang759740844.github.io/2016/09/23/Xcode的使用/">
+
+
+
+
+
+  <title>iOS开发工具应用中的坑 | Zachary's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Zachary's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">记录成长</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://zhang759740844.github.io/2016/09/23/Xcode的使用/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zachary Zhang">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Zachary's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">iOS开发工具应用中的坑</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-09-23T10:07:12+08:00">
+                2016-09-23
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>这里主要总结一下开发 iOS 使用工具上遇到的一些问题。</p>
+<a id="more"></a>
+<h2 id="如何为一个-workspace-中的多个-project-使用-cocoapods"><a href="#如何为一个-workspace-中的多个-project-使用-cocoapods" class="headerlink" title="如何为一个 workspace 中的多个 project 使用 cocoapods"></a>如何为一个 workspace 中的多个 project 使用 cocoapods</h2><p>一般一个 app 只有一个 project（也可以有多个，<strong>其实 project 不是关键，它只是包含了一些配置信息，真正起作用的是 target，project 只是 target 的容器，有相互依赖关系的是 target</strong>），在这个 project 中可以有多个 target 比如 <code>Myapp</code>、<code>Myapptest</code> 等，如下图：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/cocoapods_xcode_1.png?raw=true" alt="原理1"></p>
+<p>这些 target 可以相互依赖，也可以依赖许多子 target，需要在 <code>Target Dependencied</code> 中注册：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/cocoapods_xcode_2.png?raw=true" alt="原理1"></p>
+<p>那么如何为多个 project 中的各个 target 集成 pod 呢？就像上面说的 project 不重要，我们只要在设置target 的时候，引入 project 的路径即可：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 指定  workspace </span></span><br><span class="line"><span class="comment"># 指定后不会生成默认的 workspace 文件</span></span><br><span class="line">workspace <span class="string">'TheApp.xcworkspace'</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#  指定 xcodeproj</span></span><br><span class="line">xcodeproj <span class="string">'TheApp.xcodeproj'</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># cocoapods 会用在 swift 项目</span></span><br><span class="line">use_frameworks!</span><br><span class="line"></span><br><span class="line"><span class="comment"># 指定 target</span></span><br><span class="line">target <span class="string">'aProject'</span> <span class="keyword">do</span></span><br><span class="line">    <span class="comment"># 由于 Podfile 和  .xcodeproj 不在同一文件夹下</span></span><br><span class="line">    <span class="comment"># 需要指定路径</span></span><br><span class="line">    <span class="comment">#  xcode 项目可以存在任何的子路路径中，只需要指定正确的路径就可以</span></span><br><span class="line">    project ‘aProject/aProject.xcodeproj’</span><br><span class="line"></span><br><span class="line">    <span class="comment">#  在每一个 project 下都导入 SnapKit 进行测试</span></span><br><span class="line">    pod <span class="string">"SnapKit"</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">target <span class="string">'bProject'</span> <span class="keyword">do</span></span><br><span class="line">    project <span class="string">'bProject/bProject.xcodeproj’</span></span><br><span class="line"><span class="string">    pod "SnapKit"</span></span><br><span class="line"><span class="string">end</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">target '</span>aFramework<span class="string">' do</span></span><br><span class="line"><span class="string">    project ‘aFramework/aFramework.xcodeproj’</span></span><br><span class="line"><span class="string">    pod "SnapKit"</span></span><br><span class="line"><span class="string">end</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">target '</span>bFramework<span class="string">' do</span></span><br><span class="line"><span class="string">    project ‘bFramework/bFramework.xcodeproj’</span></span><br><span class="line"><span class="string">    pod "SnapKit"</span></span><br><span class="line"><span class="string">end</span></span><br></pre></td></tr></table></figure>
+<p>可以看到，对于不同 project 中的 target，只要指定其与 <code>Podfile</code> 的相对位置就可以了。</p>
+<p>假如 target <code>aProject</code> 下还有其他子 target，这些子 target 是可以直接引用父 target 引入的 SnapKit 组件的。</p>
+<p><a href="http://www.jianshu.com/p/5a74c0842cf2" target="_blank" rel="noopener">CocoaPods 使用</a></p>
+<p><a href="https://yq.aliyun.com/articles/8315" target="_blank" rel="noopener">iOS 如何在一个存在多个project的workspace中引入cocoapods管理第三方类库</a></p>
+<h2 id="安装-XVim"><a href="#安装-XVim" class="headerlink" title="安装 XVim"></a>安装 XVim</h2><p>慕名下载了<a href="https://github.com/XVimProject/XVim" target="_blank" rel="noopener">XVim</a>，但是安装起来有点曲折。</p>
+<blockquote>
+<p><strong>现在统一使用 XVim2 了</strong></p>
+</blockquote>
+<blockquote>
+<p>注意，创建自签名证书的时候要选对证书类型，要选为”代码签名”</p>
+</blockquote>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/codesign.png?raw=true" alt="codesign"></p>
+<p>创建好自签名证书后，<strong>要对 Xcode 进行重新签名</strong>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo codesign -f -s zachary /Applications/Xcode.app</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>每次更新 Xcode 后，都要先对 Xcode 进行重新签名！</p>
+</blockquote>
+<p>这个要等一段蛮长一段时间，这段时间可以先把代码码起来。</p>
+<p>重新签名后，就可以在 clone 下来的 XVim 文件夹下编译了，需要 <code>cd XVim/</code>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ make</span><br></pre></td></tr></table></figure>
+<p>至于安装指南上的这个指令，其实不用太在意:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ xcode-select -p</span><br></pre></td></tr></table></figure>
+<p>这个指令主要是看看 Xcode 的版本是否指定在 <code>/Applications/Xcode.app/Contents/Developer</code> 目录下，不是的话要手动指定。</p>
+<p>重启xcode，会提示是否使用Xvim，选择<code>load</code>就OK了。</p>
+<h3 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h3><p>除了Vim自身的命令外,XVim还有几个Xcode命令:</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/XVim_1.png?raw=true" alt="XVim_1"></p>
+<p>附带Vim使用详解：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/XVim_2.png?raw=true" alt="XVim_2"></p>
+<h2 id="Podfile-lock"><a href="#Podfile-lock" class="headerlink" title="Podfile.lock"></a>Podfile.lock</h2><p>在协同开发时，经常会遇到，Podfile.lock 不一致，导致编译失败，需要重新 <code>pod install</code> 的情况。这里将简单介绍下 Podfile.lock</p>
+<h3 id="Podfile-lock的作用"><a href="#Podfile-lock的作用" class="headerlink" title="Podfile.lock的作用"></a>Podfile.lock的作用</h3><h4 id="Podfile-lock-1"><a href="#Podfile-lock-1" class="headerlink" title="Podfile.lock"></a>Podfile.lock</h4><p>Podfile.lock 是在第一次运行 <code>pod install</code> 时候自动生成的。Podfile.lock 中会标注项目当前依赖库的准确版本，其中包括了项目在 Podfile 中直接标注使用的库，以及这些库依赖的其他库。这样的好处是当你跟小伙伴协同开发时，你的小伙伴同步了你的 Podfile.lock 文件后，他执行 <code>pod install</code> 会安装 Podfile.lock 指定版本的依赖库，这样就可以防止大家的依赖库不一致而造成问题。因此，CocoaPods 官方强烈推荐把 Podfile.lock 纳入版本控制之下。</p>
+<p>但是，Podfile.lock 并不是一成不变的，当你修改了 Podfile 文件里使用的依赖库或者运行 <code>pod update</code> 命令时，就会生成新的 Podfile.lock 文件。所以，协同开发时需要注意使用 <code>pod install</code> 和 <code>pod update</code> 的区别:</p>
+<ul>
+<li>使用 <code>pod install</code>，你只会安装 Podfile 中新改变的东西，并且会：优先遵循 Podfile 里指定的版本信息；其次遵循 Podfile.lock 里指定的版本信息来安装对应的依赖库。比如：下面在 Podfile 里没指定 iRate 的版本，但是 Podfile.lock 里指定了 iRate 的版本是 1.11.1，那么即使现在有最新的 1.11.4，最终也会安装 1.11.1。但是如果 Podfile 里指定了 iRate 版本是 1.11.3，那么则会安装 1.11.3，并更新 Podfile.lock 里的信息。</li>
+<li>使用 <code>pod update</code>，你会根据 Podfile 的规则更新所有依赖库，不会理睬现有的 Podfile.lock，而是根据安装依赖库的情况生成新的 Podfile.lock 文件。</li>
+</ul>
+<h4 id="Manifest-lock"><a href="#Manifest-lock" class="headerlink" title="Manifest.lock"></a>Manifest.lock</h4><p>那么是如何知道拉取的 Podfile.lock 和 Pod 内，库的版本不一致的呢？在每次生成 Podfile.lock 的时候，都会在 Pod内生成一个 Podfile.lock 的副本Manifest.lock。由于 Pod 一般不会上传版本控制，Manifest.lock 就代表了本地的 Pod 版本。如果拉取了别人的 Podfile.lock，那么 Podfile.lock 和 Manifest.lock 就会产生不一致，就会导致编译失败。</p>
+<h4 id="目的"><a href="#目的" class="headerlink" title="目的"></a>目的</h4><p>有了这个检查机制就能保证开发团队的各个小伙伴能在运行项目前更新他们的依赖库，并保持这些依赖库的版本一致，从而防止在依赖库的版本不统一造成程序在一些不明显的地方编译失败或运行崩溃。</p>
+<h4 id="Podfile-lock-不同的可能原因"><a href="#Podfile-lock-不同的可能原因" class="headerlink" title="Podfile.lock 不同的可能原因"></a>Podfile.lock 不同的可能原因</h4><p>有时可能 Podfile 是相同的，但是你们的 Podfile.lock 还会不同。下面 <code>Podfile.lock 的引号问题</code>就是其中之一。</p>
+<p>除了 gem，ruby等库的版本不同导致之外，还有可能是因为本地的 Podspec 文件不同导致的。所有的项目的 Podspec 文件都托管在 <code>https://github.com/CocoaPods/Specs</code>。第一次执行时，CocoaPods 会将这些 podspec 索引文件更新到本地的 <code>~/.cocoapods/</code> 目录下。如果长时间不更新 podspec，那么所要下载的直接依赖库或间接依赖库的最新版本可能发生了变化，就会导致安装了不一样的依赖版本，那么 Podfile.lock 的记录就不一样了。建议可以执行 <code>pod repo update</code> 更新一下 spec repo(一般情况下，执行 <code>pod install</code> 时会先自动更新 spec 的，除非向上面说的使用 <code>pod install --no-repo-update</code>，当然，现在只是记录下可能导致 Podfile.lock 不一致的原因，万一真的发生了呢？)</p>
+<h3 id="Podfile-lock-的引号问题"><a href="#Podfile-lock-的引号问题" class="headerlink" title="Podfile.lock 的引号问题"></a>Podfile.lock 的引号问题</h3><p>最近在协作的时候遇到了这样的问题，我的 pod lock 总是和同事的不一致，差别在于是否有引号。这就导致了每次拉取别人的代码我都要 pod install 一遍，别人也是一样。<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/podlock.png?raw=true" alt="podfile.lock"> </p>
+<p>查了一些资料<a href="https://github.com/CocoaPods/CocoaPods/issues/3452" target="_blank" rel="noopener">Inconsistent Podfile.lock files between Ruby versions</a>,<a href="https://github.com/CocoaPods/CocoaPods/issues/6255" target="_blank" rel="noopener">Strange quotes in Podfile.lock?!</a> 发现大致是因为 gem 的一个 YAML 解析工具 psych 版本不同导致的。所以，解决问题的关键不是更新 cocoapods 而是更新 psych (更新 psych 前，先把 ruby，gem也先更新了，以防有什么差错).</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/安装psych.png?raw=true" alt="安装psych"></p>
+<h2 id="注释"><a href="#注释" class="headerlink" title="注释"></a>注释</h2><h3 id="方法和属性的快捷注释"><a href="#方法和属性的快捷注释" class="headerlink" title="方法和属性的快捷注释"></a>方法和属性的快捷注释</h3><p>在 Xcode8 之前，想要一键为属性和方法注释都需要通过插件完成。现在 Xcode8 中有了内置的注释方式： <code>alt+command+/</code>，只要将光标移动到想要注释的方法上，就会自动识别方法的参数和返回值，提供注释模板，非常方便。</p>
+<h3 id="Xcode断点调试值都为nil的问题"><a href="#Xcode断点调试值都为nil的问题" class="headerlink" title="Xcode断点调试值都为nil的问题"></a>Xcode断点调试值都为nil的问题</h3><p>在Build Settings中 Optimization Level 设置成 None：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/xcode调试.png?raw=true" alt="debug"></p>
+<h3 id="pragma-mark"><a href="#pragma-mark" class="headerlink" title="#pragma mark"></a>#pragma mark</h3><p>好的习惯从<code>#pragma mark</code>开始。就像这样：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">ViewController</span></span></span><br><span class="line"></span><br><span class="line">- (<span class="keyword">id</span>)init &#123;</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#pragma mark - UIViewController</span></span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)viewDidLoad &#123;</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#pragma mark - IBAction</span></span><br><span class="line"></span><br><span class="line">- (<span class="keyword">IBAction</span>)cancel:(<span class="keyword">id</span>)sender &#123;</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#pragma mark - UITableViewDataSource</span></span><br><span class="line"></span><br><span class="line">- (<span class="built_in">NSInteger</span>)tableView:(<span class="built_in">UITableView</span> *)tableView numberOfRowsInSection:(<span class="built_in">NSInteger</span>)section &#123;</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#pragma mark - UITableViewDelegate</span></span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)tableView:(<span class="built_in">UITableView</span> *)tableView didSelectRowAtIndexPath:(<span class="built_in">NSIndexPath</span> *)indexPath &#123;</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在你的 <code>@implementation</code> 中使用 <code>#pragma mark</code> 来将代码分割成逻辑区块。这些逻辑区块不仅仅使得阅读代码本身容易许多，也为Xcode源导航增加了视觉线索（<code>#pragma mark</code> 声明前有一个水平分割并由破折号（<code>－</code>）开始）。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/pragma.png?raw=true" alt="pragma"></p>
+<h2 id="Xcode-并排查看代码"><a href="#Xcode-并排查看代码" class="headerlink" title="Xcode 并排查看代码"></a>Xcode 并排查看代码</h2><p>如果想要单纯分为左右两屏，按住 <code>alt</code> 再点击文件，即可在辅助窗口查看。</p>
+<p>可以点击副主窗口右上角的 “+”，添加更多辅助窗口，此时按住 <code>alt</code> 就会让你选择在哪个辅助窗口查看文件代码。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tag/爬坑/" rel="tag"># 爬坑</a>
+          
+            <a href="/tag/Cocoapods/" rel="tag"># Cocoapods</a>
+          
+            <a href="/tag/Vim/" rel="tag"># Vim</a>
+          
+            <a href="/tag/Xcode/" rel="tag"># Xcode</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/09/21/lldb调试方法/" rel="next" title="lldb 调试方法">
+                <i class="fa fa-chevron-left"></i> lldb 调试方法
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/09/28/oc新特性/" rel="prev" title="oc 中的泛型与nullability">
+                oc 中的泛型与nullability <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.png" alt="Zachary Zhang">
+            
+              <p class="site-author-name" itemprop="name">Zachary Zhang</p>
+              <p class="site-description motion-element" itemprop="description">Stay Hungry. Stay Foolish!</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">116</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/zhang759740844" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:zch759740844@126.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#如何为一个-workspace-中的多个-project-使用-cocoapods"><span class="nav-number">1.</span> <span class="nav-text">如何为一个 workspace 中的多个 project 使用 cocoapods</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#安装-XVim"><span class="nav-number">2.</span> <span class="nav-text">安装 XVim</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#使用"><span class="nav-number">2.1.</span> <span class="nav-text">使用</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Podfile-lock"><span class="nav-number">3.</span> <span class="nav-text">Podfile.lock</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Podfile-lock的作用"><span class="nav-number">3.1.</span> <span class="nav-text">Podfile.lock的作用</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Podfile-lock-1"><span class="nav-number">3.1.1.</span> <span class="nav-text">Podfile.lock</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Manifest-lock"><span class="nav-number">3.1.2.</span> <span class="nav-text">Manifest.lock</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#目的"><span class="nav-number">3.1.3.</span> <span class="nav-text">目的</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Podfile-lock-不同的可能原因"><span class="nav-number">3.1.4.</span> <span class="nav-text">Podfile.lock 不同的可能原因</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Podfile-lock-的引号问题"><span class="nav-number">3.2.</span> <span class="nav-text">Podfile.lock 的引号问题</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#注释"><span class="nav-number">4.</span> <span class="nav-text">注释</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#方法和属性的快捷注释"><span class="nav-number">4.1.</span> <span class="nav-text">方法和属性的快捷注释</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Xcode断点调试值都为nil的问题"><span class="nav-number">4.2.</span> <span class="nav-text">Xcode断点调试值都为nil的问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pragma-mark"><span class="nav-number">4.3.</span> <span class="nav-text">#pragma mark</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Xcode-并排查看代码"><span class="nav-number">5.</span> <span class="nav-text">Xcode 并排查看代码</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zachary Zhang</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

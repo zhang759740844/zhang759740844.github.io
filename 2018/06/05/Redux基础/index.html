@@ -1,0 +1,1378 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+
+
+
+
+  <meta name="keywords" content="学习笔记,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="记录一下 redux 文档的一些要点。以及学习 redux 中的一些经验。">
+<meta name="keywords" content="学习笔记">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Redux 基础">
+<meta property="og:url" content="http://zhang759740844.github.io/2018/06/05/Redux基础/index.html">
+<meta property="og:site_name" content="Zachary&#39;s blog">
+<meta property="og:description" content="记录一下 redux 文档的一些要点。以及学习 redux 中的一些经验。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/容器组件实例.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/middleware_1.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/redux_1.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/redux_2.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/redux_3.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/redux_5.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/redux_4.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/redux_1.png?raw=true">
+<meta property="og:updated_time" content="2020-02-27T15:13:37.634Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Redux 基础">
+<meta name="twitter:description" content="记录一下 redux 文档的一些要点。以及学习 redux 中的一些经验。">
+<meta name="twitter:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/容器组件实例.png?raw=true">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://zhang759740844.github.io/2018/06/05/Redux基础/">
+
+
+
+
+
+  <title>Redux 基础 | Zachary's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Zachary's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">记录成长</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://zhang759740844.github.io/2018/06/05/Redux基础/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zachary Zhang">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Zachary's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Redux 基础</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-06-05T11:07:12+08:00">
+                2018-06-05
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/React-Native/" itemprop="url" rel="index">
+                    <span itemprop="name">React-Native</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>记录一下 redux 文档的一些要点。以及学习 redux 中的一些经验。</p>
+<a id="more"></a>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><h3 id="动机"><a href="#动机" class="headerlink" title="动机"></a>动机</h3><p>因为单页应用变得复杂，JavaScript 要管理比任何时候都要多的 state。state 在什么时候，由于什么原因，如何变化变得不受控制。这里产生了矛盾：组件之间需要共享数据，和数据可能被任意修改导致不可预料的结果之间的矛盾。Redux 试图让 state 的变化变得可预测。</p>
+<h3 id="三大原则"><a href="#三大原则" class="headerlink" title="三大原则"></a>三大原则</h3><h4 id="单一数据源"><a href="#单一数据源" class="headerlink" title="单一数据源"></a>单一数据源</h4><p>整个应用的 state 被存储在一棵 object tree 中，并且这个 object tree 只存在于唯一一个 store 中。</p>
+<h4 id="State-是只读的"><a href="#State-是只读的" class="headerlink" title="State 是只读的"></a>State 是只读的</h4><p>唯一改变 state 的方法就是触发 action，action 是一个用于描述已发生事件的普通对象。确保视图和网络请求不能直接修改 state。</p>
+<h4 id="使用纯函数来执行修改"><a href="#使用纯函数来执行修改" class="headerlink" title="使用纯函数来执行修改"></a>使用纯函数来执行修改</h4><p>为描述 action 如何改变 state tree，需要编写 reducers。Reducer 只是一些纯函数，它接收先前的 state 和 action，返回新的 state。你可以把 reducer 拆分为多个小的 reducer，独立地操作 state tree 的不同部分。</p>
+<h2 id="基础"><a href="#基础" class="headerlink" title="基础"></a>基础</h2><h3 id="Action"><a href="#Action" class="headerlink" title="Action"></a>Action</h3><p>Action 是把数据从应用传到 store 的有效载荷。一般你会通过 <code>store.dispatch()</code> 将 action 传到 store。</p>
+<p>Action 本质上是 JS 普通对象。约定 action内必须使用一个字符串类型的 <code>type</code> 字段来表示将要执行的动作。</p>
+<p>最简单的 Action 如：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> ADD_TODO = <span class="string">'ADD_TODO'</span></span><br><span class="line">&#123;</span><br><span class="line">    type: ADD_TODO,</span><br><span class="line">    text: <span class="string">'build my first redux app'</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="Action-创建函数"><a href="#Action-创建函数" class="headerlink" title="Action 创建函数"></a>Action 创建函数</h4><p>在 Redux 中的 action 创建函数只是简单的返回一个 action。这样做将使 action 创建函数更容易被移植和测试，如：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">addTodo</span> (<span class="params">text</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">        type: ADD_TODO,</span><br><span class="line">        text</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Action 创建函数也可以是异步非纯函数。后面会讨论到。</p>
+<h3 id="Reducer"><a href="#Reducer" class="headerlink" title="Reducer"></a>Reducer</h3><p>Action 只是描述了有事情发生了这一事实，并没有指明应用如何更新 state。Reducer 则是用来更新 state</p>
+<h4 id="Action-的处理"><a href="#Action-的处理" class="headerlink" title="Action 的处理"></a>Action 的处理</h4><p>reducer 就是一个纯函数，接受旧的 state 和 action，返回新的 state：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(previousState, action) =&gt; newState</span><br></pre></td></tr></table></figure>
+<p>永远不要再 reducer 中执行这些操作：</p>
+<ul>
+<li>修改传入的参数</li>
+<li>执行有副作用的操作，如 API 请求或路由跳转</li>
+<li>调用非纯函数，如 <code>Date.now()</code></li>
+</ul>
+<p>reducer 一定要保持纯净。只要传入参数相同，返回计算得到的下一个 state 就一定相同。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">todoApp</span>(<span class="params">state = initialState, action</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">switch</span> (action.type) &#123;</span><br><span class="line">    <span class="keyword">case</span> SET_VISIBILITY_FILTER:</span><br><span class="line">      <span class="keyword">return</span> <span class="built_in">Object</span>.assign(&#123;&#125;, state, &#123;</span><br><span class="line">        visibilityFilter: action.filter</span><br><span class="line">      &#125;)</span><br><span class="line">      <span class="keyword">default</span>:</span><br><span class="line">      	<span class="keyword">return</span> state</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>需要注意：</p>
+<ol>
+<li>强烈不推荐直接修改 state。所以这里用 <code>Object.assign()</code> 新建了一个副本(<code>Object.assign()</code> 会把后面的 set 到第一个参数里，所以这里要放一个空对象)。</li>
+<li>default 的情况下，返回旧的 state。遇到未知的 action 时，也要返回旧的 state。</li>
+</ol>
+<h4 id="拆分-Reducer"><a href="#拆分-Reducer" class="headerlink" title="拆分 Reducer"></a>拆分 Reducer</h4><p>Reducer 合成是 Redux 应用最基础的模式，可以把一个复杂的 reducer 逻辑拆分到一个个单独的函数里。每个 reducer 只负责管理全局 state 中它负责的那一部分。每个 reducer 的 state 参数都不同，分别对应它管理的那部分 state 数据。</p>
+<blockquote>
+<p>其实就是本来有很多 switch…case，判断不同的 action.type 来对 state 的某个部分做不同的操作。每个 state 的部分，可能会在多个 action.type 中都会被修改。</p>
+<p>现在就把处理相同的 state 的部分的操作都拿出来，单独作为一个 reducer。所有会操作这个 state 部分的 action.type 都会调用这个 reducer。然后在这个小的 reducer 中判断到底是那个 action.type 对应怎么处理这部分 state。</p>
+</blockquote>
+<p>Redux 提供了 <code>combineReducers()</code> 工具类来完成各个小 reducer 的调用，需要传入各个子 reducer 所组成的对象。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; combineReducers &#125; <span class="keyword">from</span> <span class="string">'redux'</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 注意，拆分出来的 reducer 中的 state 不是完整的 state，而是 state 中的属性，和方法名相同，此处就是 visibilityFilter。返回的也不是完整的 state，而只是 visibilityFilter</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">visibilityFilter</span>(<span class="params">state = <span class="string">''</span>, action</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">switch</span> (action.type) &#123;</span><br><span class="line">        <span class="keyword">case</span> VISIBILITY_FILTER:</span><br><span class="line">            <span class="keyword">return</span> action.filter</span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">            <span class="keyword">return</span> state</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> todoApp = combineReducers(&#123;</span><br><span class="line">  visibilityFilter,		<span class="comment">// visibilityFilter 是 state 中的一个属性</span></span><br><span class="line">  todos					<span class="comment">// todos 是 state 中的一个属性</span></span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> todoApp</span><br><span class="line"></span><br><span class="line"><span class="comment">// 调用</span></span><br><span class="line">todoApp(state = initialState, action) &#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>combineReducers()</code> 所做的只是生成一个函数，这个函数来调用你的一系列的 reducer。<strong>每个 reducer 会根据它们的 key（reducer 名） 来筛选出 state 中的一部分数据并处理。然后这个生成的函数再将所有的 reducer 的结果合并为一个大的对象。</strong>(每个小 reducer 拿到的不是整个的 state，而是这个 reducer 对应的 state 中的部分属性。一个 action 的 type 可以影响多个 reducer，最后每个 reducer 生成的 state 中的属性会被合并到 state 中。)</p>
+<blockquote>
+<p>没有拆分前是横向的，以 action.type 为基准的。一次 reducer 处理中，能处理多个 state 中的属性。</p>
+<p>拆分之后是纵向的，是以 state 中属性为基准的。一次 reducer 处理只能处理 state 中的一个属性。多次处理后，合成一个完整的 state。</p>
+</blockquote>
+<h3 id="Store"><a href="#Store" class="headerlink" title="Store"></a>Store</h3><p>Store 是把 action 和 reducer 联系到一起的对象。Store 有以下职责：</p>
+<ul>
+<li>维持应用的 state；</li>
+<li>提供 <code>getState()</code> 方法获取 state；</li>
+<li>提供 <code>dispatch(action)</code> 方法更新 state；</li>
+<li>提供 <code>subscribe(listener)</code> 注册监听器；</li>
+<li>提供 <code>subscribe(listener)</code> 返回的函数注销监听器；</li>
+</ul>
+<p>切记，redux 应用只有一个单一的 store。当需要拆分数据处理逻辑的时候，应该使用 reducer 组合而不是创建多个 store。</p>
+<p>前面使用 <code>combineReducers()</code>  将多个 reducer 合并成一个。现在要将其传递给 <code>createStore()</code> 即可完成 Store 的创建。<code>createStore()</code> 的第二个参数是可选的，用于设置 state 的初始状态。</p>
+<h3 id="数据流"><a href="#数据流" class="headerlink" title="数据流"></a>数据流</h3><p>严格的<strong>单项数据流</strong>是 redux 架构的设计核心。这意味着应用中所有的数据都遵循相同的生命周期，可以让应用变得可以预测和容易理解。</p>
+<p>redux 的生命周期遵循下面四步：</p>
+<ol>
+<li>调用 <code>store.dispatch(action)</code></li>
+<li>Redux store 调用传入的 reducer 函数。将当前的 state 树和 action 传入 reducer。</li>
+<li>根 reducer 应该把多个子 reducer 输出合并成一个单一的 state 树。</li>
+<li>Redux store 保存了根 reducer 返回的完整 state 树。</li>
+</ol>
+<h3 id="搭配-react"><a href="#搭配-react" class="headerlink" title="搭配 react"></a>搭配 react</h3><p>通过 react-redux 将 react 和 redux 融合。组件将被分为展示组件和容器组件。展示组件仅仅是用来展示，它的所有数据都是从 props 中获得。而容器组件则是展示组件的外层封装，用来和 redux 打交道，把 state 传入展示组件。</p>
+<h4 id="展示组件"><a href="#展示组件" class="headerlink" title="展示组件"></a>展示组件</h4><p>展示组件值定义外观并不涉及数据从哪里来，如何改变它。传入什么就渲染什么。如果把代码从 redux 迁移到其他架构，这些组件可以直接使用。他们并不依赖于 redux。</p>
+<h4 id="容器组件"><a href="#容器组件" class="headerlink" title="容器组件"></a>容器组件</h4><p>容器组件将展示组件连接到 redux（相当于一个适配器）。例如，展示型的 <code>TodoList</code> 组件需要一个类似 <code>VisibleTodoList</code> 的容器组件来监听 Redux store 变化并处理如何过滤出要显示的数据。</p>
+<p>技术上讲，容器组件就是使用 <code>store.subscribe()</code> 从 Redux state 树中读取部分数据，并通过 props 来把这些数据提供给要渲染的组件。可以手工开发容器组件，但是建议使用 React Redux 库的 <code>connect()</code> 方法来生成，这个方法做了性能优化来避免许多不必要的重复渲染（这样就不用手动实现 React 性能优化建议中的 <code>shouldComponentUpdate</code> 方法了）。</p>
+<p>因为容器组件是 state 和展示组件的中间件，所以可以在这里按需先处理一下 state，然后再把处理过的 state 传给展示组件。所以可以定义 <code>mapStateToProps</code> 函数来指定如何把当前 Redux store state 映射到展示组件中的 props 中。</p>
+<p>例如，<code>VisibleTodiList</code> 需要计算传到 <code>Todolist</code> 中的 <code>todos</code> ，所以定义了根据 <code>state.visibilityFilter</code> 来过滤 <code>state.todos</code> 的方法，并在 <code>mapStateToProps</code> 中使用：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> getVisibleTodos = <span class="function">(<span class="params">todos, filter</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">switch</span> (filter) &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="string">'SHOW_ALL'</span>:</span><br><span class="line">      <span class="keyword">return</span> todos</span><br><span class="line">    <span class="keyword">case</span> <span class="string">'SHOW_COMPLETED'</span>:</span><br><span class="line">      <span class="keyword">return</span> todos.filter(<span class="function"><span class="params">t</span> =&gt;</span> t.completed)</span><br><span class="line">    <span class="keyword">case</span> <span class="string">'SHOW_ACTIVE'</span>:</span><br><span class="line">      <span class="keyword">return</span> todos.filter(<span class="function"><span class="params">t</span> =&gt;</span> !t.completed)  </span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> mapStateToProps = <span class="function">(<span class="params">state</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> &#123;</span><br><span class="line">    todos: getVisibleTodos(state.todos,state.visibilityFilter)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个在 return 中的 <code>todos</code> 就直接成为了该显示组件的 <code>this.props</code> 的一员，可以直接通过 <code>const {todos} = this.props</code> 获取。</p>
+<p>除了显示的数据作为 props 传入，显示组件还需要外部容器组件传入一些事件处理方法。类似的，可以定义 <code>mapDispatchToProps()</code> 方法接收 <code>dispatch</code> 方法并返回希望被注入到展示组件的 props 中的回调方法。例如，我们希望 <code>VisibleTodoList</code> 向 <code>TodoList</code> 组件中注入一个叫 <code>onTodoClick</code> 的方法到 props 中，这个 <code>onTodoClick</code> 能 dispatch  一个 action:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> mapDispathToProps = <span class="function">(<span class="params">dispatch</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> &#123;</span><br><span class="line">    onTodoClick: <span class="function">(<span class="params">id</span>) =&gt;</span> &#123;</span><br><span class="line">      dispatch(toggleTodo(id))</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>也就是说，不仅可以把 state 修改好了传进去，也可以把响应事件设置好，再传进去。同样，可以直接通过 <code>const {onTodoClick} = this.props</code> 获取这个响应事件。</p>
+<p>最后，使用 <code>connect()</code> 创建 <code>VisibleTodoList</code>,将两个参数传入：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; connect &#125; <span class="keyword">from</span> <span class="string">'react-redux'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> VisibleTodoList = connect(</span><br><span class="line">  mapStateToProps,</span><br><span class="line">  mapDispatchToProps</span><br><span class="line">)(TodoList)</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> VisibleTodoList</span><br></pre></td></tr></table></figure>
+<p>然后外部就可以直接使用 <code>VisibileTodoList</code> 组件了。</p>
+<p>容器组件实例：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/容器组件实例.png?raw=true" alt="实例"></p>
+<h4 id="传入-Store"><a href="#传入-Store" class="headerlink" title="传入 Store"></a>传入 Store</h4><p>所有容器组件都可以访问 Redux Store，可以手动监听 store（虽然直接访问会多很多重复代码），但是推荐使用 React Redux 组件 <code>&lt;Provider&gt;</code> 来让所有容器组件都可以访问 store，而不必显示的传递它。只需要在渲染根组件时使用即可。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> React <span class="keyword">from</span> <span class="string">'react'</span></span><br><span class="line"><span class="keyword">import</span> &#123; render &#125; <span class="keyword">from</span> <span class="string">'react-dom'</span></span><br><span class="line"><span class="keyword">import</span> &#123; Provider &#125; <span class="keyword">from</span> <span class="string">'react-redux'</span></span><br><span class="line"><span class="keyword">import</span> &#123; createStore &#125; <span class="keyword">from</span> <span class="string">'redux'</span></span><br><span class="line"><span class="keyword">import</span> todoApp <span class="keyword">from</span> <span class="string">'./reducers'</span></span><br><span class="line"><span class="keyword">import</span> App <span class="keyword">from</span> <span class="string">'./components/App'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> store = createStore(todoApp)</span><br><span class="line"></span><br><span class="line">render(</span><br><span class="line">	&lt;Provider store=&#123;store&#125;&gt;</span><br><span class="line">		&lt;APP /&gt;</span><br><span class="line">	&lt;<span class="regexp">/Provider&gt;</span></span><br><span class="line"><span class="regexp">)</span></span><br></pre></td></tr></table></figure>
+<h4 id="关于-react-redux"><a href="#关于-react-redux" class="headerlink" title="关于 react-redux"></a>关于 react-redux</h4><p>react 中的每个属性都要通过 props 一层层传递。如果层级很多，会比较麻烦。所以 react 引入了 <code>context</code>。某个组件只要往自己的 context 里面放了某些状态，这个组件之下的所有子组件都直接访问这个状态而不需要通过中间组件的传递。</p>
+<p>也就是说父组件中设置了 <code>context</code>，子组件就可以通过 <code>this.context.xxx</code> 拿到相应属性使用并修改。这就导致了第一个问题，使用 <code>context</code> 是非常危险的，子组件可以随意修改。还有另一个问题是，如果每个子组件都是用 <code>context</code>，那么组件复用将变得非常困难。</p>
+<p>针对问题一， <code>context</code> 和 <code>store</code> 结合的就非常的完美。<code>context</code> 会担心其中数据被随意修改。而 <code>store</code> 中的数据只能通过 <code>dispatch</code> 修改。<br>所以可以把 <code>store</code> 方到 <code>context</code> 中去。</p>
+<p>针对问题二，便有了上面的 <code>connect</code> 方法，通过显示组件生成容器组件的过程。显示组件只负责根据传入的 <code>props</code> 显示，和纯函数一样，便于复用。<code>connect</code> 方法生成的容器组件要做的就是获取 <code>this.context</code> 中的 <code>store</code> 进而 <code>store.getState()</code> ,把 map 过的 state 传给显示组件。</p>
+<p>这样展示组件中获取 <code>context</code> 都的操作都消失了。但是在最外层组件里还有设置 <code>context</code> 的操作。为了将这部分脏代码消除。就 react-redux 提供了一个 <code>Provider</code> 组件。你只要传入一个 <code>store</code>，它就会把它放到 <code>context</code> 中去。</p>
+<h2 id="高级"><a href="#高级" class="headerlink" title="高级"></a>高级</h2><h3 id="异步-Action"><a href="#异步-Action" class="headerlink" title="异步 Action"></a>异步 Action</h3><p>如何把之前定义的同步 action 创建函数和网络请求结合起来？标准做法是使用 <code>Redux Thunk middleware</code>。要引入 <code>redux-thunk</code> 这个专门的库才能使用。</p>
+<p>通过使用指定的 middleware，action 创建函数除了返回 action 对象外，还可以返回函数。这时，这个 action 创建函数就成为了 thunk。</p>
+<p>当 action 创建函数返回函数时，这个函数会被 Redux Thunk middleware 执行。</p>
+<blockquote>
+<p>其实就是本来要 dispatch 一个 js 对象的 action 的，现在 dispatch 一个函数，这个函数用来获取网络数据，然后在这个函数里 dispatch 请求得到的数据。最开始调用的 dispatch 在判断对象是函数后，就没有其他作用了。</p>
+<p>中间件就是在传入 action 后和在真正 dispatch 前插入一些逻辑。thunk 中间件就是插入了判断 dispatch 传入的是不是函数的逻辑，是函数就调用，不是函数，就和普通方式一样直接 dispatch</p>
+</blockquote>
+<p>我们要如何在 dispatch 机制中引入 Redux Thunk middleware 呢？使用 <code>applyMiddleware</code>:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">impoort thunkMiddleware <span class="keyword">from</span> <span class="string">'redux-thunk'</span></span><br><span class="line"><span class="keyword">const</span> store = createStore(</span><br><span class="line">	rootReducer,</span><br><span class="line">	applyMiddleware(</span><br><span class="line">    	thunkMiddleware</span><br><span class="line">    )</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">store.dispatch(fetchPosts(<span class="string">'reactjs'</span>)).then(<span class="function"><span class="params">()</span> =&gt;</span> <span class="built_in">console</span>.log(store.getState()))	<span class="comment">// fetchPosts 函数是一个自定义的函数，在里面会进行网络请求</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>并不是说 thunk 是唯一解决方式，还可以使用 redux-promise，redux-promise-middleware。</p>
+<p>需要了解的是这种处理异步的方式。</p>
+</blockquote>
+<h3 id="Middleware"><a href="#Middleware" class="headerlink" title="Middleware"></a>Middleware</h3><p>我们知道，我们 <code>store.dispatch(action)</code> 后，<code>dispatch</code> 方法中会调用 <code>reducer</code> 。但是我们很多时候希望在执行 <code>reducer</code> 之前或者之后做一些其他的操作，比如记录日志等，这个时候就需要使用 middleware。</p>
+<p>middleware 所做的就是替换 redux 提供的 <code>dispatch</code> 方法:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> next = store.dispatch</span><br><span class="line">store.dispatch = <span class="function"><span class="keyword">function</span> <span class="title">dispatchAndLog</span>(<span class="params">action</span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(action)</span><br><span class="line">    <span class="keyword">let</span> result = next(action)</span><br><span class="line">    <span class="built_in">console</span>.log(store.getState())</span><br><span class="line">    <span class="keyword">return</span> result</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到，现在 <code>store.dispatch</code> 一个 action 的前后都会执行 log。并且现在的 <code>dispatch</code> 还会返回原本的 dispatch 的返回值(虽然这里原本的 dispatch 是 redux 的 dispatch ，不反回任何，但是如果 middleware 修改过的 dispatch 可能会返回 result，所以还是需要 return 的)</p>
+<p>现在我们考虑有多个 middleware 需要应用。我们需要把上一个 middleware 修改过的 <code>dispatch</code> 传入 下一个 middleware。那么考虑这个中间件方法需要几个参数：<code>store</code>，上一个中间件修改过的 <code>dispatch</code>，<code>action</code>。所以我们可以采用函数式：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> logger = <span class="function"><span class="params">store</span> =&gt;</span> next =&gt; <span class="function"><span class="params">action</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(action)</span><br><span class="line">    <span class="keyword">let</span> result = next(action)</span><br><span class="line">    <span class="built_in">console</span>.log(store.getState())</span><br><span class="line">    <span class="keyword">return</span> result</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> thunk = <span class="function"><span class="params">store</span> =&gt;</span> next =&gt; <span class="function"><span class="params">action</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">typeof</span> action === <span class="string">'function'</span></span><br><span class="line">    	? action(store.dispatch, store.getState)</span><br><span class="line">    	: next(action)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这样，在 <code>createStore()</code> 的时候，不只是传入一个 <code>reducer</code>，还包括一个中间件参数：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> store = createStore(</span><br><span class="line">	todoApp,</span><br><span class="line">    applyMiddleware(</span><br><span class="line">    	logger,</span><br><span class="line">        thunk,</span><br><span class="line">    )</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<p><code>applyMiddleware</code> 应该做的是这样一个操作：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">store.dispatch = middlewares.reduce(<span class="function">(<span class="params">middleware, preDispatch</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> middleware(store)(preDispatch)</span><br><span class="line">&#125;, store.dispatch)</span><br></pre></td></tr></table></figure>
+<p>所以最终的 dispatch 会是一个多层 middleware 嵌套的结构，每一个 middleware 中的 <code>next(action)</code> 都是执行指向下一个 middleware，而执行 <code>store.dispatch(action)</code> 就是重新执行一遍 middleware 链。如图：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/middleware_1.png?raw=true" alt></p>
+<h3 id="组织-reducer"><a href="#组织-reducer" class="headerlink" title="组织 reducer"></a>组织 reducer</h3><p>对于单个的 reducer，项目复杂后，reducer 可能会变得非常的长：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">appReducer</span>(<span class="params">state = &#123;&#125;, action</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">switch</span>(action.type) &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="string">'ADD_TODO'</span> : &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="built_in">Object</span>.assign(&#123;&#125;, state, &#123;</span><br><span class="line">                todos: state.todos + action.add</span><br><span class="line">            &#125;)</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">case</span> <span class="string">'TOGGLE_TODO'</span> : &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="built_in">Object</span>.assgin(&#123;&#125;, state, &#123;</span><br><span class="line">                todos: state.todos + action.toggle</span><br><span class="line">            &#125;)</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">case</span> <span class="string">'SET_VISIBILITY_FILTER'</span> : &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="built_in">Object</span>.assign(&#123;&#125;, state, &#123;</span><br><span class="line">                visibilityFilter: action.filter</span><br><span class="line">            &#125;)</span><br><span class="line">        &#125;</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到，这样的代码含有两个问题：</p>
+<ul>
+<li>多个字段的处理逻辑都放在一个方法里，不够清晰</li>
+<li>会包含非常多的 switch…case… 方法，很多冗余代码</li>
+</ul>
+<h4 id="分离字段"><a href="#分离字段" class="headerlink" title="分离字段"></a>分离字段</h4><p>针对第一个问题我们可以为每个字段都实现一个子 reducer，然后把各部分返回的结果组合：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">setVisibilityFilter</span>(<span class="params">visibilityState, action</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> action.filter</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">addTodo</span>(<span class="params">todoState, action</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> todoState + action.add</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">toggleTodo</span>(<span class="params">todoState, action</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> todoState + action.toggle</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">visibilityReducer</span>(<span class="params">visibilityState = <span class="string">'SHOW_ALL'</span>, action</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">switch</span>(action.type) &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="string">'SET_VISIBILITY_FILTER'</span> : <span class="keyword">return</span> setVisibilityFilter(visibilityState, action)</span><br><span class="line">        <span class="keyword">default</span> : <span class="keyword">return</span> visibilityState</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">todosReducer</span>(<span class="params">todoState, action</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">switch</span>(action.type) &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="string">'ADD_TODO'</span> : <span class="keyword">return</span> addTodo(todoState, action)</span><br><span class="line">        <span class="keyword">case</span> <span class="string">'TOGGLE_TODO'</span>: <span class="keyword">return</span> toggleTodo(todoState, action)</span><br><span class="line">		<span class="keyword">default</span> : <span class="keyword">return</span> todosState</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">appReducer</span> (<span class="params">state = &#123;&#125;, action</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">        todos: todosReducer(state.todos, action)</span><br><span class="line">        visibilityFilter: visibilityReducer(state.visibilityFilter, action)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这样的写法把各个字段分别处理，逻辑就清晰了很多。<code>combineReducers</code> 其实做的就是同样的事。</p>
+<h4 id="减少样板代码"><a href="#减少样板代码" class="headerlink" title="减少样板代码"></a>减少样板代码</h4><p>针对问题二提到的 <code>switch...case…</code> 产生的样板代码，js 的语言特性可以很好地消除：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">addTodo</span>(<span class="params">todoState, action</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> todoState + action.add</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">toggleTodo</span>(<span class="params">todoState, action</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> todoState + action.toggle</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 消除样板代码的主要方法</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">createReducer</span>(<span class="params">initialState, handlers</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="function"><span class="keyword">function</span> <span class="title">reducer</span>(<span class="params">state = initialState, action</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (handlers.hasOwnProperty(action.type)) &#123;</span><br><span class="line">            <span class="keyword">return</span> handlers[action.type](state, action)</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> state</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> todoReducer = createReducer(&#123;&#125;, &#123;</span><br><span class="line">    addTodo,</span><br><span class="line">    toggleTodo,</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">appReducer</span> (<span class="params">state = &#123;&#125;, action</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">        todos: todosReducer(state.todos, action)</span><br><span class="line">        visibilityFilter: visibilityReducer(state.visibilityFilter, action)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>用方法名来替代 case，也就是替代 <code>action.type</code>。然后把这些方法合在一起生成一个 reducer。这种方式就是类似 redux-actions 中 <code>handleActions</code> 的实现方式。</p>
+<blockquote>
+<p>这一小节其实是非常重要的。介绍了两个 reducer 的处理方式</p>
+<ol>
+<li>将一个 reducer 拆分成多个小 reducer，每一个 reducer 只负责 state 中相对应的一部分。这样的拆分可以是多层级的，即小 reducer 可以拆分成很多很多小小 reducer。具体见下图</li>
+<li>在每一个最小粒度的 reducer 中，又根据不同的 <code>action.type</code> 拆分出许多与之对应的方法。这些方法组合成 reducer。redux 会遍历所有的 reducer 找出对应 <code>action.type</code> 的处理方法，所以不同模块一般要在这些方法前加上 namespace 的前缀，否则容易一个 action 触发多个同名(<code>action.type</code> 相同)方法。</li>
+</ol>
+</blockquote>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/redux_1.png?raw=true" alt></p>
+<h2 id="常见问题"><a href="#常见问题" class="headerlink" title="常见问题"></a>常见问题</h2><h3 id="Redux-只能搭配-React？"><a href="#Redux-只能搭配-React？" class="headerlink" title="Redux 只能搭配 React？"></a>Redux 只能搭配 React？</h3><p>Redux 可以作为任何 UI 层的 store。但是一般在结合 UI 随 state 变化时，Redux 能发挥最大的作用。</p>
+<h3 id="Reducer-1"><a href="#Reducer-1" class="headerlink" title="Reducer"></a>Reducer</h3><h4 id="如何在-reducer-间共享-state？combineReducers-是必须的吗？"><a href="#如何在-reducer-间共享-state？combineReducers-是必须的吗？" class="headerlink" title="如何在 reducer 间共享 state？combineReducers 是必须的吗？"></a>如何在 reducer 间共享 state？<code>combineReducers</code> 是必须的吗？</h4><p>redux store 推荐结构是将 state 分成”层”，并提供独立的 reducer 方法管理各自的数据层。</p>
+<p>许多用户想要在 reducer 之间共享数据，但是 <code>combineReducers</code>不允许此种行为。如果一定要这样做，你需要：</p>
+<ul>
+<li>重构 state 层，让单独的 reducer 处理更多的数据。</li>
+<li>自定义方法处理这些 action，用自定义的顶层 reducer 方法替换 <code>combineReducers</code> 。使用 <code>combineReducers</code> 处理尽可能多的 action，同时为存在 state 交叉部分的 action 执行更专用的 reducer。</li>
+<li>类似于 redux-thunk 的异步 action 创建函数可以通过 <code>getState()</code> 方法获取所有的 state。action 创建函数能从 state 中检索到额外的数据并传入 action。所以 reducer 有足够的信息去更新 state 层。</li>
+</ul>
+<h4 id="处理-action-必须使用-switch-语句嘛？"><a href="#处理-action-必须使用-switch-语句嘛？" class="headerlink" title="处理 action 必须使用 switch 语句嘛？"></a>处理 action 必须使用 switch 语句嘛？</h4><p>不必要，但是 switch 是最常用的方式。也可以用 if 或者上面组织 reducer 中使用的方式。</p>
+<h3 id="State"><a href="#State" class="headerlink" title="State"></a>State</h3><h4 id="是否所有-state-都维护在-redux-中？"><a href="#是否所有-state-都维护在-redux-中？" class="headerlink" title="是否所有 state 都维护在 redux 中？"></a>是否所有 state 都维护在 redux 中？</h4><p>一般来说业务数据放在 redux 中，页面数据则不必要。</p>
+<h3 id="Store-1"><a href="#Store-1" class="headerlink" title="Store"></a>Store</h3><h4 id="可以创建多个-store-嘛？"><a href="#可以创建多个-store-嘛？" class="headerlink" title="可以创建多个 store 嘛？"></a>可以创建多个 store 嘛？</h4><p>最好不要创建多个 store，而是尝试组合 reducer。</p>
+<h4 id="能在组建里直接使用-store-并使用吗？"><a href="#能在组建里直接使用-store-并使用吗？" class="headerlink" title="能在组建里直接使用 store 并使用吗？"></a>能在组建里直接使用 store 并使用吗？</h4><p>最好不要直接获取 store 实例。借助 react-redux，由 <code>connect()</code> 将 <code>&lt;Provider store={store}&gt;</code> 传入的 store 通过 <code>mapStateToProps</code> 传入子组件。 </p>
+<h3 id="性能"><a href="#性能" class="headerlink" title="性能"></a>性能</h3><h4 id="每个-action-都调用所有的-reducer-会不会很慢？"><a href="#每个-action-都调用所有的-reducer-会不会很慢？" class="headerlink" title="每个 action 都调用所有的 reducer 会不会很慢？"></a>每个 action 都调用所有的 reducer 会不会很慢？</h4><p>不会</p>
+<h4 id="reducer-中必须对-state-进行深拷贝么？"><a href="#reducer-中必须对-state-进行深拷贝么？" class="headerlink" title="reducer 中必须对 state 进行深拷贝么？"></a>reducer 中必须对 state 进行深拷贝么？</h4><p>你需要创建一个 state 的副本，但是 state 中的没有变化的数据，还是使用浅拷贝，变化的才会创建新的引用。</p>
+<h3 id="react-redux"><a href="#react-redux" class="headerlink" title="react redux"></a>react redux</h3><h4 id="为何组件没有被重新渲染，或者-mapStateToProps-没有运行？"><a href="#为何组件没有被重新渲染，或者-mapStateToProps-没有运行？" class="headerlink" title="为何组件没有被重新渲染，或者 mapStateToProps 没有运行？"></a>为何组件没有被重新渲染，或者 <code>mapStateToProps</code> 没有运行？</h4><p>action 分发后没有重新渲染，最主要的原因是对 state 进行了直接修改。React Redux 会在 <code>shouldComponentUpdate</code> 中对新的 props 进行浅层的判等检查。如果所有的引用都是相同的，那么返回 false 从而跳过此次组价你的更新。</p>
+<p>所以，要注意，不管何时更新了一个嵌套值，都必须返回上层的数据的副本给 state 树。即如果数据是 <code>state.a.b.c.d</code> 中的 <code>d</code> 变化，你也必须返回 <code>c</code>,<code>b</code>,<code>a</code>,<code>state</code> 的拷贝。 </p>
+<h4 id="为何组件频繁重新渲染？"><a href="#为何组件频繁重新渲染？" class="headerlink" title="为何组件频繁重新渲染？"></a>为何组件频繁重新渲染？</h4><p>react redux 做了优化，会对 <code>mapStateToProps</code> 传入的 props 判等。但是如果每次 <code>mapStateToProps</code> 都生成新的对象实例的话，这种判等就没有用处了。比如：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> mapStateToProps = <span class="function">(<span class="params">state</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">        objects: state.objectIds.map(<span class="function"><span class="params">id</span> =&gt;</span> state.objects[id])</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>通过 <code>map</code> 会生成新的实例。所以判等也就不可能成功了。</p>
+<p>这种可以使用 Reselect，在 <code>mapStateToProps</code> 前就进行判断是否需要 map state。</p>
+<h4 id="redux-应该只连接到顶层组件嘛？"><a href="#redux-应该只连接到顶层组件嘛？" class="headerlink" title="redux 应该只连接到顶层组件嘛？"></a>redux 应该只连接到顶层组件嘛？</h4><p>并不是。当你感觉到你是在父组件里通过复制代码为某些子组件提供数据时，就可以抽出一个容器组件了。只要你认为父组件过多了解子组件的数据或者 action，就可以抽取容器。</p>
+<h2 id="Genji4rn"><a href="#Genji4rn" class="headerlink" title="Genji4rn"></a>Genji4rn</h2><p>Genji4rn.js 是一个借鉴了 Dva.js  的框架。集成了 router 以及 redux。这里主要讨论 redux 相关部分的 RN 中的实现。</p>
+<h3 id="需求分析"><a href="#需求分析" class="headerlink" title="需求分析"></a>需求分析</h3><p>在分析一个框架的时候，我们需要思考，这个框架需要帮助使用者完成那些步骤，以及需要使用者提供哪些东西。</p>
+<p>通过前面 redux 的学习，我们可以发现，用户没有必要知道 Store 是如何创建的（<code>createStore</code>），没有必要知道 reducer 是如何合成的(<code>combineReducer</code>)，没有必要知道 redux 分发事件  <code>dispatch</code>,没有必要知道根视图 <code>Provider</code>，没有必要知道 <code>state</code> 树如何形成的，没有必要知道 <code>reducer</code> 和  <code>state</code> 中属性一一对应，没有必要知道 <code>mapStateToProps</code> 以及 <code>mapDispatchToProps</code>，没必要知道 <code>applyMiddleware</code>，没必要知道 <code>action.type</code> 判断的 switch…case…。 </p>
+<p>需要使用者提供的是，哪些方法以及哪些属性是需要作为 props 传入模块的， props 中的方法需要执行什么异步操作(<code>action</code>)，以及如何影响 props 中的属性的(<code>state</code>)。</p>
+<p>带着上面的想法，我们可以大概推测一下 Genji4rn 做了什么。</p>
+<ol>
+<li>为每一个模块设置一个 reducer。这个 reducer 应该和 state 中相应属性同名。每个 reducer 中应该包含很多的方法，这些方法代表着不同的 <code>action.type</code>  的处理方法。为了和其他模块的 <code>action.type</code> 的处理方法不重名，还需要为这些方法添加模块特有的前缀。在 <code>dispatch(action)</code> 的时候，<code>type</code> 就要是包含前缀的方法名。</li>
+<li>隐藏任何关于 redux 的东西。state 不需要从 store 中取。设置 state 的时候，也不要出现 <code>dispatch</code> 方法。</li>
+</ol>
+<h3 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h3><p>首先在 RN 的入口 index.ios.js 中：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> Genji4rn <span class="keyword">from</span> <span class="string">'Genji4rnjs/mobile'</span></span><br><span class="line"><span class="keyword">import</span> React, &#123; Component &#125; <span class="keyword">from</span> <span class="string">'react'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> App = <span class="keyword">new</span> Genji4rn()</span><br><span class="line">App.registerModule(<span class="built_in">require</span>(<span class="string">'./modules/properties'</span>))</span><br><span class="line">App.registerModule(<span class="built_in">require</span>(<span class="string">'./modules/todoApp'</span>))</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> AppComponent = App.start()</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">CRM</span> <span class="keyword">extends</span> <span class="title">Component</span> </span>&#123;</span><br><span class="line">  <span class="keyword">constructor</span>(props) &#123;</span><br><span class="line">    <span class="keyword">super</span>(props);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  render() &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="xml"><span class="tag">&lt;<span class="name">AppComponent</span> /&gt;</span></span></span><br><span class="line"><span class="xml">  &#125;</span></span><br><span class="line"><span class="xml">&#125;</span></span><br><span class="line"><span class="xml">    </span></span><br><span class="line"><span class="xml">React.AppRegistry.registerComponent('reactNativeCrm', () =&gt; CRM);</span></span><br></pre></td></tr></table></figure>
+<p>通过 Genji4rn 实例的 <code>registerModule</code> 方法可以注册模块。模块示例如下：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; connect &#125; <span class="keyword">from</span> <span class="string">'Genji4rnjs'</span></span><br><span class="line"><span class="keyword">import</span> model <span class="keyword">from</span> <span class="string">'./model'</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">module</span>.exports = &#123;</span><br><span class="line">  models: model,</span><br><span class="line">  views: &#123;</span><br><span class="line">    TodoApp: connect(<span class="function">(<span class="params">state</span>) =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">return</span> &#123;</span><br><span class="line">        ...state.todoApp,</span><br><span class="line">        todos: state.todoApp.todos.filter(<span class="function"><span class="params">todo</span> =&gt;</span> &#123;</span><br><span class="line">          <span class="keyword">if</span> (state.todoApp.filter === VisibilityFilters.ALL) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">          &#125; <span class="keyword">else</span> <span class="keyword">if</span> (state.todoApp.filter === VisibilityFilters.COMPLETED) &#123;</span><br><span class="line">            <span class="keyword">return</span> todo.completed;</span><br><span class="line">          &#125; <span class="keyword">else</span> <span class="keyword">if</span> (state.todoApp.filter === VisibilityFilters.INCOMPLETE) &#123;</span><br><span class="line">            <span class="keyword">return</span> !todo.completed;</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;)</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;, model)(<span class="built_in">require</span>(<span class="string">'./views/index.js'</span>))</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>引入了和方法相关的 model 以及和视图相关的 view。导出 models 主要是为了导出模块的 <code>state</code> 以及 <code>reducer</code>，以此创建 <code>store</code>。导出 view 的时候，使用了 Genji4rn 提供的 connect 把两者组合，其实就是相当于设置里 <code>mapStateToProps</code> 和 <code>mapDispatchToProps</code>。</p>
+<p>一个标准的 model 写法如下：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">module</span>.exports = &#123;</span><br><span class="line">  namespace: <span class="string">''</span>,</span><br><span class="line">  state: &#123;</span><br><span class="line">  &#125;,</span><br><span class="line">  handlers: [</span><br><span class="line">  ],</span><br><span class="line">  publicHandlers: [</span><br><span class="line">  ],</span><br><span class="line">  reducers: &#123;</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其中，namespace 就是当前模块名，对于多层级的 namespace，Genji4rn 会将其转为多层级的对象结构。namespace 会被作为当前模块的在全局的 <code>state</code> 树的名字，以及相对应的 <code>reducer</code> 的名字。</p>
+<p>state 为当前模块的初始状态，也就是在 <code>state</code> 树中属性的具体值。</p>
+<p>handlers 为当前模块能调用的方法，会以 <code>mapDispatchToProps</code> 的形式传入 view。publicHandlers 为全局都能调用的方法，所以会加入到每一个模块的 <code>mapDispatchToProps</code> 中去。</p>
+<p>reducers 会被 Genji4rn 做进一步处理。先将数组中的各个方法组合成该模块的 reducer，然后将这些 reducer <code>combineReducer</code> 为一个大的 reducer。<strong>这里 reducers 里的各个方法分别对应 <code>action</code> 的不同 type。</strong></p>
+<p>注册完模块，通过 Genji4rn 实例的 start 方法，返回一个视图，作为 RN 的根视图。</p>
+<p>另外还有一块关于 middlerware 的方面。使用 Genji4rn 实例的 <code>use</code> 方法注册中间件：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/redux_2.png?raw=true" alt></p>
+<h3 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h3><h4 id="注册相关（主要是设置-reducer）"><a href="#注册相关（主要是设置-reducer）" class="headerlink" title="注册相关（主要是设置 reducer）"></a>注册相关（主要是设置 reducer）</h4><p>通过 Genji4rn 提供的初始化方法，可以创建一个包含所有信息的实例，相当于是之后所有视图以及逻辑的根：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> app = &#123;</span><br><span class="line">  <span class="comment">// properties</span></span><br><span class="line">  _models: [],</span><br><span class="line">  _reducers: &#123;&#125;,</span><br><span class="line">  _views: &#123;&#125;,</span><br><span class="line">  _router: <span class="literal">null</span>,</span><br><span class="line">  _routerProps: &#123;&#125;,</span><br><span class="line">  _routes: <span class="literal">null</span>,</span><br><span class="line">  _store: <span class="literal">null</span>,</span><br><span class="line">  _history: <span class="literal">null</span>,</span><br><span class="line">  _isomorphic: hooks.isomorphic || <span class="literal">false</span>, <span class="comment">// server-render options</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// methods</span></span><br><span class="line">  use, <span class="comment">// add redux-middlewares, extra-reducers, etc</span></span><br><span class="line">  registerModule, <span class="comment">// register a module</span></span><br><span class="line">  router, <span class="comment">// config router</span></span><br><span class="line">  start, <span class="comment">// start Genji4rn instance</span></span><br><span class="line">  getStore, <span class="comment">// get redux store</span></span><br><span class="line">  getRoutes, <span class="comment">// get router config</span></span><br><span class="line">  getModule, <span class="comment">// get the register module</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>随后我们会调用 <code>registerModule</code> 方法注册模块。注册模块的主要逻辑如下：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (isPlainObject(<span class="built_in">module</span>.models)) &#123;</span><br><span class="line">  <span class="keyword">let</span> Actions = &#123;&#125;</span><br><span class="line">  <span class="keyword">let</span> namespace = <span class="built_in">module</span>.models.namespace.replace(<span class="regexp">/\/$/g</span>, <span class="string">''</span>); <span class="comment">// events should be have the namespace prefix</span></span><br><span class="line">  <span class="built_in">Object</span>.keys(<span class="built_in">module</span>.models.reducers).map(<span class="function">(<span class="params">key</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (key.startsWith(<span class="string">'/'</span>)) &#123; <span class="comment">// starts with '/' means global events</span></span><br><span class="line">      <span class="comment">// 如果reducer 以 '/' 开头，那么就不会添加命名空间，表示用户明确知道需要哪个 type 触发。</span></span><br><span class="line">      Actions[key.substr(<span class="number">1</span>)] = <span class="built_in">module</span>.models.reducers[key];</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      Actions[namespace + <span class="string">'/'</span> + key] = <span class="built_in">module</span>.models.reducers[key];</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;)</span><br><span class="line">  <span class="keyword">let</span> _temp = handleActions(Actions, <span class="built_in">module</span>.models.state)</span><br><span class="line">  <span class="keyword">let</span> _arr = namespace.split(<span class="string">'/'</span>)</span><br><span class="line">  _mergeReducers(<span class="keyword">this</span>._reducers, _arr, _temp)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (<span class="built_in">module</span>.publicHandlers &amp;&amp; <span class="built_in">Array</span>.isArray(<span class="built_in">module</span>.publicHandlers)) &#123;</span><br><span class="line">  <span class="built_in">module</span>.publicHandlers.map(<span class="function">(<span class="params">item</span>) =&gt;</span> &#123;</span><br><span class="line">    GlobalContext.registerHandler(namespace.replace(<span class="regexp">/\//g</span>, <span class="string">'.'</span>) + <span class="string">'.'</span> + item.name, item.action)</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * private method</span></span><br><span class="line"><span class="comment"> * merge reducers by hierachy</span></span><br><span class="line"><span class="comment"> * user/login, user/info -&gt; user:&#123; login, info &#125;</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> _mergeReducers(<span class="params">obj, arr, res</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span>(arr.length &gt; <span class="number">1</span>) &#123;</span><br><span class="line">    <span class="keyword">let</span> hierachy = arr.splice(<span class="number">0</span>,<span class="number">1</span>)[<span class="number">0</span>]</span><br><span class="line">    obj[hierachy] = obj[hierachy] || &#123;&#125;</span><br><span class="line">    _mergeReducers(obj[hierachy], arr, res)</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    obj[arr[<span class="number">0</span>]] =  res || &#123;&#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>前面说过 <code>reducers</code> 数组中的方法对应的是不同的 <code>action.type</code>。为了区分不同模块的 <code>action.type</code>，需要为其中的每个方法都添加上 <code>namespace</code>。但是还有一些方法就不需要添加 <code>namespace</code>，因为这些方法表示的 <code>action.type</code> 是为了响应其他模块发出的 dispatch 而创建的。如下图：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/redux_3.png?raw=true" alt></p>
+<p>随后将处理好的 <code>reducers</code> 通过 redux-actions 的 <code>handleActions</code> 方法，将其转化为一个 reducer。相当于把一个个独立的方法转化为 switch…case… 了。</p>
+<blockquote>
+<p>创建 reducer 的时候，其实就已经把 <code>defaultState</code> 传进去了。所以后面创建 store 的时候就不需要总的 <code>initialState</code> 了</p>
+</blockquote>
+<p>之后通过 <code>_mergeReducers</code> 方法把上面生成的各个 reducer 放到 Genji4rn 实例的 <code>_reducers</code> 的各个命名空间下。比如 <code>namespace</code> 为 <code>order/newOrder</code> 的模块，它的 reducer 就放在 Genji4rn 实例对象的 <code>_reducers.order.newOrder</code> 下，等待最后的 <code>combineReducer</code>。</p>
+<p>最后，把 <code>publicHandlers</code> 中的所有方法保存到 <code>GlobalContext</code> 中去。<code>publicHandlers</code> 中的方法所有模块都能通过 <code>GlobalContext</code> 获取并使用：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/redux_5.png?raw=true" alt></p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/redux_4.png?raw=true" alt></p>
+<blockquote>
+<p><strong>这里是一个非常重要的注释，用来探讨 publicHandlers 和全局的 reducer 的适用场景</strong></p>
+<p>publicHandlers 的适用场景是，其他人的变动要通知我做出相应变动的情况。即多对一。</p>
+<p>全局 reducer 的适用场景是，我的变动要通知其他人的变动的情况。即一对多。</p>
+</blockquote>
+<p>注册模块的逻辑就是这样。现在需要把各个部分糅合到一起。Genji4rn 提供了 <code>start</code> 方法：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * start the whole Genji4rn instance</span></span><br><span class="line"><span class="comment"> * return React.Component</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">start</span>(<span class="params">container</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> me = <span class="keyword">this</span></span><br><span class="line">  <span class="keyword">const</span> AppNavigator = me._router; <span class="comment">// react-navigation</span></span><br><span class="line">  <span class="keyword">let</span> store = getStore.call(me)</span><br><span class="line">  <span class="keyword">const</span> isomorphic = me._isomorphic</span><br><span class="line">  <span class="keyword">const</span> App = <span class="function">(<span class="params">&#123; dispatch, nav &#125;</span>) =&gt;</span> (</span><br><span class="line">    &lt;AppNavigator navigation=&#123;addNavigationHelpers(&#123; dispatch, <span class="attr">state</span>: nav &#125;)&#125; /&gt;</span><br><span class="line">  );</span><br><span class="line">  <span class="keyword">const</span> mapStateToProps = <span class="function"><span class="params">state</span> =&gt;</span> (&#123;</span><br><span class="line">    nav: state.nav,</span><br><span class="line">  &#125;);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> AppWithNavigationState = connect(mapStateToProps)(App);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="class"><span class="keyword">class</span> <span class="keyword">extends</span> <span class="title">Component</span> </span>&#123;</span><br><span class="line">    render() &#123;</span><br><span class="line">      isomorphic ? store = getStore.call(me) : <span class="literal">null</span></span><br><span class="line">      <span class="keyword">return</span> (</span><br><span class="line">        &lt;Provider store=&#123;store&#125;&gt;</span><br><span class="line">          &lt;AppWithNavigationState /&gt;</span><br><span class="line">        &lt;<span class="regexp">/Provider&gt;</span></span><br><span class="line"><span class="regexp">      ) </span></span><br><span class="line"><span class="regexp">    &#125;</span></span><br><span class="line"><span class="regexp">  &#125; </span></span><br><span class="line"><span class="regexp">&#125;</span></span><br></pre></td></tr></table></figure>
+<p><code>start</code> 整合了 redux-react 的功能。主要创建了 store 以及提供了 <code>Provider</code>。</p>
+<p>这里有一部分 navigation 相关功能。<code>App</code> 是一个显示组件，至于这种写法，其实就相当于router 组件需要 store 的 <code>dispatch</code> 方法以及 state 的 <code>nav</code> 属性作为 props 传入。然后的 <code>connect</code> 方法也确实是这样做的。<code>connect</code> 方法创建了一个容器组件 <code>AppWithNavigationState</code> ，然后将其作为 <code>Provider</code> 的子组件。</p>
+<p>再回到创建 store 的过程：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * create the redux-store</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getStore</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> middlewares = plugin.get(<span class="string">'onAction'</span>);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">let</span> enhancer = applyMiddleware(...middlewares)</span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> __DEV__ !== <span class="string">'undefined'</span> &amp;&amp; __DEV__) &#123; <span class="comment">// dev mode</span></span><br><span class="line">    <span class="keyword">const</span> devTools = plugin.get(<span class="string">'dev'</span>) || <span class="function">(<span class="params">(noop</span>) =&gt;</span> noop)</span><br><span class="line">    <span class="keyword">if</span>(devTools.apply) &#123;</span><br><span class="line">      enhancer = compose(</span><br><span class="line">        applyMiddleware(...middlewares),</span><br><span class="line">        devTools</span><br><span class="line">      )</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> createAppStore = enhancer(createStore);</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">this</span>._store = <span class="built_in">Object</span>.assign(<span class="keyword">this</span>._store || &#123;&#125;, createAppStore(getReducer.call(<span class="keyword">this</span>), initialState));</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">this</span>._store</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到，先用 <code>applyMiddleware</code> 生成了中间件，中间件可以通过 Genji4rn 的 <code>use</code> 方法注册，一般会注册的中间件有： </p>
+<ul>
+<li>redux-thunk：用来处理异步 action</li>
+<li>redux-promise-middleware：为异步请求的 <code>action.type</code> 加上后缀。例如：<code>Loading</code>,<code>Success</code>,<code>Error</code> 等。</li>
+</ul>
+<p>这里 <code>initialState</code> 需要在创建 Genji4rn 实例的时候传入，一般是 <code>{}</code>。前面已经说了，创建 reducer 的时候，就已经把默认值传给每个 reducer 了。这里就不需要再为 <code>initialState</code> 创建值了。</p>
+<p>不过这段的重点应该是 <code>getReducer</code> 方法：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getReducer</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="comment">// extra reducers</span></span><br><span class="line">  <span class="keyword">const</span> extraReducers = plugin.get(<span class="string">'extraReducers'</span>);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> mergeReducers = deepmerge.all([<span class="keyword">this</span>._reducers, extraReducers])</span><br><span class="line">  <span class="keyword">for</span>(<span class="keyword">let</span> k <span class="keyword">in</span> mergeReducers) &#123;</span><br><span class="line">    <span class="keyword">if</span>(<span class="keyword">typeof</span> mergeReducers[k] === <span class="string">'object'</span>) &#123;</span><br><span class="line">      mergeReducers[k] = combineReducers(mergeReducers[k])</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> navInitialState = <span class="keyword">this</span>._router.router.getStateForAction(</span><br><span class="line">    <span class="keyword">this</span>._router.router.getActionForPathAndParams(<span class="keyword">this</span>._router.initialRouteName)</span><br><span class="line">  );</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> navReducer = <span class="function">(<span class="params">state = navInitialState, action</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> nextState = <span class="keyword">this</span>._router.router.getStateForAction(action, state);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Simply return the original `state` if `nextState` is null or undefined.</span></span><br><span class="line">    <span class="keyword">return</span> nextState || state;</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> appReducer = combineReducers(&#123;</span><br><span class="line">    nav: navReducer,</span><br><span class="line">    ...initialReducer,</span><br><span class="line">    ...mergeReducers,</span><br><span class="line">  &#125;);</span><br><span class="line">  <span class="keyword">return</span> appReducer</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最终返回的 <code>appReducer</code> 中，包含了 router 的 reducer <code>navReducer</code> 还有用户的  <code>mergeReducers</code> 。</p>
+<p>这里 <code>mergeReducers</code> 的生成非常有意思。之前我们保存在 Genji4rn 实例的 <code>_reducer</code>里的 reducer 结构是两层的：<code>_reducers.order.newOrder</code>. 但是 <code>combineReducer</code> 只能把一层的 reducer 转化为一个大的 reducer。因此，这里使用了两次 <code>combineReducer</code>。比如刚才的例子，第一次将 <code>order</code> 下的各个 reducer <code>combineReducer</code> 后得到一个 <code>order</code> 的 <code>mergeReducers[&#39;order&#39;]</code>。然后再把 <code>order</code> 同一层级的 reducer <code>combineReducer</code> 到 <code>appReducer</code> 下。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/redux_1.png?raw=true" alt></p>
+<p>这样 reducer 的层次结构就和 state 一致了。</p>
+<blockquote>
+<p><strong>多层级的 state，可以多次使用 combineReducer 来达到将多层级 reducer 合并的目的。</strong></p>
+</blockquote>
+<h4 id="connect-相关-主要是设置-action"><a href="#connect-相关-主要是设置-action" class="headerlink" title="connect 相关(主要是设置 action)"></a>connect 相关(主要是设置 action)</h4><p>前面已经成功隐藏了 <code>createStore</code>,<code>combineReducer</code>,<code>Provider</code>,<code>applymiddleware</code> 等方法，不过这还不够。对于用户来说，<code>dispatch(action)</code> 也没有必要让用户知道。使用者应该只需要提供一个方法，返回数据 <code>action.payload</code> 就行了，连 <code>action.type</code> 是什么用户都可以不必知道，由框架通过获取方法名推断得到。</p>
+<p>所以需要使用 Genji4rn 提供的 <code>connect</code> 方法：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">module</span>.exports.connect = <span class="function"><span class="keyword">function</span>(<span class="params">state, model</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> actionCreators = &#123;&#125;</span><br><span class="line">  <span class="keyword">let</span> _handlers = []</span><br><span class="line">  <span class="keyword">if</span>(model) &#123;</span><br><span class="line">      <span class="keyword">if</span>(model.handlers &amp;&amp; <span class="built_in">Array</span>.isArray(model.handlers)) &#123;</span><br><span class="line">        _handlers = _handlers.concat(model.handlers)</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">if</span>(model.publicHandlers &amp;&amp; <span class="built_in">Array</span>.isArray(model.publicHandlers)) &#123;</span><br><span class="line">        _handlers = _handlers.concat(model.publicHandlers)</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span>(_handlers.length &gt; <span class="number">0</span>) &#123;</span><br><span class="line">    _handlers.map(<span class="function">(<span class="params">key</span>) =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">if</span>(key.action) &#123;</span><br><span class="line">        <span class="keyword">if</span>(key.validate) &#123;</span><br><span class="line">          actionCreators[key.name] = createAction(model.namespace + <span class="string">'/'</span> + key.name, key.action, key.validate)</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">          actionCreators[key.name] = createAction(model.namespace + <span class="string">'/'</span> + key.name, key.action)</span><br><span class="line">        &#125;</span><br><span class="line">      &#125; <span class="keyword">else</span> <span class="keyword">if</span>(key.handler) &#123;</span><br><span class="line">        <span class="keyword">let</span> globalHandler = GlobalContext.getHandler(key.handler)</span><br><span class="line">        <span class="keyword">if</span>(globalHandler) &#123;  </span><br><span class="line">          <span class="keyword">if</span>(key.validate) &#123;</span><br><span class="line">            actionCreators[key.name] = createAction(model.namespace + <span class="string">'/'</span> + key.name, globalHandler, key.validate)</span><br><span class="line">          &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            actionCreators[key.name] = createAction(model.namespace + <span class="string">'/'</span> + key.name, globalHandler)</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        actionCreators[key] = createAction(model.namespace + <span class="string">'/'</span> + key)</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;)</span><br><span class="line">    <span class="keyword">const</span> mapDispatchToProps = <span class="function">(<span class="params">dispatch</span>) =&gt;</span> bindActionCreators(actionCreators, dispatch)</span><br><span class="line">    <span class="keyword">return</span> connect(state, mapDispatchToProps)</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> connect(state)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>关于 <code>mapStateToProps</code> 的部分我就不说了，主要看看 handler 如何变为 <code>mapDispatchToProps</code> 的过程。</p>
+<p>hanlder 有三种用法：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">handlers: [</span><br><span class="line">  <span class="string">'justAString'</span>,</span><br><span class="line">  &#123; <span class="attr">name</span>: <span class="string">'handlerName'</span>, <span class="attr">action</span>: <span class="string">'handlerActionFromActionJS'</span> &#125;,</span><br><span class="line">  &#123; <span class="attr">name</span>: <span class="string">'handlerName2'</span>, <span class="attr">handler</span>: <span class="string">'handlerFromAnotherModule'</span> &#125;</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+<p>第一种对应上面的 <code>else</code>:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">actionCreators[key] = createAction(model.namespace + <span class="string">'/'</span> + key)</span><br></pre></td></tr></table></figure>
+<p>通过 redux-action 的 <code>createAction</code> 生成一个 <strong>action 创建方法 createAction</strong>，直接在方法名前加上 <code>namespace</code> 作为 <code>action.type</code> 传入。这样 <code>action.type</code> 就和前面处理 reducers 时添加 <code>namespace</code> 的做法一致了。调用这个 action 创建方法的话只需要传入一个 payload 就可以生成一个 action：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> action = createAction(model.namspace + <span class="string">'/someaction'</span>)(<span class="string">'payload'</span>)</span><br></pre></td></tr></table></figure>
+<p>第二种对应 <code>if(key.action)</code> 的情况：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">actionCreators[key.name] = createAction(model.namespace + <span class="string">'/'</span> + key.name, key.action)</span><br></pre></td></tr></table></figure>
+<p>还是通过 <code>createAction</code>，不过这里<strong>此时生成的 createAction 方法会在执行的时候接受参数，然后将其作为入参立刻执行 action 方法，并将 action 方法的返回值作为 payload 保存。</strong></p>
+<blockquote>
+<p>虽然之前说了关于 <code>redux-thunk</code> 的 action 为 function 的情况。但是其实通过 <code>redux-actions</code> 创建的 action 其实不会是一个 action。这时候就要配合 <code>redux-promise-middleware</code> 了</p>
+</blockquote>
+<p><code>redux-promise-middleware</code> 就做了这样一个事情。它会检查 <code>action.payload</code> 调用后返回的是不是一个 promise。如果是一个 promise，它会在 <code>.then()</code> 方法中，替代使用者执行 dispatch 方法。它还能检查网络请求是成功还是失败，为原本的 <code>action.type</code> 添加相应的成功或者失败的后缀。</p>
+<p>第三种对应 <code>else if(key.handler)</code> 的情况：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> globalHandler = GlobalContext.getHandler(key.handler)</span><br><span class="line">actionCreators[key.name] = createAction(model.namespace + <span class="string">'/'</span> + key.name, globalHandler)</span><br></pre></td></tr></table></figure>
+<p>其实和第二种差不多，只是它不是从模块的 action 中获取方法，而是从 <code>globalHandler</code> 中找到对应的方法。</p>
+<p>通过以上方法得到 <code>actionCreators</code> 之后，就要创建 <code>mapDispatchToProps</code> 了。由于使用者不需要知道 dispatch，所以这里使用 redux 提供的  <code>bindActionCreators</code>  方法，其实也没什么魔法，就是生成一个调用 dispatch 方法的方法：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">bindActionCreator</span>(<span class="params">actionCreator, dispatch</span>) </span>&#123;</span><br><span class="line"> 	<span class="keyword">return</span> <span class="function">(<span class="params">...args</span>) =&gt;</span> dispatch(actionCreator(...args))   </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="Vuex-使用"><a href="#Vuex-使用" class="headerlink" title="Vuex 使用"></a>Vuex 使用</h2><p>Vue 提供了 Vuex 作为 redux 的解决方式。来看一下它的使用方式。</p>
+<h3 id="基本使用"><a href="#基本使用" class="headerlink" title="基本使用"></a>基本使用</h3><h4 id="store"><a href="#store" class="headerlink" title="store"></a>store</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> Vue <span class="keyword">from</span> <span class="string">'vue'</span></span><br><span class="line"><span class="keyword">import</span> Vuex <span class="keyword">from</span> <span class="string">'vuex'</span></span><br><span class="line"></span><br><span class="line">Vue.use(Vuex)</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> store = <span class="keyword">new</span> Vuex.Store(&#123;</span><br><span class="line">  state: &#123;</span><br><span class="line">    count: <span class="number">0</span>,</span><br><span class="line">    todos: [</span><br><span class="line">      &#123; <span class="attr">id</span>: <span class="number">1</span>, <span class="attr">text</span>: <span class="string">'...'</span>, <span class="attr">done</span>: <span class="literal">true</span> &#125;,</span><br><span class="line">      &#123; <span class="attr">id</span>: <span class="number">2</span>, <span class="attr">text</span>: <span class="string">'...'</span>, <span class="attr">done</span>: <span class="literal">false</span> &#125;</span><br><span class="line">    ]</span><br><span class="line">  &#125;,</span><br><span class="line">  mutations: &#123;</span><br><span class="line">    increment (state) &#123;</span><br><span class="line">      state.count++</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  actions: &#123;</span><br><span class="line">    increment (context) &#123;</span><br><span class="line">      context.commit(<span class="string">'increment'</span>)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  getter: &#123;</span><br><span class="line">	doneTodos: <span class="function"><span class="params">state</span> =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">return</span> state.todos.filter(<span class="function"><span class="params">todo</span> =&gt;</span> todo.done)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line"></span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>需要使用 <code>Vue.use(Vuex)</code> 像 Vue 注册插件 Vuex。<strong>在 Vue 中，由于没有 react-redux 将属性传入展示组件，所以要在需要使用的地方 import 这个 store。</strong></p>
+<h4 id="state"><a href="#state" class="headerlink" title="state"></a>state</h4><p>通过 store 获取 state ：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">store.state.count		<span class="comment">// -&gt; 0</span></span><br></pre></td></tr></table></figure>
+<p>一般将 state 用在计算属性上：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 创建一个 Counter 组件</span></span><br><span class="line"><span class="keyword">const</span> Counter = &#123;</span><br><span class="line">  template: <span class="string">`&lt;div&gt;&#123;&#123; count &#125;&#125;&lt;/div&gt;`</span>,</span><br><span class="line">  computed: &#123;</span><br><span class="line">    count () &#123;</span><br><span class="line">      <span class="keyword">return</span> store.state.count</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="getter"><a href="#getter" class="headerlink" title="getter"></a>getter</h4><p>getter 用于简化 store 中 state 的计算：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">getters: &#123;</span><br><span class="line">  doneTodos: <span class="function"><span class="params">state</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> state.todos.filter(<span class="function"><span class="params">todo</span> =&gt;</span> todo.done)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以通过 <code>store.getters.xxx</code> 获取相关属性值。比如：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">store.getters.doneTodos <span class="comment">// -&gt; [&#123; id: 1, text: '...', done: true &#125;]</span></span><br></pre></td></tr></table></figure>
+<h4 id="mutation"><a href="#mutation" class="headerlink" title="mutation"></a>mutation</h4><p>根据 redux 所倡导的，改变 store 的唯一方式还是通过 dispatch 一个 action，而不是直接修改 store。Redux 中，reducer 是一个纯函数，用于修改 state。Vuex 也提供了相应方式 <code>mutation</code> 。</p>
+<p><code>mutation</code> 的写法非常类似 Genji4rn 中 <code>reducers</code> 的写法。mutation 中包含了很多的方法。方法接收 <code>initialState</code> 和一个值，即 <code>action.payload</code>。为什么不需要 <code>action.type</code> 了呢？因为方法名就是 type。比如下面的 <code>increment</code> 方法，就代表着这个 reducer 的 <code>action.type</code></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">mutations: &#123;</span><br><span class="line">  increment (state, n) &#123;</span><br><span class="line">    state.count += n</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>不同的是，Genji4rn 中每个方法不能直接修改 state 值，要返回一个新的 state。而 <code>mutation</code> 的方法中直接修改 state。这种差异是由于 react 和 vue 响应式机制的不同而产生的。react 要通过比较 state 变化前后的不同，来找出需要重新渲染的组件。Vue 则是 state 的 set 方法通知页面中计算属性的改变。</p>
+<p>触发方式上，Redux 中通过 <code>store.dispatch(action)</code> 依次触发所有 reducer。Vuex 中通过 <code>commit</code> 方法依次触发所有模块的 mutation，相当于把 <code>action</code> 拆成了 <code>action.type</code> 和 <code>action.payload</code> 分别传入：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">store.commit(<span class="string">'increment'</span>, <span class="number">10</span>)</span><br></pre></td></tr></table></figure>
+<p>这里与 Genji4rn 不同的是，Genji4rn 把与 commit 相对应的 dispatch 封装在 handler 中的相关方法里。而 Vuex 还需要自己调用。如果模块存在命名空间，那么写起来会比较冗长，而 Genji4rn 会自动为方法添加命名空间的前缀：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">store.commit(<span class="string">'order/newOrder/increment'</span>, <span class="number">10</span>)</span><br></pre></td></tr></table></figure>
+<h4 id="action"><a href="#action" class="headerlink" title="action"></a>action</h4><p>关于异步操作。Vuex 提供了action。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">actions: &#123;</span><br><span class="line">  incrementAsync (context, product) &#123;</span><br><span class="line">    setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">      context.commit(<span class="string">'increment'</span>, product.amount)</span><br><span class="line">    &#125;, <span class="number">1000</span>)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其实还是相当于是在异步操作完了之后，触发一个 <code>mutation</code>。这里的 <code>context</code> 相当于当前模块的 store。即,只能拿到当前模块的 <code>commit</code> 方法和 <code>state</code>。</p>
+<p>action 的触发使用 <code>dispatch</code> 方法。同样的，也是把 <code>action.type</code> 单独拿了出来：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">store.dispatch(<span class="string">'incrementAsync'</span>, &#123;</span><br><span class="line">  amount: <span class="number">10</span></span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>vue 里通过 <code>dispatch</code> 和 <code>commit</code> 手动替代了 redux-thunk 的功能。</p>
+<h3 id="模块化"><a href="#模块化" class="headerlink" title="模块化"></a>模块化</h3><h4 id="基本使用-1"><a href="#基本使用-1" class="headerlink" title="基本使用"></a>基本使用</h4><p>当工程变大后，所有状态和方法都写在 store 中是不明智的。所以 react 中才有了 Genji4rn 之类的框架。Vuex 提供了专门的模块化方式：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> moduleA = &#123;</span><br><span class="line">  state: &#123; ... &#125;,</span><br><span class="line">  mutations: &#123; ... &#125;,</span><br><span class="line">  actions: &#123; ... &#125;,</span><br><span class="line">  getters: &#123; ... &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> moduleB = &#123;</span><br><span class="line">  state: &#123; ... &#125;,</span><br><span class="line">  mutations: &#123; ... &#125;,</span><br><span class="line">  actions: &#123; ... &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> store = <span class="keyword">new</span> Vuex.Store(&#123;</span><br><span class="line">  modules: &#123;</span><br><span class="line">    a: moduleA,</span><br><span class="line">    b: moduleB</span><br><span class="line">  &#125;</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">store.state.a <span class="comment">// -&gt; moduleA 的状态</span></span><br><span class="line">store.state.b <span class="comment">// -&gt; moduleB 的状态</span></span><br></pre></td></tr></table></figure>
+<p>只创建一个 Store，把不同的模块以 module 的形式传入。通过 <code>store.state</code> 拿到去全局的 state，<code>store.state.a</code> 拿到相应模块的 state。</p>
+<h4 id="模块的局部状态"><a href="#模块的局部状态" class="headerlink" title="模块的局部状态"></a>模块的局部状态</h4><p>模块化后模块内部的 <code>mutation</code> 和 <code>getter</code>。接收的第一个参数是模块的局部状态对象：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> moduleA = &#123;</span><br><span class="line">  state: &#123; <span class="attr">count</span>: <span class="number">0</span> &#125;,</span><br><span class="line">  mutations: &#123;</span><br><span class="line">    increment (state) &#123;</span><br><span class="line">      <span class="comment">// 这里的 `state` 对象是模块的局部状态</span></span><br><span class="line">      state.count++</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line"></span><br><span class="line">  getters: &#123;</span><br><span class="line">    doubleCount (state) &#123;</span><br><span class="line">      <span class="keyword">return</span> state.count * <span class="number">2</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>对于模块内部的 action，局部状态通过 <code>context.state</code> 暴露，根节点状态为 <code>context.rootState</code>:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> moduleA = &#123;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">  actions: &#123;</span><br><span class="line">    incrementIfOddOnRootSum (&#123; state, commit, rootState &#125;) &#123;</span><br><span class="line">      <span class="keyword">if</span> ((state.count + rootState.count) % <span class="number">2</span> === <span class="number">1</span>) &#123;</span><br><span class="line">        commit(<span class="string">'increment'</span>)</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="命名空间"><a href="#命名空间" class="headerlink" title="命名空间"></a>命名空间</h4><p>默认情况下，模块内部的 action、mutation 和 getter 是注册在<strong>全局命名空间</strong>的——这样使得多个模块能够对同一 mutation 或 action 作出响应。</p>
+<p>可以通过添加 <code>namespaced: true</code> 的方式使其成为带命名空间的模块。当模块被注册后，它的所有 getter、action 及 mutation 都会自动根据模块注册的路径调整命名。例如：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> store = <span class="keyword">new</span> Vuex.Store(&#123;</span><br><span class="line">  modules: &#123;</span><br><span class="line">    account: &#123;</span><br><span class="line">      namespaced: <span class="literal">true</span>,</span><br><span class="line"></span><br><span class="line">      <span class="comment">// 模块内容（module assets）</span></span><br><span class="line">      state: &#123; ... &#125;, <span class="comment">// 模块内的状态已经是嵌套的了，使用 `namespaced` 属性不会对其产生影响</span></span><br><span class="line">      getters: &#123;</span><br><span class="line">        isAdmin () &#123; ... &#125; <span class="comment">// -&gt; getters['account/isAdmin']</span></span><br><span class="line">      &#125;,</span><br><span class="line">      actions: &#123;</span><br><span class="line">        login () &#123; ... &#125; <span class="comment">// -&gt; dispatch('account/login')</span></span><br><span class="line">      &#125;,</span><br><span class="line">      mutations: &#123;</span><br><span class="line">        login () &#123; ... &#125; <span class="comment">// -&gt; commit('account/login')</span></span><br><span class="line">      &#125;,</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>Vuex 在 reducer 部分的处理和 Genji4rn 非常相似，都是将 <code>action.type</code> 转化为一个个方法，都可以为每一个 <code>action.type</code> 的方法添加命名空间。都可以在每一个模块的 reducer 中获取到当前模块的 state。</p>
+<p>但是在 dispatch 方法的几乎没有做太多的处理，还是需要使用者根据实际情况，去获取 store 调用 <code>store.dispatch</code> 或者 <code>store.commit</code> 方法，可以做进一步的封装，尤其是使用命名空间的情况下。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tag/学习笔记/" rel="tag"># 学习笔记</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/05/30/小程序技巧/" rel="next" title="小程序技巧">
+                <i class="fa fa-chevron-left"></i> 小程序技巧
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/07/31/wkwebview/" rel="prev" title="WKWebView 使用（一）—— 基本用法">
+                WKWebView 使用（一）—— 基本用法 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.png" alt="Zachary Zhang">
+            
+              <p class="site-author-name" itemprop="name">Zachary Zhang</p>
+              <p class="site-description motion-element" itemprop="description">Stay Hungry. Stay Foolish!</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">116</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/zhang759740844" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:zch759740844@126.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#介绍"><span class="nav-number">1.</span> <span class="nav-text">介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#动机"><span class="nav-number">1.1.</span> <span class="nav-text">动机</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#三大原则"><span class="nav-number">1.2.</span> <span class="nav-text">三大原则</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#单一数据源"><span class="nav-number">1.2.1.</span> <span class="nav-text">单一数据源</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#State-是只读的"><span class="nav-number">1.2.2.</span> <span class="nav-text">State 是只读的</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#使用纯函数来执行修改"><span class="nav-number">1.2.3.</span> <span class="nav-text">使用纯函数来执行修改</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#基础"><span class="nav-number">2.</span> <span class="nav-text">基础</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Action"><span class="nav-number">2.1.</span> <span class="nav-text">Action</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Action-创建函数"><span class="nav-number">2.1.1.</span> <span class="nav-text">Action 创建函数</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Reducer"><span class="nav-number">2.2.</span> <span class="nav-text">Reducer</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Action-的处理"><span class="nav-number">2.2.1.</span> <span class="nav-text">Action 的处理</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#拆分-Reducer"><span class="nav-number">2.2.2.</span> <span class="nav-text">拆分 Reducer</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Store"><span class="nav-number">2.3.</span> <span class="nav-text">Store</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#数据流"><span class="nav-number">2.4.</span> <span class="nav-text">数据流</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#搭配-react"><span class="nav-number">2.5.</span> <span class="nav-text">搭配 react</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#展示组件"><span class="nav-number">2.5.1.</span> <span class="nav-text">展示组件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#容器组件"><span class="nav-number">2.5.2.</span> <span class="nav-text">容器组件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#传入-Store"><span class="nav-number">2.5.3.</span> <span class="nav-text">传入 Store</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#关于-react-redux"><span class="nav-number">2.5.4.</span> <span class="nav-text">关于 react-redux</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#高级"><span class="nav-number">3.</span> <span class="nav-text">高级</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#异步-Action"><span class="nav-number">3.1.</span> <span class="nav-text">异步 Action</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Middleware"><span class="nav-number">3.2.</span> <span class="nav-text">Middleware</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#组织-reducer"><span class="nav-number">3.3.</span> <span class="nav-text">组织 reducer</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#分离字段"><span class="nav-number">3.3.1.</span> <span class="nav-text">分离字段</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#减少样板代码"><span class="nav-number">3.3.2.</span> <span class="nav-text">减少样板代码</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#常见问题"><span class="nav-number">4.</span> <span class="nav-text">常见问题</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Redux-只能搭配-React？"><span class="nav-number">4.1.</span> <span class="nav-text">Redux 只能搭配 React？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Reducer-1"><span class="nav-number">4.2.</span> <span class="nav-text">Reducer</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#如何在-reducer-间共享-state？combineReducers-是必须的吗？"><span class="nav-number">4.2.1.</span> <span class="nav-text">如何在 reducer 间共享 state？combineReducers 是必须的吗？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#处理-action-必须使用-switch-语句嘛？"><span class="nav-number">4.2.2.</span> <span class="nav-text">处理 action 必须使用 switch 语句嘛？</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#State"><span class="nav-number">4.3.</span> <span class="nav-text">State</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#是否所有-state-都维护在-redux-中？"><span class="nav-number">4.3.1.</span> <span class="nav-text">是否所有 state 都维护在 redux 中？</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Store-1"><span class="nav-number">4.4.</span> <span class="nav-text">Store</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#可以创建多个-store-嘛？"><span class="nav-number">4.4.1.</span> <span class="nav-text">可以创建多个 store 嘛？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#能在组建里直接使用-store-并使用吗？"><span class="nav-number">4.4.2.</span> <span class="nav-text">能在组建里直接使用 store 并使用吗？</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#性能"><span class="nav-number">4.5.</span> <span class="nav-text">性能</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#每个-action-都调用所有的-reducer-会不会很慢？"><span class="nav-number">4.5.1.</span> <span class="nav-text">每个 action 都调用所有的 reducer 会不会很慢？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#reducer-中必须对-state-进行深拷贝么？"><span class="nav-number">4.5.2.</span> <span class="nav-text">reducer 中必须对 state 进行深拷贝么？</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#react-redux"><span class="nav-number">4.6.</span> <span class="nav-text">react redux</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#为何组件没有被重新渲染，或者-mapStateToProps-没有运行？"><span class="nav-number">4.6.1.</span> <span class="nav-text">为何组件没有被重新渲染，或者 mapStateToProps 没有运行？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#为何组件频繁重新渲染？"><span class="nav-number">4.6.2.</span> <span class="nav-text">为何组件频繁重新渲染？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#redux-应该只连接到顶层组件嘛？"><span class="nav-number">4.6.3.</span> <span class="nav-text">redux 应该只连接到顶层组件嘛？</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Genji4rn"><span class="nav-number">5.</span> <span class="nav-text">Genji4rn</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#需求分析"><span class="nav-number">5.1.</span> <span class="nav-text">需求分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用"><span class="nav-number">5.2.</span> <span class="nav-text">使用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#原理"><span class="nav-number">5.3.</span> <span class="nav-text">原理</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#注册相关（主要是设置-reducer）"><span class="nav-number">5.3.1.</span> <span class="nav-text">注册相关（主要是设置 reducer）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#connect-相关-主要是设置-action"><span class="nav-number">5.3.2.</span> <span class="nav-text">connect 相关(主要是设置 action)</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Vuex-使用"><span class="nav-number">6.</span> <span class="nav-text">Vuex 使用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#基本使用"><span class="nav-number">6.1.</span> <span class="nav-text">基本使用</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#store"><span class="nav-number">6.1.1.</span> <span class="nav-text">store</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#state"><span class="nav-number">6.1.2.</span> <span class="nav-text">state</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#getter"><span class="nav-number">6.1.3.</span> <span class="nav-text">getter</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#mutation"><span class="nav-number">6.1.4.</span> <span class="nav-text">mutation</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#action"><span class="nav-number">6.1.5.</span> <span class="nav-text">action</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#模块化"><span class="nav-number">6.2.</span> <span class="nav-text">模块化</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#基本使用-1"><span class="nav-number">6.2.1.</span> <span class="nav-text">基本使用</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#模块的局部状态"><span class="nav-number">6.2.2.</span> <span class="nav-text">模块的局部状态</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#命名空间"><span class="nav-number">6.2.3.</span> <span class="nav-text">命名空间</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-number">6.3.</span> <span class="nav-text">总结</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zachary Zhang</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

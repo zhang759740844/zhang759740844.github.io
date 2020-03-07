@@ -1,0 +1,1583 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+
+
+
+
+  <meta name="keywords" content="学习笔记,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="很早就买了《iOS应用逆向与安全》这本书，现在把学到的内容总结一下。">
+<meta name="keywords" content="学习笔记">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《iOS 应用逆向与安全》笔记">
+<meta property="og:url" content="http://zhang759740844.github.io/2018/10/31/iOS逆向/index.html">
+<meta property="og:site_name" content="Zachary&#39;s blog">
+<meta property="og:description" content="很早就买了《iOS应用逆向与安全》这本书，现在把学到的内容总结一下。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/macho3.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/macho4.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/macho5.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/macho6.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/macho7.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/macho8.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/macho9.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/macho10.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/assets_1.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/assets_2.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/assets_3.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/逆向_1.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/逆向_2.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/tweak_1.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/tweak_2.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/tweak_3.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/逆向_3.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/逆向_4.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/逆向_6.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/macho0.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/macho1.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/macho_10.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/bind_1.jpeg?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/macho2.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/逆向_5.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/8086_1.png?raw=true">
+<meta property="og:updated_time" content="2020-02-27T15:13:37.650Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="《iOS 应用逆向与安全》笔记">
+<meta name="twitter:description" content="很早就买了《iOS应用逆向与安全》这本书，现在把学到的内容总结一下。">
+<meta name="twitter:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/macho3.png?raw=true">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://zhang759740844.github.io/2018/10/31/iOS逆向/">
+
+
+
+
+
+  <title>《iOS 应用逆向与安全》笔记 | Zachary's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Zachary's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">记录成长</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://zhang759740844.github.io/2018/10/31/iOS逆向/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zachary Zhang">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Zachary's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">《iOS 应用逆向与安全》笔记</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-10-31T14:07:12+08:00">
+                2018-10-31
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>很早就买了《iOS应用逆向与安全》这本书，现在把学到的内容总结一下。</p>
+<a id="more"></a>
+<h2 id="越狱设备"><a href="#越狱设备" class="headerlink" title="越狱设备"></a>越狱设备</h2><h3 id="Cydia"><a href="#Cydia" class="headerlink" title="Cydia"></a>Cydia</h3><p>添加 <em>雷锋源（apt.abcdia.com）</em></p>
+<h3 id="SSH"><a href="#SSH" class="headerlink" title="SSH"></a>SSH</h3><p>cydia 中搜索并安装 dropbear 提供 SSH 功能。连接，默认密码为 <em>alpine</em></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh root@192.168.2.202</span><br></pre></td></tr></table></figure>
+<h4 id="修改密码"><a href="#修改密码" class="headerlink" title="修改密码"></a>修改密码</h4><p>输入如下修改密码：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">passwd</span><br></pre></td></tr></table></figure>
+<h4 id="公钥登录"><a href="#公钥登录" class="headerlink" title="公钥登录"></a>公钥登录</h4><p>在目标设备的 $HOME/.ssh 目录下找 <em>authorized_keys</em> 文件，如果没有则自己创建。将本机的公钥复制到该文件中。</p>
+<h3 id="iOS系统结构"><a href="#iOS系统结构" class="headerlink" title="iOS系统结构"></a>iOS系统结构</h3><h4 id="文件目录"><a href="#文件目录" class="headerlink" title="文件目录"></a>文件目录</h4><p>要访问越狱设备的文件系统，要通过 Cydia 安装 <em>Apple File Conduit 2</em>.</p>
+<p>Mac 上安装 <em>iFunBox</em></p>
+<h4 id="文件权限"><a href="#文件权限" class="headerlink" title="文件权限"></a>文件权限</h4><p>通过 <code>ll</code> 可以查看文件的权限，一般权限包括三类：</p>
+<ol>
+<li>所有者权限：文件所有者进行的操作</li>
+<li>组权限：属于该组的成员对他能进行的操作</li>
+<li>其他人权限：其他人能进行的操作</li>
+</ol>
+<p>可以通过 chmod 改变权限</p>
+<h4 id="Cydia-Substrate"><a href="#Cydia-Substrate" class="headerlink" title="Cydia Substrate"></a>Cydia Substrate</h4><p>Cydia Substrate  是一个框架，允许第三方开发者在越狱系统上打一些运行时的补丁和拓展一些方法，是<strong>开发越狱插件的基石</strong>。Cydia 自动安装了 Cydia Substrate，包含三个模块：</p>
+<ol>
+<li><strong>MobileHooker：用于替换系统和应用的方法</strong>。提供 <code>MSHookMessageEx</code> 和 <code>MSHookFunction</code> hook OC 和 C 函数，</li>
+<li><strong>MobileLoader：用于将第三方动态库加载到运行的目标应用里</strong>（注入 Reaveal 就是通过它）。首先通过环境变量 <code>DYLD_INSERT_LIBRARIES</code> 把自己加载到目标应用里，然后查找 <code>/Library/Mobile Substrate/DynamicLibraries/</code> 目录下所有的 plist 文件，如果 plist 文件的配置信息符合当前的应用，则通过 <code>dlopen</code> 函数打开对应的 dylib 文件</li>
+<li><strong>Safe mode：如果插件导致 SpringBoard 崩溃，将会让设备进入安全模式，禁用所有的三方插件</strong></li>
+</ol>
+<blockquote>
+<p>调试界面的 Reveal 就是通过 MobileLoader 动态加载的</p>
+</blockquote>
+<h4 id="越狱必备"><a href="#越狱必备" class="headerlink" title="越狱必备"></a>越狱必备</h4><p>通过 Cydia 安装一下插件：</p>
+<ol>
+<li>adv-cmds：提供指令 <code>ps -A</code> 获取全部进程的进程ID和<strong>可执行文件路径</strong>（dumpdecrypted 砸壳时候用到）</li>
+<li>appsync：修改应用的文件会导致签名验证错误，该插件会绕过系统的签名验证</li>
+</ol>
+<blockquote>
+<p><code>ps -A</code>  获取完整的可执行文件路径</p>
+</blockquote>
+<h2 id="逆向工具详解"><a href="#逆向工具详解" class="headerlink" title="逆向工具详解"></a>逆向工具详解</h2><h3 id="应用解密"><a href="#应用解密" class="headerlink" title="应用解密"></a>应用解密</h3><h4 id="dumpdecrypted"><a href="#dumpdecrypted" class="headerlink" title="dumpdecrypted"></a>dumpdecrypted</h4><p>dumpdecrypted 会注入可执行文件，然后动态地从内存总 dump 出解密后的内容</p>
+<ol>
+<li>github上下载，包含一个 makefile 和一个 .c 文件</li>
+<li><code>$make</code> 编译生成一个 <strong>dumpdecrypted.dylib</strong> 动态库</li>
+<li>远程登录到手机，将生成的动态库放到 <code>/var/root</code> 下</li>
+<li>在 <code>/var/root</code> 目录下使用环境变量 <code>DYLD_INSERT_LIBRARIES</code> 将 dylib 注入到要脱壳的可执行文件中<ol>
+<li><code>ps -A</code> 拿到正在运行的要注入的应用的完整路径（/var/mobile/Containers/…/{应用的名字}）</li>
+<li>终端输入 <code>$DYLD_INSERT_LIBRARIES=dumpdecrypted.dylib {完整路径}</code> 进行注入</li>
+</ol>
+</li>
+<li>最终在 <code>/var/root</code> 目录下，得到的 <code>{应用名}.decrypted</code> 就是脱壳后的 mach-o。</li>
+<li>可以选择使用命令 <code>$otool -l {引用名}.decrypted | grep crypt</code> 查看加密标识，如果有输出 <code>cryptid 0</code> 标识该架构已经被解密了</li>
+</ol>
+<blockquote>
+<p>otool 可以用来查看 mach-o 的段信息，一样作用的还有 MachOView，是一个图形化的界面。</p>
+</blockquote>
+<h4 id="Clutch"><a href="#Clutch" class="headerlink" title="Clutch"></a>Clutch</h4><p>Cluch 会生成一个新的进程，然后暂停进程，dump 内存</p>
+<ol>
+<li>github上下载源码</li>
+<li>使用 Xcode 编译，会在 <em>build</em> 目录下生成一个二进制文件 <em>Clutch</em></li>
+<li>远程登录到手机，将 Clutch 放到 <code>/usr/bin</code> 目录下，并为其添加执行权限</li>
+<li><code>Clutch -i</code> 列出所有可以脱壳的应用，以及其 <strong>BundleId</strong></li>
+<li><code>Clutch -b {BundleId}</code> 砸壳</li>
+<li>砸完壳的 ipa 的路径会在屏幕上输出</li>
+</ol>
+<p>Clutch 砸壳得到的是一个包含各种资源文件的完整的 .app</p>
+<blockquote>
+<p><code>Clutch  -i</code> 获取所有 BundleId</p>
+</blockquote>
+<h3 id="class-dump"><a href="#class-dump" class="headerlink" title="class-dump"></a>class-dump</h3><p>clas-dump 可以导出已砸壳应用的头文件。（未砸壳应用被加密无法获取，需要先砸壳）</p>
+<p>官网下载 class-dump，把下载的二进制文件放到 <code>/usr/bin</code> 目录下。<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash">class-dump -H &#123;二级制文件&#125; -o &#123;文件路径&#125;</span></span><br></pre></td></tr></table></figure></p>
+<h4 id="class-dump-原理"><a href="#class-dump-原理" class="headerlink" title="class-dump 原理"></a>class-dump 原理</h4><p>class-dump 主要是分析 mach-o 文件，进行<strong>加载符号</strong>，<strong>解析协议列表</strong>，<strong>解析类列表</strong>，<strong>解析分类列表</strong></p>
+<p>现在我们创建一个空的工程，build 之后通过 MachOView 对其进行分析。</p>
+<h5 id="解析协议"><a href="#解析协议" class="headerlink" title="解析协议"></a>解析协议</h5><p>首先通过 MachOView 找到 data 段中的 protolist。<strong>除了各种 name 和代码之外，其他信息都是在 data 段中</strong>：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/macho3.png?raw=true" alt></p>
+<p>可以看到 <code>_objc_protolist</code> 段中包含两个协议信息。字段 offset 表示可执行文件加载到内存中后的相对偏移，<strong>这个偏移是相对于 <code>__Text</code> 段的。</strong></p>
+<p>再看字段 Data 的内容，它表示加载到内存中时候的虚拟地址。先简单罗列一下虚拟地址，实际地址，offset 这三者的关系：</p>
+<blockquote>
+<p>虚拟地址 + ALSR = 实际地址</p>
+<p><code>__Text</code> 的虚拟地址 + ALSR = <code>__Text</code> 的实际地址</p>
+<p><code>__Text</code> 的虚拟地址 + 对象的 offset = 对象的虚拟地址</p>
+<p><code>__Text</code> 的实际地址 + 对象的 offset = 对象的实际地址</p>
+</blockquote>
+<p>因此，如果我们知道 <code>__Text</code> 的虚拟地址，就能知道 data 所表示的位置的 offset 了。<code>__Text</code> 段的虚拟地址的起始位置在 <code>__Text</code> 段中可以找到：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/macho4.png?raw=true" alt></p>
+<blockquote>
+<p><strong>因为在 <code>__Text</code> 段之前还有一个 <code>_PAGEZERO</code> 段，它的大小固定为 0x100000000</strong></p>
+</blockquote>
+<p>因此可以计算出 data 的相对偏移为 8D30。我们来到了 __data 段：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/macho5.png?raw=true" alt></p>
+<p>响应位置展示了一个协议完整的信息。8D30 保存的是 ISA 的信息，偏移8个字节的 8D38 保存的是协议名的信息，它指向的位置是 76B4:</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/macho6.png?raw=true" alt></p>
+<p>如此就可以到代码段中找到协议名的信息。</p>
+<blockquote>
+<p>在 __data 段中查找的时候可以看到 MachOView 已经分析出了该协议的名词。整个从段信息到名词的过程就是上述的分析过程。</p>
+</blockquote>
+<h5 id="类解析"><a href="#类解析" class="headerlink" title="类解析"></a>类解析</h5><p>类解析就不一步步分析了，直接看截图：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/macho7.png?raw=true" alt></p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/macho8.png?raw=true" alt></p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/macho9.png?raw=true" alt></p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/macho10.png?raw=true" alt></p>
+<h3 id="Reveal"><a href="#Reveal" class="headerlink" title="Reveal"></a>Reveal</h3><ol>
+<li>Mac 端下载 Reveal 打开，在 help 里找到 <em>Show Reveal Library in Finder -&gt; iOS Library</em> ，打开要嵌入 iOS 应用的 framework</li>
+<li>打开该目录后，有一个 <em>RevealServer.framework</em>，将其中的 mach-o 文件 <strong>RevealServer</strong> 重命名为 <code>libReveal.dylib</code>。</li>
+<li>新建一个 <code>libReveal.plist</code> 文件，用 vim 写入要注入的 App 的 BundleId，如下所示：</li>
+</ol>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    Filter = &#123;</span><br><span class="line">    	Bundles = (</span><br><span class="line">    		<span class="string">"tv.douyu.live"</span></span><br><span class="line">    	);</span><br><span class="line">	&#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol start="4">
+<li>将两个文件复制到手机的 <code>/Library/MobileSubstrate/DynamicLibraries</code> 目录下。</li>
+<li>重启应用，就会通过 Cydia 的 <em>MobileLoader</em>  加载该库了。</li>
+</ol>
+<h3 id="Cycript"><a href="#Cycript" class="headerlink" title="Cycript"></a>Cycript</h3><h4 id="如何用-Cycript-调试一个进程"><a href="#如何用-Cycript-调试一个进程" class="headerlink" title="如何用 Cycript 调试一个进程"></a>如何用 Cycript 调试一个进程</h4><ol>
+<li><code>$ps -A</code>  获取所有运行的进程（一般在 <code>/var/mobile/Containers</code> 文件夹下，所以可以使用 <code>$ps -A | grep /var/mobile/Containers</code> 筛选更准确）</li>
+<li><code>cycript -p 进程名</code> 进入调试</li>
+<li><strong>cmd+R</strong> 清屏，<strong>ctrl+D</strong> 退出</li>
+</ol>
+<h4 id="Cycript-语法"><a href="#Cycript-语法" class="headerlink" title="Cycript 语法"></a>Cycript 语法</h4><figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 获取 UIApplication</span></span><br><span class="line">cy# <span class="type">UIApp</span>    <span class="comment">// 等价于 [UIApplication sharedApplication]</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 定义一个变量</span></span><br><span class="line">cy# <span class="keyword">var</span> rootViewController = <span class="type">UIApp</span>.keyWindow.rootViewController</span><br><span class="line">cy# <span class="keyword">var</span> myView = [[<span class="type">UIView</span> alloc] <span class="keyword">init</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment">// 找到内存中的该类型的对象</span></span><br><span class="line">cy# choose(<span class="type">UIViewController</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 通过 #+内存地址 获取对象</span></span><br><span class="line">cy# #<span class="number">0x1234567</span>.rootViewController</span><br><span class="line"></span><br><span class="line"><span class="comment">// 通过 *+对象 查看所有成员变量</span></span><br><span class="line">cy# *<span class="type">UIApp</span></span><br></pre></td></tr></table></figure>
+<p>Cycript 主要用于查看控制器的层级、对象的成员变量以及动态调试界面</p>
+<h4 id="编写-Cycript-库"><a href="#编写-Cycript-库" class="headerlink" title="编写 Cycript 库"></a>编写 Cycript 库</h4><p>编写 Cycript 库文件 <code>test.cy</code>:<br><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">(<span class="function"><span class="keyword">function</span>(<span class="params">exports</span>) </span>&#123;</span><br><span class="line">	<span class="comment">// 递归打印 VC 层级</span></span><br><span class="line">	ChildVcs = <span class="function"><span class="keyword">function</span>(<span class="params">vc</span>) </span>&#123;</span><br><span class="line">		if (![vc isKindOfClass:[UIViewController class]]) throw new Error(invalidParamStr);</span><br><span class="line">		<span class="keyword">return</span> [vc _printHierarchy].toString();</span><br><span class="line">	&#125;;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 递归打印view的层级结构</span></span><br><span class="line">	Subviews = <span class="function"><span class="keyword">function</span>(<span class="params">view</span>) </span>&#123; </span><br><span class="line">		if (![view isKindOfClass:[UIView class]]) throw new Error(invalidParamStr);</span><br><span class="line">		<span class="keyword">return</span> view.recursiveDescription().toString(); </span><br><span class="line">	&#125;;</span><br><span class="line">&#125;)(exports);</span><br></pre></td></tr></table></figure></p>
+<p>然后将文件放入 <code>usr/lib/cycript0.9</code> 文件夹下。<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">cy#</span><span class="bash"> @import <span class="built_in">test</span></span></span><br><span class="line"><span class="meta">cy#</span><span class="bash"> ChildVcs(<span class="comment">#0x12345678)</span></span></span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p>TODO： 增加获取属性和方法的相关库方法</p>
+</blockquote>
+<h4 id="Apple-Configurator-2"><a href="#Apple-Configurator-2" class="headerlink" title="Apple Configurator 2"></a>Apple Configurator 2</h4><h4 id="获取-ipa-包"><a href="#获取-ipa-包" class="headerlink" title="获取 ipa 包"></a>获取 ipa 包</h4><p>我们可以通过 Apple Configurator 2 获取应用的 ipa 包。</p>
+<p>手机连接上 Mac 之后，Apple Configurator 2 中会显示出手机的信息。这个时候点击添加应用，在 app store 中搜索你想要获取资源的引用：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/assets_1.png?raw=true" alt></p>
+<p>搜索到之后点击下载。如果手机中没有目标应用，第一次就直接安装了，安装成功后再次搜索该应用下载。这个时候就会提示已经有该应用了，是否要替换：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/assets_2.png?raw=true" alt></p>
+<p>这个时候不要做任何的点击。在终端中进入到 Apple Configurator 2 的缓存目录下：<code>~/Library/Group Containers/K36BKF7T3D.group.com.apple.configurator/Library/Caches/Assets/TemporaryItems/MobileApps/</code> 你会发现目标应用的 ipa 包。</p>
+<p>原因在于，Apple Configurator 2 下载的文件会临时保存在该临时目录下。如果安装完毕，就会立刻删除该 ipa 包。由于之前已经下载了该应用，Apple Configurator 2 弹窗提示是否需要替换，此时的 ipa 包还没来得及删除，可以复制出来。</p>
+<h4 id="获取-Assets-car-中的资源文件"><a href="#获取-Assets-car-中的资源文件" class="headerlink" title="获取 Assets.car 中的资源文件"></a>获取 Assets.car 中的资源文件</h4><p>把 ipa 包复制出来后，使用解压工具对其进行解压。在 <code>payload</code> 文件夹下有资源包。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/assets_3.png?raw=true" alt></p>
+<p>这个包里已经可以看到很多资源文件了，但是我们需要找到的是 <code>Assets.car</code> 这个压缩文件，这里面才是真正的我们需要的图片资源。这个<code>Assets.car</code>文件的解压需要用到<a href="https://link.jianshu.com/?t=https%3A%2F%2Fgithub.com%2Fpcjbird%2FAssetsExtractor" target="_blank" rel="noopener">https://github.com/pcjbird/AssetsExtractor</a>使用起来非常方便。把 <code>Assets.car</code> 拖进该工具，指定输出目录就可以得到最终的全部资源文件</p>
+<h2 id="分析与调试"><a href="#分析与调试" class="headerlink" title="分析与调试"></a>分析与调试</h2><h3 id="静态分析"><a href="#静态分析" class="headerlink" title="静态分析"></a>静态分析</h3><h4 id="hopper-使用"><a href="#hopper-使用" class="headerlink" title="hopper 使用"></a>hopper 使用</h4><p>Mach-o 可以反编译为汇编代码，但是汇编代码无法完全反编译为 oc 代码。因为汇编操作的是寄存器，不同的类型以及不同的变量名的 oc 代码可能得到相同的汇编代码。</p>
+<p>Hopper 和可以将 Mach-o 代码反编译为汇编代码、OC或者Swift伪代码。下载好之后，直接把 Mach-o 文件拖入 Hopper，即可开始分析。</p>
+<h3 id="动态调试"><a href="#动态调试" class="headerlink" title="动态调试"></a>动态调试</h3><h4 id="LLDB-调试"><a href="#LLDB-调试" class="headerlink" title="LLDB 调试"></a>LLDB 调试</h4><p>LLDB 通过 debugserver 和 app 通信。当 Xcode 调试手机时，Xcode 会将 debugserver 文件复制到手机中，以便在手机上启动一个服务，等待 Xcode 进行远程调试。只有设备连接到计算机真机调试时，debugserver 文件才会安装到设备的 <code>/Developer/user/bin</code> 目录下。 </p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/逆向_1.png?raw=true" alt></p>
+<p>但是默认情况下，<em>/Developer/usr/bin/debugserver</em> 缺少权限，只能使用 xcode 调试。因此，我们需要对 debugserver 重签名，获得两个权限： <code>get-task-allow</code> 和 <code>task_for_pid-allow</code></p>
+<p>如何给 debugserver 添加权限:</p>
+<ol>
+<li>将 debugserver 从目录拷贝到 mac。目录就是上述的 <em>/Developer/usr/bin/debugserver</em> </li>
+<li>使用 ldid 导出 debugserver 的权限到 debugserver.entilements 文件</li>
+</ol>
+<p>ldid 是帮助修改 iPhone 上二进制授权文件的工具。通过 homebrew 安装：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew install ldid</span><br></pre></td></tr></table></figure>
+<p>安装完后，导出 debugserver 的权限：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash">ldid -e debugserver &gt; debugserver.entilements</span></span><br></pre></td></tr></table></figure>
+<ol start="3">
+<li>debugserver.entilements 文件是个配置文件，打开并添加这两个权限：</li>
+</ol>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/逆向_2.png?raw=true" alt></p>
+<ol start="4">
+<li>使用 ldid 重签名：<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash">ldid -S debugserver.entilements debugserver</span></span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>（上面的 ldid 的重签名也可以使用 codesign 代替）<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 查看 （在终端中显示，可以复制保存为 debugserver.entitlements）</span></span><br><span class="line"><span class="meta">$</span><span class="bash">codesign -d --entitlements -debugserver</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 签名</span></span><br><span class="line"><span class="meta">$</span><span class="bash">codesign -f -s - --entitlements debugserver.entitlements debugserver</span></span><br></pre></td></tr></table></figure></p>
+<ol start="5">
+<li>将重签名后的 debugserver 拖到手机 <em>device/usr/bin</em> 目录下，这样可以直接使用该命令</li>
+<li><p>手机端开启 server。开启调试后，进程会进入断电，被暂停：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash">debugserver *:&#123;任意端口，如10010&#125; -a &#123;进程名&#125;</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Mac 端启动 lldb</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 进入lldb 模式</span></span><br><span class="line"><span class="meta">$</span><span class="bash">lldb</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 连接，连接需要一段时间</span></span><br><span class="line">(lldb) process connect connect://&#123;手机IP&#125;:&#123;前面启动时的端口号&#125;</span><br><span class="line"><span class="meta">#</span><span class="bash"> 连接成功自动进入断点，需要继续运行app</span></span><br><span class="line">(lldb) c</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<h5 id="debug-获取进程加载基地址"><a href="#debug-获取进程加载基地址" class="headerlink" title="debug 获取进程加载基地址"></a>debug 获取进程加载基地址</h5><p>由于 ALSR 的原因，进程的虚拟地址不是从 0x0 开始的，会有一个随机偏移量。因此，当我们要读取运行的程序的内存的时候就需要知道这个 ALSR 的偏移量。</p>
+<p>可以在 lldb 中通过 <code>image list -o -f</code> 拿到正在 debug 的进程的所有动态库的信息。其中第一项的第一列一般就是当前进程的基地址（不是ALSR地址）。</p>
+<h4 id="lldb-使用"><a href="#lldb-使用" class="headerlink" title="lldb 使用"></a>lldb 使用</h4><ul>
+<li>打印相关：<ul>
+<li><code>p {指令}</code>：执行指令</li>
+<li><code>bt</code>：打印调用堆栈 backtrace</li>
+<li><code>frame variable</code>：打印当前栈帧的变量</li>
+</ul>
+</li>
+<li>调试相关：<ul>
+<li><code>c</code>：继续执行</li>
+<li><code>n</code>：单步运行</li>
+<li><code>step</code>：step-in</li>
+<li><code>finish</code>：step-over</li>
+</ul>
+</li>
+<li><p>代码断点相关</p>
+<ul>
+<li><p><code>breakpoint set -n {方法名}</code>：为某个方法设置断点。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 更高级的，设置某一个类的某一个方法的断点，需要使用引号包裹</span></span><br><span class="line">breakpoint set -n "-[ViewController touchesBegan:withEvent:]"</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>breakpoint list</code>：列出所有断点，包含编号</li>
+<li><code>breakpoint enable/disable/delete {断点编号}</code>：断点操作</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>内存断点相关</p>
+<ul>
+<li><code>watchpoint set variable {变量名}</code>：变量值变化的时候触发</li>
+<li><code>watchpoint list</code>：列出所有内存断点</li>
+<li><code>watchpoint enable/disable/delete {断点编号}</code>：内存断点操作</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">watch set variable self-&gt;age</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h4 id="theos"><a href="#theos" class="headerlink" title="theos"></a>theos</h4><h5 id="下载-theos"><a href="#下载-theos" class="headerlink" title="下载 theos"></a>下载 theos</h5><ol>
+<li>安装签名工具 <code>brew install ldid</code></li>
+<li><p>修改 <em>.zshrc</em></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 这样可以用 $THEOS 代替 ~/theos</span></span><br><span class="line"><span class="built_in">export</span> THEOS=~/theos</span><br><span class="line"><span class="comment"># 修改环境变量,这样就可以在任意位置执行 `~/theos/bin` 路径下命令了</span></span><br><span class="line"><span class="built_in">export</span> PATH=~/theos/bin:<span class="variable">$PATH</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>执行 <code>source ~/.zshrc</code> 重置 zshrc 配置。</p>
+</li>
+<li>递归下载 theos <code>git clone --recursive https://github.com/theos/theos.git $THEOS</code></li>
+</ol>
+<h5 id="使用-theos-创建-tweak"><a href="#使用-theos-创建-tweak" class="headerlink" title="使用 theos 创建 tweak"></a>使用 theos 创建 tweak</h5><ol>
+<li>执行下载下来的命令 <code>$nic.pl</code></li>
+<li>根据提示选择要创建 <em>iphone/tweak</em>，然后设置自己的项目名，bundleID，还有目标应用的 bundle identifier（用 cycript 获取，<code>[NSBundle mainBundle].bundleIdentifier</code>)，生成一系列文件。</li>
+<li><p>编辑生成的 <em>Makefile</em> 文件，在文件最上方添加配置：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 设置IP和端口号，表示要通过 SSH 的方式安装这个 theos</span></span><br><span class="line"><span class="comment"># 切记一定要放在最上面</span></span><br><span class="line"><span class="keyword">export</span> THEOS_DEVICE_IP=&#123;你的手机的IP&#125;</span><br><span class="line"><span class="keyword">export</span> THEOS_DEVICE_PORT=22</span><br><span class="line"></span><br><span class="line"><span class="comment"># ... 省略了自动生成的配置部分</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>编写代码，编辑 <em>Tewak.xm</em> 文件：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">%hook &#123;要hook的类名&#125;</span><br><span class="line">&#123;根据 <span class="keyword">class</span>-dump 找到感兴趣的要hook的方法&#125;</span><br><span class="line">%end</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>命令行执行：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 编译</span></span><br><span class="line"><span class="meta">$</span><span class="bash">make</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 打包</span></span><br><span class="line"><span class="meta">$</span><span class="bash">make package</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 安装 会重启 SpringBoard</span></span><br><span class="line"><span class="meta">$</span><span class="bash">make install</span></span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>相当于给原来的应用注入了一个动态库。可以在 <code>/Library/MobileSubstrate/DynamicLibraries</code> 中查看新安装的 <code>dylib</code> 和 <code>plist</code> 文件。</p>
+<h5 id="tweak-实现注意点"><a href="#tweak-实现注意点" class="headerlink" title="tweak 实现注意点"></a>tweak 实现注意点</h5><ol>
+<li><p>hook 的方法中的参数以及 self 一般都是 id 类型，所以不能用点语法，而要使用 get 方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">id</span>)tableView:(<span class="keyword">id</span>)tableView cellForRowAtIndexPath:(<span class="keyword">id</span>)indexPath &#123;</span><br><span class="line">	<span class="keyword">int</span> num = [indexPath section];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>可以使用宏，在文件顶部定义：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#define SomeMethod [NSUserDefaults standardUserDefaults]</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>hook 方法默认是 hook 已有方法，如果增加的方法是原来没有的需要加上 <code>%new</code>:</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">%new -(<span class="keyword">void</span>)someFunc:(<span class="built_in">UIButton</span> *)button &#123;</span><br><span class="line">	...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>hook 方法要调用原来的实现方法，使用 <code>%orig</code> 替代：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">long</span> <span class="keyword">long</span>)numberOfSectionsInTableView:(<span class="keyword">id</span>)tableView &#123;</span><br><span class="line">	<span class="keyword">return</span> %orig + <span class="number">2</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>资源文件放在新建的 tweak 生成的 <em>layout</em> 文件夹下，该目录对应的就是手机的根目录，可以自己在 layout 下创建文件夹层级，代码中引用：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">UIImage</span> *myImage = [<span class="built_in">UIImage</span> imageWithCOntentOfFile:<span class="string">@"/&#123;自己创建的文件夹层级&#125;/&#123;文件名&#125;"</span>]</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>有时候调用原有方法或者 <code>%new</code> 的方法，有时会报 <strong>instance method not found</strong> 的错误，这需要我们再在实现的 xm 文件顶部声明一下该方法。类名任意，只要表示该方法声明过即可：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@interface</span> </span>&#123;任意类名&#125;</span><br><span class="line">-(<span class="keyword">id</span>)&#123;你的方法名&#125;；</span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>有时候使用某个类的时候还会报类不存在的错误。如果是使用自己创建的类直接 <code>#import &quot;{类名}&quot;</code> 即可。如果是被 hook 文件已经 import 的类，需要使用 <code>@class</code> 提前声明一下。</p>
+</li>
+<li>可以通过关联对象的方式给实例添加属性</li>
+<li>如果要分多个文件编写，需要在 <code>makefile</code> 中配置相应文件，以空格分隔。针对文件量过多的情况，可以使用通配符表示一个文件夹内的文件。使用的时候直接直接 import，但是要把路径写完整，路径以 <code>Tweak.xm</code>  为基准。</li>
+</ol>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">TWEAK_NAME = $&#123;your tweak name&#125;</span><br><span class="line">$&#123;your project name&#125;_FILES = $&#123;以当前文件夹为基准的文件路径+文件名&#125; $&#123;以当前文件夹为基准的文件路径+文件名&#125; $&#123;以当前文件夹为基准的文件路径+文件名&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/tweak_1.png?raw=true" alt="makefile"></p>
+<p> <img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/tweak_2.png?raw=true" alt="import"></p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/tweak_3.png?raw=true" alt="通配符"></p>
+<h5 id="Tweak-实现原理"><a href="#Tweak-实现原理" class="headerlink" title="Tweak 实现原理"></a>Tweak 实现原理</h5><ul>
+<li>生成的插件会被安装在 <em>/Library/MobileSubstrate/DynamicLibraries</em> 中。生成的文件包括 <strong>.dylib</strong> 包含编译后的 tweak 代码，和 <strong>.plist</strong> 存放着 hook 的目标 APPID</li>
+<li>打开 App 时，Cydia Substrate 会去加载对应的 dylib，修改内存中的代码逻辑， 执行 dylib 中的函数</li>
+<li>tweak 不会修改可执行文件，仅仅只是修改了内存的逻辑。所以 tweak 可以对未砸壳 App 修改，但是必须要使用越狱手机。</li>
+</ul>
+<h5 id="Logos-语法"><a href="#Logos-语法" class="headerlink" title="Logos 语法"></a>Logos 语法</h5><ul>
+<li><code>%hook</code> <code>%end</code> hook一个类的开始和结束</li>
+<li><code>%log;</code> 打印方法调用详情，在 Xcode 的日志输出中查看</li>
+<li><code>%c({类名})</code> 获取类对象，相当于 <code>[xxx class]</code>，直接调用可能有错</li>
+<li><code>%orig</code> 函数原来的代码逻辑</li>
+<li><code>%new</code> 添加一个新的方法</li>
+</ul>
+<h5 id="logify-pl"><a href="#logify-pl" class="headerlink" title="logify.pl"></a>logify.pl</h5><p>可以将头文件快速转换成已经包含打印信息的 xm 文件（自动添加 <code>%log</code> 语句）：<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash">logify.pl xxx.h &gt; &#123;你想取的任意名字&#125;.xm</span></span><br></pre></td></tr></table></figure></p>
+<p>通过修改 makefile 中的配置，将生成的 .xm 文件加入到编译文件中。直接添加到原来的 <code>Tweak.xm</code> 之后即可：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;your project name&#125;_FILES = Tweak.xm &#123;你取的名字&#125;.xm</span><br></pre></td></tr></table></figure>
+<p>但是经常会编译不过，需要手动修改：</p>
+<ol>
+<li>未定义头文件：报错 <code>unknown type name ‘XXX’</code>，在头部声明 <code>@class XXX;</code>,或者将 class 类型改为 id</li>
+<li>未声明协议：报错<code>no type or protocol named &#39;XXX&#39;</code>，在头部声明 <code>@protocol XXX</code></li>
+<li>不能存在 weak：报错 <code>cannot create __weak reference</code>，替换掉所有的 <code>__weak</code> 为空字符串</li>
+<li>不能存在非 oc 方法：报错 <code>expected selector for Objective-C method</code> ，删除以点开头的非 OC 的方法</li>
+<li>带协议的参数报错：报错 <code>cast from pointer to smaller type &#39;unsigned int&#39; loses information</code>。如果有一个参数类型遵循某个协议，那么 <code>%log</code> 就无法通过，需要把协议删除。</li>
+<li><code>HBLogDebug</code> 类型错误：报错 <code>cast from pointer to smaller type &#39;unsigned int&#39; loses information</code>，<code>HBLogDebug</code> 本身是用来打印方法返回值的，有一些地方返回值 id 类型，会被转化为 unsigned int 类型，因此报错。需要替换：<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 原始语句</span></span><br><span class="line">HBLogDebug(<span class="string">@"=0x%x"</span>, (<span class="keyword">unsigned</span> <span class="keyword">int</span>)r);</span><br><span class="line"><span class="comment">// 批量替换为</span></span><br><span class="line">HBLogDebug(<span class="string">@"=0x%@"</span>, r);</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<h4 id="MonkeyDev"><a href="#MonkeyDev" class="headerlink" title="MonkeyDev"></a>MonkeyDev</h4><p>MonkeyDev 的具体使用可以到 <a href="https://github.com/AloneMonkey/MonkeyDev/wiki" target="_blank" rel="noopener">MonkeyDev</a> Wiki 中查看</p>
+<h2 id="逆向进阶"><a href="#逆向进阶" class="headerlink" title="逆向进阶"></a>逆向进阶</h2><h3 id="ASLR"><a href="#ASLR" class="headerlink" title="ASLR"></a>ASLR</h3><p>Address space layout randomization 地址空间布局随机化</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/逆向_3.png?raw=true" alt></p>
+<p>可以通过 lldb 的 <code>image list -o -f</code> 获得这个偏移地址:</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/逆向_4.png?raw=true" alt></p>
+<blockquote>
+<p>image list -o -f 拿到的是减去 <code>__Text</code> 段基地址的偏移，即 ASLR</p>
+<p>image list 拿到的则是 <code>__Text</code> 的实际地址偏移，即基地址 + ASLR 地址</p>
+</blockquote>
+<p>获得了偏移地址后，在通过 hopper 获得未使用 ALSR 的方法的地址，两者相加，就是该方法实际在内存中的地址了，可以为其设置断点：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">breakpoint set -o &#123;函数地址&#125;+&#123;偏移地址&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="通用二进制文件"><a href="#通用二进制文件" class="headerlink" title="通用二进制文件"></a>通用二进制文件</h3><p>包含了多种架构的二进制文件叫做通用二进制文件，又叫 fat binary 胖二进制文件。<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">// 查看信息：</span><br><span class="line"><span class="meta">$</span><span class="bash">file &#123;文件名&#125;</span></span><br><span class="line"><span class="meta">$</span><span class="bash">lipo -info &#123;文件名&#125;</span></span><br><span class="line"></span><br><span class="line">// 瘦身</span><br><span class="line"><span class="meta">$</span><span class="bash">lipo &#123;文件名&#125; -thin armv7 -o &#123;输出文件名&#125;</span></span><br><span class="line"></span><br><span class="line">// 合并</span><br><span class="line"><span class="meta">$</span><span class="bash">lipo -create &#123;文件名1&#125; &#123;文件名2&#125; -o &#123;输出文件名&#125;</span></span><br></pre></td></tr></table></figure></p>
+<p>Xcode 中生成架构配置如图：</p>
+<ul>
+<li>Architecture： Xcode 支持的架构，不同 Xcode 版本不同</li>
+<li>Valid Architecture： 想要生成的架构</li>
+</ul>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/逆向_6.png?raw=true" alt></p>
+<p>最终生成的架构就是支持的和想要的的交集。</p>
+<h3 id="程序加载"><a href="#程序加载" class="headerlink" title="程序加载"></a>程序加载</h3><p>在编写一个程序时，看到的入口函数都是 main.m。实际上在 main 函数执行前已经执行了 <code>+load</code> 和 <code>constructor</code> 构造函数。现在要探讨在 main 函数执行前做了什么</p>
+<h4 id="dyld-简介"><a href="#dyld-简介" class="headerlink" title="dyld 简介"></a>dyld 简介</h4><p><strong>系统内核在做好启动程序的准备工作之后就会从内核态切换到用户态，将工作交给 dyld。</strong></p>
+<p>系统动态库会通过动态库加载器 dyld 被加载到内存中。为了优化程序启动速度，iOS 采用了共享缓存技术。在系统启动后被加载到内存中。当有新的程序加载时会先到共享缓存里寻找。找到就直接将共享缓存中的地址映射到目标进程的内存空间。 </p>
+<h4 id="dyld-加载流程"><a href="#dyld-加载流程" class="headerlink" title="dyld 加载流程"></a>dyld 加载流程</h4><p>dyld 的时间线：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Load dylibs -&gt; Rebase -&gt; Bind -&gt; ObjCruntime -&gt; Initializers</span><br></pre></td></tr></table></figure>
+<ol>
+<li><p>dyld 从主执行文件的 header 获取到需要加载的所依赖动态库列表，并递归的将他们加载，为每一个动态库生成一个 ImageLoader 对象</p>
+<ul>
+<li><p>检查共享缓存是否映射到了共享区域</p>
+</li>
+<li><p>加载所有通过 <code>DYLD_INSERT_LIBRARIES</code> 插入的库</p>
+</li>
+</ul>
+</li>
+<li><p>在加载所有的动态链接库之后，它们只是处在相互独立的状态，需要将它们绑定起来，这就是 Fix-ups</p>
+<ul>
+<li>Rebasing：在 imageLoader 内部调整指针的指向，即修改 ASLR 带来的偏差</li>
+<li>Binding：dylib 通过指针绑定会使用的外部的实例方法等符号的地址</li>
+</ul>
+</li>
+<li><p>ObjC Runtime 需要维护一张映射类名与类的全局表。当加载一个 dylib 时，其定义的所有的类都需要被注册到这个全局表中。</p>
+</li>
+<li><p>执行初始化方法，<code>+load</code> 和 <code>constructor</code>  就是在这里执行的</p>
+</li>
+<li><p>通过 Load Command 找到 <code>LC_MAIN</code> 即 main 函数位置，执行</p>
+</li>
+</ol>
+<h3 id="Mach-O-文件"><a href="#Mach-O-文件" class="headerlink" title="Mach-O 文件"></a>Mach-O 文件</h3><h4 id="MachO-文件基本构成"><a href="#MachO-文件基本构成" class="headerlink" title="MachO 文件基本构成"></a>MachO 文件基本构成</h4><p>Mach-O 是苹果的可执行文件，结构由三部分组成：</p>
+<ul>
+<li>Header：文件类型，目标架构类型</li>
+<li>Load Commands：描述载入内存的有哪些段，段有多大，从哪里开始</li>
+<li>Data：段的数据</li>
+</ul>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/macho0.png?raw=true" alt></p>
+<p>使用 MachOView 查看，我们可以看到有各种各样的段。class-dump 就是通过这种方式获取到头文件信息的。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/macho1.png?raw=true" alt></p>
+<p>具体看一下 Macho 的 Load Command，它包含了 Macho 中各个段的基本信息：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/macho_10.png?raw=true" alt></p>
+<p>一般可执行文件会分为许多个 section，section 又会根据权限的不同整合为多个 fragment</p>
+<p>，一般分为四个 fragment：</p>
+<ul>
+<li><code>__PAGEZERO</code> 空指针陷阱段，映射到虚拟内存空间的第一页，用于捕捉对 NULL 指针的引用</li>
+<li><code>__TEXT</code> 代码段，只读，包括函数，和只读的字符串(如  <code>__TEXT,__text</code> 保存所有代码，又如 <code>__TEXT.__objc_classname</code> 保存 Objective-C 类名称)__</li>
+<li><code>__DATA</code> 数据段，读写，包括可读写的全局变量等(如 <code>__DATA,__data</code> 保存初始化过的可变数据，又如 <code>__DATA.__objc_classlist</code> 保存所有类实体的指针，指向 __data 中保存的 objc_class 实例）</li>
+<li><code>__LINKEDIT</code>动态链接器需要使用的信息，包括重定位信息，绑定信息，懒加载信息等。</li>
+</ul>
+<h4 id="代码段和数据段的具体组成"><a href="#代码段和数据段的具体组成" class="headerlink" title="代码段和数据段的具体组成"></a>代码段和数据段的具体组成</h4><p>__TEXT 包含以下 section：</p>
+<ul>
+<li>__text：程序可执行代码区域</li>
+<li>__stubs：简介符号存根，跳转到懒加载指针表</li>
+<li>__stub_helper：帮助解决懒加载符号加载的辅助函数</li>
+<li>__objc_methname：方法名</li>
+<li>__objc_classname：类名</li>
+<li>__objc_methtype：方法签名</li>
+<li>__cstring：c风格字符串</li>
+</ul>
+<p>__DATA 包含以下 section：</p>
+<ul>
+<li>__nl_symbol_ptr：非懒加载指针表，在 dyld 加载时会立即绑定</li>
+<li>__la_symbol_ptr：懒加载指针表，第一次调用才绑定值</li>
+<li>__got：非懒加载全局指针表</li>
+<li>__mod_init_func：constructor 函数</li>
+<li>__mod_term_func： destructor 函数</li>
+<li>__cfstring：OC 字符串</li>
+<li>__objc_classlist：程序中类的列表</li>
+<li>__objc_nlclslist：程序中实现了 +load 方法的类</li>
+<li>__objc_protolist：协议的列表</li>
+<li>__objc_classrefs：被应用的类列表</li>
+</ul>
+<h4 id="懒加载和非懒加载"><a href="#懒加载和非懒加载" class="headerlink" title="懒加载和非懒加载"></a>懒加载和非懒加载</h4><p>在之前说的dyld执行流程中有一环叫做 binding，即绑定符号的地址。iOS 系统为了加快系统启动速度，将符号分成了懒加载符号和非懒加载符号。</p>
+<p>非懒加载符号在 dyld 加载时就会绑定真实的值。懒加载符号不会，只有第一次去调用它时才会绑定真实的地址，第二次调用直接使用真实地址。</p>
+<p>如系统方法 print 的绑定过程如下图所示：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/bind_1.jpeg?raw=true" alt></p>
+<h3 id="ARM-汇编"><a href="#ARM-汇编" class="headerlink" title="ARM 汇编"></a>ARM 汇编</h3><h4 id="ARM寄存器"><a href="#ARM寄存器" class="headerlink" title="ARM寄存器"></a>ARM寄存器</h4><p>X0-X30 是 31 个通用寄存器，低 32 位用 W0-W30 表示。X30 是一个特殊寄存器，用于保存函数调用完成时的返回地址。</p>
+<p>SP 为堆栈指针寄存器，通过 X31 寄存器访问</p>
+<p>PC 为保存当前指令地址的程序计数器</p>
+<p>LR 指向返回地址，对应于 X30</p>
+<p>FP 指向栈帧的底部，对应于 X29（即 Base Pointer）</p>
+<h4 id="常见指令"><a href="#常见指令" class="headerlink" title="常见指令"></a>常见指令</h4><p><code>ldr Xn, addr</code>: 从 addr 读取内容存到 Xn 中</p>
+<p><code>str Xn, addr</code>: 将 Xn 写入 addr 指向的内存</p>
+<p><code>cbz Xn, label</code> : 如果 Xn 为 0，则跳转到 label</p>
+<p><code>cbnz Xn, label</code>: 如果 Xn 不为 0，跳转到 label</p>
+<p><code>bl label</code>: 无条件跳转，会将下一条指令地址写到 X30 处</p>
+<h4 id="堆栈调用"><a href="#堆栈调用" class="headerlink" title="堆栈调用"></a>堆栈调用</h4><p>堆栈调用过程如下：</p>
+<ol>
+<li>函数调用前：<ol>
+<li>开辟堆栈控件</li>
+<li>保存 FP 和 LR 寄存器，以便找到上一个栈帧和返回地址</li>
+<li>设置新的 FP 寄存器</li>
+<li>保存子函数会用到的寄存器</li>
+<li>保存局部变量或参数</li>
+</ol>
+</li>
+<li>函数调用结束：<ol>
+<li>还原 FP 和 LR 寄存器</li>
+<li>释放栈帧空间</li>
+<li>跳到 LR 继续执行</li>
+</ol>
+</li>
+</ol>
+<p>参数一般通过 X0-X7传递，当参数小于 8 个时候，默认是直接存到寄存器中的。但是如果超过 8 个，那么会在方法调用前，将多出的那个存入堆栈中，子方法需要到堆栈中取值。</p>
+<p>返回结果一般通过 X0 传递</p>
+<p>一个方法的汇编的例子：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">fooFp</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> a = <span class="number">4</span>;</span><br><span class="line">    <span class="keyword">int</span> b = <span class="number">5</span>;</span><br><span class="line">    fooFp2();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">fooFp2</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> a = <span class="number">2</span>;</span><br><span class="line">    <span class="keyword">int</span> b = <span class="number">3</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">ArmAssembly`fooFp:</span><br><span class="line"> 0x100dbe76c &lt;+0&gt;:  sub    sp, sp, #0x20             ; 申请栈空间</span><br><span class="line"> 0x100dbe770 &lt;+4&gt;:  stp    x29, x30, [sp, #0x10]     ; 保护寄存器的值</span><br><span class="line"> 0x100dbe774 &lt;+8&gt;:  add    x29, sp, #0x10            ; 改变fp寄存器的值，用于执行栈底</span><br><span class="line"> </span><br><span class="line"> 0x100dbe778 &lt;+12&gt;: mov    w8, #0x5</span><br><span class="line"> 0x100dbe77c &lt;+16&gt;: orr    w9, wzr, #0x4</span><br><span class="line"> 0x100dbe780 &lt;+20&gt;: stur   w9, [x29, #-0x4]</span><br><span class="line"> 0x100dbe784 &lt;+24&gt;: str    w8, [sp, #0x8]</span><br><span class="line"> 0x100dbe788 &lt;+28&gt;: bl     0x100dbe798               ; fooFp2 at ViewController.m:154</span><br><span class="line"> </span><br><span class="line"> 0x100dbe78c &lt;+32&gt;: ldp    x29, x30, [sp, #0x10]     ; 恢复之前保存的fp和lr的值</span><br><span class="line"> 0x100dbe790 &lt;+36&gt;: add    sp, sp, #0x20             ; 恢复sp指针</span><br><span class="line"> 0x100dbe794 &lt;+40&gt;: ret</span><br></pre></td></tr></table></figure>
+<h3 id="hook"><a href="#hook" class="headerlink" title="hook"></a>hook</h3><h4 id="fishhook"><a href="#fishhook" class="headerlink" title="fishhook"></a>fishhook</h4><p>苹果为了能在 Mach-O 文件中访问外部函数，采用了一个技术，叫做PIC（位置代码独立）技术。当你的应用程序想要调用 Mach-O 文件外部的函数的时候，或者说如果 Mach-O 内部需要调用系统的库函数时，Mach-O 文件会：</p>
+<ol>
+<li>先在 Mach-O 文件的 _DATA 段中建立一个指针ptr（8字节的数据，放的全是0），这个指针变量指向外部函数。</li>
+<li>DYLD 会动态的进行绑定！将 Mach-O 中的 _DATA 段中的指针，指向外部函数。</li>
+</ol>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/macho2.png?raw=true" alt></p>
+<p>上图中可以看到，其他部分都是实实在在的代码信息，没有好的修改办法。只有红色框框中的 <code>nl_symbol_ptr</code> 和 <code>la_symbol_ptr</code>是指针段，由于指针都是长度固定的，所以方便修改指针地址，进而达到 hook 的目的。</p>
+<p>所以说，C的底层也有动态的表现。C在内部函数的时候是静态的，在编译后，函数的内存地址就确定了。但是，外部的函数是不能确定的，也就是说C的底层也有动态的。fishhook 之所以能 hook C函数，是利用了 Mach-O 文件的 PIC 技术特点。也就造就了静态语言C也有动态的部分，通过 DYLD 进行动态绑定的时候做了手脚。</p>
+<p><strong>我们经常说符号，其实 _DATA 段中建立的指针就是符号。fishhook的原理其实就是，将指向系统方法（外部函数）的符号重新进行绑定指向内部的函数。这样就把系统方法与自己定义的方法进行了交换。这也就是为什么C的内部函数修改不了，自定义的函数修改不了，只能修改 Mach-O 外部的函数。</strong></p>
+<h3 id="iOS-签名"><a href="#iOS-签名" class="headerlink" title="iOS 签名"></a>iOS 签名</h3><p>签名过程如图：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/逆向_5.png?raw=true" alt></p>
+<p>当我们修改了别人的 APP 之后，我们就需要将修改过的 ipa 重签名，才能安装到手机上。重签名了的应用可以安装到未越狱手机。</p>
+<h3 id="IPAPatch-免越狱调试-APP"><a href="#IPAPatch-免越狱调试-APP" class="headerlink" title="IPAPatch 免越狱调试 APP"></a>IPAPatch 免越狱调试 APP</h3><p>IPAPatch 就是通过从签名达到免越狱注入代码的目的。使用起来非常简单。</p>
+<ol>
+<li>使用 PP 助手下载一个已越狱的应用的 ipa</li>
+<li>下载 IPAPatch 的工程</li>
+<li>使用已越狱的 ipa 替换工程中 Assets 文件夹下的 <strong>app.ipa</strong> 文件。注意，名字要改为 app.ipa</li>
+<li>将 RevealServer.framework 放置在 Assets/Frameworks/RevealServer.framework</li>
+<li>修改 bundleId</li>
+<li>Run Xcode 安装到手机</li>
+</ol>
+<h2 id="安全保护"><a href="#安全保护" class="headerlink" title="安全保护"></a>安全保护</h2><h3 id="静态混淆"><a href="#静态混淆" class="headerlink" title="静态混淆"></a>静态混淆</h3><h4 id="宏定义"><a href="#宏定义" class="headerlink" title="宏定义"></a>宏定义</h4><p>使用宏将方法属性名修改为其他无意义的字符串</p>
+<h3 id="动态保护"><a href="#动态保护" class="headerlink" title="动态保护"></a>动态保护</h3><h4 id="反调试"><a href="#反调试" class="headerlink" title="反调试"></a>反调试</h4><p><strong>ptrace</strong></p>
+<p>UNIX 早期版本提供的一种对运行中的进程进行跟踪和控制的手段，就是系统调用 ptrace。通过 ptrace 实现对另一个进程的调试跟踪</p>
+<p>可以通过参数 <code>PT_DENY_ATTACH</code> 禁用调试。这个参数告诉系统阻止调试器依附。所以，最常用的反调试方法就是通过调用 ptrace 来实现反调试。</p>
+<p><strong>sysctl</strong></p>
+<p>当一个进程被调试时，该进程中的一个标志位用来标记正在被调试。可以定时通过 sysctl 查看这个标志位</p>
+<h4 id="反反调试"><a href="#反反调试" class="headerlink" title="反反调试"></a>反反调试</h4><p>hook函数 -&gt; 判断参数 -&gt; 返回结果</p>
+<p>越狱设备直接可以hook以上说到的反调试函数。非越狱设备可以通过 fishhook，hook 反调试函数。</p>
+<h4 id="反注入"><a href="#反注入" class="headerlink" title="反注入"></a>反注入</h4><p>可以定期调用 <code>_dyld_get_image_name()</code> 方法，获取正在加载的动态库名，比较是否是白名单内的动态库名来实现注入检测。</p>
+<h4 id="hook-检测"><a href="#hook-检测" class="headerlink" title="hook 检测"></a>hook 检测</h4><p>hook 包括 Method Swizzle，符号表替换，inline hook 等。不同的 hook 方式，需要制定不同的检测方案</p>
+<p><strong>Method Swizzle</strong></p>
+<p>Method Swizzle 的原理是替换 imp，通过 dladdr 得到 imp 所在的模块，判断模块是不是主二进制模块，如果不是就是被 hook 了。</p>
+<p><strong>符号表替换</strong></p>
+<p>fishhook 是基于懒加载符号表和非懒加载符号表进行替换的，所以遍历符号表中的指针就能判断程序是否被恶意 hook 了。</p>
+<p>非懒加载的指针指向真实地址，懒加载的指针在没有解析到真正的地址钱指向 <code>__stub_helper</code>，所以遍历符号表，判断是否指向了系统模块或者 <code>__stub_helper</code> 即可。</p>
+<h4 id="完整性校验"><a href="#完整性校验" class="headerlink" title="完整性校验"></a>完整性校验</h4><p>逆向过程设计到对文件 load command 的修改，对文件进行重签名，修改 BundleId。可以从上述几个方面校验</p>
+<p><strong>load command</strong></p>
+<p>直接读取 Mach-O load command 中的 <code>LC_LOAD_DYLIB</code> ，判断是否有非白名单动态库</p>
+<p><strong>代码校验</strong></p>
+<p>获取内存中代码的 MD5 值，如果代码修改了，就会不一样</p>
+<p><strong>重签名校验</strong> </p>
+<p>判断 bundle ID 是否被修改</p>
+<h2 id="8086简介"><a href="#8086简介" class="headerlink" title="8086简介"></a>8086简介</h2><p>8086 是 x86系列处理器的开端，所以后面用 x86 代替 32位处理器。</p>
+<h3 id="CPU-的组成"><a href="#CPU-的组成" class="headerlink" title="CPU 的组成"></a>CPU 的组成</h3><p>CPU 的三大组成：</p>
+<ul>
+<li>运算单元</li>
+<li>数据单元</li>
+<li>控制单元</li>
+</ul>
+<p>运算单元做加法或者位移的操作。</p>
+<p>数据单元包含CPU内部的缓存和寄存器组。</p>
+<p>控制单元可以获得下一条指令，然后执行。这个指令会指导运算单元取出数据单元中的某几个数据，计算出结果，然后放到数据单元的某个地方。</p>
+<h3 id="8086-的寻址方式"><a href="#8086-的寻址方式" class="headerlink" title="8086 的寻址方式"></a>8086 的寻址方式</h3><p>8086 的总线是有16根，但是可以寻址的范围为 2^20 byte。</p>
+<p>20位的物理地址 = 16位的段地址 * 16 + 4位的偏移地址</p>
+<h3 id="CPU-中的数据单元"><a href="#CPU-中的数据单元" class="headerlink" title="CPU 中的数据单元"></a>CPU 中的数据单元</h3><p>8086 CPU 中的数据单元如下：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/8086_1.png?raw=true" alt></p>
+<p>其中：</p>
+<ul>
+<li>AX，BX，CX，DX 为数据寄存器，存放操作的数据</li>
+<li>CS 代表代码段的起始地址。IP 表示偏移地址。每读取一条指令，<strong>IP=IP + 所读取指令的长度</strong>。</li>
+<li>SS 表示栈的起始位置。SP 表示栈的偏移地址。BP 是入参和临时变量的分界，通过 BP 及偏移量拿到入参和临时变量。</li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tag/学习笔记/" rel="tag"># 学习笔记</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/10/01/WKWebView3/" rel="next" title="WKWebView 使用（三）—— WebViewJavaScriptBridge 源码解析">
+                <i class="fa fa-chevron-left"></i> WKWebView 使用（三）—— WebViewJavaScriptBridge 源码解析
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/11/30/yycache/" rel="prev" title="YYCache 源码解析">
+                YYCache 源码解析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.png" alt="Zachary Zhang">
+            
+              <p class="site-author-name" itemprop="name">Zachary Zhang</p>
+              <p class="site-description motion-element" itemprop="description">Stay Hungry. Stay Foolish!</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">116</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/zhang759740844" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:zch759740844@126.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#越狱设备"><span class="nav-number">1.</span> <span class="nav-text">越狱设备</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Cydia"><span class="nav-number">1.1.</span> <span class="nav-text">Cydia</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SSH"><span class="nav-number">1.2.</span> <span class="nav-text">SSH</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#修改密码"><span class="nav-number">1.2.1.</span> <span class="nav-text">修改密码</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#公钥登录"><span class="nav-number">1.2.2.</span> <span class="nav-text">公钥登录</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#iOS系统结构"><span class="nav-number">1.3.</span> <span class="nav-text">iOS系统结构</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#文件目录"><span class="nav-number">1.3.1.</span> <span class="nav-text">文件目录</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#文件权限"><span class="nav-number">1.3.2.</span> <span class="nav-text">文件权限</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Cydia-Substrate"><span class="nav-number">1.3.3.</span> <span class="nav-text">Cydia Substrate</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#越狱必备"><span class="nav-number">1.3.4.</span> <span class="nav-text">越狱必备</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#逆向工具详解"><span class="nav-number">2.</span> <span class="nav-text">逆向工具详解</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#应用解密"><span class="nav-number">2.1.</span> <span class="nav-text">应用解密</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#dumpdecrypted"><span class="nav-number">2.1.1.</span> <span class="nav-text">dumpdecrypted</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Clutch"><span class="nav-number">2.1.2.</span> <span class="nav-text">Clutch</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#class-dump"><span class="nav-number">2.2.</span> <span class="nav-text">class-dump</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#class-dump-原理"><span class="nav-number">2.2.1.</span> <span class="nav-text">class-dump 原理</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#解析协议"><span class="nav-number">2.2.1.1.</span> <span class="nav-text">解析协议</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#类解析"><span class="nav-number">2.2.1.2.</span> <span class="nav-text">类解析</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Reveal"><span class="nav-number">2.3.</span> <span class="nav-text">Reveal</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Cycript"><span class="nav-number">2.4.</span> <span class="nav-text">Cycript</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#如何用-Cycript-调试一个进程"><span class="nav-number">2.4.1.</span> <span class="nav-text">如何用 Cycript 调试一个进程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Cycript-语法"><span class="nav-number">2.4.2.</span> <span class="nav-text">Cycript 语法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#编写-Cycript-库"><span class="nav-number">2.4.3.</span> <span class="nav-text">编写 Cycript 库</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Apple-Configurator-2"><span class="nav-number">2.4.4.</span> <span class="nav-text">Apple Configurator 2</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#获取-ipa-包"><span class="nav-number">2.4.5.</span> <span class="nav-text">获取 ipa 包</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#获取-Assets-car-中的资源文件"><span class="nav-number">2.4.6.</span> <span class="nav-text">获取 Assets.car 中的资源文件</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#分析与调试"><span class="nav-number">3.</span> <span class="nav-text">分析与调试</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#静态分析"><span class="nav-number">3.1.</span> <span class="nav-text">静态分析</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#hopper-使用"><span class="nav-number">3.1.1.</span> <span class="nav-text">hopper 使用</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#动态调试"><span class="nav-number">3.2.</span> <span class="nav-text">动态调试</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#LLDB-调试"><span class="nav-number">3.2.1.</span> <span class="nav-text">LLDB 调试</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#debug-获取进程加载基地址"><span class="nav-number">3.2.1.1.</span> <span class="nav-text">debug 获取进程加载基地址</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#lldb-使用"><span class="nav-number">3.2.2.</span> <span class="nav-text">lldb 使用</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#theos"><span class="nav-number">3.2.3.</span> <span class="nav-text">theos</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#下载-theos"><span class="nav-number">3.2.3.1.</span> <span class="nav-text">下载 theos</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#使用-theos-创建-tweak"><span class="nav-number">3.2.3.2.</span> <span class="nav-text">使用 theos 创建 tweak</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#tweak-实现注意点"><span class="nav-number">3.2.3.3.</span> <span class="nav-text">tweak 实现注意点</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Tweak-实现原理"><span class="nav-number">3.2.3.4.</span> <span class="nav-text">Tweak 实现原理</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Logos-语法"><span class="nav-number">3.2.3.5.</span> <span class="nav-text">Logos 语法</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#logify-pl"><span class="nav-number">3.2.3.6.</span> <span class="nav-text">logify.pl</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#MonkeyDev"><span class="nav-number">3.2.4.</span> <span class="nav-text">MonkeyDev</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#逆向进阶"><span class="nav-number">4.</span> <span class="nav-text">逆向进阶</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#ASLR"><span class="nav-number">4.1.</span> <span class="nav-text">ASLR</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#通用二进制文件"><span class="nav-number">4.2.</span> <span class="nav-text">通用二进制文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#程序加载"><span class="nav-number">4.3.</span> <span class="nav-text">程序加载</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#dyld-简介"><span class="nav-number">4.3.1.</span> <span class="nav-text">dyld 简介</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#dyld-加载流程"><span class="nav-number">4.3.2.</span> <span class="nav-text">dyld 加载流程</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Mach-O-文件"><span class="nav-number">4.4.</span> <span class="nav-text">Mach-O 文件</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#MachO-文件基本构成"><span class="nav-number">4.4.1.</span> <span class="nav-text">MachO 文件基本构成</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#代码段和数据段的具体组成"><span class="nav-number">4.4.2.</span> <span class="nav-text">代码段和数据段的具体组成</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#懒加载和非懒加载"><span class="nav-number">4.4.3.</span> <span class="nav-text">懒加载和非懒加载</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ARM-汇编"><span class="nav-number">4.5.</span> <span class="nav-text">ARM 汇编</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#ARM寄存器"><span class="nav-number">4.5.1.</span> <span class="nav-text">ARM寄存器</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#常见指令"><span class="nav-number">4.5.2.</span> <span class="nav-text">常见指令</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#堆栈调用"><span class="nav-number">4.5.3.</span> <span class="nav-text">堆栈调用</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#hook"><span class="nav-number">4.6.</span> <span class="nav-text">hook</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#fishhook"><span class="nav-number">4.6.1.</span> <span class="nav-text">fishhook</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#iOS-签名"><span class="nav-number">4.7.</span> <span class="nav-text">iOS 签名</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#IPAPatch-免越狱调试-APP"><span class="nav-number">4.8.</span> <span class="nav-text">IPAPatch 免越狱调试 APP</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#安全保护"><span class="nav-number">5.</span> <span class="nav-text">安全保护</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#静态混淆"><span class="nav-number">5.1.</span> <span class="nav-text">静态混淆</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#宏定义"><span class="nav-number">5.1.1.</span> <span class="nav-text">宏定义</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#动态保护"><span class="nav-number">5.2.</span> <span class="nav-text">动态保护</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#反调试"><span class="nav-number">5.2.1.</span> <span class="nav-text">反调试</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#反反调试"><span class="nav-number">5.2.2.</span> <span class="nav-text">反反调试</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#反注入"><span class="nav-number">5.2.3.</span> <span class="nav-text">反注入</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#hook-检测"><span class="nav-number">5.2.4.</span> <span class="nav-text">hook 检测</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#完整性校验"><span class="nav-number">5.2.5.</span> <span class="nav-text">完整性校验</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8086简介"><span class="nav-number">6.</span> <span class="nav-text">8086简介</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#CPU-的组成"><span class="nav-number">6.1.</span> <span class="nav-text">CPU 的组成</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8086-的寻址方式"><span class="nav-number">6.2.</span> <span class="nav-text">8086 的寻址方式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CPU-中的数据单元"><span class="nav-number">6.3.</span> <span class="nav-text">CPU 中的数据单元</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zachary Zhang</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+
+
+
+
+  <meta name="keywords" content="源码解析,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="Masonry 是 iOS 中的一套布局框架，先占个坑学习下源码。">
+<meta name="keywords" content="源码解析">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Masonry 源码解析">
+<meta property="og:url" content="http://zhang759740844.github.io/2018/04/19/Masonry源码解析/index.html">
+<meta property="og:site_name" content="Zachary&#39;s blog">
+<meta property="og:description" content="Masonry 是 iOS 中的一套布局框架，先占个坑学习下源码。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/masonry_1.png?raw=true">
+<meta property="og:updated_time" content="2020-02-27T15:13:37.632Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Masonry 源码解析">
+<meta name="twitter:description" content="Masonry 是 iOS 中的一套布局框架，先占个坑学习下源码。">
+<meta name="twitter:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/masonry_1.png?raw=true">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://zhang759740844.github.io/2018/04/19/Masonry源码解析/">
+
+
+
+
+
+  <title>Masonry 源码解析 | Zachary's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Zachary's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">记录成长</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://zhang759740844.github.io/2018/04/19/Masonry源码解析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zachary Zhang">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Zachary's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Masonry 源码解析</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-04-19T10:07:12+08:00">
+                2018-04-19
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>Masonry 是 iOS 中的一套布局框架，先占个坑学习下源码。</p>
+<a id="more"></a>
+<h2 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h2><h3 id="添加约束"><a href="#添加约束" class="headerlink" title="添加约束"></a>添加约束</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">UIEdgeInsets</span> padding = <span class="built_in">UIEdgeInsetsMake</span>(<span class="number">10</span>, <span class="number">10</span>, <span class="number">10</span>, <span class="number">10</span>);</span><br><span class="line">[view1 mas_makeConstraints:^(MASConstraintMaker *make) &#123;</span><br><span class="line">    make.top.equalTo(superview.mas_top).with.offset(padding.top); <span class="comment">//with is an optional semantic filler</span></span><br><span class="line">    make.left.equalTo(superview.mas_left).with.offset(padding.left);</span><br><span class="line">    make.bottom.equalTo(superview.mas_bottom).with.offset(-padding.bottom);</span><br><span class="line">    make.right.equalTo(superview.mas_right).with.offset(-padding.right);</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>添加约束必须先把视图添加到父视图上，否则会crash</p>
+</blockquote>
+<h3 id="约束添加几倍于"><a href="#约束添加几倍于" class="headerlink" title="约束添加几倍于"></a>约束添加几倍于</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make.width.equalTo(superview.mas_width).multiplieBy(<span class="number">0.5</span>);</span><br></pre></td></tr></table></figure>
+<h3 id="约束不超过或者不小于"><a href="#约束不超过或者不小于" class="headerlink" title="约束不超过或者不小于"></a>约束不超过或者不小于</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 不小于</span></span><br><span class="line">make.left.greaterThanOrEqualTo(label.mas_left);</span><br><span class="line"><span class="comment">// 不大于</span></span><br><span class="line">make.left.lessThanOrEqualTo(label.mas_left);</span><br></pre></td></tr></table></figure>
+<h3 id="优先级"><a href="#优先级" class="headerlink" title="优先级"></a>优先级</h3><p>可以设置三种优先级 <code>.priorityHigh</code>，<code>.priorityMedium</code>，<code>.priorityLow</code>。也可以自己设置优先级的大小。默认的优先级为 1000</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">make.left.greaterThanOrEqualTo(label.mas_left).with.priorityLow();</span><br><span class="line">make.top.equalTo(label.mas_top).with.priority(<span class="number">600</span>);</span><br></pre></td></tr></table></figure>
+<h3 id="设置边距大小和中心点"><a href="#设置边距大小和中心点" class="headerlink" title="设置边距大小和中心点"></a>设置边距大小和中心点</h3><h4 id="edgs"><a href="#edgs" class="headerlink" title="edgs"></a>edgs</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// make top, left, bottom, right equal view2</span></span><br><span class="line">make.edges.equalTo(view2);</span><br><span class="line"></span><br><span class="line"><span class="comment">// make top = superview.top + 5, left = superview.left + 10,</span></span><br><span class="line"><span class="comment">//      bottom = superview.bottom - 15, right = superview.right - 20</span></span><br><span class="line">make.edges.equalTo(superview).insets(<span class="built_in">UIEdgeInsetsMake</span>(<span class="number">5</span>, <span class="number">10</span>, <span class="number">15</span>, <span class="number">20</span>))</span><br></pre></td></tr></table></figure>
+<h4 id="size"><a href="#size" class="headerlink" title="size"></a>size</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// make width and height greater than or equal to titleLabel</span></span><br><span class="line">make.size.greaterThanOrEqualTo(titleLabel)</span><br><span class="line"></span><br><span class="line"><span class="comment">// make width = superview.width + 100, height = superview.height - 50</span></span><br><span class="line">make.size.equalTo(superview).sizeOffset(<span class="built_in">CGSizeMake</span>(<span class="number">100</span>, <span class="number">-50</span>))</span><br></pre></td></tr></table></figure>
+<h4 id="center"><a href="#center" class="headerlink" title="center"></a>center</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// make centerX and centerY = button1</span></span><br><span class="line">make.center.equalTo(button1)</span><br><span class="line"></span><br><span class="line"><span class="comment">// make centerX = superview.centerX - 5, centerY = superview.centerY + 10</span></span><br><span class="line">make.center.equalTo(superview).centerOffset(<span class="built_in">CGPointMake</span>(<span class="number">-5</span>, <span class="number">10</span>))</span><br></pre></td></tr></table></figure>
+<h3 id="更新约束"><a href="#更新约束" class="headerlink" title="更新约束"></a>更新约束</h3><p>使用 <code>mas_updateConstraints</code> 更新约束</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[<span class="keyword">self</span>.growingButton mas_updateConstraints:^(MASConstraintMaker *make) &#123;</span><br><span class="line">    make.center.equalTo(<span class="keyword">self</span>);</span><br><span class="line">    make.width.equalTo(@(<span class="keyword">self</span>.buttonSize.width)).priorityLow();</span><br><span class="line">    make.height.equalTo(@(<span class="keyword">self</span>.buttonSize.height)).priorityLow();</span><br><span class="line">    make.width.lessThanOrEqualTo(<span class="keyword">self</span>);</span><br><span class="line">    make.height.lessThanOrEqualTo(<span class="keyword">self</span>);</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
+<h3 id="重新设置约束"><a href="#重新设置约束" class="headerlink" title="重新设置约束"></a>重新设置约束</h3><p>使用 <code>mas_remakeConstraints</code> 重新设置约束</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[<span class="keyword">self</span>.button mas_remakeConstraints:^(MASConstraintMaker *make) &#123;</span><br><span class="line">    make.size.equalTo(<span class="keyword">self</span>.buttonSize);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (topLeft) &#123;</span><br><span class="line">        make.top.and.left.offset(<span class="number">10</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        make.bottom.and.right.offset(<span class="number">-10</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
+<h3 id="多个控件等距、等宽排列"><a href="#多个控件等距、等宽排列" class="headerlink" title="多个控件等距、等宽排列"></a>多个控件等距、等宽排列</h3><p>Masonry 提供了两个方法，可以提供等距排列或者等宽排列：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> *  等距排列</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> *  @param axisType     横排还是竖排</span></span><br><span class="line"><span class="comment"> *  @param fixedSpacing 两个控件间隔</span></span><br><span class="line"><span class="comment"> *  @param leadSpacing  第一个控件与边缘的间隔</span></span><br><span class="line"><span class="comment"> *  @param tailSpacing  最后一个控件与边缘的间隔</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">- (<span class="keyword">void</span>)mas_distributeViewsAlongAxis:(MASAxisType)axisType withFixedSpacing:(<span class="built_in">CGFloat</span>)fixedSpacing leadSpacing:(<span class="built_in">CGFloat</span>)leadSpacing tailSpacing:(<span class="built_in">CGFloat</span>)tailSpacing;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> *  等宽排列</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> *  @param axisType        横排还是竖排</span></span><br><span class="line"><span class="comment"> *  @param fixedItemLength 控件的宽或高</span></span><br><span class="line"><span class="comment"> *  @param leadSpacing     第一个控件与边缘的间隔</span></span><br><span class="line"><span class="comment"> *  @param tailSpacing     最后一个控件与边缘的间隔</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">- (<span class="keyword">void</span>)mas_distributeViewsAlongAxis:(MASAxisType)axisType withFixedItemLength:(<span class="built_in">CGFloat</span>)fixedItemLength leadSpacing:(<span class="built_in">CGFloat</span>)leadSpacing tailSpacing:(<span class="built_in">CGFloat</span>)tailSpacing;</span><br></pre></td></tr></table></figure>
+<p>要注意的是，如果是横排，那么还是需要自己设置高度约束；如果是竖排，还是需要设置宽度约束。例：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 导入 NSArray 的分类</span></span><br><span class="line"><span class="meta">#import <span class="meta-string">"NSArray+MASAdditions.h"</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 把视图添加到数组中</span></span><br><span class="line">- (<span class="built_in">NSMutableArray</span> *)masonryViewArray &#123;</span><br><span class="line">    <span class="keyword">if</span> (!_masonryViewArray) &#123;</span><br><span class="line">        _masonryViewArray = [<span class="built_in">NSMutableArray</span> array];</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">4</span>; i ++) &#123;</span><br><span class="line">            <span class="built_in">UIView</span> *view = [[<span class="built_in">UIView</span> alloc] init];</span><br><span class="line">            view.backgroundColor = [<span class="built_in">UIColor</span> redColor];</span><br><span class="line">            [<span class="keyword">self</span>.view addSubview:view];</span><br><span class="line">            [_masonryViewArray addObject:view];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> _masonryViewArray;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 设置约束</span></span><br><span class="line">- (<span class="keyword">void</span>)test_masonry_horizontal_fixSpace &#123;</span><br><span class="line">    <span class="comment">// 实现masonry水平固定间隔方法</span></span><br><span class="line">    [<span class="keyword">self</span>.masonryViewArray mas_distributeViewsAlongAxis:MASAxisTypeHorizontal withFixedSpacing:<span class="number">30</span> leadSpacing:<span class="number">10</span> tailSpacing:<span class="number">10</span>];</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 设置array的垂直方向的约束</span></span><br><span class="line">    [<span class="keyword">self</span>.masonryViewArray mas_makeConstraints:^(MASConstraintMaker *make) &#123;</span><br><span class="line">        make.top.equalTo(<span class="number">150</span>);</span><br><span class="line">        make.height.equalTo(<span class="number">80</span>);</span><br><span class="line">    &#125;];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>这个方法在官方的 README 中没有看到，只是在阅读源码的时候才注意到</p>
+</blockquote>
+<h2 id="源码解析"><a href="#源码解析" class="headerlink" title="源码解析"></a>源码解析</h2><h3 id="文件结构"><a href="#文件结构" class="headerlink" title="文件结构"></a>文件结构</h3><p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/masonry_1.png?raw=true" alt></p>
+<p>使用 Masonry 设置约束的时候，主要的几个类如上图所示。最上面的三个是调用者，分别在 <code>UIView</code>，<code>UIViewController</code> 和 <code>NSArray</code> 中添加分类方法。下面的 <code>MASConstraintMaker</code> 是约束的创建者，我们在 block 中使用的 <code>make</code> 就是这个类的实例。后面的 <code>MASContraint</code> 和 <code>MASViewAdditions</code> 不对使用者暴露，前者是约束实例的封装，后者是所约束对象的封装。</p>
+<p>我们使用的时候主要调用 <code>View+MASAdditions</code>中的方法，直接在某个 View 上添加约束。  <code>NSArray+MASAdditions</code> 可以将多个视图放在一个数组中，然后对其中的每一个视图加上约束，用的很少。<code>ViewController+MASAdditions</code> 主要操作的是<code>topLayoutGuide</code> 和 <code>bottomLayoutGuide</code>。这两个 View 的属性在 iOS11 中已经被废弃，建议使用 View 中的 <code>mas_safeAreaLayoutGuide</code> 替代。因此，几乎不使用</p>
+<h3 id="View-MASAdditions"><a href="#View-MASAdditions" class="headerlink" title="View+MASAdditions"></a>View+MASAdditions</h3><p>这个 UIView 的分类提供了三个方法分别用来创建、更新、重设约束。先来看创建约束的方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">NSArray</span> *)mas_makeConstraints:(<span class="keyword">void</span>(^)(MASConstraintMaker *))block &#123;</span><br><span class="line">    <span class="keyword">self</span>.translatesAutoresizingMaskIntoConstraints = <span class="literal">NO</span>;</span><br><span class="line">    MASConstraintMaker *constraintMaker = [[MASConstraintMaker alloc] initWithView:<span class="keyword">self</span>];</span><br><span class="line">    block(constraintMaker);</span><br><span class="line">    <span class="keyword">return</span> [constraintMaker install];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个方法中首先把 <code>translatesAutoresizingMaskIntoConstraints</code> 设置为 NO，表示要自己添加约束。然后初始化 <code>MASConstraintMaker</code>。接着把 <code>MASConstraintMaker</code> 作为参数传入 block 执行，配置约束。最后调用<code>install</code> 方法，把配置好的越是添加到视图上。</p>
+<blockquote>
+<p>这里外部传来的 block 不会被保存，而是直接执行。这就保证了 block 中直接强引用 self 也不会产生循环引用。</p>
+</blockquote>
+<p>再看更新和重设方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">NSArray</span> *)mas_updateConstraints:(<span class="keyword">void</span>(^)(MASConstraintMaker *))block &#123;</span><br><span class="line">    <span class="keyword">self</span>.translatesAutoresizingMaskIntoConstraints = <span class="literal">NO</span>;</span><br><span class="line">    MASConstraintMaker *constraintMaker = [[MASConstraintMaker alloc] initWithView:<span class="keyword">self</span>];</span><br><span class="line">    constraintMaker.updateExisting = <span class="literal">YES</span>;</span><br><span class="line">    block(constraintMaker);</span><br><span class="line">    <span class="keyword">return</span> [constraintMaker install];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="built_in">NSArray</span> *)mas_remakeConstraints:(<span class="keyword">void</span>(^)(MASConstraintMaker *make))block &#123;</span><br><span class="line">    <span class="keyword">self</span>.translatesAutoresizingMaskIntoConstraints = <span class="literal">NO</span>;</span><br><span class="line">    MASConstraintMaker *constraintMaker = [[MASConstraintMaker alloc] initWithView:<span class="keyword">self</span>];</span><br><span class="line">    constraintMaker.removeExisting = <span class="literal">YES</span>;</span><br><span class="line">    block(constraintMaker);</span><br><span class="line">    <span class="keyword">return</span> [constraintMaker install];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>和创建方法类似，只是多加了两个标记 <code>updateExisting</code>，<code>removeExisting</code>，用来和创建区别开。</p>
+<h3 id="MASConstraintMaker"><a href="#MASConstraintMaker" class="headerlink" title="MASConstraintMaker"></a>MASConstraintMaker</h3><p>我们在设置约束的时候一般是这么写的：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[view1 mas_makeConstraints:^(MASConstraintMaker *make) &#123;</span><br><span class="line">    make.top.equalTo(superview.mas_top).with.offset(<span class="number">20</span>); <span class="comment">//with is an optional semantic filler</span></span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
+<p>我们来看看这个 <code>top</code> 方法如何实现的：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">- (MASConstraint *)top &#123;</span><br><span class="line">    <span class="keyword">return</span> [<span class="keyword">self</span> addConstraintWithLayoutAttribute:<span class="built_in">NSLayoutAttributeTop</span>];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (MASConstraint *)addConstraintWithLayoutAttribute:(<span class="built_in">NSLayoutAttribute</span>)layoutAttribute &#123;</span><br><span class="line">    <span class="keyword">return</span> [<span class="keyword">self</span> constraint:<span class="literal">nil</span> addConstraintWithLayoutAttribute:layoutAttribute];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (MASConstraint *)constraint:(MASConstraint *)constraint addConstraintWithLayoutAttribute:(<span class="built_in">NSLayoutAttribute</span>)layoutAttribute &#123;</span><br><span class="line">    MASViewAttribute *viewAttribute = [[MASViewAttribute alloc] initWithView:<span class="keyword">self</span>.view layoutAttribute:layoutAttribute];</span><br><span class="line">    MASViewConstraint *newConstraint = [[MASViewConstraint alloc] initWithFirstViewAttribute:viewAttribute];</span><br><span class="line">		...</span><br><span class="line">    <span class="keyword">if</span> (!constraint) &#123;</span><br><span class="line">        newConstraint.delegate = <span class="keyword">self</span>;</span><br><span class="line">        [<span class="keyword">self</span>.constraints addObject:newConstraint];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> newConstraint;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>中间省略了一些暂时不涉及的代码。这里先是初始化了 <code>MASViewAttribute</code> 对象。由于 <code>MASViewAttribute</code> 只是简单的约束作用的视图以及一个枚举属性 <code>NSLayoutAttribute</code> (<code>NSLayoutAttribut</code> 就是在创建约束的时候标识约束的类型的，比如宽度，高度，上下左右等)的封装，比较简单，这里就直接看一些它的初始化方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">id</span>)initWithView:(MAS_VIEW *)view layoutAttribute:(<span class="built_in">NSLayoutAttribute</span>)layoutAttribute &#123;</span><br><span class="line">    <span class="keyword">self</span> = [<span class="keyword">self</span> initWithView:view item:view layoutAttribute:layoutAttribute];</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">self</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">id</span>)initWithView:(MAS_VIEW *)view item:(<span class="keyword">id</span>)item layoutAttribute:(<span class="built_in">NSLayoutAttribute</span>)layoutAttribute &#123;</span><br><span class="line">    <span class="keyword">self</span> = [<span class="keyword">super</span> init];</span><br><span class="line">    <span class="keyword">if</span> (!<span class="keyword">self</span>) <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">    </span><br><span class="line">    _view = view;</span><br><span class="line">    _item = item;</span><br><span class="line">    _layoutAttribute = layoutAttribute;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">self</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>除了保存 <code>NSLayoutAttribute</code> 就是对 view 做了一个弱引用的保存。可以看到，除了 <code>view</code> 外，还有一个成员变量 <code>item</code>。一般情况下，<code>view</code> 和 <code>item</code> 是同一个东西。只有当添加的约束是 ViewController 的 <code>topLayoutGuide</code> 和 <code>bottomLayoutGuide</code> 时才会不同：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">- (MASViewAttribute *)mas_topLayoutGuide &#123;</span><br><span class="line">    <span class="keyword">return</span> [[MASViewAttribute alloc] initWithView:<span class="keyword">self</span>.view item:<span class="keyword">self</span>.topLayoutGuide layoutAttribute:<span class="built_in">NSLayoutAttributeBottom</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>MASViewAttribute</code> 的初始化方法之后，又初始化了 <code>MASViewConstraint</code> 对象，并把它加入到 <code>MASConstraintMaker</code> 的 <code>constraints</code> 约束数组中，并最终返回。 </p>
+<h3 id="MASViewConstraint"><a href="#MASViewConstraint" class="headerlink" title="MASViewConstraint"></a>MASViewConstraint</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make.top.equalTo(superview.mas_top).with.offset(<span class="number">20</span>);</span><br></pre></td></tr></table></figure>
+<p><code>make.top</code> 返回的是 <code>MASViewConstraint</code> 对象实例，所以后面的 <code>equalTo</code> 方法就是 <code>MASViewConstraint</code> 的方法。</p>
+<p>先来看它的初始化方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">id</span>)initWithFirstViewAttribute:(MASViewAttribute *)firstViewAttribute &#123;</span><br><span class="line">    <span class="keyword">self</span> = [<span class="keyword">super</span> init];</span><br><span class="line">    <span class="keyword">if</span> (!<span class="keyword">self</span>) <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">    </span><br><span class="line">    _firstViewAttribute = firstViewAttribute;</span><br><span class="line">    <span class="keyword">self</span>.layoutPriority = MASLayoutPriorityRequired;</span><br><span class="line">    <span class="keyword">self</span>.layoutMultiplier = <span class="number">1</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">self</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>从名字就可以看出，初始化的时候必须传入一个 <code>MASViewAttribute</code> 实例。从名字也可以看得出来，这个属性是作为约束中的 <code>FirstView</code> 的。</p>
+<p>再来看看 <code>equalTo</code> 的实现，这也就是这个库的精髓所在:</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">- (MASConstraint * (^)(<span class="keyword">id</span>))equalTo &#123;</span><br><span class="line">    <span class="keyword">return</span> ^<span class="keyword">id</span>(<span class="keyword">id</span> attribute) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">self</span>.equalToWithRelation(attribute, <span class="built_in">NSLayoutRelationEqual</span>);</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (MASConstraint * (^)(<span class="keyword">id</span>, <span class="built_in">NSLayoutRelation</span>))equalToWithRelation &#123;</span><br><span class="line">    <span class="keyword">return</span> ^<span class="keyword">id</span>(<span class="keyword">id</span> attribute, <span class="built_in">NSLayoutRelation</span> relation) &#123;</span><br><span class="line">        <span class="keyword">self</span>.layoutRelation = relation;</span><br><span class="line">        <span class="keyword">self</span>.secondViewAttribute = attribute;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">self</span>;</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>链式编程的核心在于每次调用的时候都返回自身。OC 的点语法相当于调用属性的 get 方法，因此是无法传参的。<code>make.top.equalTo(superview.mas_top)</code> 相当于通过 <code>equalTo</code> 的 get 方法，返回了一个 block 实例，然后再执行这个 block，返回自身的实例。</p>
+<blockquote>
+<p>链式编程的一般使用场景在于设置一个对象的多个属性。</p>
+<p>比如你要设置一个 button，你要设置它的多个属性就需要在多行里分别设置。但是如果 button 的每个属性的设置都返回 button 自身，那么就可以在一行中链式的调用。</p>
+</blockquote>
+<p>同样的，<code>offset</code> 方法也是一样的道理。</p>
+<h3 id="设置约束"><a href="#设置约束" class="headerlink" title="设置约束"></a>设置约束</h3><p>一条链式调用会创建一个 <code>MASViewConstraint</code> 对象。每一个约束都会保存到 <code>MASConstraintMaker</code> 的数组中。在设置完约束后，就来到了 <code>[constraintMaker install]</code> 添加约束：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// MASConstraintMaker</span></span><br><span class="line">- (<span class="built_in">NSArray</span> *)install &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.removeExisting) &#123;</span><br><span class="line">        <span class="built_in">NSArray</span> *installedConstraints = [MASViewConstraint installedConstraintsForView:<span class="keyword">self</span>.view];</span><br><span class="line">        <span class="keyword">for</span> (MASConstraint *constraint <span class="keyword">in</span> installedConstraints) &#123;</span><br><span class="line">            [constraint uninstall];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">NSArray</span> *constraints = <span class="keyword">self</span>.constraints.copy;</span><br><span class="line">    <span class="keyword">for</span> (MASConstraint *constraint <span class="keyword">in</span> constraints) &#123;</span><br><span class="line">        constraint.updateExisting = <span class="keyword">self</span>.updateExisting;</span><br><span class="line">        [constraint install];</span><br><span class="line">    &#125;</span><br><span class="line">    [<span class="keyword">self</span>.constraints removeAllObjects];</span><br><span class="line">    <span class="keyword">return</span> constraints;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里之前的两个标记就派上用场了，如果要重设就会先移除约束再重新添加，而如果是更新，就会把标记传入每一个约束中。<code>MASViewConstraint</code> 中添加约束：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// MASViewConstraint</span></span><br><span class="line">- (<span class="keyword">void</span>)install &#123;</span><br><span class="line">    <span class="comment">/// 如果该约束已经被 install 过，那么直接 return。</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.hasBeenInstalled) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> ([<span class="keyword">self</span> supportsActiveProperty] &amp;&amp; <span class="keyword">self</span>.layoutConstraint) &#123;</span><br><span class="line">        <span class="keyword">self</span>.layoutConstraint.active = <span class="literal">YES</span>;</span><br><span class="line">        <span class="comment">/// 把约束保存到 view 上，这样再 uninstall 的时候就可以找到并移除了。</span></span><br><span class="line">        [<span class="keyword">self</span>.firstViewAttribute.view.mas_installedConstraints addObject:<span class="keyword">self</span>];</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/// 拿到施加约束的第一个视图</span></span><br><span class="line">    MAS_VIEW *firstLayoutItem = <span class="keyword">self</span>.firstViewAttribute.item;</span><br><span class="line">    <span class="built_in">NSLayoutAttribute</span> firstLayoutAttribute = <span class="keyword">self</span>.firstViewAttribute.layoutAttribute;</span><br><span class="line">    <span class="comment">/// 拿到施加约束的第二个视图</span></span><br><span class="line">    MAS_VIEW *secondLayoutItem = <span class="keyword">self</span>.secondViewAttribute.item;</span><br><span class="line">    <span class="built_in">NSLayoutAttribute</span> secondLayoutAttribute = <span class="keyword">self</span>.secondViewAttribute.layoutAttribute;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// 不存在第二个Attribute的时候设置为第一个属性的父级元素</span></span><br><span class="line">    <span class="keyword">if</span> (!<span class="keyword">self</span>.firstViewAttribute.isSizeAttribute &amp;&amp; !<span class="keyword">self</span>.secondViewAttribute) &#123;</span><br><span class="line">        secondLayoutItem = <span class="keyword">self</span>.firstViewAttribute.view.superview;</span><br><span class="line">        secondLayoutAttribute = firstLayoutAttribute;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/// 创建真正的约束对象，他是 NSLayoutConstraint 的子类</span></span><br><span class="line">    MASLayoutConstraint *layoutConstraint</span><br><span class="line">        = [MASLayoutConstraint constraintWithItem:firstLayoutItem</span><br><span class="line">                                        attribute:firstLayoutAttribute</span><br><span class="line">                                        relatedBy:<span class="keyword">self</span>.layoutRelation</span><br><span class="line">                                           toItem:secondLayoutItem</span><br><span class="line">                                        attribute:secondLayoutAttribute</span><br><span class="line">                                       multiplier:<span class="keyword">self</span>.layoutMultiplier</span><br><span class="line">                                         constant:<span class="keyword">self</span>.layoutConstant];</span><br><span class="line">    </span><br><span class="line">    layoutConstraint.priority = <span class="keyword">self</span>.layoutPriority;</span><br><span class="line">    layoutConstraint.mas_key = <span class="keyword">self</span>.mas_key;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.secondViewAttribute.view) &#123;</span><br><span class="line">        <span class="comment">/// 如果存在第二个 View，那么约束要加在这两个 View 的公共祖先视图上。因此要查找公共祖先</span></span><br><span class="line">        MAS_VIEW *closestCommonSuperview = [<span class="keyword">self</span>.firstViewAttribute.view mas_closestCommonSuperview:<span class="keyword">self</span>.secondViewAttribute.view];</span><br><span class="line">        <span class="built_in">NSAssert</span>(closestCommonSuperview,</span><br><span class="line">                 <span class="string">@"couldn't find a common superview for %@ and %@"</span>,</span><br><span class="line">                 <span class="keyword">self</span>.firstViewAttribute.view, <span class="keyword">self</span>.secondViewAttribute.view);</span><br><span class="line">        <span class="comment">/// installedVi表示约束要添加到的视图</span></span><br><span class="line">        <span class="keyword">self</span>.installedView = closestCommonSuperview;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="keyword">self</span>.firstViewAttribute.isSizeAttribute) &#123;</span><br><span class="line">        <span class="comment">/// 如果没有第二个视图，并且是操作第一个视图的 size，那么就直接把约束加在这个视图上</span></span><br><span class="line">        <span class="keyword">self</span>.installedView = <span class="keyword">self</span>.firstViewAttribute.view;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">/// 如果没有第二个视图，并且不是操作第一个视图的 size，那么就表示添加的约束是第一个视图的位置的，那么需要把约束加在第一个视图的父视图上</span></span><br><span class="line">        <span class="keyword">self</span>.installedView = <span class="keyword">self</span>.firstViewAttribute.view.superview;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    MASLayoutConstraint *existingConstraint = <span class="literal">nil</span>;</span><br><span class="line">    <span class="comment">/// 如果外部标识是要更新约束</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.updateExisting) &#123;</span><br><span class="line">        <span class="comment">/// 判断这个约束是否存在，判断方式是拿这个约束的每一个属性和 view 保存的所有约束的每一个属性对比，如果完全相等就表示存在</span></span><br><span class="line">        existingConstraint = [<span class="keyword">self</span> layoutConstraintSimilarTo:layoutConstraint];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (existingConstraint) &#123;</span><br><span class="line">        <span class="comment">/// 如果这个约束存在 更新约束</span></span><br><span class="line">        existingConstraint.constant = layoutConstraint.constant;</span><br><span class="line">        <span class="keyword">self</span>.layoutConstraint = existingConstraint;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">/// 如果约束不存在，给视图增加约束</span></span><br><span class="line">        [<span class="keyword">self</span>.installedView addConstraint:layoutConstraint];</span><br><span class="line">        <span class="keyword">self</span>.layoutConstraint = layoutConstraint;</span><br><span class="line">        [firstLayoutItem.mas_installedConstraints addObject:<span class="keyword">self</span>];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>源码比较长，但是思想还是很明确的，就是调用 iOS 提供的 <code>NSLayoutConstraint</code> 方法生成约束，然后找到两个视图的公共父节点，将约束添加到公共父节点上。</p>
+<h3 id="MASCompositeConstraint"><a href="#MASCompositeConstraint" class="headerlink" title="MASCompositeConstraint"></a>MASCompositeConstraint</h3><p>最后，来瞧一下 <code>MASViewConstraint</code> 的子类 <code>MASCompositeConstraint</code>。之前我们省略的代码都是针对它的。简单的说，<code>MASCompositeConstraint</code> 就是 <code>MASViewConstraint</code> 的集合。</p>
+<p>我们看一下这样设置约束的场景：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make.height.and.width.equaltTo(@<span class="number">20</span>)</span><br></pre></td></tr></table></figure>
+<p>我们在 <code>make.height</code> 的时候，已经创建了一个 <code>MASViewConstraint</code> 实例。所以执行到 <code>.width</code> 的时候，调用的是 <code>MASViewConstraint</code> 的 <code>width</code> 方法。我们来对比一下两者的不同：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// MASConstraintMaker</span></span><br><span class="line">- (MASConstraint *)addConstraintWithLayoutAttribute:(<span class="built_in">NSLayoutAttribute</span>)layoutAttribute &#123;</span><br><span class="line">    <span class="keyword">return</span> [<span class="keyword">self</span> constraint:<span class="literal">nil</span> addConstraintWithLayoutAttribute:layoutAttribute];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// MASViewConstraint</span></span><br><span class="line">- (MASConstraint *)addConstraintWithLayoutAttribute:(<span class="built_in">NSLayoutAttribute</span>)layoutAttribute &#123;</span><br><span class="line">    <span class="keyword">return</span> [<span class="keyword">self</span>.delegate constraint:<span class="keyword">self</span> addConstraintWithLayoutAttribute:layoutAttribute];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>两者的不同在于，用 <code>MASConstraintMaker</code> 创建的约束传入的是 nil，而通过 <code>MASViewConstraint</code> 创建的约束传入的是自身。接着来看下面的处理方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">- (MASConstraint *)constraint:(MASConstraint *)constraint addConstraintWithLayoutAttribute:(<span class="built_in">NSLayoutAttribute</span>)layoutAttribute &#123;</span><br><span class="line">    MASViewAttribute *viewAttribute = [[MASViewAttribute alloc] initWithView:<span class="keyword">self</span>.view layoutAttribute:layoutAttribute];</span><br><span class="line">    MASViewConstraint *newConstraint = [[MASViewConstraint alloc] initWithFirstViewAttribute:viewAttribute];</span><br><span class="line">    <span class="keyword">if</span> ([constraint isKindOfClass:MASViewConstraint.class]) &#123;</span><br><span class="line">        <span class="comment">//replace with composite constraint</span></span><br><span class="line">        <span class="built_in">NSArray</span> *children = @[constraint, newConstraint];</span><br><span class="line">        MASCompositeConstraint *compositeConstraint = [[MASCompositeConstraint alloc] initWithChildren:children];</span><br><span class="line">        compositeConstraint.delegate = <span class="keyword">self</span>;</span><br><span class="line">        [<span class="keyword">self</span> constraint:constraint shouldBeReplacedWithConstraint:compositeConstraint];</span><br><span class="line">        <span class="keyword">return</span> compositeConstraint;</span><br><span class="line">    &#125;</span><br><span class="line">   ....</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当 <code>constraint</code> 不为 nil 的时候，就会把原来的约束和现在的约束作为一个数组，创建一个 <code>MASCompositeConstraint</code> 实例。随后替换 <code>MASConstraintMaker</code> 中相应的值。</p>
+<p>相应的，<code>install</code> 的时候，需要对 <code>MASCompositeConstraint</code> 中的所有约束调用 <code>install</code> 方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// MASCompositeConstraint</span></span><br><span class="line">- (<span class="keyword">void</span>)install &#123;</span><br><span class="line">    <span class="keyword">for</span> (MASConstraint *constraint <span class="keyword">in</span> <span class="keyword">self</span>.childConstraints) &#123;</span><br><span class="line">        constraint.updateExisting = <span class="keyword">self</span>.updateExisting;</span><br><span class="line">        [constraint install];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>约束的创建本身涉及到很多的属性设置，Masonry 使用链式语法的方式精简了大量的代码。整体而言，Masonry 并不是一个太难理解的库。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tag/源码解析/" rel="tag"># 源码解析</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/03/29/webpack使用/" rel="next" title="webpack 简单使用">
+                <i class="fa fa-chevron-left"></i> webpack 简单使用
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/05/30/小程序技巧/" rel="prev" title="小程序技巧">
+                小程序技巧 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.png" alt="Zachary Zhang">
+            
+              <p class="site-author-name" itemprop="name">Zachary Zhang</p>
+              <p class="site-description motion-element" itemprop="description">Stay Hungry. Stay Foolish!</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">116</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/zhang759740844" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:zch759740844@126.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#使用"><span class="nav-number">1.</span> <span class="nav-text">使用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#添加约束"><span class="nav-number">1.1.</span> <span class="nav-text">添加约束</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#约束添加几倍于"><span class="nav-number">1.2.</span> <span class="nav-text">约束添加几倍于</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#约束不超过或者不小于"><span class="nav-number">1.3.</span> <span class="nav-text">约束不超过或者不小于</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#优先级"><span class="nav-number">1.4.</span> <span class="nav-text">优先级</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#设置边距大小和中心点"><span class="nav-number">1.5.</span> <span class="nav-text">设置边距大小和中心点</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#edgs"><span class="nav-number">1.5.1.</span> <span class="nav-text">edgs</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#size"><span class="nav-number">1.5.2.</span> <span class="nav-text">size</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#center"><span class="nav-number">1.5.3.</span> <span class="nav-text">center</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#更新约束"><span class="nav-number">1.6.</span> <span class="nav-text">更新约束</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#重新设置约束"><span class="nav-number">1.7.</span> <span class="nav-text">重新设置约束</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#多个控件等距、等宽排列"><span class="nav-number">1.8.</span> <span class="nav-text">多个控件等距、等宽排列</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#源码解析"><span class="nav-number">2.</span> <span class="nav-text">源码解析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#文件结构"><span class="nav-number">2.1.</span> <span class="nav-text">文件结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#View-MASAdditions"><span class="nav-number">2.2.</span> <span class="nav-text">View+MASAdditions</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MASConstraintMaker"><span class="nav-number">2.3.</span> <span class="nav-text">MASConstraintMaker</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MASViewConstraint"><span class="nav-number">2.4.</span> <span class="nav-text">MASViewConstraint</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#设置约束"><span class="nav-number">2.5.</span> <span class="nav-text">设置约束</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MASCompositeConstraint"><span class="nav-number">2.6.</span> <span class="nav-text">MASCompositeConstraint</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">3.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zachary Zhang</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

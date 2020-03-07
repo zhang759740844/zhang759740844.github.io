@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+
+
+
+
+  <meta name="keywords" content="学习笔记,持续更新,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="很多不常用的简单的 API 的使用方式。分开写的话太短小，就合在一起吧。（这里都是学到的时候，东找一点西找一点拼凑起来的，一开始没有记录出处在哪，如果哪里有侵权的地方，还请尽快告知呀。我会第一时间注明出处的。谢谢啦~）">
+<meta name="keywords" content="学习笔记,持续更新">
+<meta property="og:type" content="article">
+<meta property="og:title" content="许多 iOS API 的使用方式(持续更新)">
+<meta property="og:url" content="http://zhang759740844.github.io/2017/02/13/iOS中API的使用方法/index.html">
+<meta property="og:site_name" content="Zachary&#39;s blog">
+<meta property="og:description" content="很多不常用的简单的 API 的使用方式。分开写的话太短小，就合在一起吧。（这里都是学到的时候，东找一点西找一点拼凑起来的，一开始没有记录出处在哪，如果哪里有侵权的地方，还请尽快告知呀。我会第一时间注明出处的。谢谢啦~）">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/NSInvocation.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/NSString_NSArray.png?raw=true">
+<meta property="og:updated_time" content="2020-02-27T15:13:37.645Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="许多 iOS API 的使用方式(持续更新)">
+<meta name="twitter:description" content="很多不常用的简单的 API 的使用方式。分开写的话太短小，就合在一起吧。（这里都是学到的时候，东找一点西找一点拼凑起来的，一开始没有记录出处在哪，如果哪里有侵权的地方，还请尽快告知呀。我会第一时间注明出处的。谢谢啦~）">
+<meta name="twitter:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/NSInvocation.png?raw=true">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://zhang759740844.github.io/2017/02/13/iOS中API的使用方法/">
+
+
+
+
+
+  <title>许多 iOS API 的使用方式(持续更新) | Zachary's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Zachary's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">记录成长</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://zhang759740844.github.io/2017/02/13/iOS中API的使用方法/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zachary Zhang">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Zachary's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">许多 iOS API 的使用方式(持续更新)</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-02-13T14:07:12+08:00">
+                2017-02-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>很多不常用的简单的 API 的使用方式。分开写的话太短小，就合在一起吧。（这里都是学到的时候，东找一点西找一点拼凑起来的，一开始没有记录出处在哪，如果哪里有侵权的地方，还请尽快告知呀。我会第一时间注明出处的。谢谢啦~）</p>
+<a id="more"></a>
+<h2 id="NSUndoManager"><a href="#NSUndoManager" class="headerlink" title="NSUndoManager"></a>NSUndoManager</h2><p>NSUndoManger 是苹果对于命令模式的一种封装，用来撤销历史命令。共有两种撤销操作，简单的以 selector 为基础的撤销和复杂的以 NSInvocation 为基础的撤销。</p>
+<h3 id="撤销操作"><a href="#撤销操作" class="headerlink" title="撤销操作"></a>撤销操作</h3><h4 id="注册一个简单撤销操作"><a href="#注册一个简单撤销操作" class="headerlink" title="注册一个简单撤销操作"></a>注册一个简单撤销操作</h4><p>我们可以用 <code>registerUndoWithTarget:selector:object:</code> 注册一个撤销操作，保存撤销时会执行的方法和参数：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)updateScore:(<span class="built_in">NSNumber</span>*)score &#123;</span><br><span class="line">    [undoManager registerUndoWithTarget:<span class="keyword">self</span> selector:<span class="keyword">@selector</span>(updateScore:) object:myMovie.score];</span><br><span class="line">    [undoManager setActionName:<span class="built_in">NSLocalizedString</span>(<span class="string">@"actions.update"</span>, <span class="string">@"Update Score"</span>)];</span><br><span class="line">    myMovie.score = score;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p> 上面将改变前的  <code>myMoview.score</code> 通过撤销方法保存了起来。另外 <code>setActionName:</code> 指定撤销操作的名词。</p>
+<h4 id="使用-NSInvocation-注册复杂撤销操作"><a href="#使用-NSInvocation-注册复杂撤销操作" class="headerlink" title="使用 NSInvocation 注册复杂撤销操作"></a>使用 NSInvocation 注册复杂撤销操作</h4><p>简单撤销不能应对多参数的情况，所以要使用 <code>NSInvocation</code> ，调用 <code>prepareWithInvocationTarget:</code> 记录哪些对象会接收哪些发生改变的消息：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)movePiece:(ChessPiece*)piece toRow:(<span class="built_in">NSUInteger</span>)row column:(<span class="built_in">NSUInteger</span>)column &#123;</span><br><span class="line">    [[undoManager prepareWithInvocationTarget:<span class="keyword">self</span>] movePiece:piece ToRow:piece.row column:piece.column];</span><br><span class="line">    [undoManager setActionName:<span class="built_in">NSLocalizedString</span>(<span class="string">@"actions.move-piece"</span>, <span class="string">@"Move Piece"</span>)];</span><br><span class="line"></span><br><span class="line">    piece.row = row;</span><br><span class="line">    piece.column = column;</span><br><span class="line">    [<span class="keyword">self</span> updateChessboard];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>NSUndoManager</code> 对象本身并没有上面的 <code>movePiece:ToRow:column:</code> 方法。是通过 <code>forwardInvocation:</code> 将消息转发至相应对象的。</p>
+<h4 id="将动作组合在一起"><a href="#将动作组合在一起" class="headerlink" title="将动作组合在一起"></a>将动作组合在一起</h4><p>上面只能撤消一个方法，如果要撤销多个操作呢？</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)readAndArchiveEmail:(Email*)email &#123;</span><br><span class="line">    [undoManager beginUndoGrouping];</span><br><span class="line">    [<span class="keyword">self</span> markEmail:email asRead:<span class="literal">YES</span>];</span><br><span class="line">    [<span class="keyword">self</span> archiveEmail:email];</span><br><span class="line">    [undoManager setActionName:<span class="built_in">NSLocalizedString</span>(<span class="string">@"actions.read-archive"</span>, <span class="string">@"Mark as Read and Archive"</span>)];</span><br><span class="line">    [undoManager endUndoGrouping];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)markEmail:(Email*)email asRead:(<span class="built_in">BOOL</span>)isRead &#123;</span><br><span class="line">    [[undoManager prepareWithInvocationTarget:<span class="keyword">self</span>] markEmail:email asRead:[email isRead]];</span><br><span class="line">    [undoManager setActionName:<span class="built_in">NSLocalizedString</span>(<span class="string">@"actions.read"</span>, <span class="string">@"Mark as Read"</span>)];</span><br><span class="line">    email.read = isRead;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)archiveEmail:(Email*)email &#123;</span><br><span class="line">    [[undoManager prepareWithInvocationTarget:<span class="keyword">self</span>] moveEmail:email toFolder:<span class="string">@"Inbox"</span>];</span><br><span class="line">    [undoManager setActionName:<span class="built_in">NSLocalizedString</span>(<span class="string">@"actions.archive"</span>, <span class="string">@"Archive"</span>)];</span><br><span class="line">    [<span class="keyword">self</span> moveEmail:email toFolder:<span class="string">@"All Mail"</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>通过 <code>beginUndoGrouping</code> 和 <code>endUndoGrouping</code> 将多个分离的撤销操作组合在一起。</p>
+<h3 id="实现一次撤销"><a href="#实现一次撤销" class="headerlink" title="实现一次撤销"></a>实现一次撤销</h3><h4 id="iOS-摇晃手势"><a href="#iOS-摇晃手势" class="headerlink" title="iOS 摇晃手势"></a>iOS 摇晃手势</h4><p>默认情况下，用户通过摇晃设备来触发撤销操作。如果一个 view controller 需要处理一个撤销请求，那么这个 view controller 必须：</p>
+<ol>
+<li>能成为 first responder</li>
+<li>一旦页面显示(view appears)，即变成 first responder</li>
+<li>一旦页面消失(view disappears)，即放弃 first responder</li>
+</ol>
+<p>当 view controller 接收到运动事件，当撤销或重做可用时，系统会展示给用户一个会话界面。View controller 的 <code>undoManager</code> 属性不需要其他操作就可以响应用户的选择。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">ViewController</span></span></span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)viewDidAppear:(<span class="built_in">BOOL</span>)animated &#123;</span><br><span class="line">    [<span class="keyword">super</span> viewDidAppear:animated];</span><br><span class="line">    [<span class="keyword">self</span> becomeFirstResponder];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)viewWillDisappear:(<span class="built_in">BOOL</span>)animated &#123;</span><br><span class="line">    [<span class="keyword">super</span> viewWillDisappear:animated];</span><br><span class="line">    [<span class="keyword">self</span> resignFirstResponder];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="built_in">BOOL</span>)canBecomeFirstResponder &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">YES</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure>
+<h4 id="执行撤销"><a href="#执行撤销" class="headerlink" title="执行撤销"></a>执行撤销</h4><p>执行撤销操作的时候，系统会将撤销栈中的对象 pop 出来，然后执行。通过 <code>undo</code> 方法触发：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> ([<span class="keyword">self</span>.undoManager canUndo]) &#123;</span><br><span class="line">    [<span class="keyword">self</span>.undoManager undo];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="清空撤销栈"><a href="#清空撤销栈" class="headerlink" title="清空撤销栈"></a>清空撤销栈</h4><p>有时候我们需要手动清空撤销栈。通常情况下当上下文发生戏剧性变化时，比如说 iOS 上改变了显示的 view controller 或一个打开的文档外部发生了变化。此时，撤销管理器的栈可以通过 <code>removeAllActions</code> 来清空或使用 <code>removeAllActionsWithTarget:</code> 清空某一个对象的所有撤销方法。</p>
+<h4 id="撤销与恢复"><a href="#撤销与恢复" class="headerlink" title="撤销与恢复"></a>撤销与恢复</h4><p>如果有一对相反的方法需要表示既能撤销也能恢复，需要这样使用：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)addItem:(<span class="keyword">id</span>)item &#123;</span><br><span class="line">    [undoManager registerUndoWithTarget:<span class="keyword">self</span> selector:<span class="keyword">@selector</span>(removeItem:) object:item];</span><br><span class="line">    <span class="keyword">if</span> (![undoManager isUndoing]) &#123;</span><br><span class="line">        [undoManager setActionName:<span class="built_in">NSLocalizedString</span>(<span class="string">@"actions.add-item"</span>, <span class="string">@"Add Item"</span>)];</span><br><span class="line">    &#125;</span><br><span class="line">    [myArray addObject:item];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)removeItem:(<span class="keyword">id</span>)item &#123;</span><br><span class="line">    [undoManager registerUndoWithTarget:<span class="keyword">self</span> selector:<span class="keyword">@selector</span>(addItem:) object:item];</span><br><span class="line">    <span class="keyword">if</span> (![undoManager isUndoing]) &#123;</span><br><span class="line">        [undoManager setActionName:<span class="built_in">NSLocalizedString</span>(<span class="string">@"actions.remove-item"</span>, <span class="string">@"Remove Item"</span>)];</span><br><span class="line">    &#125;</span><br><span class="line">    [myArray removeObject:item];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在恢复中注册撤销，在撤销中注册恢复。这里先判断 <code>isUndoing</code> 其实没有太大必要，去掉也没什么问题。</p>
+<h2 id="NSInvocation"><a href="#NSInvocation" class="headerlink" title="NSInvocation"></a>NSInvocation</h2><p>当我们想要动态调用某一个方法的时候，我们一般会选择 <code>performSelector:withObject:withObject</code> 方法。但是这个方法有一个局限就是最多只能调用含有两个参数的函数:</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSString</span> *sample = [<span class="keyword">self</span> performSelector:<span class="keyword">@selector</span>(append:withStr:) withObject:<span class="string">@"a"</span> withObject:<span class="string">@"b"</span>];</span><br><span class="line">==&gt; ab</span><br></pre></td></tr></table></figure>
+<p>苹果提供了另外一种方法：<code>NSInvocation</code>。下面介绍一下使用步骤：</p>
+<h3 id="提供方法签名"><a href="#提供方法签名" class="headerlink" title="提供方法签名"></a>提供方法签名</h3><p>首先要获得调用方法的方法签名：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//NSObject的对象方法，任何继承自NSObject的对象都可以调用</span></span><br><span class="line">- (<span class="built_in">NSMethodSignature</span> *)methodSignatureForSelector:(SEL)aSelector</span><br><span class="line"><span class="comment">//NSObject的类方法，任何继承自NSObject的类都可以调用</span></span><br><span class="line">+ (<span class="built_in">NSMethodSignature</span> *)instanceMethodSignatureForSelector:(SEL)aSelector</span><br></pre></td></tr></table></figure>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSString</span> *methodNameStr = <span class="string">@"test:withArg2:andArg3:"</span></span><br><span class="line">SEL selector = <span class="built_in">NSSelectorFromString</span>(methodNameStr);</span><br><span class="line"><span class="built_in">NSMethodSignature</span> *signature = [<span class="keyword">self</span> methodSignatureForSelector:selector];</span><br><span class="line"><span class="comment">//或使用下面这种方式</span></span><br><span class="line"><span class="built_in">NSMethodSignature</span> *signature = [[<span class="keyword">self</span> <span class="keyword">class</span>] instanceMethodSignatureForSelector:selector];</span><br></pre></td></tr></table></figure>
+<h3 id="使用方法签名创建一个-NSInvocation-对象"><a href="#使用方法签名创建一个-NSInvocation-对象" class="headerlink" title="使用方法签名创建一个 NSInvocation 对象"></a>使用方法签名创建一个 NSInvocation 对象</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSInvocation</span> *invocation = [<span class="built_in">NSInvocation</span> invocationWithMethodSignature:signature];</span><br><span class="line"><span class="comment">//只能使用该方法来创建，不能使用alloc init</span></span><br></pre></td></tr></table></figure>
+<h3 id="设置调用对象和调用方法"><a href="#设置调用对象和调用方法" class="headerlink" title="设置调用对象和调用方法"></a>设置调用对象和调用方法</h3><p>invocation 对象有两个属性，执行对象 target，执行的方法 selector：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">invocation.target = <span class="keyword">self</span>;</span><br><span class="line">invocation.selector = selector;</span><br></pre></td></tr></table></figure>
+<h3 id="设置参数"><a href="#设置参数" class="headerlink" title="设置参数"></a>设置参数</h3><p>使用 <code>setArgument:atIndex:</code> 方法设置参数。参数从2开始，因为0、1被 target 和 selector占用了:</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSString</span> *arg1 = <span class="string">@"a"</span>;</span><br><span class="line"><span class="built_in">NSString</span> *arg2 = <span class="string">@"b"</span>;</span><br><span class="line"><span class="built_in">NSString</span> *arg3 = <span class="string">@"c"</span>;</span><br><span class="line">[invocation setArgument:&amp;arg1 atIndex:<span class="number">2</span>];</span><br><span class="line">[invocation setArgument:&amp;arg2 atIndex:<span class="number">3</span>];</span><br><span class="line">[invocation setArgument:&amp;arg3 atIndex:<span class="number">4</span>];</span><br></pre></td></tr></table></figure>
+<p>注意，这里是使用的是参数的引用，传递的是地址。</p>
+<h3 id="执行方法"><a href="#执行方法" class="headerlink" title="执行方法"></a>执行方法</h3><p>直接执行方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[invocation invoke];</span><br></pre></td></tr></table></figure>
+<p>如果方法有返回值呢？在上面的语句执行方法后，我们通过 <code>getReturnValue:</code> 方法拿到返回值：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//可以在invoke方法前添加，也可以在invoke方法后添加</span></span><br><span class="line"><span class="comment">//通过方法签名的methodReturnLength判断是否有返回值</span></span><br><span class="line"><span class="keyword">if</span> (signature.methodReturnLength &gt; <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">id</span> *result = <span class="literal">nil</span>;</span><br><span class="line">    [invocation getReturnValue:&amp;result];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>方法签名有两个只读属性，一个是 <code>numberOfArguments</code> 表示方法参数的个数；还有个就是上面代码涉及的 <code>methodReturnLength</code> 表示方法返回值类型的长度，大于0表示有返回值。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/NSInvocation.png?raw=true" alt></p>
+<h2 id="NSJSONSerialization"><a href="#NSJSONSerialization" class="headerlink" title="NSJSONSerialization"></a>NSJSONSerialization</h2><p>JSON(也就是特定类型的 <code>NSString</code>) 和 <code>NSDictionary</code>、<code>NSArray</code> 之间的转换可以通过 <code>NSJSONSerialization</code> 类进行</p>
+<h3 id="JSON-NSString-gt-NSDictionary-NSArray"><a href="#JSON-NSString-gt-NSDictionary-NSArray" class="headerlink" title="JSON(NSString) =&gt; NSDictionary/NSArray"></a>JSON(NSString) =&gt; NSDictionary/NSArray</h3><p>先将 JSON 通过 <code>dataUSingEncoding:</code> 转换为 <code>NSData</code>，然后再用通过 <code>NSJSONSerialization</code> 将 <code>NSData</code> 转换为 <code>NSDictionary</code>/<code>NSArray</code>.</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#import <span class="meta-string">"NSString+JSONCategories.h"</span></span></span><br><span class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">NSString</span>(<span class="title">JSONCategories</span>)</span></span><br><span class="line">-(<span class="keyword">id</span>)JSONValue &#123;</span><br><span class="line">   <span class="built_in">NSData</span> *data = [<span class="keyword">self</span> dataUsingEncoding:<span class="built_in">NSUTF8StringEncoding</span>];</span><br><span class="line">   <span class="built_in">NSError</span> *error = <span class="literal">nil</span>;</span><br><span class="line">   <span class="keyword">id</span> result = [<span class="built_in">NSJSONSerialization</span> JSONObjectWithData:data options:kNilOptions error:&amp;error];</span><br><span class="line">   <span class="keyword">if</span> (error != <span class="literal">nil</span>) <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">   <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure>
+<p>使用：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 数组</span></span><br><span class="line"><span class="built_in">NSString</span> *str = <span class="string">@"[&#123; \"id\": \"hu\"&#125;,&#123;\"blog\": \"damon\"&#125;]"</span>;</span><br><span class="line"><span class="built_in">NSArray</span> *array = (<span class="built_in">NSArray</span>*)[str JSONValue];</span><br><span class="line"></span><br><span class="line"><span class="comment">// 字典</span></span><br><span class="line"><span class="built_in">NSString</span> *str = <span class="string">@"&#123; \"id\": \"hu\",\"blog\": \"damon\"&#125;"</span>;</span><br><span class="line"><span class="built_in">NSDictionary</span> *array = (<span class="built_in">NSDictionary</span> *)[str JSONValue];</span><br></pre></td></tr></table></figure>
+<p>数组的 JSON 是用 <code>[]</code> 包裹起来的。这个例子中每个元素都是单元素的 <code>NSDictionary</code>。字典的 JSON 就是 <code>{}</code> 括起来的键值对。注意由于返回时是 <code>id</code> 类型，不区分具体是 <code>NSDictionary</code> 还是 <code>NSArray</code>，所以要进行类型转换</p>
+<h3 id="NSDictionary-NSArray-gt-JSON-NSString"><a href="#NSDictionary-NSArray-gt-JSON-NSString" class="headerlink" title="NSDictionary/NSArray =&gt; JSON(NSString)"></a>NSDictionary/NSArray =&gt; JSON(NSString)</h3><p>在 <code>NSObject</code> 中添加分类，先将 <code>NSDictionary</code>/<code>NSArray</code> 转换为 <code>NSData</code>。注意上面使用的方法是 <code>JSONObjectWithData:options:error:</code> 这里是 <code>dataWithJSONObject:options:error:</code>。然后通过 <code>initWithData:encoding:</code> 将 <code>NSData</code> 转为 <code>NSString</code>:</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#import <span class="meta-string">"NSObject+JSONCategories.h"</span></span></span><br><span class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">NSObject</span> (<span class="title">JSONCategories</span>)</span></span><br><span class="line">-(<span class="built_in">NSString</span> *)JSONString &#123;</span><br><span class="line">   <span class="built_in">NSError</span> *error = <span class="literal">nil</span>;</span><br><span class="line">   <span class="built_in">NSData</span> *result = [<span class="built_in">NSJSONSerialization</span> dataWithJSONObject:<span class="keyword">self</span></span><br><span class="line">                                               options:kNilOptions error:&amp;error];</span><br><span class="line">   <span class="keyword">if</span> (error != <span class="literal">nil</span>) <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">   <span class="keyword">return</span> [[<span class="built_in">NSString</span> alloc] initWithData:result encoding:<span class="built_in">NSUTF8StringEncoding</span>];</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure>
+<h3 id="NSString-与-NSArray-的互转"><a href="#NSString-与-NSArray-的互转" class="headerlink" title="NSString 与 NSArray 的互转"></a>NSString 与 NSArray 的互转</h3><p>上面的 JSON 是一种特殊格式的 <code>NSString</code>，所以要借助于 <code>NSJSONSerialization</code> 进行解析。但是如果直接的 <code>NSString</code> 和 <code>NSArray</code> 的互相转换就要简单许多，但是还有注意点.</p>
+<p>一般我们把 <code>NSArray</code> 转为 <code>NSString</code> 是直接通过 <code>stringWithFormat:</code> 的形式：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSArray</span> *array = [<span class="built_in">NSArray</span> arrayWithObjects:<span class="string">@"sss"</span>,<span class="string">@"mmm"</span>,<span class="string">@"lll"</span>,<span class="string">@"kkk"</span>,<span class="string">@"ppp"</span>,<span class="string">@"ooo"</span>, <span class="literal">nil</span>];</span><br><span class="line"><span class="built_in">NSString</span> *str1 = [<span class="built_in">NSString</span> stringWithFormat:<span class="string">@"%@"</span>,array];</span><br><span class="line"></span><br><span class="line"><span class="comment">//输出 str1</span></span><br><span class="line">str1 = <span class="string">@"(\n    sss,\n    mmm,\n    lll,\n    kkk,\n    ppp,\n    ooo\n)"</span></span><br></pre></td></tr></table></figure>
+<p>可以看出，这样的转换是有问题的，中间引入了空格，并且两边还有括号没有消除。👇是正确的方式：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSArray</span> *array = [<span class="built_in">NSArray</span> arrayWithObjects:<span class="string">@"sss"</span>,<span class="string">@"mmm"</span>,<span class="string">@"lll"</span>,<span class="string">@"kkk"</span>,<span class="string">@"ppp"</span>,<span class="string">@"ooo"</span>, <span class="literal">nil</span>];</span><br><span class="line"><span class="built_in">NSString</span> *str2 = [array componentsJoinedByString:<span class="string">@","</span>];</span><br><span class="line"></span><br><span class="line"><span class="comment">// 输出 str2 </span></span><br><span class="line">str2 = <span class="string">@"sss,mmm,lll,kkk,ppp,ooo"</span></span><br></pre></td></tr></table></figure>
+<p>通过 <code>NSArray</code> 的方法，将数组中的元素完全拿了出来。</p>
+<p>另一方面， <code>NSString</code> 转为 <code>NSArray</code>。通过 <code>NSString</code> 的 <code>componentsSeparatedByString:</code> 方法，识别逗号:</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSArray</span> *array2 = [str1 componentsSeparatedByString:<span class="string">@","</span>];</span><br><span class="line"><span class="built_in">NSArray</span> *array3 = [str2 componentsSeparatedByString:<span class="string">@","</span>];</span><br></pre></td></tr></table></figure>
+<p>比较输出结果可以发现，<code>str1</code> 无法重新转回最开始的数组了，所以两者互转一定要用 <code>str2</code> 的方式：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/NSString_NSArray.png?raw=true" alt></p>
+<h2 id="UIView-中的坐标转换"><a href="#UIView-中的坐标转换" class="headerlink" title="UIView 中的坐标转换"></a>UIView 中的坐标转换</h2><p>一个 View 的 <code>frame</code> 的起点是相当于其所在的 View，即调用 <code>addSubView:</code> 方法的 View。如果要判断两个 View 是否是包含关系，由于两者的起点不同，那么肯定是无法进行比较的。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// rect1和rect2是否有重叠</span></span><br><span class="line"><span class="built_in">CGRectContainsRect</span>(&lt;<span class="meta">#CGRect rect1#&gt;, <span class="meta-string">&lt;#CGRect rect2#&gt;</span>)</span></span><br><span class="line"><span class="comment">// point是不是在rect上</span></span><br><span class="line"><span class="built_in">CGRectContainsPoint</span>(&lt;<span class="meta">#CGRect rect#&gt;, <span class="meta-string">&lt;#CGPoint point#&gt;</span>)</span></span><br><span class="line"><span class="comment">// rect1是否包含了rect2</span></span><br><span class="line"><span class="built_in">CGRectIntersectsRect</span>(&lt;<span class="meta">#CGRect rect1#&gt;, <span class="meta-string">&lt;#CGRect rect2#&gt;</span>)</span></span><br></pre></td></tr></table></figure>
+<p>为了统一原点，我们可以使用以下代码：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">CGPoint</span>)convertPoint:(<span class="built_in">CGPoint</span>)point toView:(<span class="keyword">nullable</span> <span class="built_in">UIView</span> *)view;</span><br><span class="line">- (<span class="built_in">CGPoint</span>)convertPoint:(<span class="built_in">CGPoint</span>)point fromView:(<span class="keyword">nullable</span> <span class="built_in">UIView</span> *)view;</span><br><span class="line"></span><br><span class="line">- (<span class="built_in">CGRect</span>)convertRect:(<span class="built_in">CGRect</span>)rect toView:(<span class="keyword">nullable</span> <span class="built_in">UIView</span> *)view;</span><br><span class="line">- (<span class="built_in">CGRect</span>)convertRect:(<span class="built_in">CGRect</span>)rect fromView:(<span class="keyword">nullable</span> <span class="built_in">UIView</span> *)view;</span><br></pre></td></tr></table></figure>
+<p>来举两个例子，注意不同情况下 <code>compareView</code> 和 <code>outerView</code> 的参数位置：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">CGRect</span> newRect = [<span class="keyword">self</span>.compareView convertRect:<span class="keyword">self</span>.innerFrame fromView:<span class="keyword">self</span>.outerView];</span><br><span class="line"><span class="built_in">CGRect</span> newRect = [<span class="keyword">self</span>.outerView convertRect:<span class="keyword">self</span>.innerFrame toView:<span class="keyword">self</span>.compareView];</span><br></pre></td></tr></table></figure>
+<p>得到的就是 <code>innerFrame</code> 在 <code>compareView</code> 中的位置。</p>
+<h2 id="UIVisualEffectView-实现高斯模糊"><a href="#UIVisualEffectView-实现高斯模糊" class="headerlink" title="UIVisualEffectView 实现高斯模糊"></a>UIVisualEffectView 实现高斯模糊</h2><p>如果想要给一个 view  添加一个高斯模糊的效果，只要在那个 view 上添加一个 <code>UIVisualEffectView</code> 即可。</p>
+<p>高斯模糊有三种效果，从浅入深的 style 依次是：</p>
+<ul>
+<li>UIBlurEffectStyleExtraLight</li>
+<li>UIBlurEffectStyleLight</li>
+<li>UIBlurEffectStyleDark</li>
+</ul>
+<p>使用的基本实例：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 要添加模糊的view</span></span><br><span class="line"><span class="built_in">UIImageView</span> *imageview = [[<span class="built_in">UIImageView</span> alloc] init];</span><br><span class="line">imageview.frame = <span class="built_in">CGRectMake</span>(<span class="number">10</span>, <span class="number">100</span>, <span class="number">300</span>, <span class="number">300</span>);</span><br><span class="line">imageview.image = [<span class="built_in">UIImage</span> imageNamed:<span class="string">@"2"</span>];</span><br><span class="line">imageview.contentMode = <span class="built_in">UIViewContentModeScaleAspectFit</span>;</span><br><span class="line">imageview.userInteractionEnabled = <span class="literal">YES</span>;</span><br><span class="line">[<span class="keyword">self</span>.view addSubview:imageview];</span><br><span class="line"></span><br><span class="line"><span class="comment">// 高斯模糊的view</span></span><br><span class="line"><span class="built_in">UIBlurEffect</span> *blur = [<span class="built_in">UIBlurEffect</span> effectWithStyle:<span class="built_in">UIBlurEffectStyleLight</span>];</span><br><span class="line"><span class="built_in">UIVisualEffectView</span> *effectview = [[<span class="built_in">UIVisualEffectView</span> alloc] initWithEffect:blur];</span><br><span class="line">effectview.frame = <span class="built_in">CGRectMake</span>(<span class="number">0</span>, <span class="number">0</span>, imageview.size.width/<span class="number">2</span>, <span class="number">300</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 添加高斯模糊</span></span><br><span class="line">[imageview addSubview:effectview];</span><br></pre></td></tr></table></figure>
+<h2 id="UIInterpolatingMotionEffect-视图运动"><a href="#UIInterpolatingMotionEffect-视图运动" class="headerlink" title="UIInterpolatingMotionEffect 视图运动"></a>UIInterpolatingMotionEffect 视图运动</h2><p><code>UIInterpolatingMotionEffect</code> 可以通过陀螺仪监测手机的倾斜情况。我们可以通过它设置视图响应的运动。</p>
+<p>其中有两个属性：<code>minimumRelativeValue</code> 和 <code>maximumRelativeValue</code>。这两个属性控制图像运动的最大范围。</p>
+<p>实例：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">CGFloat</span> effectOffset = <span class="number">100.</span>f;</span><br><span class="line"><span class="comment">// 设置x方向上的移动量</span></span><br><span class="line"><span class="built_in">UIInterpolatingMotionEffect</span> *effectX = [[<span class="built_in">UIInterpolatingMotionEffect</span> alloc] initWithKeyPath:<span class="string">@"center.x"</span> type:<span class="built_in">UIInterpolatingMotionEffectTypeTiltAlongHorizontalAxis</span>];</span><br><span class="line">effectX.maximumRelativeValue = @(effectOffset);</span><br><span class="line">effectX.minimumRelativeValue = @(-effectOffset);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 设置y方向上的移动量</span></span><br><span class="line"><span class="built_in">UIInterpolatingMotionEffect</span> *effectY = [[<span class="built_in">UIInterpolatingMotionEffect</span> alloc] initWithKeyPath:<span class="string">@"center.y"</span> type:<span class="built_in">UIInterpolatingMotionEffectTypeTiltAlongVerticalAxis</span>];</span><br><span class="line">effectY.maximumRelativeValue = @(effectOffset);</span><br><span class="line">effectY.minimumRelativeValue = @(-effectOffset);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 将移动量添加到数组中</span></span><br><span class="line"><span class="built_in">UIMotionEffectGroup</span> *group = [[<span class="built_in">UIMotionEffectGroup</span> alloc] init];</span><br><span class="line">group.motionEffects = @[effectX, effectY];</span><br><span class="line"></span><br><span class="line"><span class="comment">// 设置给 view</span></span><br><span class="line">[<span class="keyword">self</span>.view addMotionEffect:group];</span><br></pre></td></tr></table></figure>
+<h2 id="UISearchController-实现搜索"><a href="#UISearchController-实现搜索" class="headerlink" title="UISearchController 实现搜索"></a>UISearchController 实现搜索</h2><p>iOS8 之后，苹果提供了 <code>UISearchController</code> 统一了搜索方式。</p>
+<p>首先，需要创建一个用来显示搜索结果的视图 <code>SearchResultsController</code>，它需要实现 <code>UISearchResultsUpdating</code> 协议，在 <code>UISearchController</code> 中的搜索关键字变化的时候，会回调 <code>UISearchResultsUpdating</code> 中的 <code>updateSearchResultsForSearchController:</code> 方法执行数据的筛选搜索。所以，<code>SearchResultController</code> 中还需要两个属性，待搜索的所有数据集合和搜索出的数据集合：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">SearchResultsController</span>: <span class="title">UITableViewController</span>,<span class="title">UISearchResultsUpdating</span> </span>&#123;</span><br><span class="line">    <span class="comment">//搜索出和待搜索的数据</span></span><br><span class="line">  	<span class="keyword">var</span> names:[<span class="type">String</span>,[<span class="type">String</span>]] = [<span class="type">String</span>:[<span class="type">String</span>]]()</span><br><span class="line">  	<span class="keyword">var</span> keys: [<span class="type">String</span>] = []</span><br><span class="line">  	<span class="keyword">var</span> filteredNames: [<span class="type">String</span>] = []</span><br><span class="line">  	</span><br><span class="line">  	<span class="function"><span class="keyword">func</span> <span class="title">updateSearchResultsForSearchController</span><span class="params">(searchController: UISearchController)</span></span> &#123;</span><br><span class="line">        <span class="comment">//搜索过程</span></span><br><span class="line">      	...</span><br><span class="line">      	<span class="comment">//筛选出数据后刷新列表</span></span><br><span class="line">      	tableView.reloadData()</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>现在要定义一个跳转前的页面。在某个 <code>ViewController</code> 中保存一个 <code>UISearchController</code> 的实例。在初始化 <code>ViewController</code> 的同时，初始化 <code>UISearchController</code> 并拿到 <code>UISearchController</code> 中的 <code>searchBar</code> 的实例，将其添加到 <code>ViewController</code> 的视图中去（为了点击后跳转时，searchBar 的动画效果）。初始化 <code>UISearchController</code> 的时候，将搜索结果展示页 <code>resultsController</code> 传入，并将其赋给 <code>searchResultsUpdater</code> 属性(通过这个属性调用的 <code>updateSearchResultsForSearchController:</code> 方法):</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ViewController</span>: <span class="title">UIViewController</span> </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> searchController: <span class="type">UISearchController</span>!</span><br><span class="line">  	...</span><br><span class="line">	<span class="keyword">override</span> <span class="function"><span class="keyword">func</span> <span class="title">viewDidLoad</span><span class="params">()</span></span> &#123;</span><br><span class="line">        <span class="keyword">super</span>.viewDidLoad()</span><br><span class="line">      	...</span><br><span class="line">      	<span class="keyword">let</span> resultsController = <span class="type">SearchResultsController</span>()</span><br><span class="line">      	resultsController.names = names</span><br><span class="line">      	resultsController.keys = keys</span><br><span class="line">      	searchController = <span class="type">UISearchController</span>(searchResultsController: resultsController)</span><br><span class="line">      	<span class="keyword">let</span> searchBar = searchController.searchBar</span><br><span class="line">		searchBar.scopeButtonTitles = [<span class="string">"All"</span>,<span class="string">"Short"</span>]</span><br><span class="line">      	searchBar.placeholder = <span class="string">"Enter a search item"</span></span><br><span class="line">      	searchBar.sizeToFit()</span><br><span class="line">      	tableView.tableHeaderView = searchBar</span><br><span class="line">      	searchController.searchResultsUpdater = resultsController</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其中 <code>scopeButtonTitles</code> 是可选的，在 <code>searchBar</code> 下显示用来进一步筛选的，可以通过 <code>searchController.searchBar.selectedScopeButtonIndex</code> 来获取筛选信息。另外，<code>searchController.searchBar</code> 要确定通过 <code>sizeToFit()</code> 方法确定了大小后，加入到 <code>ViewController</code> 中。</p>
+<p>当然，这是最基本的一个流程，还有一些自定义的操作以及一些代理方法</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tag/学习笔记/" rel="tag"># 学习笔记</a>
+          
+            <a href="/tag/持续更新/" rel="tag"># 持续更新</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/02/09/iOS技巧/" rel="next" title="一些 iOS 小技巧与注意点(持续更新)">
+                <i class="fa fa-chevron-left"></i> 一些 iOS 小技巧与注意点(持续更新)
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/02/21/MBProgressHUD源码解析/" rel="prev" title="MBProgressHUD 源码解析">
+                MBProgressHUD 源码解析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.png" alt="Zachary Zhang">
+            
+              <p class="site-author-name" itemprop="name">Zachary Zhang</p>
+              <p class="site-description motion-element" itemprop="description">Stay Hungry. Stay Foolish!</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">116</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/zhang759740844" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:zch759740844@126.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#NSUndoManager"><span class="nav-number">1.</span> <span class="nav-text">NSUndoManager</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#撤销操作"><span class="nav-number">1.1.</span> <span class="nav-text">撤销操作</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#注册一个简单撤销操作"><span class="nav-number">1.1.1.</span> <span class="nav-text">注册一个简单撤销操作</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#使用-NSInvocation-注册复杂撤销操作"><span class="nav-number">1.1.2.</span> <span class="nav-text">使用 NSInvocation 注册复杂撤销操作</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#将动作组合在一起"><span class="nav-number">1.1.3.</span> <span class="nav-text">将动作组合在一起</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#实现一次撤销"><span class="nav-number">1.2.</span> <span class="nav-text">实现一次撤销</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#iOS-摇晃手势"><span class="nav-number">1.2.1.</span> <span class="nav-text">iOS 摇晃手势</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#执行撤销"><span class="nav-number">1.2.2.</span> <span class="nav-text">执行撤销</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#清空撤销栈"><span class="nav-number">1.2.3.</span> <span class="nav-text">清空撤销栈</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#撤销与恢复"><span class="nav-number">1.2.4.</span> <span class="nav-text">撤销与恢复</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#NSInvocation"><span class="nav-number">2.</span> <span class="nav-text">NSInvocation</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#提供方法签名"><span class="nav-number">2.1.</span> <span class="nav-text">提供方法签名</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用方法签名创建一个-NSInvocation-对象"><span class="nav-number">2.2.</span> <span class="nav-text">使用方法签名创建一个 NSInvocation 对象</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#设置调用对象和调用方法"><span class="nav-number">2.3.</span> <span class="nav-text">设置调用对象和调用方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#设置参数"><span class="nav-number">2.4.</span> <span class="nav-text">设置参数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#执行方法"><span class="nav-number">2.5.</span> <span class="nav-text">执行方法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#NSJSONSerialization"><span class="nav-number">3.</span> <span class="nav-text">NSJSONSerialization</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#JSON-NSString-gt-NSDictionary-NSArray"><span class="nav-number">3.1.</span> <span class="nav-text">JSON(NSString) =&gt; NSDictionary/NSArray</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#NSDictionary-NSArray-gt-JSON-NSString"><span class="nav-number">3.2.</span> <span class="nav-text">NSDictionary/NSArray =&gt; JSON(NSString)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#NSString-与-NSArray-的互转"><span class="nav-number">3.3.</span> <span class="nav-text">NSString 与 NSArray 的互转</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#UIView-中的坐标转换"><span class="nav-number">4.</span> <span class="nav-text">UIView 中的坐标转换</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#UIVisualEffectView-实现高斯模糊"><span class="nav-number">5.</span> <span class="nav-text">UIVisualEffectView 实现高斯模糊</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#UIInterpolatingMotionEffect-视图运动"><span class="nav-number">6.</span> <span class="nav-text">UIInterpolatingMotionEffect 视图运动</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#UISearchController-实现搜索"><span class="nav-number">7.</span> <span class="nav-text">UISearchController 实现搜索</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zachary Zhang</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

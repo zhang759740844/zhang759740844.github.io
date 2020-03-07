@@ -1,0 +1,1427 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+
+
+
+
+  <meta name="keywords" content="React-Native,爬坑,持续更新,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="本文将收集关于 React-Native 的各种技巧与坑，不论是摘录的还是自己遇到的。">
+<meta name="keywords" content="React-Native,爬坑,持续更新">
+<meta property="og:type" content="article">
+<meta property="og:title" content="React-Native 技巧与坑总结">
+<meta property="og:url" content="http://zhang759740844.github.io/2016/11/25/RN使用技巧/index.html">
+<meta property="og:site_name" content="Zachary&#39;s blog">
+<meta property="og:description" content="本文将收集关于 React-Native 的各种技巧与坑，不论是摘录的还是自己遇到的。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/immutable_1.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/yellowbox.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/RN_link.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/RN_0.39.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/RN_Build.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/flex_3.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/flex_1.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/flex_2.png?raw=true">
+<meta property="og:updated_time" content="2020-02-27T15:13:37.633Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="React-Native 技巧与坑总结">
+<meta name="twitter:description" content="本文将收集关于 React-Native 的各种技巧与坑，不论是摘录的还是自己遇到的。">
+<meta name="twitter:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/immutable_1.png?raw=true">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://zhang759740844.github.io/2016/11/25/RN使用技巧/">
+
+
+
+
+
+  <title>React-Native 技巧与坑总结 | Zachary's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Zachary's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">记录成长</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://zhang759740844.github.io/2016/11/25/RN使用技巧/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zachary Zhang">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Zachary's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">React-Native 技巧与坑总结</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-11-25T10:07:12+08:00">
+                2016-11-25
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/React-Native/" itemprop="url" rel="index">
+                    <span itemprop="name">React-Native</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本文将收集关于 React-Native 的各种技巧与坑，不论是摘录的还是自己遇到的。</p>
+<a id="more"></a>
+<h3 id="函数式组件"><a href="#函数式组件" class="headerlink" title="函数式组件"></a>函数式组件</h3><p>函数式组件即通过调用一个方法返回一个组件。比如返回一个 class：</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">start (TopLevelNavigator) &#123;</span><br><span class="line">  <span class="keyword">let</span> store = <span class="keyword">this</span>.getStore()</span><br><span class="line">  <span class="keyword">return</span> <span class="class"><span class="keyword">class</span> <span class="keyword">extends</span> <span class="title">Component</span> </span>&#123;</span><br><span class="line">    render () &#123;</span><br><span class="line">      <span class="keyword">return</span> (</span><br><span class="line">        &lt;Provider store=&#123;store&#125;&gt;</span><br><span class="line">          &lt;TopLevelNavigator /&gt;</span><br><span class="line">        &lt;<span class="regexp">/Provider&gt;</span></span><br><span class="line"><span class="regexp">      )</span></span><br><span class="line"><span class="regexp">    &#125;</span></span><br><span class="line"><span class="regexp">  &#125;</span></span><br><span class="line"><span class="regexp">&#125;</span></span><br></pre></td></tr></table></figure>
+<p>上面通过调用一个 start 方法，返回一个新的组件的类。不过对于无状态的组件来说，可以有更好的写法。因为 class 也是一种 function，因此我们可以写成返回一个 function:</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">start (TopLevelNavigator) &#123;</span><br><span class="line">  <span class="keyword">let</span> store = <span class="keyword">this</span>.getStore()</span><br><span class="line">  <span class="keyword">return</span> <span class="function">(<span class="params">props</span>) =&gt;</span> (</span><br><span class="line">        &lt;Provider store=&#123;store&#125;&gt;</span><br><span class="line">          &lt;TopLevelNavigator &#123;...props&#125;/&gt;</span><br><span class="line">        &lt;<span class="regexp">/Provider&gt;</span></span><br><span class="line"><span class="regexp">      )</span></span><br><span class="line"><span class="regexp">    &#125;</span></span><br><span class="line"><span class="regexp">  &#125;</span></span><br><span class="line"><span class="regexp">&#125;</span></span><br></pre></td></tr></table></figure>
+<p>这样的写法更加直观。</p>
+<h3 id="PureComponent-和-Component"><a href="#PureComponent-和-Component" class="headerlink" title="PureComponent 和 Component"></a>PureComponent 和 Component</h3><p>PureComponent 和 Component 的不同在于前者提供了一个 <code>shouldComponentUpdate</code>  的默认实现。</p>
+<p>继承于 Component 的组件没有实现默认的 <code>shouldComponentUpdate</code> 方法，每一个 props 的变化以及内部的 <code>setState</code> 方法的调用都会触发重绘。</p>
+<p>继承于 PureComponent 的组件，默认在 <code>shouldComponentUpdate</code> 中比较将 props 和 state 中的每一项进行浅比较。如果有不同才重绘。所以如果在 PureComponent 内 <code>setState</code> 就一定要保证 <code>setState</code> 的对象和之前的对象的地址不同，否则比如修改对象中的某个字段这种在 PureComponent 中是不会重绘的。</p>
+<h3 id="震动"><a href="#震动" class="headerlink" title="震动"></a>震动</h3><p>震动使用 RN 自带的 <code>Vibration</code> 即可。这里主要提醒一下，如果是那种连续会触发的震动，可以使用 <code>Vibration.cancel()</code> 方法取消之前的震动，然后再 <code>Vibration.vibrate(50)</code> 继续短频震动。</p>
+<h3 id="获取控件的frame"><a href="#获取控件的frame" class="headerlink" title="获取控件的frame"></a>获取控件的frame</h3><h4 id="方式一"><a href="#方式一" class="headerlink" title="方式一"></a>方式一</h4><p>给控件添加 <code>onLayout</code> 方法回调</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;TouchableOpacity</span><br><span class="line">  onLayout=&#123;(e) =&gt; <span class="keyword">this</span>.rowlayouts= e.nativeEvent.layout&#125;</span><br><span class="line">/&gt;</span><br></pre></td></tr></table></figure>
+<p>就可以通过 <code>this.rowlayouts</code> 拿到组件的宽高以及起始坐标</p>
+<h4 id="方式二"><a href="#方式二" class="headerlink" title="方式二"></a>方式二</h4><p>在其它点击事件触发的时候，通过 ref 获取：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123;</span><br><span class="line">   UIManager,</span><br><span class="line">   findNodeHandle</span><br><span class="line">&#125; <span class="keyword">from</span> <span class="string">'react-native'</span></span><br><span class="line"></span><br><span class="line">handleClick = <span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">	UIManager.measure(findNodeHandle(<span class="keyword">this</span>.buttonRef),(x,y,width,height,pageX,pageY)=&gt;&#123;</span><br><span class="line">		<span class="comment">// todo</span></span><br><span class="line"> &#125;)</span><br><span class="line">	</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&lt;TouchableButton ref=&#123;(ref)=&gt;<span class="keyword">this</span>.buttonRef=ref&#125; onPress=&#123;<span class="keyword">this</span>.handleClick&#125;/&gt;</span><br></pre></td></tr></table></figure>
+<h3 id="pointerEvents-quot-none-quot-的使用时机"><a href="#pointerEvents-quot-none-quot-的使用时机" class="headerlink" title="pointerEvents=&quot;none&quot; 的使用时机"></a><code>pointerEvents=&quot;none&quot;</code> 的使用时机</h3><p><code>pointerEvents=&quot;none&quot;</code> 可以让设置的视图不响应点击事件。实践下来有两个应用场景：</p>
+<ol>
+<li>比如有一个绝对布局的视图盖住了下面的视图，在 iOS 中可以直接将其 userInteraction 置为 false。RN 中相应的属性就是 <code>pointerEvents</code></li>
+<li>监听手势事件的时候，我们希望获取当前手势相对于父视图的位置，即 <code>event.nativeEvent.locationY</code> ，但是如果父视图中有子视图，并且手势作用的起始点在子视图上，那么 <code>event.nativeEvent.locationY</code> 是以子视图为参照的，影响我们对于坐标的计算。这时候就可以把它的子视图设置 <code>pointerEvents=&quot;none&quot;</code></li>
+</ol>
+<blockquote>
+<p>再记述一下遇到的坑，在 android 上，如果父视图添加 panresponser，子视图直接设置 <code>pointerEvents=&quot;none&quot;</code> 会让子视图的区域无法响应父视图的手势。必须在子视图上再嵌套一层 View。并且这个 View 也是有讲究的不能直接嵌套。因为在 Android 上，空的 View 会被直接移除。所以需要设置 <code>collapsable={false}</code> 让Android也强制渲染，才能正确响应父视图的手势</p>
+</blockquote>
+<h3 id="存在手势的视图中的按钮点击事件不响应"><a href="#存在手势的视图中的按钮点击事件不响应" class="headerlink" title="存在手势的视图中的按钮点击事件不响应"></a>存在手势的视图中的按钮点击事件不响应</h3><p>这个问题主要是因为点击按钮的时候手指有略微的滑动，因此，点击事件被识别为了 Move 事件，进而相应手势而不相应按钮了。</p>
+<p>做法是在细微移动的时候不让手势相应：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">onMoveShouldSetPanResponder (event, gestureState) &#123;</span><br><span class="line">  <span class="keyword">let</span> touchCapture = <span class="built_in">Math</span>.abs(gestureState.dx) &gt; <span class="number">5</span> || <span class="built_in">Math</span>.abs(gestureState.dy) &gt; <span class="number">5</span></span><br><span class="line">  <span class="keyword">return</span> touchCapture</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="FlatList-的性能优化"><a href="#FlatList-的性能优化" class="headerlink" title="FlatList 的性能优化"></a>FlatList 的性能优化</h3><p>FlatList 的 <code>data</code> 中接收一个数组，作为渲染的数据源。有时候我们点击了 cell，要改变状态引起重绘，但是直接修改 <code>data</code> 中某一项的值，并不会引起重绘。因为 React 中是判断 data 的地址是否变化，显然，<code>data</code> 并没有变化地址。</p>
+<p>如果我们 <code>data = data.map(item =&gt; item)</code> 这样新建一个数据源就有点费事了。FlatList 提供了一个属性 <code>extraData</code>，当需要重绘的时候，改变 <code>extraData</code> 的值就行。</p>
+<p>我们可以将 <code>extraData</code> 等于某一个 state 中的布尔值，每次需要重绘的时候，让这个布尔值取反。这样 FlatList 发现这个布尔值改变了，就会引发整个 FlatList 的重绘。</p>
+<p>整个 FlatList 的重绘也是会引发性能问题的。我们要做的是自定义一个 Cell 类，然后将数据源的某个 item 设置为一个新的对象：<code>Object.assign({}, item, {someChange: xxx})</code>这样在 FlatList 重绘触发每一个 cell renderItem 的时候，大部分 Cell 并没有收到新的 Props 就会阻止整个 cell 的重绘。只有数据变化的 cell 才会触发重绘</p>
+<h3 id="组件在动画下的隐藏和显示"><a href="#组件在动画下的隐藏和显示" class="headerlink" title="组件在动画下的隐藏和显示"></a>组件在动画下的隐藏和显示</h3><p>组件从隐藏到显示的动画是非常好想到的，就是设置组件的 <code>opacity</code> 透明度。</p>
+<p>而从显示到隐藏的过程就有点坑了。如果还是设置透明度为 0，那么节点还在，无法响应后面视图的点击事件。但是如果 render 的时候返回 null，那么组件节点就直接消失了，无法达到动画的效果。</p>
+<p>这里有两种方式设置隐藏：</p>
+<h4 id="display"><a href="#display" class="headerlink" title="display"></a>display</h4><p>这里我们应该借助一个 CSS 属性 <code>display</code> ,当它为 <code>none</code> 的时候，节点还在，但是组件从视图上移除了，不会影响后面的点击事件。</p>
+<p>这里举一个显示头部视图的例子。示例代码如下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">renderHeader () &#123;</span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">this</span>.props.showHeader) &#123;</span><br><span class="line">    <span class="keyword">this</span>.state.showHeader = <span class="literal">true</span></span><br><span class="line">    Animated.timing(<span class="keyword">this</span>.headerViewAlpha, &#123;</span><br><span class="line">      toValue: <span class="number">1</span>,</span><br><span class="line">      duration: <span class="number">700</span></span><br><span class="line">    &#125;).start()</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    Animated.timing(<span class="keyword">this</span>.headerViewAlpha, &#123;</span><br><span class="line">      toValue: <span class="number">0</span>,</span><br><span class="line">      duration: <span class="number">700</span></span><br><span class="line">    &#125;).start(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">this</span>.setState(&#123;</span><br><span class="line">        showHeader: <span class="literal">false</span></span><br><span class="line">      &#125;)</span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 外部让显示的情况下，内部也让显示的时候才显示</span></span><br><span class="line">  <span class="keyword">let</span> display = !<span class="keyword">this</span>.state.showHeader &amp;&amp; !<span class="keyword">this</span>.props.showHeader ? <span class="string">'none'</span> : <span class="string">'flex'</span></span><br><span class="line">  <span class="keyword">return</span> (</span><br><span class="line">    &lt;Animated.View style=&#123;&#123;<span class="attr">opacity</span>: <span class="keyword">this</span>.headerViewAlpha, <span class="attr">marginBottom</span>: <span class="number">-20</span>, display&#125;&#125;&gt;</span><br><span class="line">      &#123;<span class="keyword">this</span>.props.headerView()&#125;</span><br><span class="line">    &lt;<span class="regexp">/Animated.View&gt;</span></span><br><span class="line"><span class="regexp">  )</span></span><br><span class="line"><span class="regexp">&#125;</span></span><br></pre></td></tr></table></figure>
+<p>这个组件通过外部传进来的 <code>showHeader</code> 控制显示和隐藏。当外部传来的 <code>showHeader</code> 为 true 时，直接通过透明度的动画显示组件。当外部传来的 <code>showHeader</code> 为 false 时，先通过透明度动画隐藏组件，然后设置内部的 <code>showHeader</code> 为 false，重绘视图。重绘的时候因为内外部的 <code>showHeader</code> 都为 false，就将 <code>display</code> 设为 <code>none</code> 了，从而达到在动画完成后隐藏视图的效果。</p>
+<blockquote>
+<p>这种方式在 render 方法中又设置了 state 其实是不太推荐的。</p>
+</blockquote>
+<h4 id="height"><a href="#height" class="headerlink" title="height"></a>height</h4><p>另外一种方式就是设置视图的高度，使其高度为 0:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">this</span>.headerViewHeight = <span class="keyword">new</span> Animated.Value(deviceHeight)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (showCurrentHeader) &#123;</span><br><span class="line">  Animated.timing(<span class="keyword">this</span>.headerViewHeight, &#123;</span><br><span class="line">    toValue: deviceHeight,</span><br><span class="line">    duration: <span class="number">0</span></span><br><span class="line">  &#125;).start()</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">  Animated.timing(<span class="keyword">this</span>.headerViewHeight, &#123;</span><br><span class="line">    toValue: <span class="number">0</span>,</span><br><span class="line">    duration: <span class="number">700</span></span><br><span class="line">  &#125;).start()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">renderHeader () &#123;</span><br><span class="line">  <span class="keyword">return</span> (</span><br><span class="line">    &lt;Animated.View style=&#123;&#123;<span class="attr">height</span>: <span class="keyword">this</span>.headerViewHeight&#125;&#125;&gt;</span><br><span class="line">      &#123;<span class="keyword">this</span>.props.headerView()&#125;</span><br><span class="line">    &lt;<span class="regexp">/Animated.View&gt;</span></span><br><span class="line"><span class="regexp">  )</span></span><br><span class="line"><span class="regexp">&#125;</span></span><br></pre></td></tr></table></figure>
+<p>这里动态修改了 <code>headerViewHeight</code> 这个高度。不过要注意，这里修改了高度并不是说子视图就一定会隐藏的。有些组件可能还是会展示出来，这个时候就要设置 style  的 <code>overflow: &#39;hidden&#39;</code></p>
+<p>上面这种方式你可能会有疑问，这是知道控件高度的情况下才可以设置高度。那么如果控件的高度是包裹的控件的高度，无法知道准确的 height，这种情况怎么办呢？</p>
+<p>思路是不进行动画之前不设置 height，在渲染完成的时候，将视图的高度保存起来，待到将要开始动画的时候，立即 setState，将 height 设置进去，在 setState 的回调中开启动画。下面是一个动画实现 Cell 删除的示例：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="class"><span class="keyword">class</span> <span class="title">CanDeleteCell</span> <span class="keyword">extends</span> <span class="title">React</span>.<span class="title">PureComponent</span> </span>&#123;</span><br><span class="line">  <span class="keyword">constructor</span> (props) &#123;</span><br><span class="line">    <span class="keyword">super</span>(props)</span><br><span class="line">    <span class="keyword">this</span>.alpha = <span class="keyword">new</span> Animated.Value(<span class="number">1</span>)</span><br><span class="line">    <span class="keyword">this</span>.height = <span class="literal">null</span></span><br><span class="line">    <span class="keyword">this</span>.state = &#123; <span class="attr">isDelete</span>: <span class="literal">false</span> &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  deleteCell () &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">this</span>.setState(&#123; <span class="attr">isDelete</span>: <span class="literal">true</span> &#125;, () =&gt; &#123;</span><br><span class="line">        Animated.timing(<span class="keyword">this</span>.alpha, &#123;</span><br><span class="line">          toValue: <span class="number">0</span>,</span><br><span class="line">          duration: <span class="number">500</span></span><br><span class="line">        &#125;).start()</span><br><span class="line">        Animated.timing(<span class="keyword">this</span>.height, &#123;</span><br><span class="line">          toValue: <span class="number">0</span>,</span><br><span class="line">          duration: <span class="number">500</span></span><br><span class="line">        &#125;).start(<span class="function">(<span class="params">finished</span>) =&gt;</span> &#123;</span><br><span class="line">          <span class="keyword">if</span> (finished) &#123;</span><br><span class="line">            resolve(<span class="keyword">this</span>.props.index)</span><br><span class="line">          &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            reject(<span class="keyword">this</span>.props.index)</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;)</span><br><span class="line">      &#125;)</span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  render () &#123;</span><br><span class="line">    <span class="keyword">const</span> innerStyle = <span class="keyword">this</span>.state.isDelete</span><br><span class="line">      ? &#123;<span class="attr">opacity</span>: <span class="keyword">this</span>.alpha, <span class="attr">height</span>: <span class="keyword">this</span>.height&#125;</span><br><span class="line">      : &#123;<span class="attr">opacity</span>: <span class="keyword">this</span>.alpha&#125;</span><br><span class="line">    <span class="keyword">return</span> (</span><br><span class="line">      &lt;Animated.View</span><br><span class="line">        onLayout=&#123;e =&gt; &#123; <span class="keyword">this</span>.height = <span class="keyword">new</span> Animated.Value(e.nativeEvent.layout.height) &#125;&#125;</span><br><span class="line">        style=&#123;[...this.props.style, innerStyle]&#125;</span><br><span class="line">      &gt;</span><br><span class="line">        &#123;<span class="keyword">this</span>.props.children&#125;</span><br><span class="line">      &lt;<span class="regexp">/Animated.View&gt;</span></span><br><span class="line"><span class="regexp">    )</span></span><br><span class="line"><span class="regexp">  &#125;</span></span><br><span class="line"><span class="regexp">&#125;</span></span><br></pre></td></tr></table></figure>
+<p>在最开始渲染的时候，使用 <code>onLayout</code> 拿到高度，待到外部调用 <code>deleteCell</code> 方法的时候，立即 <code>setState</code> 把 <code>isDelete</code> 置为 true。然后重绘。</p>
+<h3 id="带有-Gesture-的父组件会-block-子组件中-TouchableOpacity-的点击事件"><a href="#带有-Gesture-的父组件会-block-子组件中-TouchableOpacity-的点击事件" class="headerlink" title="带有 Gesture 的父组件会 block 子组件中 TouchableOpacity 的点击事件"></a>带有 Gesture 的父组件会 block 子组件中 TouchableOpacity 的点击事件</h3><p>把按钮放到有 Move 手势的父组件的时候会经常因为响应了父组件的 Move 手势而不响应按钮的点击事件。这个时候需要给 Move 手势的添加行为做一个限制：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">onMoveShouldSetPanResponder: <span class="function">(<span class="params">evt, gestureState</span>) =&gt;</span> <span class="built_in">Math</span>.abs(gestureState.dx) &gt; <span class="number">5</span> || <span class="built_in">Math</span>.abs(gestureState.dy) &gt; <span class="number">5</span></span><br></pre></td></tr></table></figure>
+<p>当移动的距离超过5之后，才响应滚动事件。</p>
+<h3 id="使用绝对路径替代相对路径"><a href="#使用绝对路径替代相对路径" class="headerlink" title="使用绝对路径替代相对路径"></a>使用绝对路径替代相对路径</h3><p>如果在 import 的时候使用相对路径，那么有些层级较深的时候会非常难看，可以使用devdependency 中安装 npm 插件：<code>babel-plugin-root-import</code></p>
+<p>然后在<em>.babelrc</em> 中加入：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"plugins"</span>: [</span><br><span class="line">    [</span><br><span class="line">      <span class="string">"babel-plugin-root-import"</span>, &#123;</span><br><span class="line">        <span class="attr">"rootPathSuffix"</span>: <span class="string">"src"</span>,</span><br><span class="line">        <span class="attr">"rootPathPrefix"</span>: <span class="string">"@"</span></span><br><span class="line">      &#125;</span><br><span class="line">    ]</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这样就可以使用 <code>@</code> 来代替目录 <code>src</code>.</p>
+<h3 id="消除-console-log"><a href="#消除-console-log" class="headerlink" title="消除 console.log"></a>消除 console.log</h3><p>我们可以通过 babel 插件将 console 去除。</p>
+<p>首先在 devdependency 中安装 npm 插件：<code>babel-plugin-transform-remove-console</code></p>
+<p>然后在更目录下新建一个名为 <em>.babelrc</em> 的文件，在其中加入：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"env"</span>: &#123;</span><br><span class="line">    <span class="attr">"production"</span>: &#123;</span><br><span class="line">      <span class="attr">"plugins"</span>: [<span class="string">"transform-remove-console"</span>]</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="为-FlatList-设置-ListEmptyComponent"><a href="#为-FlatList-设置-ListEmptyComponent" class="headerlink" title="为 FlatList 设置 ListEmptyComponent"></a>为 FlatList 设置 ListEmptyComponent</h3><p>如果直接设置 <code>ListEmptyComponent</code> 占位符你会发现，即使将 <code>ListEmptyComponent</code> 的 style 设置为 <code>{flex:1}</code> 它也并不会填充满 flatList。这是因为包裹它的外层 <code>View</code> 没有设置高度。这就需要我们自己将 <code>FlatList</code> 的高度设置给 <code>ListEmptyComponent</code>。可以使用 <code>onLayout</code> 方法：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&lt;FlatList</span><br><span class="line">  onLayout=&#123;e =&gt; &#123;</span><br><span class="line">    <span class="keyword">this</span>.setState(&#123;</span><br><span class="line">      fHeight: e.nativeEvent.layout.height</span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;&#125;</span><br><span class="line">/&gt;</span><br></pre></td></tr></table></figure>
+<p>我们在 <code>FlatList</code> 布局的时候获取到它的高度设置为 state 即可。</p>
+<h3 id="standard-进行代码校验"><a href="#standard-进行代码校验" class="headerlink" title="standard 进行代码校验"></a>standard 进行代码校验</h3><p>使用 standard 进行代码规范校验：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install --save-dev standard</span><br></pre></td></tr></table></figure>
+<p>然后在 package.json 中配置:</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"standard"</span>: &#123;</span><br><span class="line">    <span class="attr">"parser"</span>: <span class="string">"babel-eslint"</span>,</span><br><span class="line">    <span class="attr">"globals"</span>: [</span><br><span class="line">      <span class="string">"fetch"</span></span><br><span class="line">    ],</span><br><span class="line">    <span class="attr">"ignore"</span>: []</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以在 globals 中设置需要忽略的全局对象或者方法</p>
+<h3 id="husky-hook-git-commit"><a href="#husky-hook-git-commit" class="headerlink" title="husky hook git commit"></a>husky hook git commit</h3><p>我们可以使用 husky hook git 的提交方法。安装方式如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install husky --save-dev</span><br></pre></td></tr></table></figure>
+<p>然后在 package.json 中配置：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&#123;  </span><br><span class="line">  <span class="attr">"scripts"</span>: &#123;</span><br><span class="line">    <span class="attr">"lint"</span>: <span class="string">"standard --verbose | snazzy"</span>,</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">"husky"</span>: &#123;</span><br><span class="line">    <span class="attr">"hooks"</span>: &#123;</span><br><span class="line">      <span class="attr">"pre-commit"</span>: <span class="string">"npm run lint"</span>,</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>需要注意的是，husky 安装的时候会在 <code>.git</code> 文件夹下生成 <code>hook</code> 文件夹，如果是拷贝的别人的 node_modules，不会生成 hook 文件夹，所以需要先 uninstall 再 install 一遍</p>
+<h3 id="清除-RN-package-缓存"><a href="#清除-RN-package-缓存" class="headerlink" title="清除 RN package 缓存"></a>清除 RN package 缓存</h3><p>一般情况下我们不需要清除 package 的缓存，清除缓存后再打开会非常耗时。但是我遇到了一种情况就是使用 <code>babel-plugin-root-import</code> 使用 <code>@</code> 替代 <code>src</code> 目录的时候，<code>@</code> 的指向总是不对。所以我怀疑可能是缓存的问题。</p>
+<p>清除缓存使用命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm start -- --reset-cache</span><br></pre></td></tr></table></figure>
+<p>注意中间要加上 <code>--</code></p>
+<h3 id="Immutable-js-的使用动机"><a href="#Immutable-js-的使用动机" class="headerlink" title="Immutable.js 的使用动机"></a>Immutable.js 的使用动机</h3><p>一般说到 React 性能优化就会提到 Immutable 这个库。这里介绍一下它的使用场景。</p>
+<p>当一个页面的状态树很大的时候，我们更新叶节点的时候只希望更新与之相关的节点，比如下图：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/immutable_1.png?raw=true" alt></p>
+<p>如果改变了其他节点的引用，可能会导致用到其他节点数据的视图重绘，浪费性能。一般情况下，当节点层数较浅的时候，我们会使用展开运算符，只改变响应节点的值，其余节点都使用原来的引用。但是节点层数深的时候，也会变得很麻烦。所以就可以使用 Immutable.js 这个库。当你改变某个叶节点的值的时候，它会自动将其相关的根节点更新为新的引用，而其他无关的节点还保持原有引用。</p>
+<p>当然，Immutable 提供的类型毕竟不是原生类型，使用起来需要注意一些地方，所以最好还是把状态树设计的扁平一些。</p>
+<h3 id="react-native-link"><a href="#react-native-link" class="headerlink" title="react-native link"></a>react-native link</h3><p><code>react-native link</code> 方法可以把 node_module 中的 RN 库链接到 iOS 以及 Android 工程中。但是其中有一个坑点，就是在 iOS 端，<code>react-native link</code> 只会将 RN 库链接到 default target 中，而自己另外新建的 target 需要自己动手链接到 <code>Link Binary with Libraries</code> 中</p>
+<h3 id="黄色警告"><a href="#黄色警告" class="headerlink" title="黄色警告"></a>黄色警告</h3><p>黄色警告以及红屏报错可以手动触发：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">console</span>.error(<span class="string">'红屏错误'</span>)</span><br><span class="line"><span class="built_in">console</span>.warn(<span class="string">'黄屏警告'</span>)</span><br></pre></td></tr></table></figure>
+<p>我们开发的时候，应该尽可能避免黄色警告。但是如果这个警告是第三方引入的呢？我们可以隐藏特别类型的警告，比如 ant-design 引入的如下警告：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/yellowbox.png?raw=true" alt></p>
+<p>我们可以通过下面的代码隐藏：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123;YellowBox&#125; <span class="keyword">from</span> <span class="string">'react-native'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> ignoreCase = [</span><br><span class="line">  <span class="comment">// ant design 引入的</span></span><br><span class="line">  <span class="string">'Warning: NativeButton: prop type `background` is invalid;'</span></span><br><span class="line">]</span><br><span class="line">YellowBox.ignoreWarnings(ignoreCase)</span><br></pre></td></tr></table></figure>
+<h3 id="何时重绘"><a href="#何时重绘" class="headerlink" title="何时重绘"></a>何时重绘</h3><p>触发重绘有两种方式：</p>
+<ul>
+<li><code>setState</code> 调用的时候。</li>
+<li><code>props</code> 变化的时候</li>
+</ul>
+<blockquote>
+<p>现有的例子开看， <code>setState</code> 只是用来标记重绘的，标记了重绘后。React 的 <code>render</code> 方法生成的新的 JSX 对象和老的 JSX 对象比较，看看两个 JSX 对象的各个部分有哪些地方不同。然后渲染不同的部分</p>
+</blockquote>
+<p>由于 <code>componentWillReceiveProps</code> 后面接着的就是 <code>render</code> 方法，所以 <code>componentWillReceiveProps</code> 中不需要使用 <code>this.setState</code> 。直接修改 this 上的属性也是可以的比如：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">componentWillReceiveProps (nextProps) &#123;</span><br><span class="line">   <span class="keyword">this</span>.count = nextProps.count</span><br><span class="line">&#125;</span><br><span class="line">render () &#123;</span><br><span class="line">  <span class="keyword">return</span> (</span><br><span class="line">    &lt;View&gt;</span><br><span class="line">      &lt;Text&gt;&#123;<span class="keyword">this</span>.count&#125;&lt;<span class="regexp">/Text&gt;</span></span><br><span class="line"><span class="regexp">    &lt;/</span>View&gt;</span><br><span class="line">  )</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这样也是可以正确渲染出 <code>this.count</code> 的。</p>
+<h3 id="性能优化"><a href="#性能优化" class="headerlink" title="性能优化"></a>性能优化</h3><h4 id="利用-shouldComponentUpdate"><a href="#利用-shouldComponentUpdate" class="headerlink" title="利用 shouldComponentUpdate"></a>利用 shouldComponentUpdate</h4><p>针对有子组件的视图，每次父组件 <code>render</code> 的时候，都会触发子组件的 <code>componentWillReceiveProps</code> 和 <code>render</code> 方法。所以我们创建子组件的时候，最好重写 <code>shouldComponentUpdate</code> 方法，去判断 props 中的各个属性是否变化。一般出于性能原因，<code>shouldComponentUpdate</code> 方法都是进行<strong>浅层判等</strong>，即判断之前的属性和现在的属性是否是同一个对象:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">shouldComponentUpdate(nextProps, nextState) &#123;</span><br><span class="line">    <span class="keyword">return</span> (nextProps.completed !== <span class="keyword">this</span>.props.completed) || (nextProps.text !== <span class="keyword">this</span>.props.text)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="style-不要写在-JSX-中"><a href="#style-不要写在-JSX-中" class="headerlink" title="style 不要写在 JSX 中"></a>style 不要写在 JSX 中</h4><p>这里有一个注意点，如下代码即使重写了 <code>shouldComponentUpadate</code> 方法也是一直会重绘的：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;Foo style=&#123;&#123;<span class="attr">color</span>: <span class="string">'red'</span>&#125;&#125; /&gt;</span><br></pre></td></tr></table></figure>
+<p>这是因为，<code>{color: &#39;red&#39;}</code> 相当于每次都传入了一个新的对象。所以传 style的时候，不要直接写在 JSX 中</p>
+<blockquote>
+<p>其实任何属性，包括传一个方法都不应该直接写在 jsx 中，如果都不写在 jsx 中，就会产生很多冗余代码。所以注意 style 写在 styleSheet 中这点即可。</p>
+</blockquote>
+<h4 id="render-时不要使用箭头函数"><a href="#render-时不要使用箭头函数" class="headerlink" title="render 时不要使用箭头函数"></a>render 时不要使用箭头函数</h4><p>我们在 render 一个 button 的时候经常这么写：</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;Button onClick=&#123;()=&gt; <span class="keyword">this</span>.doClick()&#125;&gt;</span><br><span class="line">&lt;<span class="regexp">/Button&gt;</span></span><br></pre></td></tr></table></figure>
+<p>这样会导致组件的重绘。因为每次渲染的时候会重新创建这个箭头函数，导致传入了新的 props。正确的做法应该是把这一过程提前：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">doClick = <span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;Button onClick=&#123;<span class="keyword">this</span>.doClick()&#125;&gt;</span><br><span class="line">&lt;<span class="regexp">/Button&gt;</span></span><br></pre></td></tr></table></figure>
+<p>这样 <code>doClick</code> 方法传递的就是一个引用了。（如果有些方法需要参数，那么把参数作为 props 传入）</p>
+<blockquote>
+<p>并不是说使用箭头函数一定会产生重绘，有些组件内部会重写 shouldComponentUpdate 方法，会无视这种 onClick 事件。但是如果组件内部没有这么做。就需要自己注意箭头函数引起的重绘了。</p>
+</blockquote>
+<h4 id="使用-react-redux-的-connect-方法"><a href="#使用-react-redux-的-connect-方法" class="headerlink" title="使用 react-redux 的 connect 方法"></a>使用 react-redux 的 connect 方法</h4><p>我们写组件的时候写 <code>shouldComponentUpdate</code> 判断一个个 props 是否变化其实是一个蛮烦的事。react-redux 其实帮我们做了这件事。使用它提供的 <code>connect</code> 方法，不需要做任何其他的事情，只要在 export 组件的时候做一些改变即可：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> TodoItem</span><br><span class="line">=&gt; 改为</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> connect()(TodoItem)</span><br></pre></td></tr></table></figure>
+<p><code>connect()</code> 参数为空，表示不从 store 中获取任何状态与方法 </p>
+<h4 id="key"><a href="#key" class="headerlink" title="key"></a>key</h4><p>key 是一个老生常谈的东西。对于一个列表的每一项，需要唯一的 key 值。新老列表，key 值不同的项，视图将会被 Unmount 以及 mount，对于 key 值相同的项，视图只会被更新。</p>
+<p>对于一个列表，如果我们不设置 key 值，默认是使用列表数组的索引 index 作为 key。但是这样会产生性能问题。比如删除了列表的第一项，整个列表的每一项都会更新</p>
+<p>那如果我们在列表中添加一项的时候，什么值能作为这个唯一的 key 呢？可以依靠时间：<code>Data.now()</code>。</p>
+<p>比方说在 add 的时候，为添加的项创建一个 key 字段：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">addItem: <span class="function"><span class="keyword">function</span>(<span class="params">e</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> itemArray = <span class="keyword">this</span>.state.items;</span><br><span class="line"></span><br><span class="line">  itemArray.push(</span><br><span class="line">    &#123;</span><br><span class="line">      text: <span class="keyword">this</span>._inputElement.value,</span><br><span class="line">      key: <span class="built_in">Date</span>.now()</span><br><span class="line">    &#125;</span><br><span class="line">  );</span><br><span class="line"></span><br><span class="line">  <span class="keyword">this</span>.setState(&#123;</span><br><span class="line">    items: itemArray</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这样每次添加的时候，key 就获得了唯一值。</p>
+<h3 id="Reselect"><a href="#Reselect" class="headerlink" title="Reselect"></a>Reselect</h3><p>使用 react-redux 的时候，还经常搭配另一个常用的库 Reselect。我们存在 redux 中的 state 可能需要经过一些处理。</p>
+<p>比如 <code>state.a</code> 和 <code>state.b</code> 可能通过 <code>g(a,b)</code> 衍生出 c。这个 c 如果放在 redux 中，那么每个 <code>state.a</code> 和 <code>state.b</code> 变化的地方都要计算 <code>g(a,b)</code>，很容易遗漏出错。如果把 c 放在 render 方法中，即每次 render 的时候计算 <code>g(a,b)</code>，又会造成重复计算。</p>
+<p>因此，比较好的做法就是在 <code>state.a</code> <code>state.b</code> 变化的时候计算 <code>g(a,b)</code>，并且即不把<code>g(a,b)</code> 放在 redux 中，也不放在 render 中。所以，我们可以通过 redux 把数据传给组件的时候添加计算属性的方式来达到目的，即通过  <code>mapStateToProps</code> 方法。</p>
+<blockquote>
+<p>是不是很像 vuex 中的 getter。Vue 真是太人性化了</p>
+</blockquote>
+ <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; createSelector &#125; <span class="keyword">from</span> <span class="string">'reselect'</span></span><br><span class="line"></span><br><span class="line">fSelector = createSelector(</span><br><span class="line">    [<span class="function"><span class="params">state</span> =&gt;</span> state.a,</span><br><span class="line">    state =&gt; state.b],</span><br><span class="line">    (a, b) =&gt; f(a, b)</span><br><span class="line">)</span><br><span class="line">hSelector = createSelector(</span><br><span class="line">    [<span class="function"><span class="params">state</span> =&gt;</span> state.b,</span><br><span class="line">    state =&gt; state.c],</span><br><span class="line">    (b, c) =&gt; h(b, c)</span><br><span class="line">)</span><br><span class="line">gSelector =  createSelector(</span><br><span class="line">    [<span class="function"><span class="params">state</span> =&gt;</span> state.a,</span><br><span class="line">    state =&gt; state.c],</span><br><span class="line">    (a, c) =&gt; g(a, c)</span><br><span class="line">)</span><br><span class="line">uSelector = createSelector(</span><br><span class="line">    [<span class="function"><span class="params">state</span> =&gt;</span> state.a,</span><br><span class="line">    state =&gt; state.b,</span><br><span class="line">    state =&gt; state.c],</span><br><span class="line">    (a, b, c) =&gt; u(a, b, c)</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">...</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">mapStateToProps</span>(<span class="params">state</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">const</span> &#123; a, b, c &#125; = state</span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">        a,</span><br><span class="line">        b,</span><br><span class="line">        c,</span><br><span class="line">        fab: fSelector(state),</span><br><span class="line">        hbc: hSelector(state),</span><br><span class="line">        gac: gSelector(state),</span><br><span class="line">        uabc: uSelector(state)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>比如上面的例子，<code>fab</code> 是通过 <code>ab</code> 计算得到，通过 <code>createSelector</code>方法，注册了 <code>ab</code>，以及计算方法 <code>f(a,b)</code>。那么只有在  <code>a || b</code> 变化的时候，才会重新计算 <code>fab</code></p>
+<h3 id="setTimeout"><a href="#setTimeout" class="headerlink" title="setTimeout"></a>setTimeout</h3><p>比较简单的一个 js 的方法，但是要记住，在某个组件被卸载（unmount）之后，计时器却仍然在运行，要解决这个问题，只需铭记<code>在unmount组件时清除（clearTimeout/clearInterval）所有用到的定时器</code>：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> React,&#123;</span><br><span class="line">  Component</span><br><span class="line">&#125; <span class="keyword">from</span> <span class="string">'react'</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="class"><span class="keyword">class</span> <span class="title">Hello</span> <span class="keyword">extends</span> <span class="title">Component</span> </span>&#123;</span><br><span class="line">  componentDidMount() &#123;</span><br><span class="line">    <span class="keyword">this</span>.timer = setTimeout(</span><br><span class="line">      () =&gt; &#123; <span class="built_in">console</span>.log(<span class="string">'把一个定时器的引用挂在this上'</span>); &#125;,</span><br><span class="line">      <span class="number">500</span></span><br><span class="line">    );</span><br><span class="line">  &#125;</span><br><span class="line">  componentWillUnmount() &#123;</span><br><span class="line">    <span class="comment">// 请注意Un"m"ount的m是小写</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 如果存在this.timer，则使用clearTimeout清空。</span></span><br><span class="line">    <span class="comment">// 如果你使用多个timer，那么用多个变量，或者用个数组来保存引用，然后逐个clear</span></span><br><span class="line">    <span class="keyword">this</span>.timer &amp;&amp; clearTimeout(<span class="keyword">this</span>.timer);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="主线程渲染"><a href="#主线程渲染" class="headerlink" title="主线程渲染"></a>主线程渲染</h3><p>iOS 中渲染视图要在主线程中，所以 RN 中要调用原生方法，并且渲染视图的时候要通过 <code>dispatch_async</code> 到主线程进行。</p>
+<p>比如 present 一个页面的时候就要在主线程中，否则 <code>[self.retryBtn setTitle:@&quot;重试&quot; forState:UIControlStateNormal];</code> 这种设置按钮 title 的方法在非主线程中执行就无法渲染出 button 的 title</p>
+<h3 id="如何将图片字体资源自动添加到工程"><a href="#如何将图片字体资源自动添加到工程" class="headerlink" title="如何将图片字体资源自动添加到工程"></a>如何将图片字体资源自动添加到工程</h3><p>RN 项目中，会用到很多第三方的组件。这些组件在 <code>react-native link</code> 的时候会作为 library 链接到主工程下。但是存在一个问题，如果组件中包含了一些图片或者字体资源，这些资源不会在 link 的过程中被主动添加到工程中。那么我们需要手动添加。这是非常麻烦的一件事。</p>
+<p>因此，我们需要一个自动化的将资源文件添加到工程的方法：<code>rnpm</code>。<code>rnpm</code> 是一个 RN 包管理工具，现在已经被纳入到 RN 中。</p>
+<h4 id="添加"><a href="#添加" class="headerlink" title="添加"></a>添加</h4><ol>
+<li><p>将要加入到 iOS 以及 Android 的资源文件的路径确认。比方说在 <code>./assets</code> 文件夹下。</p>
+</li>
+<li><p>在 <code>package.json</code> 中添加配置：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">"rnpm": &#123;</span><br><span class="line">   “assets”: ["./assets"]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里就是资源文件放置的路径。这里是一个路径的数组，可以放任意多个路径。</p>
+</li>
+<li><p>终端中输入 <code>react-native link</code>。通过 link 命令就把相关资源链接到工程中去了。你会看到如下提示信息：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/RN_link.png?raw=true" alt> </p>
+</li>
+</ol>
+<h4 id="删除"><a href="#删除" class="headerlink" title="删除"></a>删除</h4><p>没有命令可以直接删除。需要手动执行。</p>
+<h5 id="Android"><a href="#Android" class="headerlink" title="Android"></a>Android</h5><p>安卓直接将资源文件删除即可。（我不是十分确定）</p>
+<h5 id="iOS"><a href="#iOS" class="headerlink" title="iOS"></a>iOS</h5><p>在 <code>Build Phases &gt; Copy Bundle Resources</code> 中删除相关文件索引即可。</p>
+<h3 id="setState-的坑"><a href="#setState-的坑" class="headerlink" title="setState 的坑"></a>setState 的坑</h3><h4 id="坑1"><a href="#坑1" class="headerlink" title="坑1"></a>坑1</h4><p><code>setState</code> 可以将控件刷新。但是这个操作不是立刻执行的而且在某个时间一并执行的。所以当你如果改变了 state 并且要用这个 state 作为参数进行网络请求的时候，不能直接使用 <code>setState</code> 给出的值，而要先将 state 改变，然后再 <code>setState</code>:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">this</span>.state.a = <span class="string">'1'</span></span><br><span class="line"><span class="keyword">this</span>.setState(&#123;</span><br><span class="line">    a: <span class="keyword">this</span>.state.a</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<h4 id="坑2"><a href="#坑2" class="headerlink" title="坑2"></a>坑2</h4><p>一定不能在 <code>setState</code> 的时候改变 state 的原来值。否则 state 会变成意想不到的值。比如一个数组，你<strong>不能直接在 setState 的时候往里 push值</strong>。你可以将数组复制，然后push 好之后再 setState，或者<strong>先设置好 state，然后再 setState。</strong></p>
+<h4 id="坑3"><a href="#坑3" class="headerlink" title="坑3"></a>坑3</h4><p>同一个函数中的多个 <code>setState</code>  不是分别调用的，而是等到某个时刻合并执行的。所以如果 <code>setState</code> 多次设置 state 中的某个值，前面的值的设置会被后面的覆盖掉。</p>
+<p>比如：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">setState(&#123;</span><br><span class="line">    obj: &#123;</span><br><span class="line">        ...this.state.obj</span><br><span class="line">        key1: value1</span><br><span class="line">    &#125;</span><br><span class="line">&#125;)</span><br><span class="line">setState(&#123;</span><br><span class="line">    obj: &#123;</span><br><span class="line">        ...this.state.obj</span><br><span class="line">        key2: value2</span><br><span class="line">    &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>注意，这里虽然设置的是不同的 <code>key1</code> 和 <code>key2</code>,看似没有问题。其实我们设置的是 <code>obj</code>。<code>key1</code> 被覆盖无法设置成功。</p>
+<p>可以改成先改变 state，然后再 <code>setState</code> 刷新视图：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">this</span>.state.obj.key1 = value1</span><br><span class="line"><span class="keyword">this</span>.state.obj.key2 = value2</span><br><span class="line">setState(&#123;</span><br><span class="line">    obj</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>当然最推荐的还是在设置 state 中同一个值时，在一起设置。 </p>
+<h4 id="setState-原理"><a href="#setState-原理" class="headerlink" title="setState 原理"></a>setState 原理</h4><p>在React中，<strong>如果是由React引发的事件处理（比如通过onClick引发的事件处理），调用setState不会同步更新this.state，除此之外的setState调用会同步执行this.state</strong>。所谓“除此之外”，指的是绕过React通过addEventListener直接添加的事件处理函数，还有通过setTimeout/setInterval产生的异步调用。</p>
+<p>为什么会这样？</p>
+<p>在React的 <code>setState</code> 函数实现中，会根据一个变量  <strong>isBatchingUpdates</strong> 判断是直接更新<code>this.state</code> 还是放到队列中回头再说，而<strong>isBatchingUpdates</strong>默认是 false，也就表示 <code>setState</code> 会同步更新 <code>this.state</code>，但是，有一个函数<strong>batchedUpdates</strong>，这个函数会把<strong>isBatchingUpdates</strong>修改为 true，而当React在调用事件处理函数之前就会调用这个<strong>batchedUpdates</strong>，造成的后果，就是由React控制的事件处理过程 <code>setState</code> 不会同步更新 <code>this.state</code>。</p>
+<h3 id="Text-控件"><a href="#Text-控件" class="headerlink" title="Text 控件"></a>Text 控件</h3><h4 id="对齐"><a href="#对齐" class="headerlink" title="对齐"></a>对齐</h4><p>设置了宽高的 Text 控件只会在左上角显示。可以使用 <code>text-align</code> 设置文字的位置，比如 center。但是显示的时候你会发现只是水平居中。你必须再使用 <code>line-height</code> 设置高度为控件高度才能够竖直居中。</p>
+<blockquote>
+<p>对于 text 控件，设置 height 是没用的，默认是 text 的高度。必须要设置 <code>line-height</code> </p>
+</blockquote>
+<h4 id="宽高"><a href="#宽高" class="headerlink" title="宽高"></a>宽高</h4><p>Text 控件的默认宽高是正好包裹文字的，因此可以不设置宽高。但是这样的 Text 是不会折行的，如果想要 Text 折行，必须添加宽度。所以<strong>包含 Text 的控件最好不要设置 flex 来自适应，而是设置具体的宽度</strong>。</p>
+<h3 id="React-RCTBridgeModule-h-file-not-found-解决方式"><a href="#React-RCTBridgeModule-h-file-not-found-解决方式" class="headerlink" title="React/RCTBridgeModule.h file not found 解决方式"></a><code>React/RCTBridgeModule.h</code> file not found 解决方式</h3><p>这个问题出现在 RN 从 0.40 版本前升级到 0.40 版本后的情况下。0.40 前 react 的头文件都是以 <code>Header Search Paths</code> 加入的。使用 React 的组件都需要添加头文件查找路径。当组件需要使用 React 的时候，如果在组件所在的目录下没有找到，那么就会到 <code>Header Search Paths</code> 指定的路径中查找：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/RN_0.39.png?raw=true" alt></p>
+<p>这样带来一个问题，就是每一个第三方的组件都需要设置一下 <code>Header Search Paths</code> 的路径。使用者会非常不方便。</p>
+<p>所以 FB 想要把 React 头文件的链接统一起来。于是就有了 0.40 版本的变化：通过 <code>Edit Scheme</code> 然后添加 React 这个 Target，然后取消 <code>Parallelize Build</code>。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/RN_Build.png?raw=true" alt></p>
+<p>这样，在编译项目之前，就先把 React 编译好了。也就不再需要在 Header Search Paths 中设置了。</p>
+<p>这样带来的改变就是原来引入头文件是相当于头文件在项目中了，使用：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">#import &quot;RCTBridgeModule.h&quot;</span><br></pre></td></tr></table></figure>
+<p>现在引入头文件是引入的外部的头文件，所以要使用尖括号：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">#import &lt;React/RCTBridgeModule.h&gt;</span><br></pre></td></tr></table></figure>
+<h3 id="keyboardShouldPersistTaps-的使用"><a href="#keyboardShouldPersistTaps-的使用" class="headerlink" title="keyboardShouldPersistTaps 的使用"></a><code>keyboardShouldPersistTaps</code> 的使用</h3><p><code>keyboardShouldPersistTaps</code> 这是 <code>scrollview</code> 中的一个属性。</p>
+<p>那么场景会用到这个属性呢？就是在一个 <code>scrollview</code> 中有两个 <code>textinput</code> a,b，当 a 输入完之后点击 b，这个时候如果你不设置 <code>keyboardShouldPersistTaps</code> 属性，那么点击 b 后，虚拟键盘消失，你需要再点一次 b 才能将虚拟键盘再打开，也就是说 <code>scrollview</code> 并没有相应 b 控件的点击事件。正常的需求应该是，点击 b 后，键盘仍然代开状态，只不过输入框变为 b。所以要用该属性控制。</p>
+<p>该属性有三个枚举值：</p>
+<ul>
+<li><code>never</code>: 默认情况，点击 <code>TextInput</code> 以外的子组件会使当前的软键盘收起。此时子元素不会收到点击事件。</li>
+<li><code>always</code>: 键盘不会自动收起，<code>ScrollView</code> 也不会捕捉点击事件，但子组件可以捕获。</li>
+<li><code>handled</code>:当点击事件被子组件捕获时，键盘不会自动收起。这样切换 <code>TextInput</code> 时键盘可以保持状态。多数带有TextInput的情况下你应该选择此项。</li>
+</ul>
+<h3 id="ListView-使用的问题"><a href="#ListView-使用的问题" class="headerlink" title="ListView 使用的问题"></a>ListView 使用的问题</h3><h4 id="ListView-的宽高"><a href="#ListView-的宽高" class="headerlink" title="ListView 的宽高"></a>ListView 的宽高</h4><p>ListView 在父视图的 flex 方向上默认是铺满的。flex 方向上设置的宽或者高是无效的，非 flex 方向上设置的宽或者高是有效的。</p>
+<p>所以最好在 ListView 外面套一个 View，保证 ListView 填充满整个父 View</p>
+<h4 id="renderRow-方法的坑"><a href="#renderRow-方法的坑" class="headerlink" title="renderRow 方法的坑"></a><code>renderRow</code> 方法的坑</h4><p>renderRow 方法的几个参数为，<code>rowData</code>, <code>sectionID</code>, <code>rowID</code> 这几个值为<strong>字符串类型</strong>。 所以根据 id 采取不同行为的时候，要把 id 转化为 number 再比较。或者不要用 <code>===</code> ，否则肯定返回的是 false。</p>
+<h4 id="初始渲染数量"><a href="#初始渲染数量" class="headerlink" title="初始渲染数量"></a>初始渲染数量</h4><p>ListView 为了保证渲染的性能，在最开始的时候只会部分渲染，所以需要设置 <code>initialListSize</code> 属性，设置首屏的渲染个数。否则很可能首屏需要加载的元素很多，但是实际渲染出来的元素很少。</p>
+<h4 id="cloneWithRows-使用的注意事项"><a href="#cloneWithRows-使用的注意事项" class="headerlink" title="cloneWithRows 使用的注意事项"></a><code>cloneWithRows</code> 使用的注意事项</h4><p>我们知道 <code>cloneWithRows</code> 是在 <code>listview</code> 中保存列表数组时使用的方法。使用的时候要注意一点：数组在 <code>cloneWithRows</code> 之后会变成一个特殊的数据结构，数据数组只是这个数据结构中的一个属性。</p>
+<p>那么什么时候需要注意呢？一个父控件内的子控件里有一个 <code>listview</code>，那么要么传入数据在里面 <code>cloneWithRows</code>，要么在外面 <code>cloneWithRows</code> 好后直接传入，不能外部 <code>cloneWithRows</code> 一次后再在里面 <code>cloneWithRows</code> 一次。推荐是在外面 <code>cloneWithRows</code> 好后传入，这样更符合封装性。</p>
+<h3 id="View-设置宽高"><a href="#View-设置宽高" class="headerlink" title="View 设置宽高"></a>View 设置宽高</h3><p><strong>一个视图的显示必须要有宽高</strong>。以下是几个注意点：</p>
+<ul>
+<li>父控件设置绝对宽高，子控件也设置了绝对宽高。这种情况是最简单的情况，注意子控件可能会超过父控件。</li>
+</ul>
+<ul>
+<li>父视图设置了绝对宽高，子控件是 flex 布局：<ul>
+<li>flex-direction 方向上的子视图必须设置明确的长度，即<strong>主轴必须明确设置多长。否则就默认为 0</strong></li>
+<li>非 flex-direction 方向上的子视图默认为填充满父视图，即 <strong><code>align-items</code> 默认为 <code>sketch</code></strong>。所以这里有一个坑点，<strong>如果你在父视图中设置 <code>align-items: center</code> 居中对齐，那么就取消了默认填充满父视图次轴这一设定，子视图一定要设置次轴上相应的长度，否则就是 0，显示不出了。</strong> </li>
+</ul>
+</li>
+<li>子控件设置了绝对宽高，父控件可以不设置宽高，父控件正好包裹子控件。</li>
+<li>父子控件都是 flex 布局，都没有设置宽高。那么这种情况下很有可能显示不出。因为父控件需要一个 <code>flex-direction</code> 方向上的长度，但是并不能通过子控件推测出。那么就会不显示了。</li>
+</ul>
+<h3 id="布局方式"><a href="#布局方式" class="headerlink" title="布局方式"></a>布局方式</h3><p>一般布局如果是一个给定的布局，使用 flex 布局非常的直观。但是如果布局中的元素个数会变化的时候，就需要考虑一下了。比如下面这个图。中间的部分可能按情况不同会有增减：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/flex_3.png?raw=true" alt></p>
+<p>一般有两种方式：</p>
+<ol>
+<li><p>考虑父级 <code>align-items</code> 设置为 sketch，块1此时和父级一样高。这个然后设置块1，<code>flex-direction</code> 为 space-between。这样块1的子级就会均匀的分布在块1内了，不论有多少元素。所以你需要设置第一个子元素和最后一个子元素相对于块1的上边和下边的距离。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/flex_1.png?raw=true" alt></p>
+</li>
+<li><p>考虑父级 <code>align-items</code> 设置为 center，块1的高度取决于内部元素的高度，块1内的元素会居中。所以需要设置子元素之间的距离。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/flex_2.png?raw=true" alt></p>
+</li>
+</ol>
+<p><strong>一般来说用 center 会比较好一些</strong></p>
+<h3 id="设置-Image"><a href="#设置-Image" class="headerlink" title="设置 Image"></a>设置 Image</h3><p><code>Image</code> 图片一定要设置宽高，因为如果图片默认大小是0，加载完图片后，会有个闪烁，可以设置主题的图片模式是 <code>resizeMode = ‘contain’</code>  这样图片就能在指定大小内适应缩放。</p>
+<p>另外，如果拿一个突破作为背景的时候，一定要同时设置 <code>Image</code> 的宽高，以及 <code>Image</code> 包含的 View 的宽高。注意，<strong>包含的 View 不会自动填充满 <code>Image</code></strong>。</p>
+<h3 id="使用-JSX"><a href="#使用-JSX" class="headerlink" title="使用 JSX"></a>使用 JSX</h3><h4 id="JSX-中的-this"><a href="#JSX-中的-this" class="headerlink" title="JSX 中的 this"></a>JSX 中的 this</h4><p>在 JSX 中调用外部的 js方法，如果要用到 <code>this</code>， 则必须 <code>bind(this)</code> 或者使用箭头函数，否则无法识别。</p>
+<p>JSX 标签里一定不能有 <code>{}</code>，就比如你要把 <code>View</code> 里的 <code>style</code> 注释掉， 一定不能直接用 <code>cmd+/</code> 这样会在 <code>&lt;&gt;</code>里加入 <code>{}</code>，产生 <code>SyntaxError xxx.js Unexpected token,expected ...</code>的错误</p>
+<p><code>&lt;View &gt;</code> 标签里的属性必须要要遵守如下的形式，即必须要用等号，并且<strong>要用 <code>{}</code> 把对象或者返回对象的方法包裹起来</strong>:</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;View </span><br><span class="line">    style = &#123;&#123;margin&#125;&#125;&gt;</span><br><span class="line">&lt;<span class="regexp">/View&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="JSX-中的代码"><a href="#JSX-中的代码" class="headerlink" title="JSX 中的代码"></a>JSX 中的代码</h4><p>JSX 中可以通过 <code>{}</code> 插入代码。但是你<strong>不能直接把代码写在里面</strong>。<code>{}</code> 内允许你<strong>调用一个返回 JSX 节点或者以 JSX 节点为元素的数组的方法</strong>。</p>
+<p>这里所说的方法可以是一个外部的方法，或者是一个三元运算符，或者是一个生成数组的方法，如 <code>map</code> 等。 </p>
+<h3 id="如何隐藏一个组件"><a href="#如何隐藏一个组件" class="headerlink" title="如何隐藏一个组件"></a>如何隐藏一个组件</h3><p>如果让一个组件隐藏，或者根据不同情况改变组件展示。只需要在必要的时候通过 <code>state</code> 的变化，将原来 <code>return</code> 的 <code>view</code> 变成 <code>return null</code> 就可以了</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">_render() &#123;</span><br><span class="line">    <span class="keyword">return</span>(</span><br><span class="line">    	...</span><br><span class="line">        &#123;</span><br><span class="line">  			<span class="keyword">this</span>.state.drawerOpen ?</span><br><span class="line">  			&lt;TouchableOpacity style=&#123;styles.modalContainer&#125; /&gt; : <span class="literal">null</span></span><br><span class="line">		&#125;</span><br><span class="line">    	...</span><br><span class="line">    )</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>注意用 <code>{}</code> 包裹的部分，要么就像上面那样的一个二元选择或者是直接的一个 JSX 对象，要么就是下面这样的调用一个返回 JSX 的方法：</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">_render() &#123;</span><br><span class="line">    return(</span><br><span class="line">    	...</span><br><span class="line">        &#123;</span><br><span class="line">			this._renderContent(name, type)</span><br><span class="line">		&#125;</span><br><span class="line">    	...</span><br><span class="line">    )</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">_renderContent(name, type) &#123;</span><br><span class="line">	if (type === 1) &#123;</span><br><span class="line">        return(</span><br><span class="line">    		&lt;View/&gt;</span><br><span class="line">    	)</span><br><span class="line">	&#125; else &#123;</span><br><span class="line">        return(</span><br><span class="line">        	&lt;Image/&gt;</span><br><span class="line">        )</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>不能直接写 js 的逻辑语句，一定会报错</strong></p>
+<h3 id="padding-和-margin-使用区别"><a href="#padding-和-margin-使用区别" class="headerlink" title="padding 和 margin 使用区别"></a>padding 和 margin 使用区别</h3><p>这两者 android 程序员使用起来恐怕没有任何问题。iOS 程序员如果使用惯了 <code>autoLayout</code> 可能一时反应不过来。</p>
+<p>style 究竟是在父控件里用 <code>padding</code> 还是在子控件里用 <code>margin</code>。其实基本没有太大差别，一般用 <code>margin</code>，能让子控件的布局更灵活一些。当然，如果父控件的样式需要复用多次，而子控件各不相同时，直接在父控件设置 <code>padding</code>，可以减少每次设置子控件 <code>margin</code> 的次数。</p>
+<h3 id="组件之间的通信"><a href="#组件之间的通信" class="headerlink" title="组件之间的通信"></a>组件之间的通信</h3><h4 id="子组件调用父组件方法"><a href="#子组件调用父组件方法" class="headerlink" title="子组件调用父组件方法"></a>子组件调用父组件方法</h4><p>父组件将方法以属性的方式传入子组件，子组件通过 <code>this.props.方法名</code> 拿到这个方法。</p>
+<h4 id="父组件调用子组件方法"><a href="#父组件调用子组件方法" class="headerlink" title="父组件调用子组件方法"></a>父组件调用子组件方法</h4><p>父组件调用子组件的条件是拿到子组件的实例。因此可以为子组件加上 <code>ref</code> 属性。比如：</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;Child ref=<span class="string">'child'</span>&gt;haha&lt;<span class="regexp">/Child&gt;</span></span><br></pre></td></tr></table></figure>
+<p>这样父组件就可以通过 <code>this.refs.child</code> 来获取 <code>Child</code> 组件的实例，并调用其内部方法了。</p>
+<p>比较典型的用法在于一个 View 里嵌了一个 ListView，现在要调用 ListView 的刷新方法。就可以通过 <code>ref</code> 的方式从外部拿到。</p>
+<h5 id="ref-属性"><a href="#ref-属性" class="headerlink" title="ref 属性"></a>ref 属性</h5><p>上面演示的是 <code>ref</code> 接受一个字符串的使用方式，<strong><code>ref</code> 属性还可以是一个回调函数，这个回调函数会在组件被挂载后立即执行</strong>。被引用的组件会被作为参数传递，回调函数可以用立即使用这个组件，或者保存引用以后使用：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">render () &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="xml"><span class="tag">&lt;<span class="name">TextInput</span> <span class="attr">ref</span>=<span class="string">&#123;(element)</span> =&gt;</span> this._input = element&#125; /&gt;;</span></span><br><span class="line"><span class="xml">&#125;,</span></span><br><span class="line"><span class="xml">componentDidMount () &#123;</span></span><br><span class="line"><span class="xml">  this._input.focus();</span></span><br><span class="line"><span class="xml">&#125;,</span></span><br></pre></td></tr></table></figure>
+<p>上面的例子中，在 <code>ref</code> 回调方法中把节点 TextInput 保存为 <code>_input</code> 属性。可以在必要的时候调用。</p>
+<blockquote>
+<p>我认为最好还是用回调函数，通过回调函数可以把要使用的组件提前声明出来，方便调用。</p>
+</blockquote>
+<h4 id="跨级组件通信"><a href="#跨级组件通信" class="headerlink" title="跨级组件通信"></a>跨级组件通信</h4><p>跨级组件，如果还是一层层传递 props 非常的不优雅。React 提供了一个 context 属性。不过这并不推荐使用。一般我们使用 <code>react-redux</code> 库的时候，<code>store</code> 就是通过 <code>context</code> 传递的。</p>
+<h4 id="没有嵌套关系的组件通信"><a href="#没有嵌套关系的组件通信" class="headerlink" title="没有嵌套关系的组件通信"></a>没有嵌套关系的组件通信</h4><p>没有嵌套关系可以使用 <code>EventEmitter</code> 实现。在一个地方注册，另一个地方监听。不过也是不推荐的。所以用法也就不细说了。</p>
+<h3 id="State"><a href="#State" class="headerlink" title="State"></a>State</h3><p>state 中存放一些与视图有关的变量。与视图无关的变量，直接在构造器里作为自身属性创建。可以有两种方式便便 state：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 方式一</span></span><br><span class="line"><span class="keyword">this</span>.state.someProp = <span class="number">1</span></span><br><span class="line"><span class="comment">// 方式二</span></span><br><span class="line"><span class="keyword">this</span>.setState(&#123; <span class="attr">someProp</span> : <span class="number">1</span> &#125;)</span><br></pre></td></tr></table></figure>
+<p>其中，方式二能在改变 State 的同时刷新视图。</p>
+<h3 id="Props"><a href="#Props" class="headerlink" title="Props"></a>Props</h3><h4 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h4><p>组件在创建的时候传入 <code>Props</code> 来完成定制，例如：</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;Image source=&#123;pic&#125; style=&#123;&#123;<span class="attr">width</span>: <span class="number">193</span>, <span class="attr">height</span>: <span class="number">110</span>&#125;&#125; /&gt;</span><br></pre></td></tr></table></figure>
+<p>其中 <code>source</code>,<code>style</code> 都是传入 image 的 <code>Props</code>。其中 <code>pic</code> 表示一个js对象，类似后面的 <code>{width: 193, height: 110}</code>。</p>
+<p><code>{pic}</code> 外面有个括号，表示括号内是一个js变量或者表达式，需要执行后取值，以此<strong>在JSX中嵌入单条js语句</strong>。</p>
+<h4 id="子组件内获取-props"><a href="#子组件内获取-props" class="headerlink" title="子组件内获取 props"></a>子组件内获取 props</h4><p>有时候，我们想要封装一个组件，在容器组件内多定义几个 props，但是并不希望这些 props 传到子组件内，比如容器组件的 children 属性。我们可以这样做：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">render () &#123;</span><br><span class="line">    <span class="keyword">const</span> &#123;</span><br><span class="line">		style,</span><br><span class="line">		children,</span><br><span class="line">		...restProps,</span><br><span class="line">	&#125; = <span class="keyword">this</span>.props;</span><br><span class="line">    <span class="comment">// 删除多余属性</span></span><br><span class="line">    [</span><br><span class="line">      <span class="string">'onOpenChange'</span>,</span><br><span class="line">      <span class="string">'onDrawerOpen'</span>,</span><br><span class="line">      <span class="string">'onDrawerClose'</span>,</span><br><span class="line">      <span class="string">'drawerPosition'</span>,</span><br><span class="line">      <span class="string">'renderNavigationView'</span>,</span><br><span class="line">    ].forEach(<span class="function"><span class="params">prop</span> =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">if</span> (restProps.hasOwnProperty(prop)) &#123;</span><br><span class="line">        <span class="keyword">delete</span> restProps[prop];</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> (</span><br><span class="line">        &lt;View style=&#123;style&#125;&gt;</span><br><span class="line">    		&lt;SomeView &#123;...restProps&#125;/&gt;</span><br><span class="line">        	&#123;...children&#125;</span><br><span class="line">    	&lt;<span class="regexp">/View&gt;</span></span><br><span class="line"><span class="regexp">    )</span></span><br><span class="line"><span class="regexp">&#125;</span></span><br></pre></td></tr></table></figure>
+<p>注意：</p>
+<ol>
+<li>通过对象展开符，可以获取到 props 中剩余的属性。</li>
+<li>将一个对象作为组件的属性传入的时候要通过 <code>{...obj}</code> 的方式</li>
+<li>通过 <code>hasOwnProperty</code> 进一步删除不想传递给子组件的属性</li>
+<li><code>this.props</code> 的展开要放在 <code>render</code> 方法里，因为 props 可能会变化触发重绘，所以要每次重绘的时候都进行对象展开</li>
+</ol>
+<h4 id="Props-使用的注意点"><a href="#Props-使用的注意点" class="headerlink" title="Props 使用的注意点"></a>Props 使用的注意点</h4><p>通常我们直接会把 props 放到 render 方法中，比如上面的例子。但是这样其实不太好，比如一个页面跳转的时候，会带一些 props 过来，我们需要修改 props 中的一些属性。但是我们并不希望把这些修改带回到其他页面。</p>
+<p>这种时候我们就不能直接修改 props 中的属性了。我们需要在 render 的时候，深拷贝或者不浅不深的拷贝 props 的值：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">render () &#123;</span><br><span class="line">    <span class="keyword">this</span>.props1 = <span class="keyword">this</span>.props.props1</span><br><span class="line">    <span class="keyword">this</span>.props2 = <span class="keyword">this</span>.props.props2</span><br><span class="line">    <span class="keyword">return</span> (</span><br><span class="line">    	&lt;View/&gt;</span><br><span class="line">    )</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>因为多加了一层 <code>this.props1</code> 我们就不需要担心，到底能不能修改 props 了，如果不能修改 props，那么直接深拷贝一下即可。</p>
+</blockquote>
+<p>更进一步，其实我们只有在不希望修改数据带到其他页面的时候才会使用 <code>this</code> 挂载，一般情况下，我们直接使用结构赋值即可：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">render () &#123;</span><br><span class="line">    <span class="keyword">const</span> &#123;prop1, prop2&#125; = <span class="keyword">this</span>.props</span><br><span class="line">    <span class="keyword">return</span> (</span><br><span class="line">    	&lt;View/&gt;</span><br><span class="line">    )</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果项目变化需求变化了，再转到把 props 的属性挂在到 <code>this</code> 下：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">render () &#123;</span><br><span class="line">    <span class="keyword">this</span>.props1 = <span class="keyword">this</span>.props.props1</span><br><span class="line">    <span class="keyword">this</span>.props2 = <span class="keyword">this</span>.props.props2</span><br><span class="line">    <span class="keyword">const</span> &#123;prop1, prop2&#125; = <span class="keyword">this</span></span><br><span class="line">    <span class="keyword">return</span> (</span><br><span class="line">    	&lt;View/&gt;</span><br><span class="line">    )</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>就不需要再更换 View 里的参数了</p>
+<h4 id="propTypes"><a href="#propTypes" class="headerlink" title="propTypes"></a>propTypes</h4><p>组件的属性可以接受任意值，字符串、对象、函数等等都可以。有时，我们需要一种机制，验证别人使用组件时，提供的参数是否符合要求。组件类的 <code>PropTypes</code> 属性，就是用来验证组件实例的属性是否符合要求。我们需要引入一个 <code>prop-types</code> 库：</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> PropTypes <span class="keyword">from</span> <span class="string">'prop-types'</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Greeting</span> <span class="keyword">extends</span> <span class="title">React</span>.<span class="title">Component</span> </span>&#123;</span><br><span class="line">  render() &#123;</span><br><span class="line">    <span class="keyword">return</span> (</span><br><span class="line">      &lt;Text&gt;&#123;<span class="keyword">this</span>.props.name&#125;&lt;<span class="regexp">/Text&gt;</span></span><br><span class="line"><span class="regexp">    );</span></span><br><span class="line"><span class="regexp">  &#125;</span></span><br><span class="line"><span class="regexp">&#125;</span></span><br><span class="line"><span class="regexp"></span></span><br><span class="line"><span class="regexp">Greeting.propTypes = &#123;</span></span><br><span class="line"><span class="regexp">  name: PropTypes.string</span></span><br><span class="line"><span class="regexp">&#125;;</span></span><br></pre></td></tr></table></figure>
+<p>上面例子中，如果 <code>name</code> 不是 string 类型，那么就会产生一个警告。还可以设置 <code>name: PropTypes.string.isRequired</code> 表示必须传入属性 <code>name</code>。</p>
+<p>除了 string 外，还有许多类型的 PropTypes 可以设置:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line">MyComponent.propTypes = &#123;</span><br><span class="line">  <span class="comment">// 可以声明prop是特定的JS基本类型</span></span><br><span class="line">  <span class="comment">// 默认情况下这些prop都是可选的</span></span><br><span class="line">  optionalArray:PropTypes.array,</span><br><span class="line">  optionalBool: PropTypes.bool,</span><br><span class="line">  optionalFunc: PropTypes.func,</span><br><span class="line">  optionalNumber: PropTypes.number,</span><br><span class="line">  optionalObject: PropTypes.object,</span><br><span class="line">  optionalString: PropTypes.string,</span><br><span class="line">  optionalSymbol: PropTypes.symbol,</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 任何可以被渲染的事物：numbers, strings, elements or an array</span></span><br><span class="line">  <span class="comment">// (or fragment) containing these types.</span></span><br><span class="line">  optionalNode: PropTypes.node,</span><br><span class="line"></span><br><span class="line">  <span class="comment">// A React element.</span></span><br><span class="line">  optionalElement: PropTypes.element,</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 声明一个prop是某个类的实例，用到了JS的instanceof运算符</span></span><br><span class="line">  optionalMessage: PropTypes.instanceOf(Message),</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 用enum来限制prop只接受特定的值</span></span><br><span class="line">  optionalEnum: PropTypes.oneOf([<span class="string">'News'</span>, <span class="string">'Photos'</span>]),</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 指定的多个对象类型中的一个</span></span><br><span class="line">  optionalUnion: PropTypes.oneOfType([</span><br><span class="line">    PropTypes.string,</span><br><span class="line">    PropTypes.number,</span><br><span class="line">    PropTypes.instanceOf(Message)</span><br><span class="line">  ]),</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 指定类型组成的数组</span></span><br><span class="line">  optionalArrayOf: PropTypes.arrayOf(PropTypes.number),</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 指定类型的属性构成的对象</span></span><br><span class="line">  optionalObjectOf: PropTypes.objectOf(PropTypes.number),</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 一个指定形式的对象</span></span><br><span class="line">  optionalObjectWithShape: PropTypes.shape(&#123;</span><br><span class="line">    color: PropTypes.string,</span><br><span class="line">    fontSize: PropTypes.number</span><br><span class="line">  &#125;),</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 你可以用以上任何验证器链接‘isRequired’，来确保prop不为空</span></span><br><span class="line">  requiredFunc: PropTypes.func.isRequired,</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 不可空的任意类型</span></span><br><span class="line">  requiredAny: PropTypes.any.isRequired,</span><br><span class="line">  <span class="comment">// PropTypes.element指定仅可以将单一子元素作为子节点传递给组件</span></span><br><span class="line">  children: PropTypes.element.isRequired</span><br></pre></td></tr></table></figure>
+<h4 id="defaultProps"><a href="#defaultProps" class="headerlink" title="defaultProps"></a>defaultProps</h4><p>可以在 <code>defaultProps</code> 中注册设置默认属性值。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Greeting</span> <span class="keyword">extends</span> <span class="title">React</span>.<span class="title">Component</span> </span>&#123;</span><br><span class="line">  render() &#123;</span><br><span class="line">    <span class="keyword">return</span> (</span><br><span class="line">      &lt;Text&gt;&#123;<span class="keyword">this</span>.props.name&#125;&lt;<span class="regexp">/Text&gt;</span></span><br><span class="line"><span class="regexp">    );</span></span><br><span class="line"><span class="regexp">  &#125;</span></span><br><span class="line"><span class="regexp">&#125;</span></span><br><span class="line"><span class="regexp"></span></span><br><span class="line"><span class="regexp">Greeting.defaultProps = &#123;</span></span><br><span class="line"><span class="regexp">  name: 'hahaha'</span></span><br><span class="line"><span class="regexp">&#125;;</span></span><br></pre></td></tr></table></figure>
+<p>结合上面这两个属性，就不必再在构造函数里设置各种值了。</p>
+<h3 id="this-props-children"><a href="#this-props-children" class="headerlink" title="this.props.children"></a>this.props.children</h3><p><code>this.props</code> 对象的属性与组件的属性一一对应，但是有一个例外，就是 <code>this.props.children</code> 属性。它表示组件的所有子节点。类似于 <code>TouchableOpaque</code> 里嵌入 <code>Text</code>，通过这种方式可以很方便的嵌套封装控件。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">NewComponent</span> <span class="keyword">extends</span> <span class="title">React</span>.<span class="title">Component</span></span>&#123;</span><br><span class="line">	render()&#123;</span><br><span class="line">		<span class="keyword">return</span>(</span><br><span class="line">			&#123;<span class="keyword">this</span>.props.children&#125;</span><br><span class="line">		);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//调用：</span></span><br><span class="line">&lt;NewComponent&gt;</span><br><span class="line">	&lt;Text&gt;haha&lt;<span class="regexp">/Text&gt;</span></span><br><span class="line"><span class="regexp">&lt;/</span>NewComponent&gt;</span><br></pre></td></tr></table></figure>
+<p> <code>this.props.children</code> 是一个数组，子节点作为数组元素传入。</p>
+<h3 id="TextInput-隐藏键盘"><a href="#TextInput-隐藏键盘" class="headerlink" title="TextInput 隐藏键盘"></a>TextInput 隐藏键盘</h3><p>Native 中的 <code>UITextField</code> 可以通过 <code>resignFirstResponder</code> 或者 <code>endEditing</code> 的方式取消第一响应者，从而隐藏虚拟键盘。那么，react 中如何做到隐藏键盘呢？</p>
+<p>可以使用 <code>ScrollView</code> 包装我们的 <code>View</code>。<br><code>ScrollView</code> 可以设置 <code>keyboardDismissMode</code>，<code>keyboardShouldPersistTaps</code> 来控制输入法的行为。</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;ScrollView 	contentContainerStyle=&#123;&#123;<span class="attr">flex</span>:<span class="number">1</span>&#125;&#125;<span class="comment">//非常重要，让ScrollView的子元素占满整个区域</span></span><br><span class="line">				keyboardDismissMode=<span class="string">'on-drag'</span> <span class="comment">//拖动界面输入法退出</span></span><br><span class="line">				keyboardShouldPersistTaps=&#123;<span class="literal">false</span>&#125; <span class="comment">//点击输入法意外的区域，输入法退出</span></span><br><span class="line">				&gt;</span><br><span class="line">....</span><br><span class="line">&lt;<span class="regexp">/ScrollView&gt;</span></span><br></pre></td></tr></table></figure>
+<h3 id="生命周期回调函数总结"><a href="#生命周期回调函数总结" class="headerlink" title="生命周期回调函数总结"></a>生命周期回调函数总结</h3><h4 id="componentWillMount"><a href="#componentWillMount" class="headerlink" title="componentWillMount()"></a>componentWillMount()</h4><p><code>componentWillMount</code> 会在组件 <code>render</code> 之前执行，并且永远都只执行一次。</p>
+<h4 id="componentDidMount"><a href="#componentDidMount" class="headerlink" title="componentDidMount()"></a>componentDidMount()</h4><p><code>componentDidMount</code> 会在组件加载完毕之后立即执行。</p>
+<h4 id="componentWillReceiveProps-object-nextProps"><a href="#componentWillReceiveProps-object-nextProps" class="headerlink" title="componentWillReceiveProps(object nextProps)"></a>componentWillReceiveProps(object nextProps)</h4><p>在组件接收到一个新的 prop 时被执行。这个方法在初始化 <code>render</code> 时不会被调用。</p>
+<p>这个方法很重要。组件内部属性的初始化设置只有一次，所以当组件初始化完成后，外部传入的属性值的变化不会直接引起组件内部属性值的变化，而是会回调这个方法。</p>
+<blockquote>
+<p>如果你在组件内部用一个变量去接 props，那么除了在 constructor 里将 props 赋值给变量外，还需要在这个方法里将 props 赋值给变量。</p>
+</blockquote>
+<h4 id="boolean-shouldComponentUpdate-object-nextProps-object-nextState"><a href="#boolean-shouldComponentUpdate-object-nextProps-object-nextState" class="headerlink" title="boolean shouldComponentUpdate(object nextProps, object nextState)"></a>boolean shouldComponentUpdate(object nextProps, object nextState)</h4><p>返回一个布尔值。在组件的 props 或者 state 改变时被执行。在初始化时或者使用  <code>forceUpdate</code> 时不被执行。</p>
+<p>如果 <code>shouldComponentUpdate</code> 返回 <code>false</code>,<code>render()</code> 则会在下一个 state change 之前被完全跳过。(另外 <code>componentWillUpdate</code> 和  <code>componentDidUpdate</code> 也不会被执行)默认情况下 <code>shouldComponentUpdate</code> 会返回 <code>true</code>.</p>
+<h4 id="componentWillUpdate-object-nextProps-object-nextState"><a href="#componentWillUpdate-object-nextProps-object-nextState" class="headerlink" title="componentWillUpdate(object nextProps, object nextState)"></a>componentWillUpdate(object nextProps, object nextState)</h4><p>组件接收到新的 <code>props</code> 或者 <code>state</code> 但还没有 <code>render</code> 时被执行。在初始化时不会被执行。一般用在组件发生更新之前。</p>
+<h4 id="componentDidUpdate-object-prevProps-object-prevState"><a href="#componentDidUpdate-object-prevProps-object-prevState" class="headerlink" title="componentDidUpdate(object prevProps, object prevState)"></a>componentDidUpdate(object prevProps, object prevState)</h4><p>在组件完成更新后立即执行。在初始化时不会被执行。一般会在组件完成更新后被使用。例如清除 notification 文字等操作。</p>
+<h4 id="componentWillUnmount"><a href="#componentWillUnmount" class="headerlink" title="componentWillUnmount()"></a>componentWillUnmount()</h4><p>主要用来执行一些必要的清理任务。<strong>注意，<code>Unmount</code> 的大小写。</strong>写错就无法调用了！！！</p>
+<h3 id="优化切换动画卡顿的问题"><a href="#优化切换动画卡顿的问题" class="headerlink" title="优化切换动画卡顿的问题"></a>优化切换动画卡顿的问题</h3><p>使用API <code>InteractionManager</code>，它的作用就是可以使本来 JS 的一些操作在动画完成之后执行，这样就可确保动画的流程性。当然这是在延迟执行为代价上来获得帧数的提高。<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">InteractionManager.runAfterInteractions(<span class="function"><span class="params">()</span>=&gt;</span>&#123;</span><br><span class="line">	<span class="comment">//...耗时较长的同步任务...</span></span><br><span class="line">	<span class="comment">//更新state也需要时间</span></span><br><span class="line">	<span class="keyword">this</span>.setState(&#123;</span><br><span class="line">		...</span><br><span class="line">	&#125;)</span><br><span class="line">	<span class="comment">//获取某些数据，需要长时间等待</span></span><br><span class="line">	<span class="keyword">this</span>.fetchData(arguements)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure></p>
+<p>一般这个方法都放在 <code>componentDidMount</code> 里。</p>
+<h3 id="React-Native-原生模块调用-iOS"><a href="#React-Native-原生模块调用-iOS" class="headerlink" title="React-Native 原生模块调用(iOS)"></a>React-Native 原生模块调用(iOS)</h3><p>在项目中遇到地图,拨打电话,清除缓存等iOS与Andiorid机制不同的功能,就需要调用原生的界面或模块。</p>
+<h4 id="创建原生模块，实现“RCTBridgeModule”协议"><a href="#创建原生模块，实现“RCTBridgeModule”协议" class="headerlink" title="创建原生模块，实现“RCTBridgeModule”协议"></a>创建原生模块，实现“RCTBridgeModule”协议</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">#import &lt;UIKit/UIKit.h&gt;</span><br><span class="line">#import &quot;RCTBridgeModule.h&quot;</span><br><span class="line"></span><br><span class="line">@interface LoginViewController : UIViewController&lt;RCTBridgeModule&gt;</span><br><span class="line"></span><br><span class="line">@end</span><br></pre></td></tr></table></figure>
+<h4 id="导出模块，导出方法"><a href="#导出模块，导出方法" class="headerlink" title="导出模块，导出方法"></a>导出模块，导出方法</h4><p>不仅可以让导出 native 的方法，而且还可以在 js 中添加回调函数，供 native 调用，这样 native 就可以将前面的数据回塞给 js 了。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">@implementation LoginViewController</span><br><span class="line">//导出模块</span><br><span class="line">RCT_EXPORT_MODULE()</span><br><span class="line">- (void)viewDidLoad &#123;</span><br><span class="line">    [super viewDidLoad];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">RCT_EXPORT_METHOD(showSVProgressHUDErrorWithStatus:(NSString *)state callBack:(RCTResponseSenderBlock)callback)&#123;</span><br><span class="line">  NSLog(@&quot;state is %@&quot;,state);</span><br><span class="line">  NSArray *events = [[NSArray alloc] initWithObjects:@&quot;hello&quot;, nil];</span><br><span class="line">  // 这里callback必须是数组</span><br><span class="line">  callback(events);</span><br><span class="line">  [SVProgressHUD showErrorWithStatus:state];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">@end</span><br></pre></td></tr></table></figure></p>
+<h4 id="js文件中调用"><a href="#js文件中调用" class="headerlink" title="js文件中调用"></a>js文件中调用</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//创建原生模块实例</span></span><br><span class="line"><span class="keyword">let</span> LoginViewController = NativeModules.LoginViewController;</span><br><span class="line"></span><br><span class="line"><span class="comment">//方法调用</span></span><br><span class="line">LoginViewController.showSVProgressHUDErrorWithStatus(<span class="string">'请输入正确的手机号'</span>,(callbackString) =&gt; &#123;<span class="built_in">console</span>.log(callbackString);&#125;);</span><br></pre></td></tr></table></figure>
+<h3 id="React-Native-调试"><a href="#React-Native-调试" class="headerlink" title="React Native 调试"></a>React Native 调试</h3><p>首先，<strong>必须</strong> 保证调试用电脑的和你的设备处于相同的 <code>WiFi</code> 网络环境中下。然后修改<code>AppDelegate.m</code> 文件，设置 ip 为电脑 ip 即可。</p>
+<p>然后就可以通过 Chrome 开发工具进行调试。最好不要使用 VSCode 提供的测试工具。不好用。</p>
+<p>如果想要快速调样式，建议选上 <code>Enable Hot Reloading</code> 。可以在你每次保存的时候在本页面重新加载。</p>
+<p>使用 xcode run 一遍之后，如果没有 native 代码的改动，手机就可以不用再连着电脑了，在项目地址下，使用 <code>npm start</code> 开启本地服务。</p>
+<h3 id="React-Native-读取本地的json文件"><a href="#React-Native-读取本地的json文件" class="headerlink" title="React Native 读取本地的json文件"></a>React Native 读取本地的json文件</h3><p>可以以导入的形式，来读取本地的json文件，导入的文件可以作为一个js对象使用，这样方便调试的时候加载数据。</p>
+<h4 id="导入json文件："><a href="#导入json文件：" class="headerlink" title="导入json文件："></a>导入json文件：</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> langsData = <span class="built_in">require</span>(<span class="string">'./json/langs.json'</span>);</span><br></pre></td></tr></table></figure>
+<p>现在你可以操作<code>langsData</code>对象了。  </p>
+<h4 id="json格式"><a href="#json格式" class="headerlink" title="json格式"></a>json格式</h4><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">[</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="attr">"path"</span>:<span class="string">""</span>,</span><br><span class="line">    <span class="attr">"name"</span>:<span class="string">"123"</span>,</span><br><span class="line">    <span class="attr">"checked"</span>:<span class="literal">false</span></span><br><span class="line">  &#125;,</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="attr">"path"</span>:<span class="string">"aa"</span>,</span><br><span class="line">    <span class="attr">"name"</span>:<span class="string">"1234"</span>,</span><br><span class="line">    <span class="attr">"checked"</span>:<span class="literal">false</span></span><br><span class="line">  &#125;,</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="attr">"path"</span>:<span class="string">"ddd"</span>,</span><br><span class="line">    <span class="attr">"name"</span>:<span class="string">"123123123"</span>,</span><br><span class="line">    <span class="attr">"checked"</span>:<span class="literal">true</span></span><br><span class="line">  &#125;</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+<h4 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="keyword">var</span> i=<span class="number">0</span>,l=langsData.length;i&lt;l;i++)&#123;</span><br><span class="line">	<span class="built_in">console</span>.log(langsData[i]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tag/React-Native/" rel="tag"># React-Native</a>
+          
+            <a href="/tag/爬坑/" rel="tag"># 爬坑</a>
+          
+            <a href="/tag/持续更新/" rel="tag"># 持续更新</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/11/17/KVO/" rel="next" title="KVO 实践及 FBKVOController 原理">
+                <i class="fa fa-chevron-left"></i> KVO 实践及 FBKVOController 原理
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/12/03/hexo爬过的坑/" rel="prev" title="hexo 配置遇到的一些坑">
+                hexo 配置遇到的一些坑 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.png" alt="Zachary Zhang">
+            
+              <p class="site-author-name" itemprop="name">Zachary Zhang</p>
+              <p class="site-description motion-element" itemprop="description">Stay Hungry. Stay Foolish!</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">116</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/zhang759740844" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:zch759740844@126.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#函数式组件"><span class="nav-number">1.</span> <span class="nav-text">函数式组件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PureComponent-和-Component"><span class="nav-number">2.</span> <span class="nav-text">PureComponent 和 Component</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#震动"><span class="nav-number">3.</span> <span class="nav-text">震动</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#获取控件的frame"><span class="nav-number">4.</span> <span class="nav-text">获取控件的frame</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#方式一"><span class="nav-number">4.1.</span> <span class="nav-text">方式一</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#方式二"><span class="nav-number">4.2.</span> <span class="nav-text">方式二</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pointerEvents-quot-none-quot-的使用时机"><span class="nav-number">5.</span> <span class="nav-text">pointerEvents=&quot;none&quot; 的使用时机</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#存在手势的视图中的按钮点击事件不响应"><span class="nav-number">6.</span> <span class="nav-text">存在手势的视图中的按钮点击事件不响应</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#FlatList-的性能优化"><span class="nav-number">7.</span> <span class="nav-text">FlatList 的性能优化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#组件在动画下的隐藏和显示"><span class="nav-number">8.</span> <span class="nav-text">组件在动画下的隐藏和显示</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#display"><span class="nav-number">8.1.</span> <span class="nav-text">display</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#height"><span class="nav-number">8.2.</span> <span class="nav-text">height</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#带有-Gesture-的父组件会-block-子组件中-TouchableOpacity-的点击事件"><span class="nav-number">9.</span> <span class="nav-text">带有 Gesture 的父组件会 block 子组件中 TouchableOpacity 的点击事件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用绝对路径替代相对路径"><span class="nav-number">10.</span> <span class="nav-text">使用绝对路径替代相对路径</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#消除-console-log"><span class="nav-number">11.</span> <span class="nav-text">消除 console.log</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#为-FlatList-设置-ListEmptyComponent"><span class="nav-number">12.</span> <span class="nav-text">为 FlatList 设置 ListEmptyComponent</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#standard-进行代码校验"><span class="nav-number">13.</span> <span class="nav-text">standard 进行代码校验</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#husky-hook-git-commit"><span class="nav-number">14.</span> <span class="nav-text">husky hook git commit</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#清除-RN-package-缓存"><span class="nav-number">15.</span> <span class="nav-text">清除 RN package 缓存</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Immutable-js-的使用动机"><span class="nav-number">16.</span> <span class="nav-text">Immutable.js 的使用动机</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#react-native-link"><span class="nav-number">17.</span> <span class="nav-text">react-native link</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#黄色警告"><span class="nav-number">18.</span> <span class="nav-text">黄色警告</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#何时重绘"><span class="nav-number">19.</span> <span class="nav-text">何时重绘</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#性能优化"><span class="nav-number">20.</span> <span class="nav-text">性能优化</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#利用-shouldComponentUpdate"><span class="nav-number">20.1.</span> <span class="nav-text">利用 shouldComponentUpdate</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#style-不要写在-JSX-中"><span class="nav-number">20.2.</span> <span class="nav-text">style 不要写在 JSX 中</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#render-时不要使用箭头函数"><span class="nav-number">20.3.</span> <span class="nav-text">render 时不要使用箭头函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#使用-react-redux-的-connect-方法"><span class="nav-number">20.4.</span> <span class="nav-text">使用 react-redux 的 connect 方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#key"><span class="nav-number">20.5.</span> <span class="nav-text">key</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Reselect"><span class="nav-number">21.</span> <span class="nav-text">Reselect</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#setTimeout"><span class="nav-number">22.</span> <span class="nav-text">setTimeout</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#主线程渲染"><span class="nav-number">23.</span> <span class="nav-text">主线程渲染</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#如何将图片字体资源自动添加到工程"><span class="nav-number">24.</span> <span class="nav-text">如何将图片字体资源自动添加到工程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#添加"><span class="nav-number">24.1.</span> <span class="nav-text">添加</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#删除"><span class="nav-number">24.2.</span> <span class="nav-text">删除</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Android"><span class="nav-number">24.2.1.</span> <span class="nav-text">Android</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#iOS"><span class="nav-number">24.2.2.</span> <span class="nav-text">iOS</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#setState-的坑"><span class="nav-number">25.</span> <span class="nav-text">setState 的坑</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#坑1"><span class="nav-number">25.1.</span> <span class="nav-text">坑1</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#坑2"><span class="nav-number">25.2.</span> <span class="nav-text">坑2</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#坑3"><span class="nav-number">25.3.</span> <span class="nav-text">坑3</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#setState-原理"><span class="nav-number">25.4.</span> <span class="nav-text">setState 原理</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Text-控件"><span class="nav-number">26.</span> <span class="nav-text">Text 控件</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#对齐"><span class="nav-number">26.1.</span> <span class="nav-text">对齐</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#宽高"><span class="nav-number">26.2.</span> <span class="nav-text">宽高</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#React-RCTBridgeModule-h-file-not-found-解决方式"><span class="nav-number">27.</span> <span class="nav-text">React/RCTBridgeModule.h file not found 解决方式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#keyboardShouldPersistTaps-的使用"><span class="nav-number">28.</span> <span class="nav-text">keyboardShouldPersistTaps 的使用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ListView-使用的问题"><span class="nav-number">29.</span> <span class="nav-text">ListView 使用的问题</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#ListView-的宽高"><span class="nav-number">29.1.</span> <span class="nav-text">ListView 的宽高</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#renderRow-方法的坑"><span class="nav-number">29.2.</span> <span class="nav-text">renderRow 方法的坑</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#初始渲染数量"><span class="nav-number">29.3.</span> <span class="nav-text">初始渲染数量</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#cloneWithRows-使用的注意事项"><span class="nav-number">29.4.</span> <span class="nav-text">cloneWithRows 使用的注意事项</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#View-设置宽高"><span class="nav-number">30.</span> <span class="nav-text">View 设置宽高</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#布局方式"><span class="nav-number">31.</span> <span class="nav-text">布局方式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#设置-Image"><span class="nav-number">32.</span> <span class="nav-text">设置 Image</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用-JSX"><span class="nav-number">33.</span> <span class="nav-text">使用 JSX</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#JSX-中的-this"><span class="nav-number">33.1.</span> <span class="nav-text">JSX 中的 this</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#JSX-中的代码"><span class="nav-number">33.2.</span> <span class="nav-text">JSX 中的代码</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#如何隐藏一个组件"><span class="nav-number">34.</span> <span class="nav-text">如何隐藏一个组件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#padding-和-margin-使用区别"><span class="nav-number">35.</span> <span class="nav-text">padding 和 margin 使用区别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#组件之间的通信"><span class="nav-number">36.</span> <span class="nav-text">组件之间的通信</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#子组件调用父组件方法"><span class="nav-number">36.1.</span> <span class="nav-text">子组件调用父组件方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#父组件调用子组件方法"><span class="nav-number">36.2.</span> <span class="nav-text">父组件调用子组件方法</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#ref-属性"><span class="nav-number">36.2.1.</span> <span class="nav-text">ref 属性</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#跨级组件通信"><span class="nav-number">36.3.</span> <span class="nav-text">跨级组件通信</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#没有嵌套关系的组件通信"><span class="nav-number">36.4.</span> <span class="nav-text">没有嵌套关系的组件通信</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#State"><span class="nav-number">37.</span> <span class="nav-text">State</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Props"><span class="nav-number">38.</span> <span class="nav-text">Props</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#简介"><span class="nav-number">38.1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#子组件内获取-props"><span class="nav-number">38.2.</span> <span class="nav-text">子组件内获取 props</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Props-使用的注意点"><span class="nav-number">38.3.</span> <span class="nav-text">Props 使用的注意点</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#propTypes"><span class="nav-number">38.4.</span> <span class="nav-text">propTypes</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#defaultProps"><span class="nav-number">38.5.</span> <span class="nav-text">defaultProps</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#this-props-children"><span class="nav-number">39.</span> <span class="nav-text">this.props.children</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#TextInput-隐藏键盘"><span class="nav-number">40.</span> <span class="nav-text">TextInput 隐藏键盘</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#生命周期回调函数总结"><span class="nav-number">41.</span> <span class="nav-text">生命周期回调函数总结</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#componentWillMount"><span class="nav-number">41.1.</span> <span class="nav-text">componentWillMount()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#componentDidMount"><span class="nav-number">41.2.</span> <span class="nav-text">componentDidMount()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#componentWillReceiveProps-object-nextProps"><span class="nav-number">41.3.</span> <span class="nav-text">componentWillReceiveProps(object nextProps)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#boolean-shouldComponentUpdate-object-nextProps-object-nextState"><span class="nav-number">41.4.</span> <span class="nav-text">boolean shouldComponentUpdate(object nextProps, object nextState)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#componentWillUpdate-object-nextProps-object-nextState"><span class="nav-number">41.5.</span> <span class="nav-text">componentWillUpdate(object nextProps, object nextState)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#componentDidUpdate-object-prevProps-object-prevState"><span class="nav-number">41.6.</span> <span class="nav-text">componentDidUpdate(object prevProps, object prevState)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#componentWillUnmount"><span class="nav-number">41.7.</span> <span class="nav-text">componentWillUnmount()</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#优化切换动画卡顿的问题"><span class="nav-number">42.</span> <span class="nav-text">优化切换动画卡顿的问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#React-Native-原生模块调用-iOS"><span class="nav-number">43.</span> <span class="nav-text">React-Native 原生模块调用(iOS)</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#创建原生模块，实现“RCTBridgeModule”协议"><span class="nav-number">43.1.</span> <span class="nav-text">创建原生模块，实现“RCTBridgeModule”协议</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#导出模块，导出方法"><span class="nav-number">43.2.</span> <span class="nav-text">导出模块，导出方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#js文件中调用"><span class="nav-number">43.3.</span> <span class="nav-text">js文件中调用</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#React-Native-调试"><span class="nav-number">44.</span> <span class="nav-text">React Native 调试</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#React-Native-读取本地的json文件"><span class="nav-number">45.</span> <span class="nav-text">React Native 读取本地的json文件</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#导入json文件："><span class="nav-number">45.1.</span> <span class="nav-text">导入json文件：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#json格式"><span class="nav-number">45.2.</span> <span class="nav-text">json格式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#使用"><span class="nav-number">45.3.</span> <span class="nav-text">使用</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zachary Zhang</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

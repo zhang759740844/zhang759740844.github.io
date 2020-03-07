@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+
+
+
+
+  <meta name="keywords" content="学习笔记,源码解析,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="本篇是 AFNetworking 源码解读的第一篇。主要来了解如何通过 AFNetworking 发送网络请求">
+<meta name="keywords" content="学习笔记,源码解析">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AFNetworking 源码解析 - 发送请求">
+<meta property="og:url" content="http://zhang759740844.github.io/2018/12/23/AFNetworking4/index.html">
+<meta property="og:site_name" content="Zachary&#39;s blog">
+<meta property="og:description" content="本篇是 AFNetworking 源码解读的第一篇。主要来了解如何通过 AFNetworking 发送网络请求">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2020-02-27T15:13:37.610Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="AFNetworking 源码解析 - 发送请求">
+<meta name="twitter:description" content="本篇是 AFNetworking 源码解读的第一篇。主要来了解如何通过 AFNetworking 发送网络请求">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://zhang759740844.github.io/2018/12/23/AFNetworking4/">
+
+
+
+
+
+  <title>AFNetworking 源码解析 - 发送请求 | Zachary's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Zachary's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">记录成长</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://zhang759740844.github.io/2018/12/23/AFNetworking4/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zachary Zhang">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Zachary's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">AFNetworking 源码解析 - 发送请求</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-23T14:07:12+08:00">
+                2018-12-23
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本篇是 AFNetworking 源码解读的第一篇。主要来了解如何通过 AFNetworking 发送网络请求</p>
+<a id="more"></a>
+<h2 id="AFHTTPSessionManager"><a href="#AFHTTPSessionManager" class="headerlink" title="AFHTTPSessionManager"></a>AFHTTPSessionManager</h2><p>我们在写需求的时候很少碰到直接使用 <code>NSURLSession</code> 的情况，都是使用 <code>AFHTTPSessionManager</code> 的封装(虽然我们一般还要再封装一层)。</p>
+<p><code>AFHTTPSessionManager</code> 是 <code>AFURLSessionManager</code> 的子类，属于对外调用的接口，承担了小部分的功能，主要实现还是在 <code>AFURLSessionManager</code> 中</p>
+<h3 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h3><p><code>AFHTTPSessionManager</code> 的初始化方法最终来到这里：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">instancetype</span>)initWithBaseURL:(<span class="built_in">NSURL</span> *)url</span><br><span class="line">           sessionConfiguration:(<span class="built_in">NSURLSessionConfiguration</span> *)configuration</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">self</span> = [<span class="keyword">super</span> initWithSessionConfiguration:configuration];</span><br><span class="line">    <span class="keyword">if</span> (!<span class="keyword">self</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Ensure terminal slash for baseURL path, so that NSURL +URLWithString:relativeToURL: works as expected</span></span><br><span class="line">    <span class="keyword">if</span> ([[url path] length] &gt; <span class="number">0</span> &amp;&amp; ![[url absoluteString] hasSuffix:<span class="string">@"/"</span>]) &#123;</span><br><span class="line">        url = [url URLByAppendingPathComponent:<span class="string">@""</span>];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">self</span>.baseURL = url;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// 设置请求和返回的序列化对象</span></span><br><span class="line">    <span class="keyword">self</span>.requestSerializer = [AFHTTPRequestSerializer serializer];</span><br><span class="line">    <span class="keyword">self</span>.responseSerializer = [AFJSONResponseSerializer serializer];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">self</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>参数接收一个 <code>NSURLSessionConfiguration</code> 实例，它是创建 <code>NSURLSession</code> 需要的配置项。同时它保存了 <code>baseURL</code>，并且创建了请求和响应序列化对象 <code>requestSerializer</code> 和 <code>responseSerializer</code>。</p>
+<h3 id="几个-set-方法"><a href="#几个-set-方法" class="headerlink" title="几个 set 方法"></a>几个 set 方法</h3><p>初始化的时候，创建了默认的 <code>AFHTTPRequestSerializer</code> 和 <code>AFJSONResponseSerializer</code>。如果有特殊的 content-type 的请求或者相应，那么就需要定义序列化对象，因此提供了两个 set 方法，分别设置请求和响应序列化对象。</p>
+<p>还有一个关于安全策略的 set 方法，用来设置 HTTPS 下，证书的校验策略。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#pragma mark - 设置请求返回序列化对象</span></span><br><span class="line">- (<span class="keyword">void</span>)setRequestSerializer:(AFHTTPRequestSerializer &lt;AFURLRequestSerialization&gt; *)requestSerializer &#123;</span><br><span class="line">    <span class="built_in">NSParameterAssert</span>(requestSerializer);</span><br><span class="line"></span><br><span class="line">    _requestSerializer = requestSerializer;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)setResponseSerializer:(AFHTTPResponseSerializer &lt;AFURLResponseSerialization&gt; *)responseSerializer &#123;</span><br><span class="line">    <span class="built_in">NSParameterAssert</span>(responseSerializer);</span><br><span class="line"></span><br><span class="line">    [<span class="keyword">super</span> setResponseSerializer:responseSerializer];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">@dynamic</span> securityPolicy;</span><br><span class="line"></span><br><span class="line"><span class="meta">#pragma mark - 设置安全策略</span></span><br><span class="line">- (<span class="keyword">void</span>)setSecurityPolicy:(AFSecurityPolicy *)securityPolicy &#123;</span><br><span class="line">    <span class="comment">/// 如果SSLPinningMode是有安全策略的，但是请求的 scheme 不是 https 的，那么就要报错。因为安全策略必须要在 https 模式下</span></span><br><span class="line">    <span class="keyword">if</span> (securityPolicy.SSLPinningMode != AFSSLPinningModeNone &amp;&amp; ![<span class="keyword">self</span>.baseURL.scheme isEqualToString:<span class="string">@"https"</span>]) &#123;</span><br><span class="line">        <span class="built_in">NSString</span> *pinningMode = <span class="string">@"Unknown Pinning Mode"</span>;</span><br><span class="line">        <span class="keyword">switch</span> (securityPolicy.SSLPinningMode) &#123;</span><br><span class="line">            <span class="keyword">case</span> AFSSLPinningModeNone:        pinningMode = <span class="string">@"AFSSLPinningModeNone"</span>; <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> AFSSLPinningModeCertificate: pinningMode = <span class="string">@"AFSSLPinningModeCertificate"</span>; <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> AFSSLPinningModePublicKey:   pinningMode = <span class="string">@"AFSSLPinningModePublicKey"</span>; <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">NSString</span> *reason = [<span class="built_in">NSString</span> stringWithFormat:<span class="string">@"A security policy configured with `%@` can only be applied on a manager with a secure base URL (i.e. https)"</span>, pinningMode];</span><br><span class="line">        <span class="keyword">@throw</span> [<span class="built_in">NSException</span> exceptionWithName:<span class="string">@"Invalid Security Policy"</span> reason:reason userInfo:<span class="literal">nil</span>];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// 给 URL 设置安全策略</span></span><br><span class="line">    [<span class="keyword">super</span> setSecurityPolicy:securityPolicy];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="语义化请求方法"><a href="#语义化请求方法" class="headerlink" title="语义化请求方法"></a>语义化请求方法</h3><p>AFN 提供了进行不同方式请求的方法封装，这里进列举 get 和 post 两个方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// get 的正真方法带有 progress 参数</span></span><br><span class="line">- (<span class="built_in">NSURLSessionDataTask</span> *)GET:(<span class="built_in">NSString</span> *)URLString</span><br><span class="line">                   parameters:(<span class="keyword">id</span>)parameters</span><br><span class="line">                     progress:(<span class="keyword">void</span> (^)(<span class="built_in">NSProgress</span> * _Nonnull))downloadProgress</span><br><span class="line">                      success:(<span class="keyword">void</span> (^)(<span class="built_in">NSURLSessionDataTask</span> * _Nonnull, <span class="keyword">id</span> _Nullable))success</span><br><span class="line">                      failure:(<span class="keyword">void</span> (^)(<span class="built_in">NSURLSessionDataTask</span> * _Nullable, <span class="built_in">NSError</span> * _Nonnull))failure</span><br><span class="line">&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// 创建 NSURLSessionDataTask</span></span><br><span class="line">    <span class="built_in">NSURLSessionDataTask</span> *dataTask = [<span class="keyword">self</span> dataTaskWithHTTPMethod:<span class="string">@"GET"</span></span><br><span class="line">                                                        URLString:URLString</span><br><span class="line">                                                       parameters:parameters</span><br><span class="line">                                                   uploadProgress:<span class="literal">nil</span></span><br><span class="line">                                                 downloadProgress:downloadProgress</span><br><span class="line">                                                          success:success</span><br><span class="line">                                                          failure:failure];</span><br><span class="line"></span><br><span class="line">    [dataTask resume];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> dataTask;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="built_in">NSURLSessionDataTask</span> *)POST:(<span class="built_in">NSString</span> *)URLString</span><br><span class="line">                    parameters:(<span class="keyword">id</span>)parameters</span><br><span class="line">                       success:(<span class="keyword">void</span> (^)(<span class="built_in">NSURLSessionDataTask</span> *task, <span class="keyword">id</span> responseObject))success</span><br><span class="line">                       failure:(<span class="keyword">void</span> (^)(<span class="built_in">NSURLSessionDataTask</span> *task, <span class="built_in">NSError</span> *error))failure</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">return</span> [<span class="keyword">self</span> POST:URLString parameters:parameters progress:<span class="literal">nil</span> success:success failure:failure];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// post 方法 带 progress 参数的</span></span><br><span class="line">- (<span class="built_in">NSURLSessionDataTask</span> *)POST:(<span class="built_in">NSString</span> *)URLString</span><br><span class="line">                    parameters:(<span class="keyword">id</span>)parameters</span><br><span class="line">                      progress:(<span class="keyword">void</span> (^)(<span class="built_in">NSProgress</span> * _Nonnull))uploadProgress</span><br><span class="line">                       success:(<span class="keyword">void</span> (^)(<span class="built_in">NSURLSessionDataTask</span> * _Nonnull, <span class="keyword">id</span> _Nullable))success</span><br><span class="line">                       failure:(<span class="keyword">void</span> (^)(<span class="built_in">NSURLSessionDataTask</span> * _Nullable, <span class="built_in">NSError</span> * _Nonnull))failure</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">NSURLSessionDataTask</span> *dataTask = [<span class="keyword">self</span> dataTaskWithHTTPMethod:<span class="string">@"POST"</span> URLString:URLString parameters:parameters uploadProgress:uploadProgress downloadProgress:<span class="literal">nil</span> success:success failure:failure];</span><br><span class="line"></span><br><span class="line">    [dataTask resume];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> dataTask;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>他们调用了另一个方法后，就生成了一个 <code>NSURLSessionDataTask</code> 实例对象，并且通过 <code>resume</code> 方法开启网络请求。</p>
+<p>那么创建 <code>NSURLSessionDataTask</code> 的方法做了什么呢？</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// 不带 constructingBodyWithBlock 创建 NSURLSessionDataTask</span></span><br><span class="line">- (<span class="built_in">NSURLSessionDataTask</span> *)dataTaskWithHTTPMethod:(<span class="built_in">NSString</span> *)method</span><br><span class="line">                                       URLString:(<span class="built_in">NSString</span> *)URLString</span><br><span class="line">                                      parameters:(<span class="keyword">id</span>)parameters</span><br><span class="line">                                  uploadProgress:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSProgress</span> *uploadProgress)) uploadProgress</span><br><span class="line">                                downloadProgress:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSProgress</span> *downloadProgress)) downloadProgress</span><br><span class="line">                                         success:(<span class="keyword">void</span> (^)(<span class="built_in">NSURLSessionDataTask</span> *, <span class="keyword">id</span>))success</span><br><span class="line">                                         failure:(<span class="keyword">void</span> (^)(<span class="built_in">NSURLSessionDataTask</span> *, <span class="built_in">NSError</span> *))failure</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">NSError</span> *serializationError = <span class="literal">nil</span>;</span><br><span class="line">    <span class="comment">/// 通过 requestSerializer 创建 NSMutableURLRequest</span></span><br><span class="line">    <span class="built_in">NSMutableURLRequest</span> *request = [<span class="keyword">self</span>.requestSerializer requestWithMethod:method URLString:[[<span class="built_in">NSURL</span> URLWithString:URLString relativeToURL:<span class="keyword">self</span>.baseURL] absoluteString] parameters:parameters error:&amp;serializationError];</span><br><span class="line">    <span class="keyword">if</span> (serializationError) &#123;</span><br><span class="line">        <span class="keyword">if</span> (failure) &#123;</span><br><span class="line">            <span class="built_in">dispatch_async</span>(<span class="keyword">self</span>.completionQueue ?: dispatch_get_main_queue(), ^&#123;</span><br><span class="line">                failure(<span class="literal">nil</span>, serializationError);</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    __block <span class="built_in">NSURLSessionDataTask</span> *dataTask = <span class="literal">nil</span>;</span><br><span class="line">    <span class="comment">/// 通过 request 创建 dataTask. 这是 AFURLSessionManager 中的方法</span></span><br><span class="line">    dataTask = [<span class="keyword">self</span> dataTaskWithRequest:request</span><br><span class="line">                          uploadProgress:uploadProgress</span><br><span class="line">                        downloadProgress:downloadProgress</span><br><span class="line">                       completionHandler:^(<span class="built_in">NSURLResponse</span> * __unused response, <span class="keyword">id</span> responseObject, <span class="built_in">NSError</span> *error) &#123;</span><br><span class="line">        <span class="keyword">if</span> (error) &#123;</span><br><span class="line">            <span class="keyword">if</span> (failure) &#123;</span><br><span class="line">                failure(dataTask, error);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (success) &#123;</span><br><span class="line">                success(dataTask, responseObject);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> dataTask;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>首先通过前面的请求序列化类创建一个 <code>NSMutableURLRequest</code> 然后使用它创建 <code>NSURLSessionDataTask</code>，不过创建方法不在本类中，而是在它的父类中。这个将稍后再看。</p>
+<p>可以看到，在经过一系列的封装之后，发送一个网络请求需要的 <code>NSMutableURLRequest</code>，<code>NSURLSession</code>，<code>NSURLSessionDataTask</code> 都通过 AFN 创建了，而自己只需要负责传入请求，参数和回调即可。</p>
+<h3 id="发送-form-data-请求"><a href="#发送-form-data-请求" class="headerlink" title="发送 form-data 请求"></a>发送 form-data 请求</h3><p>上面的 get，post 方法无法发送文件，因此，AFN 提供了一个方法用来发送 form-data 类型的请求：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// post 方法带 constructingBodyWithBlock 的</span></span><br><span class="line"><span class="comment">/// constructingBodyWithBlock 参数 formData 会被添加到 http body 中</span></span><br><span class="line">- (<span class="built_in">NSURLSessionDataTask</span> *)POST:(<span class="built_in">NSString</span> *)URLString</span><br><span class="line">                    parameters:(<span class="keyword">id</span>)parameters</span><br><span class="line">     constructingBodyWithBlock:(<span class="keyword">void</span> (^)(<span class="keyword">id</span> &lt;AFMultipartFormData&gt; formData))block</span><br><span class="line">                      progress:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSProgress</span> * _Nonnull))uploadProgress</span><br><span class="line">                       success:(<span class="keyword">void</span> (^)(<span class="built_in">NSURLSessionDataTask</span> *task, <span class="keyword">id</span> responseObject))success</span><br><span class="line">                       failure:(<span class="keyword">void</span> (^)(<span class="built_in">NSURLSessionDataTask</span> *task, <span class="built_in">NSError</span> *error))failure</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">NSError</span> *serializationError = <span class="literal">nil</span>;</span><br><span class="line">    <span class="comment">/// 初始化一个 request，包含了参数以及生成 http body 中的 constructingBodyWithBlock</span></span><br><span class="line">    <span class="built_in">NSMutableURLRequest</span> *request = [<span class="keyword">self</span>.requestSerializer multipartFormRequestWithMethod:<span class="string">@"POST"</span> URLString:[[<span class="built_in">NSURL</span> URLWithString:URLString relativeToURL:<span class="keyword">self</span>.baseURL] absoluteString] parameters:parameters constructingBodyWithBlock:block error:&amp;serializationError];</span><br><span class="line">    <span class="comment">/// 序列化错误</span></span><br><span class="line">    <span class="keyword">if</span> (serializationError) &#123;</span><br><span class="line">        <span class="keyword">if</span> (failure) &#123;</span><br><span class="line">            <span class="built_in">dispatch_async</span>(<span class="keyword">self</span>.completionQueue ?: dispatch_get_main_queue(), ^&#123;</span><br><span class="line">                failure(<span class="literal">nil</span>, serializationError);</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    __block <span class="built_in">NSURLSessionDataTask</span> *task = [<span class="keyword">self</span> uploadTaskWithStreamedRequest:request progress:uploadProgress completionHandler:^(<span class="built_in">NSURLResponse</span> * __unused response, <span class="keyword">id</span> responseObject, <span class="built_in">NSError</span> *error) &#123;</span><br><span class="line">        <span class="keyword">if</span> (error) &#123;</span><br><span class="line">            <span class="keyword">if</span> (failure) &#123;</span><br><span class="line">                failure(task, error);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (success) &#123;</span><br><span class="line">                success(task, responseObject);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;];</span><br><span class="line"></span><br><span class="line">    [task resume];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> task;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>该方法会发起一个 form-data 类型的请求。你可以将 <code>NSData</code> 放入 param 中，由 AFN 进行序列化。也可以拿到 <code>constructingBodyWithBlock</code> 中的 block，通过 <code>AFMultipartFormData</code> 协议的方法，向其中添加 fileURL，来告诉 AFN 去序列化该地址下的文件。</p>
+<h2 id="AFURLSessionManager"><a href="#AFURLSessionManager" class="headerlink" title="AFURLSessionManager"></a>AFURLSessionManager</h2><p><code>AFURLSessionManager</code> 是 AFN 请求的核心。它遵循了下面几个协议：</p>
+<ul>
+<li>NSURLSessionTaskDelegate</li>
+<li>NSURLSessionDataDelegate</li>
+<li>NSURLSessionDownloadDelegate</li>
+<li>NSURLSessionDelegate</li>
+</ul>
+<h3 id="AFURLSessionManager-的属性"><a href="#AFURLSessionManager-的属性" class="headerlink" title="AFURLSessionManager 的属性"></a>AFURLSessionManager 的属性</h3><p><code>AFURLSessionManager</code> 中包含了非常多的实现协议时自定义的 block：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">AFURLSessionManager</span> ()</span></span><br><span class="line"><span class="comment">/// 执行响应的队列</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">readwrite</span>, <span class="keyword">nonatomic</span>, <span class="keyword">strong</span>) <span class="built_in">NSOperationQueue</span> *operationQueue;</span><br><span class="line"><span class="comment">/// task &lt;=&gt; 代理</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">readwrite</span>, <span class="keyword">nonatomic</span>, <span class="keyword">strong</span>) <span class="built_in">NSMutableDictionary</span> *mutableTaskDelegatesKeyedByTaskIdentifier;</span><br><span class="line"><span class="comment">/// session 的 taskDescription 都是相同的</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">readonly</span>, <span class="keyword">nonatomic</span>, <span class="keyword">copy</span>) <span class="built_in">NSString</span> *taskDescriptionForSessionTasks;</span><br><span class="line"><span class="comment">// NSURLSessionDelegate</span></span><br><span class="line"><span class="comment">/// 由于系统原因导致会话失效时的回调</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">readwrite</span>, <span class="keyword">nonatomic</span>, <span class="keyword">copy</span>) AFURLSessionDidBecomeInvalidBlock sessionDidBecomeInvalid;</span><br><span class="line"><span class="comment">/// 连接服务器，接收到认证请求时，可以返回指定的认证选项</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">readwrite</span>, <span class="keyword">nonatomic</span>, <span class="keyword">copy</span>) AFURLSessionDidReceiveAuthenticationChallengeBlock sessionDidReceiveAuthenticationChallenge;</span><br><span class="line"><span class="comment">/// 当应用进入后台时创建的后台会话的相关任务均执行完毕时，该回调在主队列中被执行</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">readwrite</span>, <span class="keyword">nonatomic</span>, <span class="keyword">copy</span>) AFURLSessionDidFinishEventsForBackgroundURLSessionBlock didFinishEventsForBackgroundURLSession;</span><br><span class="line"><span class="comment">// NSURLSessionTaskDelegate</span></span><br><span class="line"><span class="comment">/// 接收到重定向反馈时，该代码块可以指定重定向的链接</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">readwrite</span>, <span class="keyword">nonatomic</span>, <span class="keyword">copy</span>) AFURLSessionTaskWillPerformHTTPRedirectionBlock taskWillPerformHTTPRedirection;</span><br><span class="line"><span class="comment">///当数据任务被要求进行证书加密时，该代码块可以指定相关选择项，如使用证书、默认处理、取消请求</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">readwrite</span>, <span class="keyword">nonatomic</span>, <span class="keyword">copy</span>) AFURLSessionTaskDidReceiveAuthenticationChallengeBlock taskDidReceiveAuthenticationChallenge;</span><br><span class="line"><span class="comment">/// 任务需要流传递数据给服务端时，该代码块可以返回一个输入流</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">readwrite</span>, <span class="keyword">nonatomic</span>, <span class="keyword">copy</span>) AFURLSessionTaskNeedNewBodyStreamBlock taskNeedNewBodyStream;</span><br><span class="line"><span class="comment">/// 当数据上传时，该代码回调可以用来获取本次上传的字节数、已经上传的字节数、该任务需要上传的总字节数</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">readwrite</span>, <span class="keyword">nonatomic</span>, <span class="keyword">copy</span>) AFURLSessionTaskDidSendBodyDataBlock taskDidSendBodyData;</span><br><span class="line"><span class="comment">/// 当任务结束时，该代码回调会被执行，可以获取错误信息，如果有的话</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">readwrite</span>, <span class="keyword">nonatomic</span>, <span class="keyword">copy</span>) AFURLSessionTaskDidCompleteBlock taskDidComplete;</span><br><span class="line"><span class="comment">// NSURLSessionDataDelegate</span></span><br><span class="line"><span class="comment">/// 当数据任务接收到服务器响应时，该回调可以选择取消或允许等选项</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">readwrite</span>, <span class="keyword">nonatomic</span>, <span class="keyword">copy</span>) AFURLSessionDataTaskDidReceiveResponseBlock dataTaskDidReceiveResponse;</span><br><span class="line"><span class="comment">/// 当数据任务将转变为数据下载任务时，该回调可以进行一些处理，回调参数中包含了原任务，和将要转变为的目标任务</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">readwrite</span>, <span class="keyword">nonatomic</span>, <span class="keyword">copy</span>) AFURLSessionDataTaskDidBecomeDownloadTaskBlock dataTaskDidBecomeDownloadTask;</span><br><span class="line"><span class="comment">/// 当接收到服务端数据时，该回调被执行</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">readwrite</span>, <span class="keyword">nonatomic</span>, <span class="keyword">copy</span>) AFURLSessionDataTaskDidReceiveDataBlock dataTaskDidReceiveData;</span><br><span class="line"><span class="comment">/// 将要缓存响应报文时，可以对返回的响应报文进行一些处理，回调参数中包含了 NSCachedURLResponse 的实例对象，也是即将返回的实例</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">readwrite</span>, <span class="keyword">nonatomic</span>, <span class="keyword">copy</span>) AFURLSessionDataTaskWillCacheResponseBlock dataTaskWillCacheResponse;</span><br><span class="line"><span class="comment">// NSURLSessionDownloadDelegate</span></span><br><span class="line"><span class="comment">/// 当下载任务结束时，该回调代码块可以指定下载的缓存数据移动到的目标地址</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">readwrite</span>, <span class="keyword">nonatomic</span>, <span class="keyword">copy</span>) AFURLSessionDownloadTaskDidFinishDownloadingBlock downloadTaskDidFinishDownloading;</span><br><span class="line"><span class="comment">/// 在数据下载的过程中，该回调会被调用，其参数包含有本次下载的数据字节数、已经下载的字节数、该任务需要下载的总字节数</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">readwrite</span>, <span class="keyword">nonatomic</span>, <span class="keyword">copy</span>) AFURLSessionDownloadTaskDidWriteDataBlock downloadTaskDidWriteData;</span><br><span class="line"><span class="comment">/// 当下载任务再次启动时，该回调执行，回调参数包含有文件的字节偏移量和整个文件的字节长度</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">readwrite</span>, <span class="keyword">nonatomic</span>, <span class="keyword">copy</span>) AFURLSessionDownloadTaskDidResumeBlock downloadTaskDidResume;</span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure>
+<h3 id="AFURLSessionManager-的方法"><a href="#AFURLSessionManager-的方法" class="headerlink" title="AFURLSessionManager 的方法"></a>AFURLSessionManager 的方法</h3><h4 id="初始化方法"><a href="#初始化方法" class="headerlink" title="初始化方法"></a>初始化方法</h4><p>初始化方法中创建了请求需要使用的各种基本属性：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#pragma mark - 初始化方法</span></span><br><span class="line">- (<span class="keyword">instancetype</span>)initWithSessionConfiguration:(<span class="built_in">NSURLSessionConfiguration</span> *)configuration &#123;</span><br><span class="line">    <span class="keyword">self</span> = [<span class="keyword">super</span> init];</span><br><span class="line">    <span class="keyword">if</span> (!<span class="keyword">self</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (!configuration) &#123;</span><br><span class="line">        configuration = [<span class="built_in">NSURLSessionConfiguration</span> defaultSessionConfiguration];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">self</span>.sessionConfiguration = configuration;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">self</span>.operationQueue = [[<span class="built_in">NSOperationQueue</span> alloc] init];</span><br><span class="line">    <span class="keyword">self</span>.operationQueue.maxConcurrentOperationCount = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// 创建 NSURLSession</span></span><br><span class="line">    <span class="keyword">self</span>.session = [<span class="built_in">NSURLSession</span> sessionWithConfiguration:<span class="keyword">self</span>.sessionConfiguration delegate:<span class="keyword">self</span> delegateQueue:<span class="keyword">self</span>.operationQueue];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">self</span>.responseSerializer = [AFJSONResponseSerializer serializer];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">self</span>.securityPolicy = [AFSecurityPolicy defaultPolicy];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">self</span>.reachabilityManager = [AFNetworkReachabilityManager sharedManager];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">self</span>.mutableTaskDelegatesKeyedByTaskIdentifier = [[<span class="built_in">NSMutableDictionary</span> alloc] init];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">self</span>.lock = [[<span class="built_in">NSLock</span> alloc] init];</span><br><span class="line">    <span class="keyword">self</span>.lock.name = AFURLSessionManagerLockName;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// 为session的所有task设置 delegate</span></span><br><span class="line">    <span class="comment">/// 做清空处理，有一种后台session，当从后台回来的时候，根据 configuration 中的一个 ID，就可以重新恢复这个session，这时候其中就会有之前未完成的task了。这里这么做的目的就是防止一些之前的后台请求任务，导致程序的crash。</span></span><br><span class="line">    [<span class="keyword">self</span>.session getTasksWithCompletionHandler:^(<span class="built_in">NSArray</span> *dataTasks, <span class="built_in">NSArray</span> *uploadTasks, <span class="built_in">NSArray</span> *downloadTasks) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="built_in">NSURLSessionDataTask</span> *task <span class="keyword">in</span> dataTasks) &#123;</span><br><span class="line">            [<span class="keyword">self</span> addDelegateForDataTask:task uploadProgress:<span class="literal">nil</span> downloadProgress:<span class="literal">nil</span> completionHandler:<span class="literal">nil</span>];</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="built_in">NSURLSessionUploadTask</span> *uploadTask <span class="keyword">in</span> uploadTasks) &#123;</span><br><span class="line">            [<span class="keyword">self</span> addDelegateForUploadTask:uploadTask progress:<span class="literal">nil</span> completionHandler:<span class="literal">nil</span>];</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="built_in">NSURLSessionDownloadTask</span> *downloadTask <span class="keyword">in</span> downloadTasks) &#123;</span><br><span class="line">            [<span class="keyword">self</span> addDelegateForDownloadTask:downloadTask progress:<span class="literal">nil</span> destination:<span class="literal">nil</span> completionHandler:<span class="literal">nil</span>];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">self</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="创建-Task"><a href="#创建-Task" class="headerlink" title="创建 Task"></a>创建 Task</h4><p>创建的 Task 分为三种，普通的 dataTask，上传的 uploadTask 和下载的 downloadTask。</p>
+<h5 id="dataTask"><a href="#dataTask" class="headerlink" title="dataTask"></a>dataTask</h5><p>在 <code>AFHTTPSessionManager</code> 中已经创建好了 <code>NSURLRequest</code> 对象，调用以下方法创建 <code>NSURLSessionDataTask</code> 对象实例：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">NSURLSessionDataTask</span> *)dataTaskWithRequest:(<span class="built_in">NSURLRequest</span> *)request</span><br><span class="line">                            completionHandler:(<span class="keyword">void</span> (^)(<span class="built_in">NSURLResponse</span> *response, <span class="keyword">id</span> responseObject, <span class="built_in">NSError</span> *error))completionHandler</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">return</span> [<span class="keyword">self</span> dataTaskWithRequest:request uploadProgress:<span class="literal">nil</span> downloadProgress:<span class="literal">nil</span> completionHandler:completionHandler];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// c通过 request 创建 dataTask</span></span><br><span class="line">- (<span class="built_in">NSURLSessionDataTask</span> *)dataTaskWithRequest:(<span class="built_in">NSURLRequest</span> *)request</span><br><span class="line">                               uploadProgress:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSProgress</span> *uploadProgress)) uploadProgressBlock</span><br><span class="line">                             downloadProgress:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSProgress</span> *downloadProgress)) downloadProgressBlock</span><br><span class="line">                            completionHandler:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSURLResponse</span> *response, <span class="keyword">id</span> _Nullable responseObject,  <span class="built_in">NSError</span> * _Nullable error))completionHandler &#123;</span><br><span class="line"></span><br><span class="line">    __block <span class="built_in">NSURLSessionDataTask</span> *dataTask = <span class="literal">nil</span>;</span><br><span class="line">    <span class="comment">/// iOS8下可能会创建多个 task</span></span><br><span class="line">    url_session_manager_create_task_safely(^&#123;</span><br><span class="line">        dataTask = [<span class="keyword">self</span>.session dataTaskWithRequest:request];</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// 给 dataTask 创建 delegate</span></span><br><span class="line">    [<span class="keyword">self</span> addDelegateForDataTask:dataTask uploadProgress:uploadProgressBlock downloadProgress:downloadProgressBlock completionHandler:completionHandler];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> dataTask;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>除了简单调用 <code>NSURLSession</code> 的 API 生成实例外，<code>AFURLSessionManager</code> 还需要给生成的 dataTask 创建一个代理对象。这个下面就会说到。</p>
+<h5 id="uploadTask"><a href="#uploadTask" class="headerlink" title="uploadTask"></a>uploadTask</h5><p>uploadTask 在 <code>AFHTTPSessionManager</code> 中没有使用，<code>AFHTTPSessionManger</code> 提供的方法中要想实现上传功能，需要自己把文件转为 NSData 后通过参数上传。而 uploadTask 是自己通过输入流的方式将数据写入到了 request 中。使用 uploadTask 则能更加方便的交由 <code>NSURLSession</code> 完成相应的任务。只需要传入文件路径，data，或者输入流即可：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#pragma mark - 生成 uploadTask</span></span><br><span class="line"><span class="comment">/// 通过文件路径上传</span></span><br><span class="line">- (<span class="built_in">NSURLSessionUploadTask</span> *)uploadTaskWithRequest:(<span class="built_in">NSURLRequest</span> *)request</span><br><span class="line">                                         fromFile:(<span class="built_in">NSURL</span> *)fileURL</span><br><span class="line">                                         progress:(<span class="keyword">void</span> (^)(<span class="built_in">NSProgress</span> *uploadProgress)) uploadProgressBlock</span><br><span class="line">                                completionHandler:(<span class="keyword">void</span> (^)(<span class="built_in">NSURLResponse</span> *response, <span class="keyword">id</span> responseObject, <span class="built_in">NSError</span> *error))completionHandler</span><br><span class="line">&#123;</span><br><span class="line">    __block <span class="built_in">NSURLSessionUploadTask</span> *uploadTask = <span class="literal">nil</span>;</span><br><span class="line">    url_session_manager_create_task_safely(^&#123;</span><br><span class="line">        uploadTask = [<span class="keyword">self</span>.session uploadTaskWithRequest:request fromFile:fileURL];</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    [<span class="keyword">self</span> addDelegateForUploadTask:uploadTask progress:uploadProgressBlock completionHandler:completionHandler];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> uploadTask;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// 通过data上传</span></span><br><span class="line">- (<span class="built_in">NSURLSessionUploadTask</span> *)uploadTaskWithRequest:(<span class="built_in">NSURLRequest</span> *)request</span><br><span class="line">                                         fromData:(<span class="built_in">NSData</span> *)bodyData</span><br><span class="line">                                         progress:(<span class="keyword">void</span> (^)(<span class="built_in">NSProgress</span> *uploadProgress)) uploadProgressBlock</span><br><span class="line">                                completionHandler:(<span class="keyword">void</span> (^)(<span class="built_in">NSURLResponse</span> *response, <span class="keyword">id</span> responseObject, <span class="built_in">NSError</span> *error))completionHandler</span><br><span class="line">&#123;</span><br><span class="line">    __block <span class="built_in">NSURLSessionUploadTask</span> *uploadTask = <span class="literal">nil</span>;</span><br><span class="line">    url_session_manager_create_task_safely(^&#123;</span><br><span class="line">        uploadTask = [<span class="keyword">self</span>.session uploadTaskWithRequest:request fromData:bodyData];</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    [<span class="keyword">self</span> addDelegateForUploadTask:uploadTask progress:uploadProgressBlock completionHandler:completionHandler];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> uploadTask;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// 通过流上传</span></span><br><span class="line">- (<span class="built_in">NSURLSessionUploadTask</span> *)uploadTaskWithStreamedRequest:(<span class="built_in">NSURLRequest</span> *)request</span><br><span class="line">                                                 progress:(<span class="keyword">void</span> (^)(<span class="built_in">NSProgress</span> *uploadProgress)) uploadProgressBlock</span><br><span class="line">                                        completionHandler:(<span class="keyword">void</span> (^)(<span class="built_in">NSURLResponse</span> *response, <span class="keyword">id</span> responseObject, <span class="built_in">NSError</span> *error))completionHandler</span><br><span class="line">&#123;</span><br><span class="line">    __block <span class="built_in">NSURLSessionUploadTask</span> *uploadTask = <span class="literal">nil</span>;</span><br><span class="line">    url_session_manager_create_task_safely(^&#123;</span><br><span class="line">        uploadTask = [<span class="keyword">self</span>.session uploadTaskWithStreamedRequest:request];</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    [<span class="keyword">self</span> addDelegateForUploadTask:uploadTask progress:uploadProgressBlock completionHandler:completionHandler];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> uploadTask;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>同样的，每一个 dataTask 都会设置一个 delegate。</p>
+<h5 id="downloadTask"><a href="#downloadTask" class="headerlink" title="downloadTask"></a>downloadTask</h5><p>downloadTask 分为两个部分，一个是创建，一个是断线续传：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#pragma mark - 生成 downloadTask</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/// 创建下载任务</span></span><br><span class="line">- (<span class="built_in">NSURLSessionDownloadTask</span> *)downloadTaskWithRequest:(<span class="built_in">NSURLRequest</span> *)request</span><br><span class="line">                                             progress:(<span class="keyword">void</span> (^)(<span class="built_in">NSProgress</span> *downloadProgress)) downloadProgressBlock</span><br><span class="line">                                          destination:(<span class="built_in">NSURL</span> * (^)(<span class="built_in">NSURL</span> *targetPath, <span class="built_in">NSURLResponse</span> *response))destination</span><br><span class="line">                                    completionHandler:(<span class="keyword">void</span> (^)(<span class="built_in">NSURLResponse</span> *response, <span class="built_in">NSURL</span> *filePath, <span class="built_in">NSError</span> *error))completionHandler</span><br><span class="line">&#123;</span><br><span class="line">    __block <span class="built_in">NSURLSessionDownloadTask</span> *downloadTask = <span class="literal">nil</span>;</span><br><span class="line">    url_session_manager_create_task_safely(^&#123;</span><br><span class="line">        downloadTask = [<span class="keyword">self</span>.session downloadTaskWithRequest:request];</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    [<span class="keyword">self</span> addDelegateForDownloadTask:downloadTask progress:downloadProgressBlock destination:destination completionHandler:completionHandler];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> downloadTask;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// 继续下载</span></span><br><span class="line">- (<span class="built_in">NSURLSessionDownloadTask</span> *)downloadTaskWithResumeData:(<span class="built_in">NSData</span> *)resumeData</span><br><span class="line">                                                progress:(<span class="keyword">void</span> (^)(<span class="built_in">NSProgress</span> *downloadProgress)) downloadProgressBlock</span><br><span class="line">                                             destination:(<span class="built_in">NSURL</span> * (^)(<span class="built_in">NSURL</span> *targetPath, <span class="built_in">NSURLResponse</span> *response))destination</span><br><span class="line">                                       completionHandler:(<span class="keyword">void</span> (^)(<span class="built_in">NSURLResponse</span> *response, <span class="built_in">NSURL</span> *filePath, <span class="built_in">NSError</span> *error))completionHandler</span><br><span class="line">&#123;</span><br><span class="line">    __block <span class="built_in">NSURLSessionDownloadTask</span> *downloadTask = <span class="literal">nil</span>;</span><br><span class="line">    url_session_manager_create_task_safely(^&#123;</span><br><span class="line">        downloadTask = [<span class="keyword">self</span>.session downloadTaskWithResumeData:resumeData];</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    [<span class="keyword">self</span> addDelegateForDownloadTask:downloadTask progress:downloadProgressBlock destination:destination completionHandler:completionHandler];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> downloadTask;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果你不熟悉 <code>NSURLSessionDownloadTask</code> 那么你一定会很疑惑下面这个继续下载为什么只要传一个 <code>resumeData</code> 就可以知道下载的所有信息的。其实这个 <code>resumeData</code> 并不是下载的数据，而是下载数据的信息的 plist 生成的 <code>NSData</code>，其中包含了下载所需要的各种信息，包括本地缓存的路径名，下载的地址，当前下载了多少等。</p>
+<h4 id="为-task-创建代理"><a href="#为-task-创建代理" class="headerlink" title="为 task 创建代理"></a>为 task 创建代理</h4><p>task 请求过程中的请求中请求完成的回调都是通过 delegate 完成的。delegate 是一个 <code>AFURLSessionManagerTaskDelegate</code> 实例。添加代理的过程就是创建实例并设置回调方法的过程：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// 设置 task 的代理； 代理包含了 task 的各种回调。</span></span><br><span class="line">- (<span class="keyword">void</span>)setDelegate:(AFURLSessionManagerTaskDelegate *)delegate</span><br><span class="line">            forTask:(<span class="built_in">NSURLSessionTask</span> *)task</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">NSParameterAssert</span>(task);</span><br><span class="line">    <span class="built_in">NSParameterAssert</span>(delegate);</span><br><span class="line"></span><br><span class="line">    [<span class="keyword">self</span>.lock lock];</span><br><span class="line">    <span class="keyword">self</span>.mutableTaskDelegatesKeyedByTaskIdentifier[@(task.taskIdentifier)] = delegate;</span><br><span class="line">    [<span class="keyword">self</span> addNotificationObserverForTask:task];</span><br><span class="line">    [<span class="keyword">self</span>.lock unlock];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// 给 datatask 增加代理对象</span></span><br><span class="line">- (<span class="keyword">void</span>)addDelegateForDataTask:(<span class="built_in">NSURLSessionDataTask</span> *)dataTask</span><br><span class="line">                uploadProgress:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSProgress</span> *uploadProgress)) uploadProgressBlock</span><br><span class="line">              downloadProgress:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSProgress</span> *downloadProgress)) downloadProgressBlock</span><br><span class="line">             completionHandler:(<span class="keyword">void</span> (^)(<span class="built_in">NSURLResponse</span> *response, <span class="keyword">id</span> responseObject, <span class="built_in">NSError</span> *error))completionHandler</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">/// 创建一个 dataTask 的代理</span></span><br><span class="line">    AFURLSessionManagerTaskDelegate *delegate = [[AFURLSessionManagerTaskDelegate alloc] initWithTask:dataTask];</span><br><span class="line">    delegate.manager = <span class="keyword">self</span>;</span><br><span class="line">    delegate.completionHandler = completionHandler;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// 设置 taskDescription 有助于区别是否是 AFN 创建的 task</span></span><br><span class="line">    dataTask.taskDescription = <span class="keyword">self</span>.taskDescriptionForSessionTasks;</span><br><span class="line">    [<span class="keyword">self</span> setDelegate:delegate forTask:dataTask];</span><br><span class="line"></span><br><span class="line">    delegate.uploadProgressBlock = uploadProgressBlock;</span><br><span class="line">    delegate.downloadProgressBlock = downloadProgressBlock;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)addDelegateForUploadTask:(<span class="built_in">NSURLSessionUploadTask</span> *)uploadTask</span><br><span class="line">                        progress:(<span class="keyword">void</span> (^)(<span class="built_in">NSProgress</span> *uploadProgress)) uploadProgressBlock</span><br><span class="line">               completionHandler:(<span class="keyword">void</span> (^)(<span class="built_in">NSURLResponse</span> *response, <span class="keyword">id</span> responseObject, <span class="built_in">NSError</span> *error))completionHandler</span><br><span class="line">&#123;</span><br><span class="line">    AFURLSessionManagerTaskDelegate *delegate = [[AFURLSessionManagerTaskDelegate alloc] initWithTask:uploadTask];</span><br><span class="line">    delegate.manager = <span class="keyword">self</span>;</span><br><span class="line">    delegate.completionHandler = completionHandler;</span><br><span class="line"></span><br><span class="line">    uploadTask.taskDescription = <span class="keyword">self</span>.taskDescriptionForSessionTasks;</span><br><span class="line"></span><br><span class="line">    [<span class="keyword">self</span> setDelegate:delegate forTask:uploadTask];</span><br><span class="line"></span><br><span class="line">    delegate.uploadProgressBlock = uploadProgressBlock;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)addDelegateForDownloadTask:(<span class="built_in">NSURLSessionDownloadTask</span> *)downloadTask</span><br><span class="line">                          progress:(<span class="keyword">void</span> (^)(<span class="built_in">NSProgress</span> *downloadProgress)) downloadProgressBlock</span><br><span class="line">                       destination:(<span class="built_in">NSURL</span> * (^)(<span class="built_in">NSURL</span> *targetPath, <span class="built_in">NSURLResponse</span> *response))destination</span><br><span class="line">                 completionHandler:(<span class="keyword">void</span> (^)(<span class="built_in">NSURLResponse</span> *response, <span class="built_in">NSURL</span> *filePath, <span class="built_in">NSError</span> *error))completionHandler</span><br><span class="line">&#123;</span><br><span class="line">    AFURLSessionManagerTaskDelegate *delegate = [[AFURLSessionManagerTaskDelegate alloc] initWithTask:downloadTask];</span><br><span class="line">    delegate.manager = <span class="keyword">self</span>;</span><br><span class="line">    delegate.completionHandler = completionHandler;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (destination) &#123;</span><br><span class="line">        delegate.downloadTaskDidFinishDownloading = ^<span class="built_in">NSURL</span> * (<span class="built_in">NSURLSession</span> * __unused session, <span class="built_in">NSURLSessionDownloadTask</span> *task, <span class="built_in">NSURL</span> *location) &#123;</span><br><span class="line">            <span class="keyword">return</span> destination(location, task.response);</span><br><span class="line">        &#125;;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    downloadTask.taskDescription = <span class="keyword">self</span>.taskDescriptionForSessionTasks;</span><br><span class="line"></span><br><span class="line">    [<span class="keyword">self</span> setDelegate:delegate forTask:downloadTask];</span><br><span class="line"></span><br><span class="line">    delegate.downloadProgressBlock = downloadProgressBlock;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>每一个生成的 task 和它的代理都会保存在 manager 的 <code>mutableTaskDelegatesKeyedByTaskIdentifier</code> 中。当然其实也可以通过给 task 添加关联对象的方式保存 delegate。</p>
+<h3 id="协议方法"><a href="#协议方法" class="headerlink" title="协议方法"></a>协议方法</h3><p>上面说到了 <code>AFURLSessionManager</code> 实现了 <code>NSURLSession</code> 相关的四个代理。下面来分别看看：</p>
+<h4 id="NSURLSessionDelegate"><a href="#NSURLSessionDelegate" class="headerlink" title="NSURLSessionDelegate"></a>NSURLSessionDelegate</h4><p>如果有相关的 block 那么就执行相关的 block，没有 block 也可以通过监听相应的 notification ：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// 因为异常终止请求</span></span><br><span class="line">- (<span class="keyword">void</span>)URLSession:(<span class="built_in">NSURLSession</span> *)session</span><br><span class="line">didBecomeInvalidWithError:(<span class="built_in">NSError</span> *)error</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.sessionDidBecomeInvalid) &#123;</span><br><span class="line">        <span class="keyword">self</span>.sessionDidBecomeInvalid(session, error);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    [[<span class="built_in">NSNotificationCenter</span> defaultCenter] postNotificationName:AFURLSessionDidInvalidateNotification object:session];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// 证书校验</span></span><br><span class="line">- (<span class="keyword">void</span>)URLSession:(<span class="built_in">NSURLSession</span> *)session</span><br><span class="line">didReceiveChallenge:(<span class="built_in">NSURLAuthenticationChallenge</span> *)challenge</span><br><span class="line"> completionHandler:(<span class="keyword">void</span> (^)(<span class="built_in">NSURLSessionAuthChallengeDisposition</span> disposition, <span class="built_in">NSURLCredential</span> *credential))completionHandler</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">/// 默认的处理方式</span></span><br><span class="line">    <span class="built_in">NSURLSessionAuthChallengeDisposition</span> disposition = <span class="built_in">NSURLSessionAuthChallengePerformDefaultHandling</span>;</span><br><span class="line">    __block <span class="built_in">NSURLCredential</span> *credential = <span class="literal">nil</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.sessionDidReceiveAuthenticationChallenge) &#123;</span><br><span class="line">        <span class="comment">/// 自己的处理方式</span></span><br><span class="line">        disposition = <span class="keyword">self</span>.sessionDidReceiveAuthenticationChallenge(session, challenge, &amp;credential);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">/// 需要验证证书</span></span><br><span class="line">        <span class="keyword">if</span> ([challenge.protectionSpace.authenticationMethod isEqualToString:<span class="built_in">NSURLAuthenticationMethodServerTrust</span>]) &#123;</span><br><span class="line">            <span class="comment">/// serverTrust 是服务端的证书链</span></span><br><span class="line">            <span class="keyword">if</span> ([<span class="keyword">self</span>.securityPolicy evaluateServerTrust:challenge.protectionSpace.serverTrust forDomain:challenge.protectionSpace.host]) &#123;</span><br><span class="line">                <span class="comment">/// 验证通过</span></span><br><span class="line">                credential = [<span class="built_in">NSURLCredential</span> credentialForTrust:challenge.protectionSpace.serverTrust];</span><br><span class="line">                <span class="keyword">if</span> (credential) &#123;</span><br><span class="line">                    disposition = <span class="built_in">NSURLSessionAuthChallengeUseCredential</span>;</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    disposition = <span class="built_in">NSURLSessionAuthChallengePerformDefaultHandling</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="comment">/// 验证不通过取消请求</span></span><br><span class="line">                disposition = <span class="built_in">NSURLSessionAuthChallengeCancelAuthenticationChallenge</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            disposition = <span class="built_in">NSURLSessionAuthChallengePerformDefaultHandling</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (completionHandler) &#123;</span><br><span class="line">        <span class="comment">/// 返回验证解果</span></span><br><span class="line">        completionHandler(disposition, credential);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// 后台任务完成后的回调</span></span><br><span class="line">- (<span class="keyword">void</span>)URLSessionDidFinishEventsForBackgroundURLSession:(<span class="built_in">NSURLSession</span> *)session &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.didFinishEventsForBackgroundURLSession) &#123;</span><br><span class="line">        <span class="built_in">dispatch_async</span>(dispatch_get_main_queue(), ^&#123;</span><br><span class="line">            <span class="keyword">self</span>.didFinishEventsForBackgroundURLSession(session);</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="NSURLSessionTaskDelegate"><a href="#NSURLSessionTaskDelegate" class="headerlink" title="NSURLSessionTaskDelegate"></a>NSURLSessionTaskDelegate</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// 重定向操作</span></span><br><span class="line">- (<span class="keyword">void</span>)URLSession:(<span class="built_in">NSURLSession</span> *)session</span><br><span class="line">              task:(<span class="built_in">NSURLSessionTask</span> *)task</span><br><span class="line">willPerformHTTPRedirection:(<span class="built_in">NSHTTPURLResponse</span> *)response</span><br><span class="line">        newRequest:(<span class="built_in">NSURLRequest</span> *)request</span><br><span class="line"> completionHandler:(<span class="keyword">void</span> (^)(<span class="built_in">NSURLRequest</span> *))completionHandler</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">NSURLRequest</span> *redirectRequest = request;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.taskWillPerformHTTPRedirection) &#123;</span><br><span class="line">        redirectRequest = <span class="keyword">self</span>.taskWillPerformHTTPRedirection(session, task, response, request);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (completionHandler) &#123;</span><br><span class="line">        completionHandler(redirectRequest);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// 使用方法和 session 的那个一致</span></span><br><span class="line">- (<span class="keyword">void</span>)URLSession:(<span class="built_in">NSURLSession</span> *)session</span><br><span class="line">              task:(<span class="built_in">NSURLSessionTask</span> *)task</span><br><span class="line">didReceiveChallenge:(<span class="built_in">NSURLAuthenticationChallenge</span> *)challenge</span><br><span class="line"> completionHandler:(<span class="keyword">void</span> (^)(<span class="built_in">NSURLSessionAuthChallengeDisposition</span> disposition, <span class="built_in">NSURLCredential</span> *credential))completionHandler</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">NSURLSessionAuthChallengeDisposition</span> disposition = <span class="built_in">NSURLSessionAuthChallengePerformDefaultHandling</span>;</span><br><span class="line">    __block <span class="built_in">NSURLCredential</span> *credential = <span class="literal">nil</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.taskDidReceiveAuthenticationChallenge) &#123;</span><br><span class="line">        disposition = <span class="keyword">self</span>.taskDidReceiveAuthenticationChallenge(session, task, challenge, &amp;credential);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> ([challenge.protectionSpace.authenticationMethod isEqualToString:<span class="built_in">NSURLAuthenticationMethodServerTrust</span>]) &#123;</span><br><span class="line">            <span class="keyword">if</span> ([<span class="keyword">self</span>.securityPolicy evaluateServerTrust:challenge.protectionSpace.serverTrust forDomain:challenge.protectionSpace.host]) &#123;</span><br><span class="line">                disposition = <span class="built_in">NSURLSessionAuthChallengeUseCredential</span>;</span><br><span class="line">                credential = [<span class="built_in">NSURLCredential</span> credentialForTrust:challenge.protectionSpace.serverTrust];</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                disposition = <span class="built_in">NSURLSessionAuthChallengeCancelAuthenticationChallenge</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            disposition = <span class="built_in">NSURLSessionAuthChallengePerformDefaultHandling</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (completionHandler) &#123;</span><br><span class="line">        completionHandler(disposition, credential);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// 请求需要一个全新的，未打开的数据时调用。特别是请求一个body失败时，可以通过这个方法给一个新的body</span></span><br><span class="line">- (<span class="keyword">void</span>)URLSession:(<span class="built_in">NSURLSession</span> *)session</span><br><span class="line">              task:(<span class="built_in">NSURLSessionTask</span> *)task</span><br><span class="line"> needNewBodyStream:(<span class="keyword">void</span> (^)(<span class="built_in">NSInputStream</span> *bodyStream))completionHandler</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">NSInputStream</span> *inputStream = <span class="literal">nil</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.taskNeedNewBodyStream) &#123;</span><br><span class="line">        inputStream = <span class="keyword">self</span>.taskNeedNewBodyStream(session, task);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (task.originalRequest.HTTPBodyStream &amp;&amp; [task.originalRequest.HTTPBodyStream conformsToProtocol:<span class="class"><span class="keyword">@protocol</span>(<span class="title">NSCopying</span>)]) </span>&#123;</span><br><span class="line">        inputStream = [task.originalRequest.HTTPBodyStream <span class="keyword">copy</span>];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (completionHandler) &#123;</span><br><span class="line">        completionHandler(inputStream);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// 上传数据那一刻调用</span></span><br><span class="line">- (<span class="keyword">void</span>)URLSession:(<span class="built_in">NSURLSession</span> *)session</span><br><span class="line">              task:(<span class="built_in">NSURLSessionTask</span> *)task</span><br><span class="line">   didSendBodyData:(int64_t)bytesSent</span><br><span class="line">    totalBytesSent:(int64_t)totalBytesSent</span><br><span class="line">totalBytesExpectedToSend:(int64_t)totalBytesExpectedToSend</span><br><span class="line">&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// 数据的总长度</span></span><br><span class="line">    int64_t totalUnitCount = totalBytesExpectedToSend;</span><br><span class="line">    <span class="keyword">if</span>(totalUnitCount == <span class="built_in">NSURLSessionTransferSizeUnknown</span>) &#123;</span><br><span class="line">        <span class="built_in">NSString</span> *contentLength = [task.originalRequest valueForHTTPHeaderField:<span class="string">@"Content-Length"</span>];</span><br><span class="line">        <span class="keyword">if</span>(contentLength) &#123;</span><br><span class="line">            totalUnitCount = (int64_t) [contentLength longLongValue];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/// 获取 task 对应的 delegate</span></span><br><span class="line">    AFURLSessionManagerTaskDelegate *delegate = [<span class="keyword">self</span> delegateForTask:task];</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (delegate) &#123;</span><br><span class="line">        <span class="comment">/// 调用 delegate 的回调方法，设置已经上传了的长度和总共需要上传的长度</span></span><br><span class="line">        [delegate URLSession:session task:task didSendBodyData:bytesSent totalBytesSent:totalBytesSent totalBytesExpectedToSend:totalBytesExpectedToSend];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.taskDidSendBodyData) &#123;</span><br><span class="line">        <span class="keyword">self</span>.taskDidSendBodyData(session, task, bytesSent, totalBytesSent, totalUnitCount);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// 上传完成时</span></span><br><span class="line">- (<span class="keyword">void</span>)URLSession:(<span class="built_in">NSURLSession</span> *)session</span><br><span class="line">              task:(<span class="built_in">NSURLSessionTask</span> *)task</span><br><span class="line">didCompleteWithError:(<span class="built_in">NSError</span> *)error</span><br><span class="line">&#123;</span><br><span class="line">    AFURLSessionManagerTaskDelegate *delegate = [<span class="keyword">self</span> delegateForTask:task];</span><br><span class="line"></span><br><span class="line">    <span class="comment">// delegate may be nil when completing a task in the background</span></span><br><span class="line">    <span class="keyword">if</span> (delegate) &#123;</span><br><span class="line">        [delegate URLSession:session task:task didCompleteWithError:error];</span><br><span class="line"></span><br><span class="line">        [<span class="keyword">self</span> removeDelegateForTask:task];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.taskDidComplete) &#123;</span><br><span class="line">        <span class="keyword">self</span>.taskDidComplete(session, task, error);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在发送请求的时候，将请求的总数据和已发送的数据通过 delegate 的相应方法保存下来：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// AFURLSessionManagerTaskDelegate 中</span></span><br><span class="line">- (<span class="keyword">void</span>)URLSession:(<span class="built_in">NSURLSession</span> *)session task:(<span class="built_in">NSURLSessionTask</span> *)task</span><br><span class="line">   didSendBodyData:(int64_t)bytesSent</span><br><span class="line">    totalBytesSent:(int64_t)totalBytesSent</span><br><span class="line">totalBytesExpectedToSend:(int64_t)totalBytesExpectedToSend&#123;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">self</span>.uploadProgress.totalUnitCount = task.countOfBytesExpectedToSend;</span><br><span class="line">    <span class="keyword">self</span>.uploadProgress.completedUnitCount = task.countOfBytesSent;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在请求完成时，又调用了 delegate 的相应方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// AFURLSessionManagerTaskDelegate 中</span></span><br><span class="line">- (<span class="keyword">void</span>)URLSession:(__unused <span class="built_in">NSURLSession</span> *)session</span><br><span class="line">              task:(<span class="built_in">NSURLSessionTask</span> *)task</span><br><span class="line">didCompleteWithError:(<span class="built_in">NSError</span> *)error</span><br><span class="line">&#123;</span><br><span class="line">    __<span class="keyword">strong</span> AFURLSessionManager *manager = <span class="keyword">self</span>.manager;</span><br><span class="line"></span><br><span class="line">    __block <span class="keyword">id</span> responseObject = <span class="literal">nil</span>;</span><br><span class="line"></span><br><span class="line">    __block <span class="built_in">NSMutableDictionary</span> *userInfo = [<span class="built_in">NSMutableDictionary</span> dictionary];</span><br><span class="line">    userInfo[AFNetworkingTaskDidCompleteResponseSerializerKey] = manager.responseSerializer;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//Performance Improvement from #2672</span></span><br><span class="line">    <span class="built_in">NSData</span> *data = <span class="literal">nil</span>;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.mutableData) &#123;</span><br><span class="line">        data = [<span class="keyword">self</span>.mutableData <span class="keyword">copy</span>];</span><br><span class="line">        <span class="comment">//We no longer need the reference, so nil it out to gain back some memory.</span></span><br><span class="line">        <span class="keyword">self</span>.mutableData = <span class="literal">nil</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.downloadFileURL) &#123;</span><br><span class="line">        userInfo[AFNetworkingTaskDidCompleteAssetPathKey] = <span class="keyword">self</span>.downloadFileURL;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (data) &#123;</span><br><span class="line">        userInfo[AFNetworkingTaskDidCompleteResponseDataKey] = data;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (error) &#123;</span><br><span class="line">        userInfo[AFNetworkingTaskDidCompleteErrorKey] = error;</span><br><span class="line"></span><br><span class="line">        dispatch_group_async(manager.completionGroup ?: url_session_manager_completion_group(), manager.completionQueue ?: dispatch_get_main_queue(), ^&#123;</span><br><span class="line">            <span class="keyword">if</span> (<span class="keyword">self</span>.completionHandler) &#123;</span><br><span class="line">                <span class="keyword">self</span>.completionHandler(task.response, responseObject, error);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="built_in">dispatch_async</span>(dispatch_get_main_queue(), ^&#123;</span><br><span class="line">                [[<span class="built_in">NSNotificationCenter</span> defaultCenter] postNotificationName:AFNetworkingTaskDidCompleteNotification object:task userInfo:userInfo];</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      	<span class="comment">/// 请求成功，异步处理返回的数据</span></span><br><span class="line">        <span class="built_in">dispatch_async</span>(url_session_manager_processing_queue(), ^&#123;</span><br><span class="line">            <span class="built_in">NSError</span> *serializationError = <span class="literal">nil</span>;</span><br><span class="line">            responseObject = [manager.responseSerializer responseObjectForResponse:task.response data:data error:&amp;serializationError];</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (<span class="keyword">self</span>.downloadFileURL) &#123;</span><br><span class="line">                responseObject = <span class="keyword">self</span>.downloadFileURL;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (responseObject) &#123;</span><br><span class="line">                userInfo[AFNetworkingTaskDidCompleteSerializedResponseKey] = responseObject;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (serializationError) &#123;</span><br><span class="line">                userInfo[AFNetworkingTaskDidCompleteErrorKey] = serializationError;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            dispatch_group_async(manager.completionGroup ?: url_session_manager_completion_group(), manager.completionQueue ?: dispatch_get_main_queue(), ^&#123;</span><br><span class="line">                <span class="keyword">if</span> (<span class="keyword">self</span>.completionHandler) &#123;</span><br><span class="line">                    <span class="keyword">self</span>.completionHandler(task.response, responseObject, serializationError);</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="built_in">dispatch_async</span>(dispatch_get_main_queue(), ^&#123;</span><br><span class="line">                    [[<span class="built_in">NSNotificationCenter</span> defaultCenter] postNotificationName:AFNetworkingTaskDidCompleteNotification object:task userInfo:userInfo];</span><br><span class="line">                &#125;);</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里 AFN 除了调用回调以及发送通知外，我们还可以发现使用了 <code>dispatch_group_async</code>。它可以帮助我们做一些多个请求同步的操作。<code>url_session_manager_completion_group()</code> 方法提供了一个 group：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> dispatch_group_t url_session_manager_completion_group() &#123;</span><br><span class="line">    <span class="keyword">static</span> dispatch_group_t af_url_session_manager_completion_group;</span><br><span class="line">    <span class="keyword">static</span> <span class="built_in">dispatch_once_t</span> onceToken;</span><br><span class="line">    <span class="built_in">dispatch_once</span>(&amp;onceToken, ^&#123;</span><br><span class="line">        af_url_session_manager_completion_group = dispatch_group_create();</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> af_url_session_manager_completion_group;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们可以在外部通过 AFN 发起多个请求，然后通过 <code>url_session_manager_completion_group()</code> 方法提供的 group，在请求完成后统一执行。当然其实我们亦可以在各个请求的完成回调中通过信号量的方式执行。不过那样就有点不是那么优雅了。</p>
+<h4 id="NSURLSessionDataDelegate"><a href="#NSURLSessionDataDelegate" class="headerlink" title="NSURLSessionDataDelegate"></a>NSURLSessionDataDelegate</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#pragma mark - NSURLSessionDataDelegate</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/// 收到响应时调用，可以选择取消或者允许响应</span></span><br><span class="line">- (<span class="keyword">void</span>)URLSession:(<span class="built_in">NSURLSession</span> *)session</span><br><span class="line">          dataTask:(<span class="built_in">NSURLSessionDataTask</span> *)dataTask</span><br><span class="line">didReceiveResponse:(<span class="built_in">NSURLResponse</span> *)response</span><br><span class="line"> completionHandler:(<span class="keyword">void</span> (^)(<span class="built_in">NSURLSessionResponseDisposition</span> disposition))completionHandler</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">NSURLSessionResponseDisposition</span> disposition = <span class="built_in">NSURLSessionResponseAllow</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.dataTaskDidReceiveResponse) &#123;</span><br><span class="line">        disposition = <span class="keyword">self</span>.dataTaskDidReceiveResponse(session, dataTask, response);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (completionHandler) &#123;</span><br><span class="line">        completionHandler(disposition);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// 当NSURLSessionDataTask变为NSURLSessionDownloadTask调用，之后NSURLSessionDataTask将不再接受消息</span></span><br><span class="line">- (<span class="keyword">void</span>)URLSession:(<span class="built_in">NSURLSession</span> *)session</span><br><span class="line">          dataTask:(<span class="built_in">NSURLSessionDataTask</span> *)dataTask</span><br><span class="line">didBecomeDownloadTask:(<span class="built_in">NSURLSessionDownloadTask</span> *)downloadTask</span><br><span class="line">&#123;</span><br><span class="line">    AFURLSessionManagerTaskDelegate *delegate = [<span class="keyword">self</span> delegateForTask:dataTask];</span><br><span class="line">    <span class="keyword">if</span> (delegate) &#123;</span><br><span class="line">        <span class="comment">/// 移除 dataTask</span></span><br><span class="line">        [<span class="keyword">self</span> removeDelegateForTask:dataTask];</span><br><span class="line">        <span class="comment">/// 设置 downloadTask</span></span><br><span class="line">        [<span class="keyword">self</span> setDelegate:delegate forTask:downloadTask];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.dataTaskDidBecomeDownloadTask) &#123;</span><br><span class="line">        <span class="keyword">self</span>.dataTaskDidBecomeDownloadTask(session, dataTask, downloadTask);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// 收到数据后调用</span></span><br><span class="line">- (<span class="keyword">void</span>)URLSession:(<span class="built_in">NSURLSession</span> *)session</span><br><span class="line">          dataTask:(<span class="built_in">NSURLSessionDataTask</span> *)dataTask</span><br><span class="line">    didReceiveData:(<span class="built_in">NSData</span> *)data</span><br><span class="line">&#123;</span><br><span class="line">    AFURLSessionManagerTaskDelegate *delegate = [<span class="keyword">self</span> delegateForTask:dataTask];</span><br><span class="line">    <span class="comment">/// 调用 delegate 把 data 收集起来</span></span><br><span class="line">    [delegate URLSession:session dataTask:dataTask didReceiveData:data];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.dataTaskDidReceiveData) &#123;</span><br><span class="line">        <span class="keyword">self</span>.dataTaskDidReceiveData(session, dataTask, data);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// 缓存报文时调用</span></span><br><span class="line">- (<span class="keyword">void</span>)URLSession:(<span class="built_in">NSURLSession</span> *)session</span><br><span class="line">          dataTask:(<span class="built_in">NSURLSessionDataTask</span> *)dataTask</span><br><span class="line"> willCacheResponse:(<span class="built_in">NSCachedURLResponse</span> *)proposedResponse</span><br><span class="line"> completionHandler:(<span class="keyword">void</span> (^)(<span class="built_in">NSCachedURLResponse</span> *cachedResponse))completionHandler</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">NSCachedURLResponse</span> *cachedResponse = proposedResponse;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.dataTaskWillCacheResponse) &#123;</span><br><span class="line">        cachedResponse = <span class="keyword">self</span>.dataTaskWillCacheResponse(session, dataTask, proposedResponse);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (completionHandler) &#123;</span><br><span class="line">        completionHandler(cachedResponse);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>主要关系受到数据后的回调方法，它把接收到的 data 传给了 delegate：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// AFURLSessionManagerTaskDelegate 中</span></span><br><span class="line">- (<span class="keyword">void</span>)URLSession:(__unused <span class="built_in">NSURLSession</span> *)session</span><br><span class="line">          dataTask:(__unused <span class="built_in">NSURLSessionDataTask</span> *)dataTask</span><br><span class="line">    didReceiveData:(<span class="built_in">NSData</span> *)data</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">self</span>.downloadProgress.totalUnitCount = dataTask.countOfBytesExpectedToReceive;</span><br><span class="line">    <span class="keyword">self</span>.downloadProgress.completedUnitCount = dataTask.countOfBytesReceived;</span><br><span class="line"></span><br><span class="line">    [<span class="keyword">self</span>.mutableData appendData:data];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>前面请求完成时传给 <code>responseSerializer</code> 的就是这里 <code>mutableData</code> 拼接好的数据。它把每次收到的数据都拼接起来，等待请求完成。</p>
+<h4 id="NSURLSessionDownloadDelegate"><a href="#NSURLSessionDownloadDelegate" class="headerlink" title="NSURLSessionDownloadDelegate"></a>NSURLSessionDownloadDelegate</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#pragma mark - NSURLSessionDownloadDelegate</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/// 下载完成调用</span></span><br><span class="line">- (<span class="keyword">void</span>)URLSession:(<span class="built_in">NSURLSession</span> *)session</span><br><span class="line">      downloadTask:(<span class="built_in">NSURLSessionDownloadTask</span> *)downloadTask</span><br><span class="line">didFinishDownloadingToURL:(<span class="built_in">NSURL</span> *)location</span><br><span class="line">&#123;</span><br><span class="line">    AFURLSessionManagerTaskDelegate *delegate = [<span class="keyword">self</span> delegateForTask:downloadTask];</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.downloadTaskDidFinishDownloading) &#123;</span><br><span class="line">        <span class="comment">/// 获取下载数据要保存的地址</span></span><br><span class="line">        <span class="built_in">NSURL</span> *fileURL = <span class="keyword">self</span>.downloadTaskDidFinishDownloading(session, downloadTask, location);</span><br><span class="line">        <span class="keyword">if</span> (fileURL) &#123;</span><br><span class="line">            delegate.downloadFileURL = fileURL;</span><br><span class="line">            <span class="built_in">NSError</span> *error = <span class="literal">nil</span>;</span><br><span class="line">            </span><br><span class="line">            <span class="comment">/// 移动下载的数据到指定地址</span></span><br><span class="line">            <span class="keyword">if</span> (![[<span class="built_in">NSFileManager</span> defaultManager] moveItemAtURL:location toURL:fileURL error:&amp;error]) &#123;</span><br><span class="line">                [[<span class="built_in">NSNotificationCenter</span> defaultCenter] postNotificationName:AFURLSessionDownloadTaskDidFailToMoveFileNotification object:downloadTask userInfo:error.userInfo];</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (delegate) &#123;</span><br><span class="line">        [delegate URLSession:session downloadTask:downloadTask didFinishDownloadingToURL:location];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// 下载中调用</span></span><br><span class="line">- (<span class="keyword">void</span>)URLSession:(<span class="built_in">NSURLSession</span> *)session</span><br><span class="line">      downloadTask:(<span class="built_in">NSURLSessionDownloadTask</span> *)downloadTask</span><br><span class="line">      didWriteData:(int64_t)bytesWritten</span><br><span class="line"> totalBytesWritten:(int64_t)totalBytesWritten</span><br><span class="line">totalBytesExpectedToWrite:(int64_t)totalBytesExpectedToWrite</span><br><span class="line">&#123;</span><br><span class="line">    </span><br><span class="line">    AFURLSessionManagerTaskDelegate *delegate = [<span class="keyword">self</span> delegateForTask:downloadTask];</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (delegate) &#123;</span><br><span class="line">        [delegate URLSession:session downloadTask:downloadTask didWriteData:bytesWritten totalBytesWritten:totalBytesWritten totalBytesExpectedToWrite:totalBytesExpectedToWrite];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.downloadTaskDidWriteData) &#123;</span><br><span class="line">        <span class="keyword">self</span>.downloadTaskDidWriteData(session, downloadTask, bytesWritten, totalBytesWritten, totalBytesExpectedToWrite);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// 恢复下载调用</span></span><br><span class="line">- (<span class="keyword">void</span>)URLSession:(<span class="built_in">NSURLSession</span> *)session</span><br><span class="line">      downloadTask:(<span class="built_in">NSURLSessionDownloadTask</span> *)downloadTask</span><br><span class="line"> didResumeAtOffset:(int64_t)fileOffset</span><br><span class="line">expectedTotalBytes:(int64_t)expectedTotalBytes</span><br><span class="line">&#123;</span><br><span class="line">    </span><br><span class="line">    AFURLSessionManagerTaskDelegate *delegate = [<span class="keyword">self</span> delegateForTask:downloadTask];</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (delegate) &#123;</span><br><span class="line">        [delegate URLSession:session downloadTask:downloadTask didResumeAtOffset:fileOffset expectedTotalBytes:expectedTotalBytes];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.downloadTaskDidResume) &#123;</span><br><span class="line">        <span class="keyword">self</span>.downloadTaskDidResume(session, downloadTask, fileOffset, expectedTotalBytes);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>NSURLSession</code> 中的下载由系统自动做了边下边存的过程。因此，我们要在下载完成之后把缓存的路径上的文件保存到实际的路径上。所以下载的时候要给 manager 传入一个 <code>downloadTaskDidFinishDownloading</code> 的 block，告知下载完成时候安放的路径。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><code>AFHTTPSessionManager</code> 和 <code>AFURLSessionManager</code> 是我们使用 AFN 的入口。<code>AFHTTPSessionManager</code> 作为子类，封装了简单 dataTask 请求。它还负责将请求参数拼接以及转码。</p>
+<p>对于上传文件的操作，仍然可以使用 <code>AFHTTPSessionManager</code> 创建 content-type 为 form-data 的请求，但是这就需要自己把文件转为 <code>NSData</code> 或者 <code>NSInputStream</code> 类型，设置给 request。如果想要更方便的方式完成，可以使用 <code>AFURLSessionManager</code> 提供的 upload 方法创建的 uploadTask，只需要给出 fileURL 即可。</p>
+<p><code>AFURLSessionManager</code> 负责创建 <code>NSURLSession</code>，并承担了发送请求需要实现的所有协议。针对每一个 task，为其增加一个代理对象。当 <code>AFURLSessionManager</code> 接收到<code>NSURLSessionDataDelegate</code> 的接收 data 的回调的时候，就会把 data 交给 task 对应的 delegate 保存。当接收到 <code>NSURLSessionTaskDelegate</code> 的完成回调的时候，就会告知 task 对应 delegate，让其执行回调方法。</p>
+<p>同时 <code>AFURLSessionManager</code> 实现的 <code>NSURLSessionDelegate</code> 还包含了 HTTPS 证书校验的策略，通过它验证证书信息。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tag/学习笔记/" rel="tag"># 学习笔记</a>
+          
+            <a href="/tag/源码解析/" rel="tag"># 源码解析</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/11/30/yycache/" rel="next" title="YYCache 源码解析">
+                <i class="fa fa-chevron-left"></i> YYCache 源码解析
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/12/25/AFNetworking2/" rel="prev" title="AFNetworking 源码解析 - 请求序列化">
+                AFNetworking 源码解析 - 请求序列化 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.png" alt="Zachary Zhang">
+            
+              <p class="site-author-name" itemprop="name">Zachary Zhang</p>
+              <p class="site-description motion-element" itemprop="description">Stay Hungry. Stay Foolish!</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">116</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/zhang759740844" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:zch759740844@126.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#AFHTTPSessionManager"><span class="nav-number">1.</span> <span class="nav-text">AFHTTPSessionManager</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#初始化"><span class="nav-number">1.1.</span> <span class="nav-text">初始化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#几个-set-方法"><span class="nav-number">1.2.</span> <span class="nav-text">几个 set 方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#语义化请求方法"><span class="nav-number">1.3.</span> <span class="nav-text">语义化请求方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#发送-form-data-请求"><span class="nav-number">1.4.</span> <span class="nav-text">发送 form-data 请求</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#AFURLSessionManager"><span class="nav-number">2.</span> <span class="nav-text">AFURLSessionManager</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#AFURLSessionManager-的属性"><span class="nav-number">2.1.</span> <span class="nav-text">AFURLSessionManager 的属性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#AFURLSessionManager-的方法"><span class="nav-number">2.2.</span> <span class="nav-text">AFURLSessionManager 的方法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#初始化方法"><span class="nav-number">2.2.1.</span> <span class="nav-text">初始化方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#创建-Task"><span class="nav-number">2.2.2.</span> <span class="nav-text">创建 Task</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#dataTask"><span class="nav-number">2.2.2.1.</span> <span class="nav-text">dataTask</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#uploadTask"><span class="nav-number">2.2.2.2.</span> <span class="nav-text">uploadTask</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#downloadTask"><span class="nav-number">2.2.2.3.</span> <span class="nav-text">downloadTask</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#为-task-创建代理"><span class="nav-number">2.2.3.</span> <span class="nav-text">为 task 创建代理</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#协议方法"><span class="nav-number">2.3.</span> <span class="nav-text">协议方法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#NSURLSessionDelegate"><span class="nav-number">2.3.1.</span> <span class="nav-text">NSURLSessionDelegate</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#NSURLSessionTaskDelegate"><span class="nav-number">2.3.2.</span> <span class="nav-text">NSURLSessionTaskDelegate</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#NSURLSessionDataDelegate"><span class="nav-number">2.3.3.</span> <span class="nav-text">NSURLSessionDataDelegate</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#NSURLSessionDownloadDelegate"><span class="nav-number">2.3.4.</span> <span class="nav-text">NSURLSessionDownloadDelegate</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">3.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zachary Zhang</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

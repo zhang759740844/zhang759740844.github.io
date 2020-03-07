@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+
+
+
+
+  <meta name="keywords" content="学习笔记,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="iOS 上的数据库用的不多，看一看主流的 FMDB 以及其封装框架是怎么实现的。">
+<meta name="keywords" content="学习笔记">
+<meta property="og:type" content="article">
+<meta property="og:title" content="FMDB 及其封装框架的实现过程">
+<meta property="og:url" content="http://zhang759740844.github.io/2017/11/30/FMDB/index.html">
+<meta property="og:site_name" content="Zachary&#39;s blog">
+<meta property="og:description" content="iOS 上的数据库用的不多，看一看主流的 FMDB 以及其封装框架是怎么实现的。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/fmdb_2.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/FMDB_1.png?raw=true">
+<meta property="og:updated_time" content="2020-02-27T15:13:37.630Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="FMDB 及其封装框架的实现过程">
+<meta name="twitter:description" content="iOS 上的数据库用的不多，看一看主流的 FMDB 以及其封装框架是怎么实现的。">
+<meta name="twitter:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/fmdb_2.png?raw=true">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://zhang759740844.github.io/2017/11/30/FMDB/">
+
+
+
+
+
+  <title>FMDB 及其封装框架的实现过程 | Zachary's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Zachary's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">记录成长</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://zhang759740844.github.io/2017/11/30/FMDB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zachary Zhang">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Zachary's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">FMDB 及其封装框架的实现过程</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-11-30T10:07:12+08:00">
+                2017-11-30
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>iOS 上的数据库用的不多，看一看主流的 FMDB 以及其封装框架是怎么实现的。</p>
+<a id="more"></a>
+<h2 id="简单SQL"><a href="#简单SQL" class="headerlink" title="简单SQL"></a>简单SQL</h2><h3 id="检索"><a href="#检索" class="headerlink" title="检索"></a>检索</h3><h4 id="检索数据"><a href="#检索数据" class="headerlink" title="检索数据"></a>检索数据</h4><h5 id="检索单个列"><a href="#检索单个列" class="headerlink" title="检索单个列"></a>检索单个列</h5><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> prod_name <span class="keyword">from</span> products;</span><br></pre></td></tr></table></figure>
+<h5 id="检索多个列"><a href="#检索多个列" class="headerlink" title="检索多个列"></a>检索多个列</h5><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> prod_id, prod_name, prod_price <span class="keyword">from</span> products;</span><br></pre></td></tr></table></figure>
+<h5 id="检索所有列"><a href="#检索所有列" class="headerlink" title="检索所有列"></a>检索所有列</h5><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> produces</span><br></pre></td></tr></table></figure>
+<h5 id="检索的列去重"><a href="#检索的列去重" class="headerlink" title="检索的列去重"></a>检索的列去重</h5><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="keyword">distinct</span> prod_name <span class="keyword">from</span> products;</span><br></pre></td></tr></table></figure>
+<h5 id="限制展示个数"><a href="#限制展示个数" class="headerlink" title="限制展示个数"></a>限制展示个数</h5><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> prod_name <span class="keyword">from</span> products <span class="keyword">limit</span> <span class="number">5</span>;</span><br></pre></td></tr></table></figure>
+<h4 id="排序检索"><a href="#排序检索" class="headerlink" title="排序检索"></a>排序检索</h4><h5 id="简单排序"><a href="#简单排序" class="headerlink" title="简单排序"></a>简单排序</h5><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> prod_name <span class="keyword">from</span> products <span class="keyword">order</span> <span class="keyword">by</span> prod_name;</span><br></pre></td></tr></table></figure>
+<h5 id="多列排序"><a href="#多列排序" class="headerlink" title="多列排序"></a>多列排序</h5><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> prod_id, prod_name, prod_price <span class="keyword">from</span> products <span class="keyword">order</span> <span class="keyword">by</span> prod_name, prod_id;</span><br></pre></td></tr></table></figure>
+<h5 id="指定排序方向"><a href="#指定排序方向" class="headerlink" title="指定排序方向"></a>指定排序方向</h5><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> prod_id, prod_name, prod_price <span class="keyword">from</span> products <span class="keyword">order</span> <span class="keyword">by</span> prod_name <span class="keyword">desc</span>, prod_id <span class="keyword">limit</span> <span class="number">6</span>;</span><br></pre></td></tr></table></figure>
+<h3 id="过滤"><a href="#过滤" class="headerlink" title="过滤"></a>过滤</h3><h4 id="过滤数据"><a href="#过滤数据" class="headerlink" title="过滤数据"></a>过滤数据</h4><h5 id="where-过滤"><a href="#where-过滤" class="headerlink" title="where 过滤"></a>where 过滤</h5><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> prod_name <span class="keyword">from</span> products <span class="keyword">where</span> prod_price = <span class="number">123</span>;</span><br></pre></td></tr></table></figure>
+<h5 id="范围值"><a href="#范围值" class="headerlink" title="范围值"></a>范围值</h5><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> prod_name <span class="keyword">from</span> products <span class="keyword">where</span> prod_id <span class="keyword">between</span> <span class="number">1</span> <span class="keyword">and</span> <span class="number">100</span>;</span><br></pre></td></tr></table></figure>
+<h5 id="空值"><a href="#空值" class="headerlink" title="空值"></a>空值</h5><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> price_id <span class="keyword">from</span> products <span class="keyword">where</span> prod_name <span class="keyword">is</span> <span class="literal">null</span>;</span><br><span class="line">// 非空值</span><br><span class="line"><span class="keyword">select</span> price_id <span class="keyword">from</span> products <span class="keyword">where</span> prod_name <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">null</span>;</span><br></pre></td></tr></table></figure>
+<h5 id="and-or-操作符"><a href="#and-or-操作符" class="headerlink" title="and or 操作符"></a>and or 操作符</h5><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> prod_price <span class="keyword">from</span> products <span class="keyword">where</span> (vend_id = <span class="number">1003</span> <span class="keyword">or</span> vend_id = <span class="number">1004</span>) <span class="keyword">and</span> prod_price &gt;= <span class="number">100</span>;</span><br></pre></td></tr></table></figure>
+<h5 id="指定范围"><a href="#指定范围" class="headerlink" title="指定范围"></a>指定范围</h5><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> prod_name <span class="keyword">from</span> products <span class="keyword">where</span> vend_id <span class="keyword">in</span> (<span class="number">1003</span>, <span class="number">1004</span>);</span><br></pre></td></tr></table></figure>
+<h4 id="正则过滤"><a href="#正则过滤" class="headerlink" title="正则过滤"></a>正则过滤</h4><h5 id="字符包含匹配"><a href="#字符包含匹配" class="headerlink" title="字符包含匹配"></a>字符包含匹配</h5><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> prod_name <span class="keyword">from</span> products <span class="keyword">where</span> prod_name regexp <span class="string">'1000'</span>;</span><br></pre></td></tr></table></figure>
+<p><code>.</code>匹配任意一个字符：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> prod_name <span class="keyword">from</span> products <span class="keyword">where</span> prod_name regexp <span class="string">'.000'</span>;</span><br></pre></td></tr></table></figure>
+<h5 id="OR-匹配任意一个条件"><a href="#OR-匹配任意一个条件" class="headerlink" title="OR 匹配任意一个条件"></a>OR 匹配任意一个条件</h5><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> prod_name <span class="keyword">from</span> products <span class="keyword">where</span> prod_name regexp <span class="string">'1000|2000|3000'</span>;</span><br></pre></td></tr></table></figure>
+<h5 id="匹配几个字符串之一"><a href="#匹配几个字符串之一" class="headerlink" title="匹配几个字符串之一"></a>匹配几个字符串之一</h5><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> prod_name <span class="keyword">from</span> products <span class="keyword">where</span> prod_name regexp <span class="string">'[123] Ton'</span>;</span><br></pre></td></tr></table></figure>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> prod_name <span class="keyword">from</span> products <span class="keyword">where</span> prod_name regexp <span class="string">'[1-5a-z] Ton'</span>;</span><br></pre></td></tr></table></figure>
+<p><code>^</code>  表示否定：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> prod_name <span class="keyword">from</span> products <span class="keyword">where</span> prod_name regexp <span class="string">'[^123] Ton'</span>;</span><br></pre></td></tr></table></figure>
+<h5 id="匹配多个实例"><a href="#匹配多个实例" class="headerlink" title="匹配多个实例"></a>匹配多个实例</h5><table>
+<thead>
+<tr>
+<th style="text-align:center">元字符</th>
+<th style="text-align:center">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">+</td>
+<td style="text-align:center">1个或多个</td>
+</tr>
+<tr>
+<td style="text-align:center">?</td>
+<td style="text-align:center">0个或一个</td>
+</tr>
+<tr>
+<td style="text-align:center">*</td>
+<td style="text-align:center">0个或多个</td>
+</tr>
+<tr>
+<td style="text-align:center">{n}</td>
+<td style="text-align:center">指定数目匹配</td>
+</tr>
+<tr>
+<td style="text-align:center">{n,}</td>
+<td style="text-align:center">不少于指定数目匹配</td>
+</tr>
+<tr>
+<td style="text-align:center">{n,m}</td>
+<td style="text-align:center">匹配数目范围</td>
+</tr>
+</tbody>
+</table>
+<p>直接跟在要匹配的字符后面，如果要匹配的是字符串，需要给字符串加上括号</p>
+<h5 id="定位符"><a href="#定位符" class="headerlink" title="定位符"></a>定位符</h5><table>
+<thead>
+<tr>
+<th style="text-align:center">元字符</th>
+<th style="text-align:center">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">^</td>
+<td style="text-align:center">文本开始</td>
+</tr>
+<tr>
+<td style="text-align:center">$</td>
+<td style="text-align:center">文本结束</td>
+</tr>
+</tbody>
+</table>
+<h3 id="函数"><a href="#函数" class="headerlink" title="函数"></a>函数</h3><h4 id="数据聚合"><a href="#数据聚合" class="headerlink" title="数据聚合"></a>数据聚合</h4><p>对一个列的所有行进行操作，返回一个聚合的值</p>
+<h5 id="sum-求和avg-求平均值"><a href="#sum-求和avg-求平均值" class="headerlink" title="sum() 求和avg() 求平均值"></a>sum() 求和avg() 求平均值</h5><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="keyword">sum</span>(prod_price) <span class="keyword">as</span> sum_price <span class="keyword">from</span> products;</span><br><span class="line"><span class="keyword">select</span> <span class="keyword">avg</span>(prod_price) <span class="keyword">as</span> avg_price <span class="keyword">from</span> products;</span><br></pre></td></tr></table></figure>
+<h5 id="count-求数量"><a href="#count-求数量" class="headerlink" title="count() 求数量"></a>count() 求数量</h5><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"> // 排除 prod_price 为 null 的</span><br><span class="line"><span class="keyword">select</span> <span class="keyword">count</span>(prod_price) <span class="keyword">as</span> num_price <span class="keyword">from</span>  products;</span><br><span class="line">// count(*) 表示所有行数</span><br><span class="line"><span class="keyword">select</span> <span class="keyword">count</span>(*) <span class="keyword">as</span> all_row <span class="keyword">from</span> products;</span><br></pre></td></tr></table></figure>
+<h5 id="min-max-求最小最大"><a href="#min-max-求最小最大" class="headerlink" title="min() max()求最小最大"></a>min() max()求最小最大</h5><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="keyword">min</span>(prod_price) <span class="keyword">as</span> min_price <span class="keyword">from</span> products;</span><br><span class="line"><span class="keyword">select</span> <span class="keyword">max</span>(prod_price) <span class="keyword">as</span> max_price <span class="keyword">from</span> products;</span><br></pre></td></tr></table></figure>
+<h3 id="分组"><a href="#分组" class="headerlink" title="分组"></a>分组</h3><p>分组的作用是对执行分组，并对结果进行聚合</p>
+<h4 id="创建分组"><a href="#创建分组" class="headerlink" title="创建分组"></a>创建分组</h4><p>获取不同值的 <code>vend_id</code> 并将每个值的数量以 <code>num_prods</code> 字段展示</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> vend_id, <span class="keyword">count</span>(*) <span class="keyword">as</span> num_prods <span class="keyword">from</span> products <span class="keyword">group</span> <span class="keyword">by</span> vend_id;</span><br></pre></td></tr></table></figure>
+<h4 id="过滤分组"><a href="#过滤分组" class="headerlink" title="过滤分组"></a>过滤分组</h4><p><strong><code>having</code> 在数据分组后进行过滤，<code>where</code> 在数据分组前进行过滤</strong></p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> vend_id, <span class="keyword">count</span>(*) <span class="keyword">as</span> num_prods <span class="keyword">from</span> products <span class="keyword">where</span> prod_price &gt;= <span class="number">10</span> <span class="keyword">group</span> <span class="keyword">by</span> vend_id <span class="keyword">having</span> <span class="keyword">count</span>(*) &gt;= <span class="number">2</span>;</span><br></pre></td></tr></table></figure>
+<h4 id="分组和排序"><a href="#分组和排序" class="headerlink" title="分组和排序"></a>分组和排序</h4><p>在上面的基础上再对某一列排序：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> vend_id, <span class="keyword">count</span>(*) <span class="keyword">as</span> num_prods <span class="keyword">from</span> products <span class="keyword">where</span> prod_price &gt;= <span class="number">10</span> <span class="keyword">group</span> <span class="keyword">by</span> vend_id <span class="keyword">having</span> <span class="keyword">count</span>(*) &gt;= <span class="number">2</span> <span class="keyword">order</span> <span class="keyword">by</span> num_prods;</span><br></pre></td></tr></table></figure>
+<h3 id="联结表"><a href="#联结表" class="headerlink" title="联结表"></a>联结表</h3><h4 id="联结"><a href="#联结" class="headerlink" title="联结"></a>联结</h4><h5 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h5><p>检索数据的时候对多张表进行操作。</p>
+<p>譬如一个商品表，要记录这个商品的供应商的信息。如果供应商的信息存在这个商品表中，就会存在诸多重复数据。因此，应该讲供应商信息也单独创建一个表。供应商的 ID 为供应商表的<strong>主键</strong>。商品表只保存这个供应商的 ID，这个供应商的 ID 叫做商品表的<strong>外键</strong>，供应商表和商品表通过这个外键进行的关联。</p>
+<h5 id="创建联结"><a href="#创建联结" class="headerlink" title="创建联结"></a>创建联结</h5><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> vend_name, prod_name, prod_price <span class="keyword">from</span> vendors, products <span class="keyword">where</span> vendors.vend_id = products.vend_id <span class="keyword">order</span> <span class="keyword">by</span> vend_name, prod_name;</span><br></pre></td></tr></table></figure>
+<p>上面从供应商(<code>vendors</code>) 和商品(<code>products</code>)两张表中取 <code>vend_name</code>,<code>prod_name</code>,<code>prod_price</code> 这三列的数据。通过 <code>vend_id</code> 进行关联。</p>
+<p>相当于在运行时把两张表通过主键和外键关联，结合成了一张表。</p>
+<h4 id="外连接"><a href="#外连接" class="headerlink" title="外连接"></a>外连接</h4><p>要查询表A中所有满足条件的行，并顺便把表B中的相应行取出来：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> player <span class="keyword">LEFT</span> <span class="keyword">JOIN</span> team <span class="keyword">on</span> player.team_id = team.team_id <span class="keyword">where</span> player.age &lt; <span class="number">30</span></span><br></pre></td></tr></table></figure>
+<p>从 player 表中把年纪小于 30 的都取出来，并且把 player 对应的 team 的相关信息从 team 表中取出。</p>
+<p>on 关键字用于配合 left join，找到 player 相关的 team</p>
+<h3 id="增删改"><a href="#增删改" class="headerlink" title="增删改"></a>增删改</h3><h4 id="插入"><a href="#插入" class="headerlink" title="插入"></a>插入</h4><h5 id="插入一行"><a href="#插入一行" class="headerlink" title="插入一行"></a>插入一行</h5><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> customers(</span><br><span class="line">	cust_name,</span><br><span class="line">	cust_city,</span><br><span class="line">	cust_address</span><br><span class="line">) <span class="keyword">values</span> (</span><br><span class="line">	<span class="string">'zachary'</span>,</span><br><span class="line">  <span class="string">'shanghai'</span>,</span><br><span class="line">  <span class="string">'minhang'</span></span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+<h5 id="插入多个行"><a href="#插入多个行" class="headerlink" title="插入多个行"></a>插入多个行</h5><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> customers(</span><br><span class="line">	cust_name,</span><br><span class="line">	cust_city,</span><br><span class="line">	cust_address</span><br><span class="line">) <span class="keyword">values</span> (</span><br><span class="line">	<span class="string">'zachary'</span>,</span><br><span class="line">  <span class="string">'shanghai'</span>,</span><br><span class="line">  <span class="string">'minhang'</span></span><br><span class="line">), (</span><br><span class="line">  <span class="string">'zachary2'</span>,</span><br><span class="line">  <span class="string">'shanghai2'</span>,</span><br><span class="line">  <span class="string">'minhang2'</span></span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+<h5 id="插入检索的数据"><a href="#插入检索的数据" class="headerlink" title="插入检索的数据"></a>插入检索的数据</h5><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> customers(</span><br><span class="line"> 	cust_name,</span><br><span class="line">	cust_city,</span><br><span class="line">	cust_address</span><br><span class="line">) <span class="keyword">select</span></span><br><span class="line">		cust_name,</span><br><span class="line">		cust_city,</span><br><span class="line">		cust_address</span><br><span class="line">	<span class="keyword">from</span> custnew;</span><br></pre></td></tr></table></figure>
+<p>把从 <code>custnew</code> 表中检索出的这几列插入到 <code>customers</code> 中</p>
+<h4 id="更新数据"><a href="#更新数据" class="headerlink" title="更新数据"></a>更新数据</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">update</span> customers</span><br><span class="line"><span class="keyword">set</span> cust_name = <span class="string">'zhang'</span>,</span><br><span class="line">		cust_address = <span class="literal">NULL</span></span><br><span class="line"><span class="keyword">where</span> cust_id = <span class="number">10004</span>;</span><br></pre></td></tr></table></figure>
+<h4 id="删除数据"><a href="#删除数据" class="headerlink" title="删除数据"></a>删除数据</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">delete</span> <span class="keyword">from</span> customers</span><br><span class="line"><span class="keyword">where</span> cust_id = <span class="number">1004</span>;</span><br></pre></td></tr></table></figure>
+<h3 id="操作表"><a href="#操作表" class="headerlink" title="操作表"></a>操作表</h3><h4 id="创建表"><a href="#创建表" class="headerlink" title="创建表"></a>创建表</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">create</span> <span class="keyword">table</span> customer (</span><br><span class="line">	cust_id				<span class="built_in">int</span> 			<span class="keyword">not</span> <span class="literal">null</span> auto_increment,</span><br><span class="line">  cust_name 		<span class="built_in">char</span>(<span class="number">50</span>) 	<span class="keyword">not</span> <span class="literal">null</span>,</span><br><span class="line">  cust_address 	<span class="built_in">char</span>(<span class="number">50</span>) 	<span class="keyword">default</span> <span class="string">'shanghai'</span>,</span><br><span class="line">  cust_email 		<span class="built_in">char</span>(<span class="number">50</span>),</span><br><span class="line">  primary <span class="keyword">key</span> (cust_id)</span><br><span class="line">) <span class="keyword">engine</span>=<span class="keyword">innodb</span>;</span><br></pre></td></tr></table></figure>
+<p>创建表的时候要指定字段，类型；</p>
+<p>非空的字段要手动通过 <code>not null</code> 标识；</p>
+<p>可以通过 <code>default</code> 指定默认值；</p>
+<p>表的主键通过创建表的时候用 <code>primary key</code> 指定，并且主键是必须唯一的，所以可以通过 <code>auto_increment</code> 标识其自增。</p>
+<p>最后 <code>engine=innodb</code> 指定引擎。</p>
+<h4 id="更新表结构"><a href="#更新表结构" class="headerlink" title="更新表结构"></a>更新表结构</h4><p>添加列和删除列分别使用 <code>add</code> 和 <code>drop</code></p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">alter</span> <span class="keyword">table</span> vendors</span><br><span class="line"><span class="keyword">add</span> vend_phone <span class="built_in">char</span>(<span class="number">20</span>),</span><br><span class="line"><span class="keyword">drop</span> <span class="keyword">column</span> vend_num;</span><br></pre></td></tr></table></figure>
+<h4 id="删除表"><a href="#删除表" class="headerlink" title="删除表"></a>删除表</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">drop</span> <span class="keyword">table</span> customer2;</span><br></pre></td></tr></table></figure>
+<h2 id="数据库基础"><a href="#数据库基础" class="headerlink" title="数据库基础"></a>数据库基础</h2><h3 id="事务"><a href="#事务" class="headerlink" title="事务"></a>事务</h3><p>什么是事务？事务就有四大特性：ACID</p>
+<ul>
+<li>A：原子性</li>
+<li>C：一致性</li>
+<li>I：隔离性</li>
+<li>D：持久性</li>
+</ul>
+<h3 id="并发存在异常"><a href="#并发存在异常" class="headerlink" title="并发存在异常"></a>并发存在异常</h3><ul>
+<li><strong>脏读</strong>：读到了其他事务还没有提交的数据。</li>
+<li>不可重复读：对某数据进行读取，发现两次读取的结果不同，也就是说没有读到相同的内容。这是因为有其他事务对这个数据同时进行了修改或删除。</li>
+<li>幻读：事务A根据条件查询得到了N条数据，但此时事务B更改或者增加了M条符合事务A查询条件的数据，这样当事务A再次进行查询的时候发现会有N+M条数据，产生了幻读。</li>
+</ul>
+<h3 id="数据库设计范式"><a href="#数据库设计范式" class="headerlink" title="数据库设计范式"></a>数据库设计范式</h3><p>设计数据库模型的时候，需要对内部属性之间的联系的合理化程度进行定义。这种规范叫做范式(NF)。</p>
+<p>1NF 指的是数据库表中的任何属性都是原子性的，不可再分。</p>
+<p>2NF 指的数据表里的非主属性都要和这个数据表的候选键有完全依赖关系。比如:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">一张表中的字段如下</span><br><span class="line">(球员编号, 比赛编号) → (姓名, 年龄, 比赛时间, 比赛场地，得分)</span><br><span class="line"></span><br><span class="line">需要拆分为两行表=&gt;</span><br><span class="line">(球员编号) → (姓名，年龄)</span><br><span class="line">(比赛编号) → (比赛时间, 比赛场地)</span><br></pre></td></tr></table></figure>
+<p>3NF 在满足 2NF 的同时，对任何非主属性都不传递依赖于候选键。比如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">(球员编号) → (姓名，年龄，球队名称，球队教练)</span><br><span class="line">=&gt;</span><br><span class="line">(球员编号) → (姓名，年龄)</span><br><span class="line">(球队名称) → (球队教练)</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>超键：能唯一标识元组的属性集叫做超键。</p>
+<p>候选键：如果超键不包括多余的属性，那么这个超键就是候选键。</p>
+</blockquote>
+<h2 id="FMDB"><a href="#FMDB" class="headerlink" title="FMDB"></a>FMDB</h2><h3 id="基本结构"><a href="#基本结构" class="headerlink" title="基本结构"></a>基本结构</h3><p>FMDB 是 sqlite 的简单封装，主要用来执行 sql 语句，并取出数据。主要有三个类：</p>
+<ul>
+<li><code>FMDatabase</code> : FMDB 最重要的类，用来保存 database 的实例，并对这个 db 执行 sql 语句。</li>
+<li><code>FMResultSet</code>：保存了 sql 语句的执行结果。</li>
+<li><code>FMDatabaseQueue</code>：在多线程环境下执行 sql。</li>
+</ul>
+<h3 id="基本使用"><a href="#基本使用" class="headerlink" title="基本使用"></a>基本使用</h3><h4 id="建立开启数据库和关闭"><a href="#建立开启数据库和关闭" class="headerlink" title="建立开启数据库和关闭"></a>建立开启数据库和关闭</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 创建数据库</span></span><br><span class="line"><span class="built_in">NSString</span>* dir = [<span class="built_in">NSSearchPathForDirectoriesInDomains</span>( <span class="built_in">NSLibraryDirectory</span>, <span class="built_in">NSUserDomainMask</span>, <span class="literal">YES</span>) lastObject];</span><br><span class="line"></span><br><span class="line"><span class="built_in">NSString</span>* dbPath = [dir stringByAppendingPathComponent:<span class="string">@"student.sqlite"</span>];</span><br><span class="line"></span><br><span class="line">FMDatabase* db = [FMDatabase databaseWithPath:dbPath];</span><br><span class="line"></span><br><span class="line"><span class="comment">//2.获取数据库</span></span><br><span class="line"><span class="keyword">if</span> ([db open]) &#123;</span><br><span class="line">   <span class="built_in">NSLog</span>(<span class="string">@"打开数据库成功"</span>);</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">   <span class="built_in">NSLog</span>(<span class="string">@"打开数据库失败"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当文件不存在时，fmdb 会自己创建一个。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 关闭数据库</span></span><br><span class="line">[db close];</span><br></pre></td></tr></table></figure>
+<h4 id="创建删除表"><a href="#创建删除表" class="headerlink" title="创建删除表"></a>创建删除表</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//3.创建表</span></span><br><span class="line"><span class="built_in">BOOL</span> result = [db executeUpdate:<span class="string">@"CREATE TABLE IF NOT EXISTS t_student (</span></span><br><span class="line"><span class="string">	id integer PRIMARY KEY AUTOINCREMENT,</span></span><br><span class="line"><span class="string">	name text NOT NULL,</span></span><br><span class="line"><span class="string">	age integer NOT NULL,</span></span><br><span class="line"><span class="string">	sex text NOT NULL);"</span></span><br><span class="line">];</span><br><span class="line"><span class="keyword">if</span> (result) &#123;</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@"创建表成功"</span>);</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@"创建表失败"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 如果表格存在 则销毁</span></span><br><span class="line"><span class="built_in">BOOL</span> result = [_db executeUpdate:<span class="string">@"drop table if exists t_student"</span>];</span><br><span class="line"><span class="keyword">if</span> (result) &#123;</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@"删除表成功"</span>);</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@"删除表失败"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="增删改查"><a href="#增删改查" class="headerlink" title="增删改查"></a>增删改查</h4><h5 id="增"><a href="#增" class="headerlink" title="增"></a>增</h5><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">4</span>; i++) &#123;</span><br><span class="line">    <span class="comment">//插入数据</span></span><br><span class="line">    <span class="built_in">NSString</span> * name = [<span class="built_in">NSString</span> stringWithFormat: @ <span class="string">"测试名字%@"</span>, @(mark_student)];</span><br><span class="line">    <span class="keyword">int</span> age = mark_student;</span><br><span class="line">    <span class="built_in">NSString</span> * sex = @ <span class="string">"男"</span>;</span><br><span class="line">    mark_student++;</span><br><span class="line">    <span class="comment">//1.executeUpdate:不确定的参数用？来占位（后面参数必须是oc对象，；代表语句结束）</span></span><br><span class="line">    <span class="built_in">BOOL</span> result = [db executeUpdate: @ <span class="string">"INSERT INTO t_student (name, age, sex) VALUES (?,?,?)"</span>, name, @(age), sex];</span><br><span class="line">    <span class="comment">//2.executeUpdateWithForamat：不确定的参数用%@，%d等来占位 （参数为原始数据类型，执行语句不区分大小写）</span></span><br><span class="line">    <span class="comment">//    BOOL result = [_db executeUpdateWithFormat:@"insert into t_student (name,age, sex) values (%@,%i,%@)",name,age,sex];</span></span><br><span class="line">    <span class="comment">//3.参数是数组的使用方式</span></span><br><span class="line">    <span class="comment">//    BOOL result = [_db executeUpdate:@"INSERT INTO t_student(name,age,sex) VALUES  (?,?,?);" withArgumentsInArray:@[name,@(age),sex]];</span></span><br><span class="line">    <span class="keyword">if</span> (result) &#123;</span><br><span class="line">        <span class="built_in">NSLog</span>(@ <span class="string">"插入成功"</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="built_in">NSLog</span>(@ <span class="string">"插入失败"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>通过 <code>executeUpdate</code> 来执行非 select 的增删改语句。另外，有三种方式给 sql 传参：</p>
+<ol>
+<li>使用 <code>?</code> 做占位符，那么传参就必须是 oc 对象。</li>
+<li>使用 <code>%@</code> 等做占位符，传参可以是任意相依类型。</li>
+<li>使用数组传参，占位符还是使用 <code>?</code>，数组中保存的也是 oc 对象。</li>
+</ol>
+<h5 id="删改"><a href="#删改" class="headerlink" title="删改"></a>删改</h5><p>这两个和增加数据没什么不同，因此就放在一起了：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//1.不确定的参数用？来占位 （后面参数必须是oc对象,需要将int包装成OC对象）</span></span><br><span class="line"><span class="keyword">int</span> idNum = <span class="number">11</span>;</span><br><span class="line"><span class="built_in">BOOL</span> result1 = [_db executeUpdate: @ <span class="string">"delete from t_student where id = ?"</span>, @(idNum)];</span><br><span class="line"><span class="comment">//2.不确定的参数用%@，%d等来占位</span></span><br><span class="line"><span class="comment">//BOOL result = [_db executeUpdateWithFormat:@"delete from t_student where name = %@",@"王子涵"];</span></span><br><span class="line"><span class="keyword">if</span> (result1) &#123;</span><br><span class="line">    <span class="built_in">NSLog</span>(@ <span class="string">"删除成功"</span>);</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="built_in">NSLog</span>(@ <span class="string">"删除失败"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//修改学生的名字</span></span><br><span class="line"><span class="built_in">NSString</span> * newName = @ <span class="string">"新名字"</span>;</span><br><span class="line"><span class="built_in">NSString</span> * oldName = @ <span class="string">"测试名字2"</span>;</span><br><span class="line"><span class="built_in">BOOL</span> result2 = [_db executeUpdate: @ <span class="string">"update t_student set name = ? where name = ?"</span>, newName, oldName];</span><br><span class="line"><span class="keyword">if</span> (result2) &#123;</span><br><span class="line">    <span class="built_in">NSLog</span>(@ <span class="string">"修改成功"</span>);</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="built_in">NSLog</span>(@ <span class="string">"修改失败"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="查"><a href="#查" class="headerlink" title="查"></a>查</h5><p>表的查询要通过 <code>executeQuery</code> 执行：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//查询整个表</span></span><br><span class="line">FMResultSet * resultSet = [_db executeQuery: @ <span class="string">"select * from t_student"</span>];</span><br><span class="line"><span class="comment">//根据条件查询</span></span><br><span class="line"><span class="comment">//FMResultSet * resultSet = [_db executeQuery:@"select * from t_student where id &lt; ?", @(4)];</span></span><br><span class="line"><span class="comment">//遍历结果集合</span></span><br><span class="line"><span class="keyword">while</span> ([resultSet next]) &#123;</span><br><span class="line">    <span class="keyword">int</span> idNum = [resultSet intForColumn: @ <span class="string">"id"</span>];</span><br><span class="line">    <span class="built_in">NSString</span> * name = [resultSet objectForColumn: @ <span class="string">"name"</span>];</span><br><span class="line">    <span class="keyword">int</span> age = [resultSet intForColumn: @ <span class="string">"age"</span>];</span><br><span class="line">    <span class="built_in">NSString</span> * sex = [resultSet objectForColumn: @ <span class="string">"sex"</span>];</span><br><span class="line">    <span class="built_in">NSLog</span>(@ <span class="string">"学号：%@ 姓名：%@ 年龄：%@ 性别：%@"</span>, @(idNum), name, @(age), sex);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>查询结果会保存在 <code>FMResultSet</code> 类的实例中。即使操作结果只有一行，也需要先调用 <code>FMResultSet</code> 的<code>next</code> 方法。</p>
+<p>FMDB 提供如下多个方法来获取不同类型的数据：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">intForColumn:</span><br><span class="line">longForColumn:</span><br><span class="line">longLongIntForColumn:</span><br><span class="line">boolForColumn:</span><br><span class="line">doubleForColumn:</span><br><span class="line">stringForColumn:</span><br><span class="line">dateForColumn:</span><br><span class="line">dataForColumn:</span><br></pre></td></tr></table></figure>
+<p>当然，一个一个自己获取列名也太麻烦了，可以使用 <code>FMResultSet</code> 提供的 <code>resultDictionary</code> 方法，获取整个字典：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> ([resultSet next]) &#123;</span><br><span class="line">	<span class="built_in">NSDictionary</span> *result = [resultSet resultDictionary];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在使用 <code>while</code> 循环的时候，不需要手动关闭 FMResultSet，因为 <code>[FMResultSet next]</code> 遍历到最后会调用 <code>[FMResultSet close]</code></p>
+<h4 id="线程安全"><a href="#线程安全" class="headerlink" title="线程安全"></a>线程安全</h4><p><code>FMDatabase</code> 本身不是线程安全的，所以不要在多线程中使用。需要使用 <code>FMDatabaseQueue</code> 来帮助保证线程安全：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 创建，最好放在一个单例的类中</span></span><br><span class="line">FMDatabaseQueue *queue = [FMDatabaseQueue databaseQueueWithPath:aPath];</span><br><span class="line"><span class="comment">// 使用</span></span><br><span class="line">[queue inDatabase:^(FMDatabase *db) &#123;</span><br><span class="line">    [db executeUpdate:<span class="string">@"INSERT INTO myTable VALUES (?)"</span>, [<span class="built_in">NSNumber</span> numberWithInt:<span class="number">1</span>]];</span><br><span class="line">    [db executeUpdate:<span class="string">@"INSERT INTO myTable VALUES (?)"</span>, [<span class="built_in">NSNumber</span> numberWithInt:<span class="number">2</span>]];</span><br><span class="line">    [db executeUpdate:<span class="string">@"INSERT INTO myTable VALUES (?)"</span>, [<span class="built_in">NSNumber</span> numberWithInt:<span class="number">3</span>]];</span><br><span class="line">    FMResultSet *rs = [db executeQuery:<span class="string">@"select * from foo"</span>];</span><br><span class="line">    <span class="keyword">while</span> ([rs next]) &#123;</span><br><span class="line">        <span class="comment">// …</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
+<h4 id="事务-1"><a href="#事务-1" class="headerlink" title="事务"></a>事务</h4><p>在数据库中，事务可以保证数据操作的完整性：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">[_dataBaseQueue inDatabase:^(FMDatabase * _Nonnull db) &#123;</span><br><span class="line">    [db open];</span><br><span class="line">    <span class="comment">// 开启事物</span></span><br><span class="line">    [db beginTransaction];</span><br><span class="line">    <span class="built_in">BOOL</span> isDeleteGroupSuccess = [db executeUpdate:<span class="string">@"DELETE FROM grouptable WHERE gcid = ?"</span>, groupID];</span><br><span class="line">    <span class="built_in">BOOL</span> isDeleteMembershipSuccess = [db executeUpdate:<span class="string">@"DELETE FROM groupshiptable WHERE gcid = ?"</span>, groupID];</span><br><span class="line">    <span class="keyword">if</span> (!isDeleteGroupSuccess || !isDeleteMembershipSuccess) &#123;</span><br><span class="line">        <span class="comment">// 当对两个表的操作中，其中一个失败，数据回滚</span></span><br><span class="line">        [db rollback];</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 提交事物</span></span><br><span class="line">    [db commit];</span><br><span class="line">    [db close];</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
+<p>通过<code>beginTransaction</code> 开启一个事务。任意情况下发生错误的时候可以通过 <code>rollback</code> 回退，否则通过 <code>commit</code> 提交事务。</p>
+<h4 id="本地调试"><a href="#本地调试" class="headerlink" title="本地调试"></a>本地调试</h4><p>本地调试可以使用免费的数据库查看工具 ，比如：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/fmdb_2.png?raw=true" alt></p>
+<h3 id="源码解析"><a href="#源码解析" class="headerlink" title="源码解析"></a>源码解析</h3><h4 id="初始化-FMDatabase"><a href="#初始化-FMDatabase" class="headerlink" title="初始化 FMDatabase"></a>初始化 FMDatabase</h4><p>初始化使用的是 <code>+ [FMDatabase databaseWithPath:@&quot;path&quot;]</code> 方法，它会在内部调用 <code>initWithPath:</code> 方法。它其实就是创建了一个 <code>FMDatabase</code> 的实例。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">instancetype</span>)initWithPath:(<span class="built_in">NSString</span>*)aPath &#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">self</span> = [<span class="keyword">super</span> init];</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>) &#123;</span><br><span class="line">        _databasePath               = [aPath <span class="keyword">copy</span>];</span><br><span class="line">        _openResultSets             = [[<span class="built_in">NSMutableSet</span> alloc] init];</span><br><span class="line">        _db                         = <span class="literal">nil</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">self</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>要求输入一个数据库的路径，并保存在 <code>_databasePath</code> 中。这一步里还没有打开 db，所以 <code>_db</code> 还是 nil。</p>
+<h4 id="打开-db"><a href="#打开-db" class="headerlink" title="打开 db"></a>打开 db</h4><p><code>- [FMDatabase open]</code> 方法打开了 db。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">BOOL</span>)open &#123;</span><br><span class="line">		...</span><br><span class="line">    <span class="keyword">int</span> err = sqlite3_open([<span class="keyword">self</span> sqlitePath], (sqlite3**)&amp;_db );</span><br><span class="line">    <span class="keyword">if</span>(err != SQLITE_OK) &#123;</span><br><span class="line">        <span class="built_in">NSLog</span>(<span class="string">@"error opening!: %d"</span>, err);</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NO</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">YES</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果已经打开了就直接返回。否则调用 sqlite 提供的的 <code>sqlite3_open()</code> 方法，打开的数据库。</p>
+<h4 id="创建-select-sql"><a href="#创建-select-sql" class="headerlink" title="创建 select sql"></a>创建 select sql</h4><p>这一节主要讲如何创建 select 的 sql，select 会从数据库中获取数据，所以需要创建一个专门的类用来拿数据，也就是下面的的 <code>FMResultSet</code></p>
+<h5 id="创建-sqlite3-stmt"><a href="#创建-sqlite3-stmt" class="headerlink" title="创建 sqlite3_stmt"></a>创建 sqlite3_stmt</h5><p>所有 sql 语句都会被转化为 <code>sqlite3_stmt</code> 类型。由于这一过程比较耗时，所以一般将转化好的 <code>sqlite3_stmt</code> 保存到 <code>_cachedStatements</code> 字典中，以便相同 sql 反复使用：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">- (FMResultSet *)executeQuery:(<span class="built_in">NSString</span> *)sql withArgumentsInArray:(<span class="built_in">NSArray</span>*)arrayArgs orDictionary:(<span class="built_in">NSDictionary</span> *)dictionaryArgs orVAList:(va_list)args &#123;</span><br><span class="line">    </span><br><span class="line">  	...</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">int</span> rc                  = <span class="number">0x00</span>;</span><br><span class="line">    sqlite3_stmt *pStmt     = <span class="number">0x00</span>;</span><br><span class="line">    FMStatement *statement  = <span class="number">0x00</span>;</span><br><span class="line">    FMResultSet *rs         = <span class="number">0x00</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (_shouldCacheStatements) &#123;</span><br><span class="line">        statement = [<span class="keyword">self</span> cachedStatementForQuery:sql];</span><br><span class="line">        pStmt = statement ? [statement statement] : <span class="number">0x00</span>;</span><br><span class="line">        [statement reset];</span><br><span class="line">    &#125;</span><br><span class="line">  	...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>cachedStatementForQuery:</code> 就是在字典中查找 sql 对应的 <code>sqlite3_stmt</code> 的方法，它返回的 <code>FMStatement</code> 是 <code>sqlite3_stmt</code> 的封装。</p>
+<h5 id="绑定参数"><a href="#绑定参数" class="headerlink" title="绑定参数"></a>绑定参数</h5><p>参数随着方法一起传了进来，一般参数有两种，一种是字典类型的，根据 sql 中的参数名插入，还有一种是数组型的，依次替换 sql 中的占位符。(代码很长，就不贴了)</p>
+<p>首先通过 <code>sqlite3_bind_parameter_count()</code> 获得 sql 的参数个数。然后检查传入的是字典还是数组。如果是字典，遍历字典，通过 <code>sqlite3_bind_parameter_index()</code> 拿到键对应的参数索引，然后绑定；如果是数组就依次绑定到对应的列中。绑定也是使用的 sqlite 提供的针对不同类型的一系列绑定方法。</p>
+<p>绑定完了后，将这个 <code>sqlite3_stmt</code> 暂存。由于是已经绑定了参数，所以可见前面 <code>sqlite3_reset()</code> 做的就是将参数清空。</p>
+<blockquote>
+<p>SQLite 支持使用占位符 <code>?</code>，并且在必要的时候绑定参数。所以你不需要把实际的值放入字符串中去。这是一个安全上的考量，它可以守护程序避免 SQL 注入。它也可以帮助你减少必须 escape 值（sql 提供的转义用的命令）这样的不必要的麻烦。</p>
+</blockquote>
+<h5 id="创建-FMResultSet-保存结果"><a href="#创建-FMResultSet-保存结果" class="headerlink" title="创建 FMResultSet 保存结果"></a>创建 FMResultSet 保存结果</h5><p>现在 sql 已经创建完成，只欠执行了。FMDB 并没有立即执行，而是创建了一个 <code>FMResultSet</code> 对象，用来保存每次 sql 的结果。因为一个 db 可以执行多个 sql，所以就要创建多个 <code>FMResultSet</code> 。所以在创建 sql 的最后，还要创建一个 <code>FMResultSet</code>:</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">- (FMResultSet *)executeQuery:(<span class="built_in">NSString</span> *)sql withArgumentsInArray:(<span class="built_in">NSArray</span>*)arrayArgs orDictionary:(<span class="built_in">NSDictionary</span> *)dictionaryArgs orVAList:(va_list)args &#123;</span><br><span class="line">  	...</span><br><span class="line">      </span><br><span class="line">    <span class="comment">// the statement gets closed in rs's dealloc or [rs close];</span></span><br><span class="line">    rs = [FMResultSet resultSetWithStatement:statement usingParentDatabase:<span class="keyword">self</span>];</span><br><span class="line">    [rs setQuery:sql];</span><br><span class="line">  	</span><br><span class="line">  	...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="执行-sql"><a href="#执行-sql" class="headerlink" title="执行 sql"></a>执行 sql</h5><p>执行 sql 在 <code>FMResultSet</code> 中进行：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">BOOL</span>)nextWithError:(<span class="built_in">NSError</span> **)outErr &#123;</span><br><span class="line">    <span class="keyword">int</span> rc = sqlite3_step([_statement statement]);</span><br><span class="line">		...</span><br><span class="line">    <span class="keyword">return</span> (rc == SQLITE_ROW);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其实上面的关键就是调用 sqlite 的 <code>sqlite3_step()</code> 方法。</p>
+<h5 id="获取数据"><a href="#获取数据" class="headerlink" title="获取数据"></a>获取数据</h5><p>前面执行完 sql 之后，你就可以拿到数据了，<code>FMResultSet</code> 中提供了方法将当前行转化为一个字典：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">NSDictionary</span>*)resultDictionary &#123;</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">NSUInteger</span> num_cols = (<span class="built_in">NSUInteger</span>)sqlite3_data_count([_statement statement]);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (num_cols &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">NSMutableDictionary</span> *dict = [<span class="built_in">NSMutableDictionary</span> dictionaryWithCapacity:num_cols];</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">int</span> columnCount = sqlite3_column_count([_statement statement]);</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">int</span> columnIdx = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (columnIdx = <span class="number">0</span>; columnIdx &lt; columnCount; columnIdx++) &#123;</span><br><span class="line">            </span><br><span class="line">            <span class="built_in">NSString</span> *columnName = [<span class="built_in">NSString</span> stringWithUTF8String:sqlite3_column_name([_statement statement], columnIdx)];</span><br><span class="line">            <span class="keyword">id</span> objectValue = [<span class="keyword">self</span> objectForColumnIndex:columnIdx];</span><br><span class="line">            [dict setObject:objectValue forKey:columnName];</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> dict;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="built_in">NSLog</span>(<span class="string">@"Warning: There seem to be no columns in this set."</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>过程就是通过循环，拿出每一列的数据，加入到字典中。当然我们也可以自己获取列数据及列名。</p>
+<h4 id="创建-update-sql"><a href="#创建-update-sql" class="headerlink" title="创建 update sql"></a>创建 update sql</h4><p>select sql 需要配合 <code>FMResultSet</code>，更新数据库内容则比较简单。直接使用 <code>FMDatabase</code> 更新即可。update sql 的代码几乎和 select sql 一模一样，不同的是，更新操作在创建好 sql 后，直接执行 <code>sqlite3_step()</code>，执行完后根据是否要缓存选择性执行重置 <code>sqlite3_reset()</code> 或者关闭 <code>sqlite3_finalize()</code>。代码太长且重复，就不贴了。 </p>
+<h4 id="加解密"><a href="#加解密" class="headerlink" title="加解密"></a>加解密</h4><p>FMDB 封装了为 db 加解密的方法。解密使用如下方法，在打开 db 前使用，否则报错：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">BOOL</span>)setKey:(<span class="built_in">NSString</span>*)key &#123;</span><br><span class="line">    <span class="built_in">NSData</span> *keyData = [<span class="built_in">NSData</span> dataWithBytes:[key UTF8String] length:(<span class="built_in">NSUInteger</span>)strlen([key UTF8String])];</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> [<span class="keyword">self</span> setKeyWithData:keyData];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="built_in">BOOL</span>)setKeyWithData:(<span class="built_in">NSData</span> *)keyData &#123;</span><br><span class="line"><span class="meta">#ifdef SQLITE_HAS_CODEC</span></span><br><span class="line">    <span class="keyword">if</span> (!keyData) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NO</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">int</span> rc = sqlite3_key(_db, [keyData bytes], (<span class="keyword">int</span>)[keyData length]);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> (rc == SQLITE_OK);</span><br><span class="line"><span class="meta">#else</span></span><br><span class="line"><span class="meta">#pragma unused(keyData)</span></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NO</span>;</span><br><span class="line"><span class="meta">#endif</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其实是一个非常简单的封装，就是将 String 转化为 Data，然后使用 <code>sqlite3_key</code> 进行解密。</p>
+<p>有解密必然是要现有加密的，使用 <code>sqlite3_rekey()</code> 方法，可以完成没有密码的时候创建密码，有密码的时候修改密码或者清除密码的操作。代码和解密类似，也不贴了。 </p>
+<h4 id="关闭数据库"><a href="#关闭数据库" class="headerlink" title="关闭数据库"></a>关闭数据库</h4><p>关闭数据库，需要做两方面处理，一方面是清除 fmdb 创建的缓存，一方面是释放 sqlite 资源：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">BOOL</span>)close &#123;</span><br><span class="line">    </span><br><span class="line">    [<span class="keyword">self</span> clearCachedStatements];</span><br><span class="line">    [<span class="keyword">self</span> closeOpenResultSets];</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (!_db) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">YES</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">int</span>  rc;</span><br><span class="line">    <span class="built_in">BOOL</span> retry;</span><br><span class="line">    <span class="built_in">BOOL</span> triedFinalizingOpenStatements = <span class="literal">NO</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">do</span> &#123;</span><br><span class="line">        retry   = <span class="literal">NO</span>;</span><br><span class="line">        rc      = sqlite3_close(_db);</span><br><span class="line">        <span class="keyword">if</span> (SQLITE_BUSY == rc || SQLITE_LOCKED == rc) &#123;</span><br><span class="line">            <span class="keyword">if</span> (!triedFinalizingOpenStatements) &#123;</span><br><span class="line">                triedFinalizingOpenStatements = <span class="literal">YES</span>;</span><br><span class="line">                sqlite3_stmt *pStmt;</span><br><span class="line">                <span class="keyword">while</span> ((pStmt = sqlite3_next_stmt(_db, <span class="literal">nil</span>)) !=<span class="number">0</span>) &#123;</span><br><span class="line">                    <span class="built_in">NSLog</span>(<span class="string">@"Closing leaked statement"</span>);</span><br><span class="line">                    sqlite3_finalize(pStmt);</span><br><span class="line">                    retry = <span class="literal">YES</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (SQLITE_OK != rc) &#123;</span><br><span class="line">            <span class="built_in">NSLog</span>(<span class="string">@"error closing!: %d"</span>, rc);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">while</span> (retry);</span><br><span class="line">    </span><br><span class="line">    _db = <span class="literal">nil</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">YES</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里先尝试用 <code>sqlite3_close()</code> 关闭，如果不行，那么再 <code>sqlite3_next_stmt()</code> 来获取每个 stmt，然后将他们 <code>sqlite3_finalize()</code>。整个过程在一个大的 while 循环中，直到数据库关闭为止。</p>
+<h4 id="多线程"><a href="#多线程" class="headerlink" title="多线程"></a>多线程</h4><p>有些费时的更新操作我们不希望在主线程中进行。FMDB 提供了 <code>FMDatabaseQueue</code> 这个类帮助我们创建了后台线程。<strong>其实就是封装了子线程的操作，其实你也可以自己创建子线程，然后进行 sql，两者没什么区别。</strong></p>
+<h5 id="初始化创建队列"><a href="#初始化创建队列" class="headerlink" title="初始化创建队列"></a>初始化创建队列</h5><p>创建队列的代码如下：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">const</span> <span class="keyword">void</span> * <span class="keyword">const</span> kDispatchQueueSpecificKey = &amp;kDispatchQueueSpecificKey;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">instancetype</span>)initWithPath:(<span class="built_in">NSString</span>*)aPath flags:(<span class="keyword">int</span>)openFlags vfs:(<span class="built_in">NSString</span> *)vfsName &#123;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">self</span> = [<span class="keyword">super</span> init];</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span> != <span class="literal">nil</span>) &#123;</span><br><span class="line">        </span><br><span class="line">        _db = [[[<span class="keyword">self</span> <span class="keyword">class</span>] databaseClass] databaseWithPath:aPath];</span><br><span class="line">        FMDBRetain(_db);</span><br><span class="line">        </span><br><span class="line">		...</span><br><span class="line">          </span><br><span class="line">        _path = FMDBReturnRetained(aPath);</span><br><span class="line">        </span><br><span class="line">        _queue = dispatch_queue_create([[<span class="built_in">NSString</span> stringWithFormat:<span class="string">@"fmdb.%@"</span>, <span class="keyword">self</span>] UTF8String], <span class="literal">NULL</span>);</span><br><span class="line">        dispatch_queue_set_specific(_queue, kDispatchQueueSpecificKey, (__bridge <span class="keyword">void</span> *)<span class="keyword">self</span>, <span class="literal">NULL</span>);</span><br><span class="line">        _openFlags = openFlags;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">self</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>主要分为两步，第一步是创建 db。第二步是创建队列。之后还用 <code>dispatch_queue_set_specific</code> 绑定了 <code>FMDatabaseQueue</code> 对象以及 <code>queue</code>，这个的用处下面再说。</p>
+<h5 id="执行-sql-1"><a href="#执行-sql-1" class="headerlink" title="执行 sql"></a>执行 sql</h5><p>FMDB 为 <code>FMDatabaseQueue</code> 提供了一个方法批量处理某一个 db 的 sql。它接收一个 sql 的 block：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)inDatabase:(<span class="keyword">void</span> (^)(FMDatabase *db))block &#123;</span><br><span class="line">    <span class="comment">/* Get the currently executing queue (which should probably be nil, but in theory could be another DB queue</span></span><br><span class="line"><span class="comment">     * and then check it against self to make sure we're not about to deadlock. */</span></span><br><span class="line">    FMDatabaseQueue *currentSyncQueue = (__bridge <span class="keyword">id</span>)dispatch_get_specific(kDispatchQueueSpecificKey);</span><br><span class="line">    assert(currentSyncQueue != <span class="keyword">self</span> &amp;&amp; <span class="string">"inDatabase: was called reentrantly on the same queue, which would lead to a deadlock"</span>);</span><br><span class="line">    </span><br><span class="line">    FMDBRetain(<span class="keyword">self</span>);</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">dispatch_sync</span>(_queue, ^() &#123;</span><br><span class="line">        </span><br><span class="line">        FMDatabase *db = [<span class="keyword">self</span> database];</span><br><span class="line">        block(db);</span><br><span class="line">        </span><br><span class="line">		...</span><br><span class="line">    &#125;);</span><br><span class="line">    </span><br><span class="line">    FMDBRelease(<span class="keyword">self</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到，主要就是在之前创建的 queue 中同步执行 sql。那么 <code>dispatch_get_specific</code> 有何用意呢？简单的说就是如果当前队列为 <code>_queue</code>，下面的同步操作就会产生死锁。所以这里 <code>dispatch_get_specific</code> 就是为了验证一下，现在是不是在 <code>_queue</code> 队列中。如果是，那么 <code>currentSyncQueue</code> 就不为空，那么直接通过断言触发异常。</p>
+<p><strong>其实这个判断，就是要求使用者不要用在刚刚创建的 <code>_queue</code> 中调用执行 sql 的方法，而是直接在主队列中调用，方法执行的时候会自动将 sql 执行在 <code>_queue</code> 中。</strong></p>
+<h4 id="事务处理"><a href="#事务处理" class="headerlink" title="事务处理"></a>事务处理</h4><p>事务处理的方法如下：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)inTransaction:(<span class="keyword">void</span> (^)(FMDatabase *db, <span class="built_in">BOOL</span> *rollback))block &#123;</span><br><span class="line">    [<span class="keyword">self</span> beginTransaction:<span class="literal">NO</span> withBlock:block];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)beginTransaction:(<span class="built_in">BOOL</span>)useDeferred withBlock:(<span class="keyword">void</span> (^)(FMDatabase *db, <span class="built_in">BOOL</span> *rollback))block &#123;</span><br><span class="line">    FMDBRetain(<span class="keyword">self</span>);</span><br><span class="line">    <span class="built_in">dispatch_sync</span>(_queue, ^() &#123; </span><br><span class="line">        </span><br><span class="line">        <span class="built_in">BOOL</span> shouldRollback = <span class="literal">NO</span>;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span> (useDeferred) &#123;</span><br><span class="line">            [[<span class="keyword">self</span> database] beginDeferredTransaction];</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> &#123;</span><br><span class="line">            [[<span class="keyword">self</span> database] beginTransaction];</span><br><span class="line">        &#125;</span><br><span class="line">      </span><br><span class="line">        block([<span class="keyword">self</span> database], &amp;shouldRollback);</span><br><span class="line">      </span><br><span class="line">        <span class="keyword">if</span> (shouldRollback) &#123;</span><br><span class="line">            [[<span class="keyword">self</span> database] rollback];</span><br><span class="line">        &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">            [[<span class="keyword">self</span> database] commit];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">    </span><br><span class="line">    FMDBRelease(<span class="keyword">self</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="built_in">BOOL</span>)rollback &#123;</span><br><span class="line">    <span class="built_in">BOOL</span> b = [<span class="keyword">self</span> executeUpdate:<span class="string">@"rollback transaction"</span>];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (b) &#123;</span><br><span class="line">        _inTransaction = <span class="literal">NO</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> b;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="built_in">BOOL</span>)commit &#123;</span><br><span class="line">    <span class="built_in">BOOL</span> b =  [<span class="keyword">self</span> executeUpdate:<span class="string">@"commit transaction"</span>];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (b) &#123;</span><br><span class="line">        _inTransaction = <span class="literal">NO</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> b;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="built_in">BOOL</span>)beginDeferredTransaction &#123;</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">BOOL</span> b = [<span class="keyword">self</span> executeUpdate:<span class="string">@"begin deferred transaction"</span>];</span><br><span class="line">    <span class="keyword">if</span> (b) &#123;</span><br><span class="line">        _inTransaction = <span class="literal">YES</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> b;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="built_in">BOOL</span>)beginTransaction &#123;</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">BOOL</span> b = [<span class="keyword">self</span> executeUpdate:<span class="string">@"begin exclusive transaction"</span>];</span><br><span class="line">    <span class="keyword">if</span> (b) &#123;</span><br><span class="line">        _inTransaction = <span class="literal">YES</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> b;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>事务处理主要还是调用事务的相关 sql 语句，使用者可以通过 sql 是否执行成功，来决定是否需要回滚。</p>
+<p>这里 block 的入参使用的是 <code>BOOL *roolback</code>，然后传入一个 BOOL 的地址 <code>&amp;shouldRoolBack</code>，可以实现不用返回值传递数据。注意，这种取地址的写法在使用的时候要用 <code>*shouldRoolBack</code> 来取地址上的值，因为是基本类型的指针：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">BOOL</span> roolback = <span class="literal">YES</span>;</span><br><span class="line"><span class="built_in">BOOL</span> *r = &amp;roolback;</span><br><span class="line">*r = <span class="literal">NO</span>;</span><br><span class="line"><span class="built_in">NSLog</span>(<span class="string">@"%d，roolback 从1变为了0"</span>,roolback);</span><br></pre></td></tr></table></figure>
+<p>非基本类型的指针的赋值直接就是 <code>p = Person()</code> 这种地址的赋值就行了，<strong>不存在 <code>*p</code> 的情况</strong>。基本类型的指针必须通过 <code>*r</code> 拿到堆上的值 <code>*r = No</code></p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>FMDB 的整个过程相对简单，简单来说就是先初始化控制类 <code>FMDatabase</code>，然后通过这个类打开 db，执行 sql，关闭数据库等操作。执行的 sql 需要转化为 sqlite 使用的 <code>sqlite3_stmt</code> 类型，并缓存。对于有结果的 sql，或创建一个 <code>FMResultSet</code> 来保存 sql 已经其相应结果。多线程通过 <code>FMDatabaseQueue</code> 实现，它可以为 sql 开启后台线程执行，并且封装了 sqlite 的原子性操作的语句来实现事务。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/FMDB_1.png?raw=true" alt></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tag/学习笔记/" rel="tag"># 学习笔记</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/11/14/RxSwift原理/" rel="next" title="RxSwift 的一些原理解析">
+                <i class="fa fa-chevron-left"></i> RxSwift 的一些原理解析
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/12/22/va_list/" rel="prev" title="iOS 中 va_list 的使用">
+                iOS 中 va_list 的使用 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.png" alt="Zachary Zhang">
+            
+              <p class="site-author-name" itemprop="name">Zachary Zhang</p>
+              <p class="site-description motion-element" itemprop="description">Stay Hungry. Stay Foolish!</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">116</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/zhang759740844" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:zch759740844@126.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#简单SQL"><span class="nav-number">1.</span> <span class="nav-text">简单SQL</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#检索"><span class="nav-number">1.1.</span> <span class="nav-text">检索</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#检索数据"><span class="nav-number">1.1.1.</span> <span class="nav-text">检索数据</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#检索单个列"><span class="nav-number">1.1.1.1.</span> <span class="nav-text">检索单个列</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#检索多个列"><span class="nav-number">1.1.1.2.</span> <span class="nav-text">检索多个列</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#检索所有列"><span class="nav-number">1.1.1.3.</span> <span class="nav-text">检索所有列</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#检索的列去重"><span class="nav-number">1.1.1.4.</span> <span class="nav-text">检索的列去重</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#限制展示个数"><span class="nav-number">1.1.1.5.</span> <span class="nav-text">限制展示个数</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#排序检索"><span class="nav-number">1.1.2.</span> <span class="nav-text">排序检索</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#简单排序"><span class="nav-number">1.1.2.1.</span> <span class="nav-text">简单排序</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#多列排序"><span class="nav-number">1.1.2.2.</span> <span class="nav-text">多列排序</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#指定排序方向"><span class="nav-number">1.1.2.3.</span> <span class="nav-text">指定排序方向</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#过滤"><span class="nav-number">1.2.</span> <span class="nav-text">过滤</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#过滤数据"><span class="nav-number">1.2.1.</span> <span class="nav-text">过滤数据</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#where-过滤"><span class="nav-number">1.2.1.1.</span> <span class="nav-text">where 过滤</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#范围值"><span class="nav-number">1.2.1.2.</span> <span class="nav-text">范围值</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#空值"><span class="nav-number">1.2.1.3.</span> <span class="nav-text">空值</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#and-or-操作符"><span class="nav-number">1.2.1.4.</span> <span class="nav-text">and or 操作符</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#指定范围"><span class="nav-number">1.2.1.5.</span> <span class="nav-text">指定范围</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#正则过滤"><span class="nav-number">1.2.2.</span> <span class="nav-text">正则过滤</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#字符包含匹配"><span class="nav-number">1.2.2.1.</span> <span class="nav-text">字符包含匹配</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#OR-匹配任意一个条件"><span class="nav-number">1.2.2.2.</span> <span class="nav-text">OR 匹配任意一个条件</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#匹配几个字符串之一"><span class="nav-number">1.2.2.3.</span> <span class="nav-text">匹配几个字符串之一</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#匹配多个实例"><span class="nav-number">1.2.2.4.</span> <span class="nav-text">匹配多个实例</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#定位符"><span class="nav-number">1.2.2.5.</span> <span class="nav-text">定位符</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#函数"><span class="nav-number">1.3.</span> <span class="nav-text">函数</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#数据聚合"><span class="nav-number">1.3.1.</span> <span class="nav-text">数据聚合</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#sum-求和avg-求平均值"><span class="nav-number">1.3.1.1.</span> <span class="nav-text">sum() 求和avg() 求平均值</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#count-求数量"><span class="nav-number">1.3.1.2.</span> <span class="nav-text">count() 求数量</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#min-max-求最小最大"><span class="nav-number">1.3.1.3.</span> <span class="nav-text">min() max()求最小最大</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#分组"><span class="nav-number">1.4.</span> <span class="nav-text">分组</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#创建分组"><span class="nav-number">1.4.1.</span> <span class="nav-text">创建分组</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#过滤分组"><span class="nav-number">1.4.2.</span> <span class="nav-text">过滤分组</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#分组和排序"><span class="nav-number">1.4.3.</span> <span class="nav-text">分组和排序</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#联结表"><span class="nav-number">1.5.</span> <span class="nav-text">联结表</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#联结"><span class="nav-number">1.5.1.</span> <span class="nav-text">联结</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#定义"><span class="nav-number">1.5.1.1.</span> <span class="nav-text">定义</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#创建联结"><span class="nav-number">1.5.1.2.</span> <span class="nav-text">创建联结</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#外连接"><span class="nav-number">1.5.2.</span> <span class="nav-text">外连接</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#增删改"><span class="nav-number">1.6.</span> <span class="nav-text">增删改</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#插入"><span class="nav-number">1.6.1.</span> <span class="nav-text">插入</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#插入一行"><span class="nav-number">1.6.1.1.</span> <span class="nav-text">插入一行</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#插入多个行"><span class="nav-number">1.6.1.2.</span> <span class="nav-text">插入多个行</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#插入检索的数据"><span class="nav-number">1.6.1.3.</span> <span class="nav-text">插入检索的数据</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#更新数据"><span class="nav-number">1.6.2.</span> <span class="nav-text">更新数据</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#删除数据"><span class="nav-number">1.6.3.</span> <span class="nav-text">删除数据</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#操作表"><span class="nav-number">1.7.</span> <span class="nav-text">操作表</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#创建表"><span class="nav-number">1.7.1.</span> <span class="nav-text">创建表</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#更新表结构"><span class="nav-number">1.7.2.</span> <span class="nav-text">更新表结构</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#删除表"><span class="nav-number">1.7.3.</span> <span class="nav-text">删除表</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#数据库基础"><span class="nav-number">2.</span> <span class="nav-text">数据库基础</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#事务"><span class="nav-number">2.1.</span> <span class="nav-text">事务</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#并发存在异常"><span class="nav-number">2.2.</span> <span class="nav-text">并发存在异常</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#数据库设计范式"><span class="nav-number">2.3.</span> <span class="nav-text">数据库设计范式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#FMDB"><span class="nav-number">3.</span> <span class="nav-text">FMDB</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#基本结构"><span class="nav-number">3.1.</span> <span class="nav-text">基本结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#基本使用"><span class="nav-number">3.2.</span> <span class="nav-text">基本使用</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#建立开启数据库和关闭"><span class="nav-number">3.2.1.</span> <span class="nav-text">建立开启数据库和关闭</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#创建删除表"><span class="nav-number">3.2.2.</span> <span class="nav-text">创建删除表</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#增删改查"><span class="nav-number">3.2.3.</span> <span class="nav-text">增删改查</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#增"><span class="nav-number">3.2.3.1.</span> <span class="nav-text">增</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#删改"><span class="nav-number">3.2.3.2.</span> <span class="nav-text">删改</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#查"><span class="nav-number">3.2.3.3.</span> <span class="nav-text">查</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#线程安全"><span class="nav-number">3.2.4.</span> <span class="nav-text">线程安全</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#事务-1"><span class="nav-number">3.2.5.</span> <span class="nav-text">事务</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#本地调试"><span class="nav-number">3.2.6.</span> <span class="nav-text">本地调试</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#源码解析"><span class="nav-number">3.3.</span> <span class="nav-text">源码解析</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#初始化-FMDatabase"><span class="nav-number">3.3.1.</span> <span class="nav-text">初始化 FMDatabase</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#打开-db"><span class="nav-number">3.3.2.</span> <span class="nav-text">打开 db</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#创建-select-sql"><span class="nav-number">3.3.3.</span> <span class="nav-text">创建 select sql</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#创建-sqlite3-stmt"><span class="nav-number">3.3.3.1.</span> <span class="nav-text">创建 sqlite3_stmt</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#绑定参数"><span class="nav-number">3.3.3.2.</span> <span class="nav-text">绑定参数</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#创建-FMResultSet-保存结果"><span class="nav-number">3.3.3.3.</span> <span class="nav-text">创建 FMResultSet 保存结果</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#执行-sql"><span class="nav-number">3.3.3.4.</span> <span class="nav-text">执行 sql</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#获取数据"><span class="nav-number">3.3.3.5.</span> <span class="nav-text">获取数据</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#创建-update-sql"><span class="nav-number">3.3.4.</span> <span class="nav-text">创建 update sql</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#加解密"><span class="nav-number">3.3.5.</span> <span class="nav-text">加解密</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#关闭数据库"><span class="nav-number">3.3.6.</span> <span class="nav-text">关闭数据库</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#多线程"><span class="nav-number">3.3.7.</span> <span class="nav-text">多线程</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#初始化创建队列"><span class="nav-number">3.3.7.1.</span> <span class="nav-text">初始化创建队列</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#执行-sql-1"><span class="nav-number">3.3.7.2.</span> <span class="nav-text">执行 sql</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#事务处理"><span class="nav-number">3.3.8.</span> <span class="nav-text">事务处理</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-number">3.4.</span> <span class="nav-text">总结</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zachary Zhang</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

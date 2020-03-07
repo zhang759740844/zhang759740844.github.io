@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+
+
+
+
+  <meta name="keywords" content="Objective-C,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="类似于匿名函数，oc中提供block,可以将一段代码块像对象一样作为参数传递、执行。">
+<meta name="keywords" content="Objective-C">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Block 的使用">
+<meta property="og:url" content="http://zhang759740844.github.io/2016/09/01/Block基础/index.html">
+<meta property="og:site_name" content="Zachary&#39;s blog">
+<meta property="og:description" content="类似于匿名函数，oc中提供block,可以将一段代码块像对象一样作为参数传递、执行。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_1.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_13.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_2.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_3.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_4.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_6.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_5.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_7.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_8.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_9.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_10.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_11.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_12.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_14.png?raw=true">
+<meta property="og:updated_time" content="2020-02-27T15:13:37.611Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Block 的使用">
+<meta name="twitter:description" content="类似于匿名函数，oc中提供block,可以将一段代码块像对象一样作为参数传递、执行。">
+<meta name="twitter:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_1.png?raw=true">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://zhang759740844.github.io/2016/09/01/Block基础/">
+
+
+
+
+
+  <title>Block 的使用 | Zachary's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Zachary's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">记录成长</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://zhang759740844.github.io/2016/09/01/Block基础/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zachary Zhang">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Zachary's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Block 的使用</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-09-01T10:07:12+08:00">
+                2016-09-01
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>类似于匿名函数，oc中提供<code>block</code>,可以将一段代码块像对象一样作为参数传递、执行。</p>
+<a id="more"></a>
+<h2 id="Block的使用"><a href="#Block的使用" class="headerlink" title="Block的使用"></a>Block的使用</h2><h3 id="Block实例"><a href="#Block实例" class="headerlink" title="Block实例"></a>Block实例</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">^(<span class="keyword">double</span> dividend)&#123;</span><br><span class="line">	<span class="keyword">double</span> quotient = dividend / divisor;</span><br><span class="line">	<span class="keyword">return</span> quotient;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Block对象可以被当做一个实参来传递给可以接收block的方法。</p>
+<h3 id="声明block变量"><a href="#声明block变量" class="headerlink" title="声明block变量:"></a>声明block变量:</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> (^devowelizer)(<span class="keyword">id</span>, <span class="built_in">NSUInteger</span>, <span class="built_in">BOOL</span>*);</span><br></pre></td></tr></table></figure>
+<p><code>void</code> 表示返回类型<br><code>^</code> 表示是一个block对象<br><code>devowelizer</code> 表示block变量的名称<br>后面的是实参类型<br>方法的调用参数类型为<code>^(id  string, NSUInteger i, BOOL *stop)block</code></p>
+<h3 id="编写Block对象"><a href="#编写Block对象" class="headerlink" title="编写Block对象"></a>编写Block对象</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">devowelizer = ^(<span class="keyword">id</span> string,<span class="built_in">NSUInteger</span> i, <span class="built_in">BOOL</span> *stop)&#123;</span><br><span class="line">	……</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="调用block变量"><a href="#调用block变量" class="headerlink" title="调用block变量"></a>调用block变量</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">devowelizer(string,i,stop);</span><br></pre></td></tr></table></figure>
+<h3 id="typedef"><a href="#typedef" class="headerlink" title="typedef"></a>typedef</h3><p>不能在方法的实现代码中使用typedef，需要在实现文件的顶部，或者头文件内使用typedef。<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="keyword">void</span>(^ArrayEnumerationBlock)(<span class="keyword">id</span>,<span class="built_in">NSUInteger</span>,<span class="built_in">BOOL</span> *);</span><br></pre></td></tr></table></figure></p>
+<p>需要注意的是，这里定义的是一个新的类型，不是变量。跟在^后面的是类型名称。创建这个新类型后，可以简化相应Block的声明。<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ArrayEnumerationBlock devowelizer；</span><br></pre></td></tr></table></figure></p>
+<h3 id="外部变量"><a href="#外部变量" class="headerlink" title="外部变量"></a>外部变量</h3><p>在执行Block对象时，为了确保其下的外部变量能够始终存在，相应的Block对象会捕获这些变量，意味着程序会拷贝变量的值。</p>
+<p><strong>当外部对象是引用时，block会复制其引用的地址(指针指向的堆上的地址)，只能改变地址指向的对象的属性，不能将外部对象指向新的地址.</strong></p>
+<h3 id="修改外部变量"><a href="#修改外部变量" class="headerlink" title="修改外部变量"></a>修改外部变量</h3><p>如果需要在Block对象内修改某个外部变量，则可以声明相应的外部变量时，在前面加上__block关键字。</p>
+<h3 id="在Block中使用self"><a href="#在Block中使用self" class="headerlink" title="在Block中使用self"></a>在Block中使用self</h3><p>如果要写一个使用self的Block对象，需要避免强引用循环。<br>在Block外声明一个_weak指正，然后将这个指针指向Block对象使用的self，最后在Block对象中使用这个新的指针。<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">_<span class="keyword">weak</span> <span class="keyword">typeof</span>(<span class="keyword">self</span>) weakSelf = <span class="keyword">self</span>;	<span class="comment">//弱引用指针</span></span><br><span class="line">	myBlock = ^&#123;</span><br><span class="line">		<span class="built_in">NSLog</span>(@“Employee:%@”,weakSelf);</span><br><span class="line">	&#125;;</span><br></pre></td></tr></table></figure></p>
+<h2 id="block的实现"><a href="#block的实现" class="headerlink" title="block的实现"></a>block的实现</h2><h3 id="block-结构"><a href="#block-结构" class="headerlink" title="block 结构"></a>block 结构</h3><p><strong>block本质上也是一个oc对象，他内部也有一个isa指针。block是封装了函数调用以及函数调用环境的OC对象。</strong></p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_1.png?raw=true" alt></p>
+<p>将上图和下图做对照，可以发现，两者的结构基本一致：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_13.png?raw=true" alt></p>
+<blockquote>
+<p>注意看上面的 block 结构体，在结构体内部也创建了一个同名的变量 age，它的值和外部的 age 相同。因此，内部 age 修改了并不会影响外部 age。</p>
+</blockquote>
+<h3 id="block-变量捕获"><a href="#block-变量捕获" class="headerlink" title="block 变量捕获"></a>block 变量捕获</h3><p>变量有五种形式，auto 局部变量、static 局部变量、auto 全局变量、static 全局变量、成员变量。</p>
+<h4 id="为什么要有变量的捕获"><a href="#为什么要有变量的捕获" class="headerlink" title="为什么要有变量的捕获"></a>为什么要有变量的捕获</h4><p>因为如果是引用外部局部变量，局部变量会在作用域结束后回收。局部变量回收了，闭包肯定就 crash 了。因此需要进行变量的捕获。</p>
+<h4 id="变量如何捕获的"><a href="#变量如何捕获的" class="headerlink" title="变量如何捕获的"></a>变量如何捕获的</h4><p>捕获方式是在内部创建一个同名的变量，赋给它相同的值或者指向相同的地址。这样虽然代码上看起来是同一个变量，但是其实是两个变量。</p>
+<h4 id="为什么不让使用者直接修改使用到的外部变量"><a href="#为什么不让使用者直接修改使用到的外部变量" class="headerlink" title="为什么不让使用者直接修改使用到的外部变量"></a>为什么不让使用者直接修改使用到的外部变量</h4><p>上面说到，block 中使用的外部变量其实不是正真的外部变量，而是新创建的和外部同名的变量。因此，就算可以改，改的也只是内部的同名变量的指向。因此，编译器索性就不让改了。</p>
+<h4 id="局部变量"><a href="#局部变量" class="headerlink" title="局部变量"></a>局部变量</h4><p>对于局部变量来说，auto 局部变量捕获的是值，static 局部变量捕获的是地址。这是因为 auto 局部变量可能会销毁，所以要捕获值，否则会访问已回收的地址。而 static 局部变量则不用担心变量回收，所以捕获的是地址。<strong><em>所以，在block调用之前修改地址中保存的值，block中的 static 变量会随之改变</em></strong>。例：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_2.png?raw=true" alt></p>
+<h4 id="全局变量"><a href="#全局变量" class="headerlink" title="全局变量"></a>全局变量</h4><p>block不需要捕获全局变量，因为全局变量无论在哪里都可以访问。<strong>局部变量因为跨函数访问所以需要捕获，全局变量在哪里都可以访问 ，所以不用捕获。</strong></p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_3.png?raw=true" alt></p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_4.png?raw=true" alt></p>
+<h4 id="成员变量"><a href="#成员变量" class="headerlink" title="成员变量"></a>成员变量</h4><p>成员变量是比较特殊的，<strong>即使block中使用的是实例对象的属性，block中捕获的仍然是实例对象，并通过实例对象 get 方法去获取使用到的属性</strong></p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_6.png?raw=true" alt></p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_5.png?raw=true" alt></p>
+<blockquote>
+<p>因为点语法实质是调用方法，所以捕获的是 self</p>
+</blockquote>
+<h3 id="block-的类型"><a href="#block-的类型" class="headerlink" title="block 的类型"></a>block 的类型</h3><h4 id="三种类型"><a href="#三种类型" class="headerlink" title="三种类型"></a>三种类型</h4><p>block 存在三种类型：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">__NSGlobalBlock__ （ _NSConcreteGlobalBlock ）</span><br><span class="line">__NSStackBlock__ （ _NSConcreteStackBlock ）</span><br><span class="line">__NSMallocBlock__ （ _NSConcreteMallocBlock ）</span><br></pre></td></tr></table></figure>
+<p>我们可以通过代码查看他们的类型：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_7.png?raw=true" alt></p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_8.png?raw=true" alt></p>
+<h4 id="三种类型的定义"><a href="#三种类型的定义" class="headerlink" title="三种类型的定义"></a>三种类型的定义</h4><p><strong>没有访问auto变量的block是<em><code>__NSGlobalBlock__</code></em>类型的，存放在数据段中。访问了auto变量的block是<code>__NSStackBlock__</code>类型的，存放在栈中。<code>__NSStackBlock__</code>类型的block调用copy成为*<code>__NSMallocBlock__</code>类型并被复制存放在堆中。</strong></p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_9.png?raw=true" alt></p>
+<p>栈 block 相当于一个局部变量，当超出作用域，就面临着被回收的风险。ARC 下，很多情况中，会自动帮我们执行一次 copy，比如赋值。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_10.png?raw=true" alt></p>
+<blockquote>
+<p>因此，block 的属性修饰词需要使用 copy。当然 ARC 环境下，使用 strong，编译器也会自动帮我们 copy。</p>
+</blockquote>
+<h3 id="weak-关键字"><a href="#weak-关键字" class="headerlink" title="__weak 关键字"></a>__weak 关键字</h3><p><code>__weak</code> 关键字修饰的变量会对引用对象进行弱引用。在 block 中使用被弱引用的变量，block 内部也会捕获弱引用的对象：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_11.png?raw=true" alt></p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_12.png?raw=true" alt></p>
+<h3 id="block-关键字"><a href="#block-关键字" class="headerlink" title="__block 关键字"></a>__block 关键字</h3><p>上面说到，block 内部会创建一个和外部同名的变量具有相同的值，或者指向相同的地址。那么这样就无法做到外部修改外部变量的值，block 内部做相应的变化；block 内部修改变量的值，外部变量做相应的变化。</p>
+<p>那么如何才能做到内外的修改能够同步呢？见下图：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/block_14.png?raw=true" alt></p>
+<p>赋值操作都会引起外部变量和内部变量的表示的值或地址的不同。要解决这种不同只有通过一层中间层来解决。<strong>外部变量和内部变量都指向相同的地址。而对于外部变量或者内部变量的修改都转为对包裹的对象的修改，而不是切换外部变量或者内部变量的指向。</strong></p>
+<p>iOS 提供了  <code>__block</code> 来达到这个目的。<code>__block</code> 修饰的变量，编译器会自动将其包装为一个对象，原本被修饰的变量会作为对象的一个属性。</p>
+<blockquote>
+<p>只有要修改变量的值或者地址的时候才使用<code>__block</code>，比如修改 NSMutableArray 这种则不需要使用 <code>__block</code></p>
+</blockquote>
+<h3 id="block-的嵌套"><a href="#block-的嵌套" class="headerlink" title="block 的嵌套"></a>block 的嵌套</h3><p>对于 block 的嵌套，比如以下场景，blockB会捕获self，这是大家都了解的，但是blockA会捕获self么？为什么？</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)embeddedBlock</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">void</span> (^blockA)() = ^&#123;</span><br><span class="line">        <span class="keyword">void</span> (^blockB)() = ^&#123;</span><br><span class="line">            <span class="built_in">NSLog</span>(<span class="string">@"%@"</span>,<span class="keyword">self</span>);</span><br><span class="line">        &#125;;</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>答案是会，先将self从外界传入到blockA中。再从blockA的中传入到blockB中。blockB只能从blockA的作用域里捕获变量。因此blockB中捕获的任何东西，blockA必须也捕获一份。</p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a href="https://www.jianshu.com/p/c99f4974ddb5" target="_blank" rel="noopener">iOS底层原理总结 - 探寻block的本质（一）</a></p>
+<p><a href="https://www.jianshu.com/p/8865ff43f30e" target="_blank" rel="noopener">iOS底层原理总结 - 探寻block的本质（二）</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tag/Objective-C/" rel="tag"># Objective-C</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/08/30/UITableView基础/" rel="next" title="UITableView 基础">
+                <i class="fa fa-chevron-left"></i> UITableView 基础
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/09/03/ios响应事件/" rel="prev" title="iOS手势与响应机制">
+                iOS手势与响应机制 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.png" alt="Zachary Zhang">
+            
+              <p class="site-author-name" itemprop="name">Zachary Zhang</p>
+              <p class="site-description motion-element" itemprop="description">Stay Hungry. Stay Foolish!</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">116</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/zhang759740844" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:zch759740844@126.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Block的使用"><span class="nav-number">1.</span> <span class="nav-text">Block的使用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Block实例"><span class="nav-number">1.1.</span> <span class="nav-text">Block实例</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#声明block变量"><span class="nav-number">1.2.</span> <span class="nav-text">声明block变量:</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#编写Block对象"><span class="nav-number">1.3.</span> <span class="nav-text">编写Block对象</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#调用block变量"><span class="nav-number">1.4.</span> <span class="nav-text">调用block变量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#typedef"><span class="nav-number">1.5.</span> <span class="nav-text">typedef</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#外部变量"><span class="nav-number">1.6.</span> <span class="nav-text">外部变量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#修改外部变量"><span class="nav-number">1.7.</span> <span class="nav-text">修改外部变量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#在Block中使用self"><span class="nav-number">1.8.</span> <span class="nav-text">在Block中使用self</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#block的实现"><span class="nav-number">2.</span> <span class="nav-text">block的实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#block-结构"><span class="nav-number">2.1.</span> <span class="nav-text">block 结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#block-变量捕获"><span class="nav-number">2.2.</span> <span class="nav-text">block 变量捕获</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#为什么要有变量的捕获"><span class="nav-number">2.2.1.</span> <span class="nav-text">为什么要有变量的捕获</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#变量如何捕获的"><span class="nav-number">2.2.2.</span> <span class="nav-text">变量如何捕获的</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#为什么不让使用者直接修改使用到的外部变量"><span class="nav-number">2.2.3.</span> <span class="nav-text">为什么不让使用者直接修改使用到的外部变量</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#局部变量"><span class="nav-number">2.2.4.</span> <span class="nav-text">局部变量</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#全局变量"><span class="nav-number">2.2.5.</span> <span class="nav-text">全局变量</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#成员变量"><span class="nav-number">2.2.6.</span> <span class="nav-text">成员变量</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#block-的类型"><span class="nav-number">2.3.</span> <span class="nav-text">block 的类型</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#三种类型"><span class="nav-number">2.3.1.</span> <span class="nav-text">三种类型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#三种类型的定义"><span class="nav-number">2.3.2.</span> <span class="nav-text">三种类型的定义</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#weak-关键字"><span class="nav-number">2.4.</span> <span class="nav-text">__weak 关键字</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#block-关键字"><span class="nav-number">2.5.</span> <span class="nav-text">__block 关键字</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#block-的嵌套"><span class="nav-number">2.6.</span> <span class="nav-text">block 的嵌套</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考"><span class="nav-number">3.</span> <span class="nav-text">参考</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zachary Zhang</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

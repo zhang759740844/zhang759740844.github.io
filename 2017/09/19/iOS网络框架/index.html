@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+
+
+
+
+  <meta name="keywords" content="源码解析,架构,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="最近在看巩固网络请求相关的知识。准备把 AFNetworking 以及基于 AFNetworking 的一些封装库看一看，了解一下原理。这一篇将探究一下 AFNetworking 的两个封装库 Casa 的 CTNetworking，以及猿题库的 YTKNetwork 的实现过程。">
+<meta name="keywords" content="源码解析,架构">
+<meta property="og:type" content="article">
+<meta property="og:title" content="iOS 中的网络框架">
+<meta property="og:url" content="http://zhang759740844.github.io/2017/09/19/iOS网络框架/index.html">
+<meta property="og:site_name" content="Zachary&#39;s blog">
+<meta property="og:description" content="最近在看巩固网络请求相关的知识。准备把 AFNetworking 以及基于 AFNetworking 的一些封装库看一看，了解一下原理。这一篇将探究一下 AFNetworking 的两个封装库 Casa 的 CTNetworking，以及猿题库的 YTKNetwork 的实现过程。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_2.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_3.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_7.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_1.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_4.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_5.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_6.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_8.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_9.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_10.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_11.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_12.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_13.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_14.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_15.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_16.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_17.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_18.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_20.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_21.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_22.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_23.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_24.png?raw=true">
+<meta property="og:updated_time" content="2020-02-27T15:13:37.649Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="iOS 中的网络框架">
+<meta name="twitter:description" content="最近在看巩固网络请求相关的知识。准备把 AFNetworking 以及基于 AFNetworking 的一些封装库看一看，了解一下原理。这一篇将探究一下 AFNetworking 的两个封装库 Casa 的 CTNetworking，以及猿题库的 YTKNetwork 的实现过程。">
+<meta name="twitter:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_2.png?raw=true">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://zhang759740844.github.io/2017/09/19/iOS网络框架/">
+
+
+
+
+
+  <title>iOS 中的网络框架 | Zachary's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Zachary's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">记录成长</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://zhang759740844.github.io/2017/09/19/iOS网络框架/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zachary Zhang">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Zachary's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">iOS 中的网络框架</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-09-19T10:07:12+08:00">
+                2017-09-19
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>最近在看巩固网络请求相关的知识。准备把 AFNetworking 以及基于 AFNetworking 的一些封装库看一看，了解一下原理。这一篇将探究一下 AFNetworking 的两个封装库 Casa 的 CTNetworking，以及猿题库的 YTKNetwork 的实现过程。</p>
+<a id="more"></a>
+<h2 id="Casa-的-CTNetworking"><a href="#Casa-的-CTNetworking" class="headerlink" title="Casa 的 CTNetworking"></a>Casa 的 CTNetworking</h2><p>Casa 关于网络架构的博客中主要讲了如何渔，没有分析他的鱼是什么样的。刚看的时候，我是一头雾水，相关的类目太多了，有些类还不太能够理解意图。进过一段时间的研究，现在明白了各个环节的作用，做一个整理。</p>
+<h3 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h3><p>由于采用的是离散型的 API，每一个 API 都对应一个 APIManager，所以进行网络请求的时候，要分别初始化各自需要的 APIManager。初始化 APIManager 的时候，要设置一些 APIBaseManager 中的属性，如下图所示：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_2.png?raw=true" alt></p>
+<p>其中包括成功与失败的着陆点 <code>delegate</code>，提供参数的 <code>paramSource</code>，验证参数的 <code>validator</code>，以及拦截器 <code>interceptor</code>。它们都实现了各自协议。一般来说 <code>delegate</code> 是调用的 ViewController，<code>paramSource</code> 也是调用的 <code>ViewController</code>，<code>validator</code> 是 APIManager 自身，<code>interceptor</code> 是调用的 ViewController，<code>validator</code> 和 <code>interceptor</code> 都不是必须的。这些属性需要在初始化的时候设置好。</p>
+<p>可以看到，其中还有一个实现 <code>CTAPIManager</code> 协议的 <code>child</code> 属性，所有派生的 APIManager 都必须实现 <code>CTAPIManager</code> 协议。网络请求所需的 API 名，服务类型，请求类型以及是否缓存 (是否缓存其实没必要作为必须的方法吧，默认不缓存，要缓存的子类实现就好了啊) 都需要通过这个接口中返回：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_3.png?raw=true" alt></p>
+<p>所以现在的继承关系应该是：APIManager 继承于 <code>CTAPIBaseManager</code>，并且实现协议 <code>CTAPIManager</code>。<strong>基类本生并不实现协议</strong>。</p>
+<p>那么为什么基类不直接提供协议中的方法，而是要以协议的方式获取呢？<strong>协议的特点就是提供接口规范</strong>。对于这些必须实现的方法，确实是可以通过在基类中抛出异常来强制子类重写，达到目的。但是这有两个缺点，一个是不直观，调用者不能立即知道需要重写哪些方法。另一个缺点是，可能有些方法忘记了重写，这样只有在运行的时候才会抛出异常，但是使用协议，如果没有完全实现必须的方法，编译都无法通过。</p>
+<p>因此，在初始化的时候要先判断派生类是否实现了 <code>CTAPIManager</code>，没有实现的直接抛出异常。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_7.png?raw=true" alt></p>
+<h3 id="基本流程"><a href="#基本流程" class="headerlink" title="基本流程"></a>基本流程</h3><p>在创建了 APIManager 的实例后，调用其统一的方法 <code>loadData</code> 来开始网络请求。基本流程如图所示：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_1.png?raw=true" alt></p>
+<p>首先是<strong>获取参数</strong>。一般情况下，我们是在网络请求的时候将参数一并传过去，而这里需要你将实现了  <code>CTAPIManagerParamSource</code> 协议的类作为数据源，实现其获取数据的方法，通过 <code>manager</code> 的不同来区分不同 API：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_4.png?raw=true" alt></p>
+<p><strong>重组参数</strong> <code>reformParams:</code>，并不是一个必须的方法，默认返回原参数。子类可以重写该方法在调用 API 之前额外添加一些与业务逻辑无关的参数，比如 pageNumber 和 pageSize 之类的。</p>
+<p><strong>拦截器</strong>不是必须的，所以调用拦截器方法前，先要判断一下是否有拦截器。拦截器是和业务逻辑有关的，所以一般是 ViewController，其需要实现 <code>CTAPIManagerInterceptor</code> 协议。这个协议中包含了很多拦截方法，包括调用 API 之前之后，请求成功之前之后，请求失败之前之后的回调方法。当前调用的是 <code>manager:shouldCallAPIWithParams:</code> 方法，用来检测此 <code>manager</code> 是否能以该  <code>params</code> 调用网络请求。如果允许调用 API 则进入下一步，如果不允许，直接结束请求(你也可以在不允许的时候设置走到失败回调)。拦截器一般用来展示和隐藏菊花~</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_5.png?raw=true" alt></p>
+<p>接下来是<strong>验证器</strong>，用来验证请求数据以及返回数据的合法性。验证器是和业务无关的，所以一般交给 APIManager 就行了。在 API 调用前，验证器一般用来在 API 调用前验证参数是否符合规则，比如手机号啊，邮箱啊之类，避免无效的 API 请求，加快响应速度。如果验证失败了，直接走失败回调，将<code>CTAPIBaseManager</code> 中的 <code>CTAPIManagerErrorType errorType</code> 属性设置为 <code>CTAPIManagerErrorTypeParamsError</code> 表示参数错误。</p>
+<p> <img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_6.png?raw=true" alt></p>
+<p>接下来询问子类 APIManager 是否要<strong>从本地获取数据</strong>。如果可以从本地获取，那么从 UserDefault 中取出数据。如果有数据，那么在主线程中执行成功回调，如果没有数据，那么设置 <code>isNativeDataEmpty</code> 标识位 YES，这个标识位后面会用到。</p>
+<p>注意到，这里即使从本地加载了数据，也不会直接 return 而是要继续进行网络请求的。这里的逻辑是可能存在一些 API 获取到数据后不会立即展示，而是保存起来，展示上次保存的数据。比如首屏广告图片。</p>
+<p>接下来询问<strong>是否可以缓存</strong>，如果子类没有实现这个方法，那么从 <code>CTNetworkingConfigurationManager</code> 这个配置中心获取。（这里不太对，因为 <code>shouldCache</code> 是 <code>APIManager</code> 协议中定义的必须实现的方法方法，所以不会存在从配置中心读取这一步。其实最好还是直接设置成可选方法，在 base 中提供个默认实现。）</p>
+<p>如果这个 API 可以缓存，那么再通过 <code>serviceType</code>，<code>methodName</code> 以及 <code>requestParams</code> 组成的字符串，使用 <code>CTCache</code> 这个单例去<strong>查看本地是否有数据</strong>。取出一个自定义的 <code>CTCachedObject</code> 类型。这个类型保存两个 <code>NSData</code> 对象，一个是缓存的数据 <code>content</code>，一个是缓存的时间 <code>lastUpdateTime</code>，因为要判断<strong>是否超过了缓存的时间</strong>。如果既有缓存内容，缓存还没有超时，那么拿出来，在主线程中执行成功回调。</p>
+<p>不论是从本地还是从 Cache 都使用了<strong>生成了一个返回实例</strong>的封装 <code>CTURLResponse</code>，这个封装里有一个标识符 <code>isCache</code>，表示非网络请求得到的数据，以此和网络请求数据进行区别。它提供了三个初始化方法，上面两个是网络返回成功和失败的初始化的方法。最后一个 <code>initWithData:</code> 就是刚才说的本地数据的初始化方法。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_8.png?raw=true" alt></p>
+<p>如果没有缓存，那么就要执行网络请求了。但是在请求前，还需要<strong>检查一下网络情况</strong>。在上面的配置中心(<code>CTNetworkingConfigurationManager</code>，关于配置的都扔在这里)还提供了一个方法调用 AFNetworking  的方法，只要不是明确的无网络 <code>NotReachable</code> 就返回 YES。如果无连接，那么执行失败回调， <code>errorType</code> 为无网络连接。 </p>
+<p>最后，发送网络请求前，将 APIManager 中的 <code>isLoading</code> 标志位置为 YES，表示正在进行网络请求。这个的作用是在某些 API 中可以防止重复发送请求。比如翻页，就可以判断 <code>isLoading</code> 的状态来执行不同的请求策略。</p>
+<h3 id="网络请求"><a href="#网络请求" class="headerlink" title="网络请求"></a>网络请求</h3><p>网络请求大致分为两步，第一步是生成一个 <code>NSURLRequest</code>，第二步就是执行。整个过程在 <code>CTApiProxy</code> 中进行。</p>
+<h4 id="生成-Request"><a href="#生成-Request" class="headerlink" title="生成 Request"></a>生成 Request</h4><p>生成 Request 的主要过程在 <code>CTRequestGenerator</code> 中完成。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_9.png?raw=true" alt></p>
+<p>在开始前，我们先要知道 <code>CTService</code> 是个什么东西。来看一下它的构成：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_10.png?raw=true" alt></p>
+<p>主要定义了公钥、私钥、根 Url 以及 API 版本。根据这个 <code>CTService</code> 可以派生出各种 service，每一个 service 都有自己的 <code>apiBaseUrl</code>。所以 <code>CTService</code> 的设计是用于描述第三方API的相关配置和信息的。如果没有第三方 API，只要创建一个自身的 Service 就行了。</p>
+<p>另外我们看到，同 <code>BaseAPIManager</code> 一样，<code>CTService</code> 也有一个 <code>child</code>。它实现了 <code>CTServiceProtocol</code> 协议：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_11.png?raw=true" alt></p>
+<p>将 <code>CTService</code> 中的几个属性分为了线上和线下版本。所有实现该协议的类都需要定义这些属性的 get 方法。事实上，我们定义的子类不需要设置 <code>CTService</code> 的几个属性。它会自动根据当前环境 <code>isOnline</code> 进行选择，<code>isOnline</code> 可以统一读取配置信息中的设置。例如：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_12.png?raw=true" alt></p>
+<blockquote>
+<p>CTServiceProtocol 定义了几个需要实现的读写方法。CTService 不实现 CTServiceProtocol 协议，但是实现了协议中的读写方法，这样 CTService 的子类就不需要再重复写读写方法了。CTService 的子类要做的就是提供 CTServiceProtocol 中定义的几个属性。相关逻辑就会通过 CTService 中提供的读写方法获取这几个属性值了。</p>
+</blockquote>
+<p>由于可能有多个 service，并且如果每次都创建 Service 太损耗性能，所以就提供了一个工厂 <code>CTServiceFactory</code> 用于统一管理保存所有的 service。APIManager 通过 <code>serviceType</code> 字符串表示其属于哪个 service，即要创建的 service 类型。因此，我们需要一个 <code>serviceType</code> 和 <code>CTService</code> 的映射表。这个映射表由一个实现了 <code>CTServiceFactoryDataSource</code> 协议的类提供。一般我们将 <code>AppDelegate</code> 设置为这个 DataSource，提供 type → Service 的映射。</p>
+<p>回到主流程。先到 <code>CTServiceFactory</code> 中查看是否已经<strong>存在相应的 Service</strong>。如果不存在就要通过映射表找到对应的 Service 类，创建一个。</p>
+<p>得到 Service 后，就可以进行完整 <strong>url 的拼接</strong>。这一操作也是由 <code>CTService</code> 完成的。因为不同 Service 可能有不同的拼接规则。</p>
+<p>之后<strong>添加额外的参数</strong>。这个参数不是业务级的，也不是接口级的，而是 Service 级的，即所有该 Service 都需要传递的参数，比如 token 之类的。</p>
+<p>调用 AFNetworking 提供的方法，传入 url、参数和请求类型，<strong>创建一个 <code>NSURLRequest</code> 实例</strong>。</p>
+<p>有一些 Service 需要添加自己特有的 header。因此，调用 <code>CTService</code> 中的方法，为不同 Service<strong>添加 header</strong>。</p>
+<p>Request 本生是没有请求参数这个属性的。但是我们想<strong>把请求参数保存</strong>起来，因为某些情况下，在成功失败回调的时候可能需要用到请求参数。所以我们需要为 <code>NSURLRequest</code> 添加一个分类，用于保存请求参数。</p>
+<p>现在 Request 生成完毕</p>
+<h4 id="执行-Request"><a href="#执行-Request" class="headerlink" title="执行 Request"></a>执行 Request</h4><p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_13.png?raw=true" alt></p>
+<p>执行过程清晰了很多。通过上面创建的 Request，创建一个 <code>NSURLSessionDataTask</code> 的实例 <code>dataTask</code>。然后通过拿到该 task 的 <code>taskIdentifier</code> 作为这个请求的 <code>requestId</code>。在 <code>CTApiProxy</code> 中保存了一个 <code>dispatchTable</code> 字典，用于存储 <code>requestId</code> 对应的 <code>dataTask</code>。接着执行这个 <code>dataTask</code>，再将 <code>requestId</code> 一层层传出，<code>CTAPIBasemanager</code> 中有一个保存这些 id 的数组 <code>requestIdList</code>。这个 <code>requestId</code> 的用处在于通过这个 <code>requestId</code> 可以随时取消请求。取消的时候通过 <code>requestIdList</code> 中的<code>requestId</code> 找到 <code>dispatchTable</code> 中的 <code>NSURLSessionDataTask</code> 实例，然后调用其 <code>cancel</code> 方法。</p>
+<p>但是要注意，当 API 请求速度非常快的时候，APIManager 并不能确保当前正在进行的请求所对应的 <code>requestId</code> 的正确性。所以如果要取消请求的时候，最好 cancelAll，而不是只取消某一个。</p>
+<h3 id="回调"><a href="#回调" class="headerlink" title="回调"></a>回调</h3><h4 id="统一的回调过程"><a href="#统一的回调过程" class="headerlink" title="统一的回调过程"></a>统一的回调过程</h4><p>在完成了 <code>dataTask</code> 的执行后，会由 <code>APIProxy</code> 执行统一的回调过程。回调会传入响应信息 <code>NSURLResponse *response</code>，响应体<code>id responseObject</code>，以及错误 <code>NSError *error</code>。因为请求已经完成，所以移除 <code>dispatchTable</code> 中相应的项。如果出错了，那么生成一个出错的返回对象 <code>CTURLResponse</code>，如果没有出错，那么生成一个正确的返回对象 <code>CTURLResponse</code>，然后将这个 <code>CTURLResponse</code> 传入由 <code>CTAPIBaseManager</code> 传入的成功失败回调。对于响应信息的日志打印，也是在这里完成。</p>
+<p><code>CTURLResponse</code> 没有什么特别的方法，只是添加了一些标识属性，比如前文说到的 <code>isCache</code>，以及 <code>requestId</code>，<code>error</code> 等，还有就是数据。反正你想让回调方法知道的东西都放在这里就可以了。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_14.png?raw=true" alt></p>
+<h4 id="成功回调"><a href="#成功回调" class="headerlink" title="成功回调"></a>成功回调</h4><p>成功回调在 APIManager 中进行，除了调用 ViewController 中提供的成功回调外，主要用来保存数据、验证以及拦截。流程如图：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_15.png?raw=true" alt></p>
+<p>首先是要<strong>保存数据到本地</strong>，这要求该 API 允许从本地获取数据并且响应结果来自于网络，也就是上面所说的 <code>isCache</code> 为 NO。这种情况下，用 <code>NSUserDefaults</code> 保存网络端传来的响应数据。</p>
+<p>前面在网络请求完成时删除了 <code>dispatchTable</code> 中的 <code>requestId</code> 和 <code>dataTask</code> 的键值对。现在要<strong>删除 <code>requestList</code> 保存的 <code>requestId</code></strong>。</p>
+<p>由于每个 API 都有一个 Manager，所以现在没有必要将数据交给 ViewController 保管了。在 BaseManager 中，定义了一个 <code>id fetchedRawData</code> 专门<strong>保存原始的返回数据</strong>。</p>
+<p>之后是<strong>验证器</strong>对于返回结果正确性的验证。一般是对于返回状态是否正确、某些特定字段是否为空的判断。这些都由 APIManager 来完成。如果失败，则直接走失败回调，并且设置相应的错误类型。</p>
+<p>除了保存到本地就是判断<strong>是否要缓存</strong>。同样的要判断是否能缓存，以及数据是否来此网络。如果可以，调用 <code>CTCache</code> 的相应方法更新缓存。</p>
+<p>接下来就是在最终<strong>成功回调前的拦截</strong>。拦截分为内部拦截和外部拦截。在 base 中定义了 <code>beforePerformSuccessWithResponse:</code> 方法，会调用拦截器的相应方法。如果要实现内部拦截，需要子类重写该方法，并且要调用 super 方法。<strong>成功回调后的拦截</strong>也是相同的道理。</p>
+<p>最后要说的就是<strong>成功回调</strong>了。这里要强调一下，并不是所有网络请求都要走最终的成功回调的（至少在本文这个情景下是这样的）。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_16.png?raw=true" alt></p>
+<p>else 的逻辑，不是从本地获取的，那么直接成功回调没有问题。那么从本地获取的数据再分这两种情况，有何用意呢？前面说过，从本地加载的数据成功后会有一次成功回调，之后并没有结束网络请求，而是继续请求新的数据去了。从网络获得数据后又会产生一个成功回调。这里就要把后面这个成功回调屏蔽掉。所以这里先判断是否应该从本地拿数据。如果是，那么就面临着两次回调的情况。本地数据的成功回调是应该执行的，另外本地没有数据时从网络端拿数据也是应该执行的。而本地存在数据，又从网络端拿到的，是不能执行成功回调的。（具体还需要根据实际业务做相应调整的）</p>
+<h4 id="失败回调"><a href="#失败回调" class="headerlink" title="失败回调"></a>失败回调</h4><p>失败回调较为简单，但是和我们平时写的不一样。由于框架中有很多地方主动调用了失败回调，比如拦截器、验证器发起的失败回调。所以我们需要根据错误类型，先做一些处理。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_17.png?raw=true" alt></p>
+<p><code>CTServiceProtocol</code> 中提供了一个可选方法 <code>shouldCallBackByFailedOnCallingAPI:</code>，用来集中处理 Service 层的错误，<strong>比如 token 失效</strong>。我们就可以在 Service 中实现该方法，在其中发出通知。处理完错误后，直接 return，不再继续执行。</p>
+<p>所以总的来说，分为三层，<strong>Service 层</strong>，<strong>APIManager 层</strong>和<strong>业务层</strong>，每一层都能进行处理。</p>
+<h3 id="Q-amp-A"><a href="#Q-amp-A" class="headerlink" title="Q&amp;A"></a>Q&amp;A</h3><h4 id="链式请求"><a href="#链式请求" class="headerlink" title="链式请求"></a>链式请求</h4><p>如何处理链式请求？一般我们都是在成功回调后拿到数据，然后再进行下一个请求。如果存在多个请求，那么这个成功回调会嵌套的非常长。进行的改进就是争取将各个请求从回调中取出。我们可以将每一个回调放在一个专门的类中：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_18.png?raw=true" alt></p>
+<p>如图所示，为每一个请求链上的 API 创建一个 Command 类。这个 Command 类是对 APIManager 的一层封装，ViewController 中不再直接调用 APIManager 中的 <code>loadData</code> 方法，而是调用 Command 中提供的 <code>execute</code>(名字叫什么不重要)表示我发起了一个请求链。将 Command 设置为 APIManager 的 paramSource，delegate。APIManager 先执行 Command 的回调。Command 中提供了一个同为 Command 类型的 <code>next</code> 属性，这就是请求链的下一级。在 Command 的回调中，判断 <code>next</code> 是否为空。当存在时，如果下一级要依赖上一级返回的结果作为参数，就将下一级的 paramSource 设置为上一级，然后通过 <code>[self.next execute]</code> 执行。如果不存在，那么调用 delegate（一般是 ViewController）的完成回调，表示请求链结束。</p>
+<p>使用的时候为每一个 Command 设置 <code>next</code> 即可：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ViewController 中</span></span><br><span class="line">API1Command *api1 = [[API1Command alloc] init];</span><br><span class="line">API2Command *api2 = [[API2Command alloc] init];</span><br><span class="line">API3Command *api3 = [[API3Command alloc] init];</span><br><span class="line">api1.next = api2;</span><br><span class="line">api1.paramSource = <span class="keyword">self</span>;</span><br><span class="line">api1.delegate = <span class="keyword">self</span>;</span><br><span class="line">api2.next = api3;</span><br><span class="line">api3.delegate = <span class="keyword">self</span>;</span><br><span class="line">[api1 execute];</span><br></pre></td></tr></table></figure>
+<p>这样做有一个优点，就是有些时候，下一级的网络请求并不依赖于 VC，而是从上一级网络请求直接获得。这样，我们就可以直接设置 <code>next</code> 的 <code>params</code>，而不需要让 <code>next</code> 继续问 VC 要数据了。上面的代码示例里也是这样。首先建立调用链 <code>api1</code>→<code>api2</code>→<code>api3</code>，<code>api1</code> 和 <code>api3</code> 需要执行 VC 中的回调，就设置其 delegate，<code>api2</code> 和 <code>api3</code> 都不需要 VC 作为 paramSource，所以就不设置了。</p>
+<blockquote>
+<p>这种新建 Command 的好处是，把 delegate，paramSource 做的事放到了 Command 里，不需要在 VC 中处理了。但是这样也带来一个问题就是每个 APIManager 都需要创建一个创建一个与之对应的 Command，导致类目增多。当然，这是不可避免的，毕竟这些 delegate，paramSource 的方法总是要有一个地方放的。</p>
+<p>另外，最好不要将 next 放在 APIManager 中，这样会污染 APIManager。</p>
+</blockquote>
+<h4 id="等待视图在哪实现"><a href="#等待视图在哪实现" class="headerlink" title="等待视图在哪实现"></a>等待视图在哪实现</h4><p>等待视图的展示和隐藏在 interceptor 的请求开始前和请求结束后调用。我们应该将加载框设置为一个单例，其中维护一个计数器。当请求开始的时候计数加一，请求结束的时候计数减一。计数器要加锁，因为 API 是异步的。</p>
+<h4 id="paramsource-是谁？"><a href="#paramsource-是谁？" class="headerlink" title="paramsource 是谁？"></a>paramsource 是谁？</h4><p>一般我们的 paramsource 设置为 VC。但是如果不涉及业务上的数据，可以直接设置为 APIManager。</p>
+<h4 id="如何分页"><a href="#如何分页" class="headerlink" title="如何分页"></a>如何分页</h4><p>将页数保存在 APIManager 中。每次我们要加载下一页的时候使用 <code>loadNextPage</code> 方法即可，不需要 VC 管理请求页了。</p>
+<p>关于实现，实现方式应该是这样的。首先在 <code>APIBaseManager</code> 中定义一个 <code>pageNo</code> 属性，设置默认值为 1，表示第一页；一个 <code>pageSize</code> 属性，设置默认值为 10。然后还定义 <code>reloadData</code> 方法，它的默认实现就是将 <code>pageNo</code> 置为 1，然后调用 <code>loadData</code>。</p>
+<p>再定义一个协议 <code>PageProtocol</code>，声明可选的 <code>pageNo</code> 和 <code>pageSize</code> 属性，再声明一个可选的 <code>reloadData</code> 方法，以告诉使用者可以使用。</p>
+<p>对于要分页的 API，在 <code>loadData</code> 方法中的重组参数方法中，将当前 <code>pageNo</code> 传入。在 <code>APIBaseManager</code> 中的内部拦截器中，判断当前 APIManager 是否实现了 <code>PageProtocol</code> 协议，实现了，就把 <code>pageNo</code> 加一。</p>
+<h4 id="requestId-的用处"><a href="#requestId-的用处" class="headerlink" title="requestId 的用处"></a>requestId 的用处</h4><p>requestId 设计出来是为了针对 request 的控制留有余地用的，但是现在在工程中用的很少。所以还不如像 YTK 那样，保存 dataTask 就行了。</p>
+<h4 id="CTService-的设计意图"><a href="#CTService-的设计意图" class="headerlink" title="CTService 的设计意图"></a>CTService 的设计意图</h4><p>Service 是用来接入第三方 API 的。对于第三方的 API，就创建一个全新的 Service。</p>
+<blockquote>
+<p>简单总结一下，大致分为三步：</p>
+<p>每个 API 都有一个 APIManager，其中有 ServiceType，interceptor，delegate，validator，paramSource 等属性。在正真的数据请求前，先对请求参数做一些处理，比如添加 pageNum 等，然后在其中经过一系列的判断，包括 interceptor，validator，是否有本地缓存，是否有 cache 等，涉及到具体的策略。然后进行网络请求。</p>
+<p>网络请求通过 APIProxy 完成，它需要 APIManager 提供各种网络请求需要的东西，包括请求参数，请求名，请求类型，ServiceType。它先用这些参数，通过 CTRequestGenerator 创建 Request。创建 Request 的过程是根据 APPDelegate 中定义的对照表，用 ServiceType 在 CTServiceFactory 中找到正真的 CTService 实例，然后获取一些 Service 层面的参数，比如 baseUrl，Service 层的参数等。最后通过 AF 提供的 AFHTTPRequestSerializer 的方法生成 NSURLRequest。</p>
+<p>最后 APIProxy 就要发起请求了。还是通过 AF 的方法生成 dataTask，并开始。将 dataTask 和网络请求返回的 requestId 以字典的方式保存起来，又将 requestId 返回给 APIManager 保存。然后等待回调。回调先将 APIProxy 的字典中相应键值对删除，然后删除 APIManager 的数组中的 requestId 删除。</p>
+</blockquote>
+<h2 id="猿题库的-YTKNetwork"><a href="#猿题库的-YTKNetwork" class="headerlink" title="猿题库的 YTKNetwork"></a>猿题库的 YTKNetwork</h2><p>YTKNetWork 同样是一个 star 数非常高的网络框架，它也是基于离散型 API 完成的。同样的来解析一下 YTK 封装的基本流程。坦白说，CTNetworking 真的很折腾，类目很多，对第一次看的人很不友好。YTKNetwork 则简单了许多，总共也就十来个文件。</p>
+<h3 id="基本流程-1"><a href="#基本流程-1" class="headerlink" title="基本流程"></a>基本流程</h3><p>YTK 没有了那么多的 delegate，没有了重组参数，没有了验证器，拦截器，只有关于缓存的讨论。因此，它的主流程也显得简单了许多：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_20.png?raw=true" alt></p>
+<p>首先这个过程基本都是在 <code>YTKRequest</code> 中完成的，基本类比于 <code>APIBaseManager</code>，所有的 API 都继承于它。第一步判断<strong>是否忽略缓存</strong>，这是各个 API 需要设置的属性。默认为不缓存。</p>
+<p>然后判断是<strong>否有下载路径</strong>。也就是各个 API 是否实现了提供下载路径的方法。如果有下载路径，那么就得发送网络请求。</p>
+<p>最后是判断<strong>是否能够读取缓存</strong>。先获取各个 API 设置的缓存时间，如果没有设置，那么就得发送网络请求。然后尝试读取缓存数据的元数据。元数据包括缓存的缓存时间，APP 版本号，敏感信息等。这些都要分别判断是否和当前一致。如果没有元数据，或者元数据不符合要求的都得进行网络请求。</p>
+<p>如果以上都没有问题，那么执行成功回调，将整个 API 作为参数返回。但是其中任意一个不满足，就会要发送网络请求。发送网络请求前有一个执行准备方法的机会，类似于 interceptor。</p>
+<h3 id="网络请求-1"><a href="#网络请求-1" class="headerlink" title="网络请求"></a>网络请求</h3><p>YTK 的网络请求由 <code>YTKNetworkAgent</code> 完成，类比于 <code>ApiProxy</code>。不过不同的是，YTK 的这个 Agent 做了所有的事，并且包含了文件下载。而 Casa 的 Proxy 则结合 <code>CTService</code> 以及 <code>CTRequestGenerator</code> 添加了更多的参数配置。YTK 网络请求过程如图：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_21.png?raw=true" alt></p>
+<p>首先，YTK 允许使用者自己提供 <code>NSURLRequest</code> 的实例。所以判断使用者<strong>是否使用了 Request</strong>。如果没有提供，那么需要帮使用者创建一个 Request。</p>
+<p>创建的时候首先是对 <strong>detailUrl 的修改</strong>。YTK 提供了一个 <code>YTKFilterProtocol</code>，实现了这个协议的类可以对 <code>YTKRequest</code> 提供的 detailUrl 进行一定的修改。</p>
+<p>之后还可以<strong>修改 baseUrl</strong>。这一过程主要是判断是否使用了 cdn，如果使用了 cdn，那么切换到 cdn 的 baseUrl。这个方法是每个 <code>YTKRequest</code> 选择实现的。</p>
+<p><strong><code>AFConstructingBlocks</code></strong> 是 AFNetwork 中的属性，它一般是在上传文件的时候使用。由  <code>YTKRequest</code> 选择完成它的创建。比如下例中将一张图片以 Content-Type 为 <code>image/jpeg</code> 的形式上传：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_22.png?raw=true" alt></p>
+<p>准备工作结束，创建 Request 前还需要检查一下该请求<strong>是否是一个下载请求</strong>。还是 <code>YTKRequest</code> 提供的可选实现的方法，如果提供了下载路径就表示是一个下载请求。下载的请求涉及到判断路径上文件是否存在，是否可以继续下载等，会通过 AFNetworking 创建一个站稳的 dataTask 类:<code>NSURLSessionDownloadTask</code>，所以必须专门创建一个<strong>下载请求的 dataTask</strong>。</p>
+<p>不是下载请求的情况下，将上面准备的各种传给 AFNetwork，<strong>生成一个 Request</strong>。之后再将这个 Request 传给 AFNetwork，<strong>得到一个 dataTask</strong>。</p>
+<p>之后<strong>设置 dataTask 的优先级</strong>。这个一般也没有太大用处啦。</p>
+<p>在执行前，dataTask 肯定是要保存起来的，一来为了方便取消，二来为了到时候能拿到请求的参数等数据。Casa 的实现方式是将 dataTask 保存在 <code>APIProxy</code> (对应 <code>YTKNetworkAgent</code>)中，以键值分别为 <code>requestId</code> 和 dataTask 的字典的形式保存，然后将 <code>requestId</code> 以数组的形式又保存在了各个 APIManager(对应 <code>YTKRequest</code>) 里。每发送一次请求，数组添加一个 id。VC 可以拿着 id 调用 APIManager 的相关方法来取消请求。</p>
+<p>YTK 将 <strong>dataTask 直接保存</strong>在了 <code>YTKRequest</code> (对应 APIManager)中。虽然也是通过 <code>requestId</code> 和 dataTask 的键值对的方式保存，但是取消并不是以 id 为标识来取消的，而是以 <code>YTKRequest</code> 为标识取消的。VC 调用 <code>YTKNetworkAgent</code> 的取消方法取消请求。所以 YTK 中每次网络请求，都需要实例化一个 <code>YTKRequest</code>。相关过程如图所示：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_23.png?raw=true" alt></p>
+<blockquote>
+<p>不过就算一个 APIManager 能发多个网络请求了，最后的返回结果还是只有一个并且是会被覆盖的，所以这种保存 requestId 数组的方式并不比每个请求实例化一个 <code>YTKRequest</code> 好。</p>
+</blockquote>
+<p>最终通过 dataTask 的 <code>resume</code> 就可以开启任务了。</p>
+<h3 id="回调-1"><a href="#回调-1" class="headerlink" title="回调"></a>回调</h3><h4 id="统一的回调过程-1"><a href="#统一的回调过程-1" class="headerlink" title="统一的回调过程"></a>统一的回调过程</h4><p>YTK 的统一的回调过程在 <code>YTKNetworkAgent</code> 中完成。主要做了两件事，首先通过 <code>requestId</code> 移除保存的 dataTask。其次，将返回的结果设置为 <code>YTKRequest</code> 的属性，并验证器有效性。</p>
+<p>验证有效性的过程就是在 <code>YTKRequest</code> 中提供一个结果的模板，然后比较返回结果和模板的形态是否相同。总的来说就是一个递归验证的过程，就不多赘述了。</p>
+<h4 id="成功回调-1"><a href="#成功回调-1" class="headerlink" title="成功回调"></a>成功回调</h4><p>YTK 的成功回调主要过程就是写入缓存，相比较 CTNetworking 根据需求设置的较为复杂的判断逻辑要直接了许多：就是如果要缓存那么就缓存。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/casa_network_24.png?raw=true" alt></p>
+<p>这个成功回调还是在 <code>YTKNetworkAgent</code> 中实现的。在允许缓存并且是从网络获取的情况下写入缓存。这两步也没有太多可以说的。写入缓存也是正常操作。关于创建元数据，前面也说到过了，写缓存的时候一并创建元数据并保存起来。最后的拦截以及成功回调和 CTNetworking 类似。</p>
+<blockquote>
+<p>这里成功回调仍然是在 <code>YTKNetworkAgent</code> 进行，相比较 CTNetworking 交由 APIManager 处理，这样少了一些定制性。</p>
+</blockquote>
+<h4 id="失败回调-1"><a href="#失败回调-1" class="headerlink" title="失败回调"></a>失败回调</h4><p>YTK 对于失败的回调基本完全是给到使用者处理了。在失败回调中做的一件事就是对于下载失败的情况，删除未完成的下载项，并将这些数据保存在一个未完成的路径中。</p>
+<h3 id="批量请求与链式请求"><a href="#批量请求与链式请求" class="headerlink" title="批量请求与链式请求"></a>批量请求与链式请求</h3><h4 id="批量请求"><a href="#批量请求" class="headerlink" title="批量请求"></a>批量请求</h4><p>批量请求要做的是同时开始多个请求，在最后一个请求完成的时候回调处理方法。YTK 提供了批量请求的封装 <code>YTKBatchRequest</code>。虽然也叫 Request，但是它并不继承于 <code>YTKRequest</code>。而是保存了 <code>YTKRequest</code> 的一个集合。</p>
+<p>简单来说，它的实现方式就是初始化的时候传入一个 <code>YTKRequest</code> 的集合。在调用 <code>YTKBatchRequest</code> 的 <code>start</code> 方法开始请求的时候，将每个 <code>YTKRequest</code> 的 delegate 都设置为当前的 <code>YTKBatchRequest</code>。这样在每一个请求返回的时候，都会走到 <code>YTKBatchRequest</code> 的处理方法中。</p>
+<p>然后 <code>YTKBatchRequest</code> 中为完成的请求计数。当完成的请求小于总请求时，回调方法直接 return。只有当完成的请求等于总请求时，表示全部请求完成，此时执行成功回调。</p>
+<p>如果其中有任意一个请求失败了，那么在失败回调中立即为每一个 Request 调用 cancel 方法，取消所有请求。</p>
+<p>以上就是批量请求的实现。非常简单。</p>
+<h4 id="链式请求-1"><a href="#链式请求-1" class="headerlink" title="链式请求"></a>链式请求</h4><p>YTK 为链式请求提供了一个 <code>YTKChainRequest</code> 类，同样要求在初始化的时候传入一个 <code>YTKRequest</code> 的数组。在调用 <code>YTKChainRequest</code> 的 <code>start</code> 方法开始请求的时候，将第一个 <code>YTKRequest</code> 的 delegate 设置为当前的 <code>YTKChainRequest</code>。这样在请求返回的时候，都会走到 <code>YTKChainRequest</code> 的处理方法中。</p>
+<p>除了 <code>YTKRequest</code> 的数组，创建的时候还需要传入一个回调闭包的数组。这样，在每个请求完成后，依次执行回调闭包中的方法。</p>
+<p>如果其中一个请求失败了，那么执行自定义的失败回调即可。</p>
+<blockquote>
+<p>和 CTNetworking 比较，这样的处理方式比较直接，但是不够优雅。</p>
+</blockquote>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>CTNetworking 和 YTKNetwork 都是离散型 API 的实现。不过我认为 CTNetworking 的实现方式更为优雅。以协议的方式明确职责，引入 delegate，validator，interceptor，让定制化程度更高，并且减轻了 VC 的负担。引入 CTService 让多服务接入验证变得简单。但是反过来说，这也一定程度上提高了学习成本。并且 CTNetworing 并不支持上传与下载文件。其缓存策略也需要使用者根据实际需求做一定的改写。相比较而言，YTKNetwork 的功能就更纯粹了一些，专注于网络请求，在缓存与下载方面做了充足的处理。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tag/源码解析/" rel="tag"># 源码解析</a>
+          
+            <a href="/tag/架构/" rel="tag"># 架构</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/09/09/iOS单元测试/" rel="next" title="iOS 单元测试">
+                <i class="fa fa-chevron-left"></i> iOS 单元测试
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/10/18/Swift 进阶/" rel="prev" title="《Swift 进阶》笔记">
+                《Swift 进阶》笔记 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.png" alt="Zachary Zhang">
+            
+              <p class="site-author-name" itemprop="name">Zachary Zhang</p>
+              <p class="site-description motion-element" itemprop="description">Stay Hungry. Stay Foolish!</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">116</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/zhang759740844" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:zch759740844@126.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Casa-的-CTNetworking"><span class="nav-number">1.</span> <span class="nav-text">Casa 的 CTNetworking</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#初始化"><span class="nav-number">1.1.</span> <span class="nav-text">初始化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#基本流程"><span class="nav-number">1.2.</span> <span class="nav-text">基本流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#网络请求"><span class="nav-number">1.3.</span> <span class="nav-text">网络请求</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#生成-Request"><span class="nav-number">1.3.1.</span> <span class="nav-text">生成 Request</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#执行-Request"><span class="nav-number">1.3.2.</span> <span class="nav-text">执行 Request</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#回调"><span class="nav-number">1.4.</span> <span class="nav-text">回调</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#统一的回调过程"><span class="nav-number">1.4.1.</span> <span class="nav-text">统一的回调过程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#成功回调"><span class="nav-number">1.4.2.</span> <span class="nav-text">成功回调</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#失败回调"><span class="nav-number">1.4.3.</span> <span class="nav-text">失败回调</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Q-amp-A"><span class="nav-number">1.5.</span> <span class="nav-text">Q&amp;A</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#链式请求"><span class="nav-number">1.5.1.</span> <span class="nav-text">链式请求</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#等待视图在哪实现"><span class="nav-number">1.5.2.</span> <span class="nav-text">等待视图在哪实现</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#paramsource-是谁？"><span class="nav-number">1.5.3.</span> <span class="nav-text">paramsource 是谁？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#如何分页"><span class="nav-number">1.5.4.</span> <span class="nav-text">如何分页</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#requestId-的用处"><span class="nav-number">1.5.5.</span> <span class="nav-text">requestId 的用处</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#CTService-的设计意图"><span class="nav-number">1.5.6.</span> <span class="nav-text">CTService 的设计意图</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#猿题库的-YTKNetwork"><span class="nav-number">2.</span> <span class="nav-text">猿题库的 YTKNetwork</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#基本流程-1"><span class="nav-number">2.1.</span> <span class="nav-text">基本流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#网络请求-1"><span class="nav-number">2.2.</span> <span class="nav-text">网络请求</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#回调-1"><span class="nav-number">2.3.</span> <span class="nav-text">回调</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#统一的回调过程-1"><span class="nav-number">2.3.1.</span> <span class="nav-text">统一的回调过程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#成功回调-1"><span class="nav-number">2.3.2.</span> <span class="nav-text">成功回调</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#失败回调-1"><span class="nav-number">2.3.3.</span> <span class="nav-text">失败回调</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#批量请求与链式请求"><span class="nav-number">2.4.</span> <span class="nav-text">批量请求与链式请求</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#批量请求"><span class="nav-number">2.4.1.</span> <span class="nav-text">批量请求</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#链式请求-1"><span class="nav-number">2.4.2.</span> <span class="nav-text">链式请求</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">3.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zachary Zhang</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

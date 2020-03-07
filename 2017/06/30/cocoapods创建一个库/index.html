@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+
+
+
+
+  <meta name="keywords" content="Cocoapods,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="想搞一个组件化的项目，所以先好好看下如何使用 cocoapods 创建一个私有库">
+<meta name="keywords" content="Cocoapods">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用 cocoapods 创建一个仓库">
+<meta property="og:url" content="http://zhang759740844.github.io/2017/06/30/cocoapods创建一个库/index.html">
+<meta property="og:site_name" content="Zachary&#39;s blog">
+<meta property="og:description" content="想搞一个组件化的项目，所以先好好看下如何使用 cocoapods 创建一个私有库">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/cocoapods_principle_1.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/cocoapods_principle_2.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_cocoapods_2.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_cocoapods_sub.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_cocoapods_1.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_bundle_1.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_cocoapods_3.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_cocoapods_4.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_cocoapods_5.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/cocoapods_public_.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/cocoapods_private_1.png?raw=true">
+<meta property="og:updated_time" content="2020-02-27T15:13:37.643Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="使用 cocoapods 创建一个仓库">
+<meta name="twitter:description" content="想搞一个组件化的项目，所以先好好看下如何使用 cocoapods 创建一个私有库">
+<meta name="twitter:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/cocoapods_principle_1.png?raw=true">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://zhang759740844.github.io/2017/06/30/cocoapods创建一个库/">
+
+
+
+
+
+  <title>使用 cocoapods 创建一个仓库 | Zachary's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Zachary's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">记录成长</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://zhang759740844.github.io/2017/06/30/cocoapods创建一个库/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zachary Zhang">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Zachary's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">使用 cocoapods 创建一个仓库</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-06-30T10:07:12+08:00">
+                2017-06-30
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>想搞一个组件化的项目，所以先好好看下如何使用 cocoapods 创建一个私有库</p>
+<a id="more"></a>
+<h2 id="Cocoapods-简单原理"><a href="#Cocoapods-简单原理" class="headerlink" title="Cocoapods 简单原理"></a>Cocoapods 简单原理</h2><p>之前的文章中我提到过，加速 <code>pod install</code> 的一个方法是 <code>pod install--no-repo-update</code>，下面就要解释一下这个后缀是要干什么。</p>
+<h3 id="Cocoapods-本地目录"><a href="#Cocoapods-本地目录" class="headerlink" title="Cocoapods 本地目录"></a>Cocoapods 本地目录</h3><p>我们首先进入 Cocoapods 的本地目录：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"><span class="built_in">cd</span> ~/.cocoapods/repos/master</span></span><br></pre></td></tr></table></figure>
+<p>可以发现这其实是一个 git 仓库：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> git remote -v</span></span><br><span class="line"></span><br><span class="line">origin	https://github.com/CocoaPods/Specs.git (fetch)</span><br><span class="line">origin	https://github.com/CocoaPods/Specs.git (push)</span><br></pre></td></tr></table></figure>
+<p>进入 <code>Specs</code> 文件夹，会有很多歌0~f的文件夹嵌套，一层一层点下去，可以看到可以看到一些熟悉的第三方库，随便选一个点进去，是各个版本的文件夹，再随便找个文件夹进入，是一个json文件。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/cocoapods_principle_1.png?raw=true" alt="原理1"></p>
+<p>打开这个json文件，里面记录了这个版本的库的一些信息，包括这个库的远程仓库的地址：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/cocoapods_principle_2.png?raw=true" alt="原理2"></p>
+<p>所以我们就能大概明白了，每次我们 <code>pod install</code> 后，就会在这个 <code>Specs</code> 下查找对应的库的对应版本，然后找到相应的远程仓库，去远程仓库拉取代码。</p>
+<h3 id="Pod-install-过程"><a href="#Pod-install-过程" class="headerlink" title="Pod install 过程"></a>Pod install 过程</h3><p>在 install 前，我们要编写一个 <code>Podfile</code>。整个依赖安装大概有四个部分：</p>
+<ul>
+<li>解析 Podfile 中的依赖</li>
+<li>下载依赖</li>
+<li>创建 <code>Pods.xcodeproj</code> 工程</li>
+<li>集成 workspace</li>
+</ul>
+<p>Podfile 是 ruby 的语法，在 install 过程中，执行 Podfile 文件，将会获取到要依赖的库以及库的版本号。然后在本地的 <code>Specs</code> 中进行比对，找到对应的远程仓库的地址。</p>
+<p>大部分的依赖都会被下载到 <code>~/Library/Caches/CocoaPods/Pods/Release/</code> 这个文件夹中，然后从这个这里复制到项目工程目录下的 <code>./Pods</code> 中。</p>
+<p>如果 <code>Specs</code> 中如果没有找到 <code>Podfile</code> 中解析的库，就会报错。那么如果我们很久没有手动更新 <code>Spec</code> 了呢？不用担心，每次 <code>Pod install</code> 的时候，都会自动先去更新一下 <code>Specs</code>：<code>pod repo update</code>，当网络不好的时候就会很慢，所以才有了 <code>pod install --no-repo-update</code>，在 install 时，不更新 <code>Specs</code> 的命令。</p>
+<p><code>pod install</code> 完成后，会自动生成一个 <code>Podfile.lock</code>，用来锁定版本。我们不应该将其添加到 <code>.gitignore</code> 中去。只有在 <code>pod update</code> 后，才会自动更新 <code>Podfile.lock</code>。</p>
+<p>CocoaPods 通过组件 CocoaPods-Downloader 已经成功将所有的依赖下载到了当前工程中，这里会将所有的依赖打包到 <code>Pods.xcodeproj</code> 中。主要做了几件事：生成 <code>Pods.xcodeproj</code> 工程；将依赖中的文件加入工程；将依赖中的 Library 加入工程；设置目标依赖（Target Dependencies）</p>
+<p>这几件事情都离不开 CocoaPods 的另外一个组件 Xcodeproj，这是一个可以操作一个 Xcode 工程中的 Group 以及文件的组件，我们都知道对 Xcode 工程的修改大多数情况下都是对一个名叫 <code>project.pbxproj</code> 的文件进行修改，而 Xcodeproj 这个组件就是 CocoaPods 团队开发的用于操作这个文件的第三方库。</p>
+<p>最后的这一部分与生成 <code>Pods.xcodeproj</code> 的过程有一些相似。首先会创建一个 workspace，之后会获取所有要集成的 Target 实例，然后将每一个 Target 加入到了工程，使用 Xcodeproj 修改 <code>Copy Resource Script Phrase</code> 等设置，保存 <code>project.pbxproj</code>，整个 Pod install 的过程就结束了。</p>
+<p><a href="http://draveness.me/cocoapods.html" target="_blank" rel="noopener">CocoaPods 都做了什么?</a></p>
+<p><a href="https://objccn.io/issue-6-4/" target="_blank" rel="noopener">深入理解 CocoaPods</a></p>
+<h3 id="Podfile-中的一些关键词"><a href="#Podfile-中的一些关键词" class="headerlink" title="Podfile 中的一些关键词"></a>Podfile 中的一些关键词</h3><h4 id="path"><a href="#path" class="headerlink" title=":path"></a>:path</h4><p>如果是我们自己开发的私有库，并且在<strong>开发阶段</strong>的情况下，可能就希望开发模式进行引用，则可以使用path参数：<code>:path =&gt; &#39;~/Documents/AFNetworking&#39;</code></p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">target ‘Mike’ <span class="keyword">do</span></span><br><span class="line">pod <span class="string">'RNFS'</span>, <span class="symbol">:path</span> =&gt; <span class="string">'../node_modules/react-native-fs'</span></span><br><span class="line">pod <span class="string">'React'</span>, <span class="symbol">:path</span> =&gt; <span class="string">'../node_modules/react-native'</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<p><strong>cocoapods 会自动到 path 所在文件夹内查找 <code>RNFS.podspec</code> 以及 <code>React.podspec</code> 文件，然后根据这两个文件内提供的信息创建库</strong>（下面介绍如何创建库的时候会说到）。</p>
+<h4 id="platform"><a href="#platform" class="headerlink" title="platform"></a>platform</h4><p>这个参数是只依赖的库希望在哪个平台被编译。直接使用<code>platform :ios, &#39;9.0&#39;</code>。说希望采用iOS9.0的进行编译。</p>
+<h4 id="use-frameworks"><a href="#use-frameworks" class="headerlink" title="use_frameworks!"></a>use_frameworks!</h4><p>这个指明编译成动态库，而不是静态库，特别是在使用Swift库的过程中，特别需要使用这句。不过他会把所有项目的编译动态库，这一点有点不好。不过在使用Swift库的过程中就没办法了。</p>
+<h4 id="source"><a href="#source" class="headerlink" title="source"></a>source</h4><p>这个参数是指<code>Cocoapods</code>从哪些仓库(<code>Spec</code>)中获得框架的源代码，如果在结合使用开源库以及自己私有库的情况下，这个参数还是非常有意义的。在用到自己私有库的情况下只需要在<code>Podfile</code>文件开头列出你需要引用库的所有仓库地址即可。</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">source <span class="string">'https://github.com/artsy/Specs.git'</span>  </span><br><span class="line">source <span class="string">'https://192.168.0.90:8888/MySepcs/Specs.git'</span></span><br></pre></td></tr></table></figure>
+<p>最后一个官方 demo</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># open source</span></span><br><span class="line">source <span class="string">'https://github.com/CocoaPods/Specs.git'</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># my work</span></span><br><span class="line">source <span class="string">'https://github.com/Artsy/Specs.git'</span></span><br><span class="line"></span><br><span class="line">target <span class="string">'App'</span> <span class="keyword">do</span></span><br><span class="line"></span><br><span class="line">  pod <span class="string">'Artsy+UIColors'</span></span><br><span class="line">  pod <span class="string">'Artsy+UIButtons'</span></span><br><span class="line"></span><br><span class="line">  pod <span class="string">'FLKAutoLayout'</span></span><br><span class="line">  pod <span class="string">'ISO8601DateFormatter'</span>, <span class="string">'0.7'</span></span><br><span class="line">  pod <span class="string">'AFNetworking'</span>, <span class="string">'~&gt; 2.0'</span></span><br><span class="line"></span><br><span class="line">  target <span class="string">'AppTests'</span> <span class="keyword">do</span></span><br><span class="line">    pod <span class="string">'FBSnapshotTestCase'</span></span><br><span class="line">    pod <span class="string">'Quick'</span></span><br><span class="line">    pod <span class="string">'Nimble'</span></span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<h2 id="创建一个公有库"><a href="#创建一个公有库" class="headerlink" title="创建一个公有库"></a>创建一个公有库</h2><h3 id="注册-CocoaPods-账号"><a href="#注册-CocoaPods-账号" class="headerlink" title="注册 CocoaPods 账号"></a>注册 CocoaPods 账号</h3><p>首先要注册一个 CocoaPods 账号，在终端使用 <code>pod trunk</code> 命令注册，之后会有一封确认邮件，激活账号：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash">pod trunk register 759740844@qq.com <span class="string">'Zachary'</span> --verbose</span></span><br></pre></td></tr></table></figure>
+<p>激活成功后，再到终端输入，可以看到注册信息：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash">pod trunk me</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">ZacharydeMacBook-Pro:1.0.0 zachary$ pod trunk me</span><br><span class="line">  - Name:     Zachary</span><br><span class="line">  - Email:    759740844@qq.com</span><br><span class="line">  - Since:    June 29th, 21:08</span><br><span class="line">  - Pods:     None</span><br><span class="line">  - Sessions:</span><br><span class="line">    - June 29th, 21:08 - November 4th, 21:09. IP: 140.207.1.250</span><br></pre></td></tr></table></figure>
+<h3 id="创建-podspec"><a href="#创建-podspec" class="headerlink" title="创建 .podspec"></a>创建 .podspec</h3><p>这一部分之前的文章<a href="https://zhang759740844.github.io/2016/10/17/打包静态库/">打包静态库</a>里有较为详细的说明。为方便查看，复制了过来。</p>
+<h4 id="创建工程"><a href="#创建工程" class="headerlink" title="创建工程"></a>创建工程</h4><p>只需要输入 pod 的 <code>lib</code> 命令即可完成初始项目的搭建:</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pod lib create StaticWithCocoapods</span><br></pre></td></tr></table></figure>
+<p>输出指令后，会提示确认五个问题，按需求回答即可：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_cocoapods_2.png?raw=true" alt="创建库"></p>
+<p>稍等片刻，就会自动生成一个工程。</p>
+<h4 id="配置信息"><a href="#配置信息" class="headerlink" title="配置信息"></a>配置信息</h4><p>在项目目录下有一个 <code>xxx.podspec</code> 配置文件，需要进行修改，摘录如下：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">Pod::Spec.new <span class="keyword">do</span> <span class="params">|s|</span></span><br><span class="line">  s.name             = <span class="string">'StaticWithCocoapods'</span></span><br><span class="line">  s.version          = <span class="string">'0.1.0'</span></span><br><span class="line">  s.summary          = <span class="string">'A short description of StaticWithCocoapods.'</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># This description is used to generate tags and improve search results.</span></span><br><span class="line"><span class="comment">#   * Think: What does it do? Why did you write it? What is the focus?</span></span><br><span class="line"><span class="comment">#   * Try to keep it short, snappy and to the point.</span></span><br><span class="line"><span class="comment">#   * Write the description between the DESC delimiters below.</span></span><br><span class="line"><span class="comment">#   * Finally, don't worry about the indent, CocoaPods strips it!</span></span><br><span class="line"></span><br><span class="line">  s.description      = <span class="string">&lt;&lt;-DESC</span></span><br><span class="line"><span class="string">TODO: Add long description of the pod here.</span></span><br><span class="line"><span class="string">                       DESC</span></span><br><span class="line"></span><br><span class="line">  s.homepage         = <span class="string">'https://github.com/zhang759740844'</span></span><br><span class="line">  s.license          = &#123; <span class="symbol">:type</span> =&gt; <span class="string">'MIT'</span>, <span class="symbol">:file</span> =&gt; <span class="string">'LICENSE'</span> &#125;</span><br><span class="line">  s.author           = &#123; <span class="string">'Zachary'</span> =&gt; <span class="string">'759740844@qq.com'</span> &#125;</span><br><span class="line">  s.source           = &#123; <span class="symbol">:git</span> =&gt; <span class="string">'/Users/zachary/Desktop/StaticWithCocoapods'</span>, <span class="symbol">:tag</span> =&gt; s.version.to_s &#125;</span><br><span class="line"></span><br><span class="line">  s.ios.deployment_target = <span class="string">'8.0'</span></span><br><span class="line"></span><br><span class="line">  s.source_files = <span class="string">'StaticWithCocoapods/Classes/**/*'</span></span><br><span class="line">  </span><br><span class="line">  s.resources = [<span class="string">'Images/*.png'</span>,<span class="string">'Sounds/*'</span>]</span><br><span class="line">  s.resource_bundles = &#123;</span><br><span class="line">    <span class="string">'StaticWithCocoapods'</span> =&gt; [<span class="string">'StaticWithCocoapods/Assets/*.png'</span>]</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  s.public_header_files = <span class="string">'StaticWithCocoapods/Classes/**/*.h'</span></span><br><span class="line">  s.frameworks = <span class="string">'UIKit'</span>, <span class="string">'MapKit'</span></span><br><span class="line">  s.dependency <span class="string">'AFNetworking'</span>, <span class="string">'~&gt; 2.3'</span></span><br><span class="line">  s.dependency <span class="string">'SVProgressHUD'</span>		</span><br><span class="line">  s.subspec <span class="string">'Aswift'</span> <span class="keyword">do</span> <span class="params">|a|</span></span><br><span class="line">    a.source_files = <span class="string">'A_swift/A_swift/**/*'</span></span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>s.version 表示的是当前类库的版本号</li>
+<li>s.source 表示当前类库源</li>
+<li>s.sources_files 表示类库的源文件存放目录</li>
+<li>s.resources 表示将资源文件打包在 mainBundle 中</li>
+<li>s.resource_bundles 表示将资源文件创建为某个 bundle</li>
+<li>s.frameworks 表示类库依赖的framework</li>
+<li>s.dependency 表示依赖的第三方类库，如果有多个要写多个 s.dependency</li>
+<li>s.subspec 表示依赖的子 podspec。</li>
+</ul>
+<p>其中要说明的是： </p>
+<ol>
+<li><p>source 表示从哪里拉取代码。可以填写远端 git 仓库，也可以是像我写的那样的本地 git 仓库。如果 Podfile 中指定了 <code>:path</code>， 那么，就会在指定的路径查找，source 这里写啥都无所谓。</p>
+</li>
+<li><p>依赖项不仅要包含你自己类库的依赖，还要包括所有第三方类库的依赖，只有这样当你的类库打包成 .a 或 .framework 时才能让其他项目正常使用。</p>
+</li>
+<li><p>source_file 路径中出现的通配符 <code>*</code> 表示匹配任意字符， <code>**</code> 表示匹配所有当前文件夹和子文件夹。</p>
+</li>
+<li><p>s.resources 中的资源文件<strong>如果是静态库就直接放在 mainBundle 中，如果是动态库就放在动态库所在 bundle 中</strong>。这样文件多了可能会重名，一般的做法是讲资源文件先自己打个 bundle，然后再通过 s.sources 引入。另外，Cocoapods 提供了 s.resource_bundles，可以将资源文件按需打成不同的 bundle。比如上面就是将 <code>StaticWithCocoapods/Assets/*.png</code> 目录下的所有图片打成 <code>StaticWithCocoapods</code> 的 bundle。</p>
+</li>
+<li><p>这里的 dependency 一般情况下是 cocoapods 的官方库中的。当然你也可以给自己创建的库添加自己的私有库，同样是直接写在 dependency 里。但是由于 <strong>dependency 表示编译器需要这样的一个依赖，没有指定从哪里获取</strong>，因此，添加私有库的时候要在使用这个库的工程的 Podfile 中添加你私有库的远端地址。这样的话，在下载 s.dependency 时，官方库找不到的情况下，就会到私有库的远端地址中查找。如果都找不到就会 <code>pod install</code> 失败。有一种情况不用添加私有库的远端地址，也可以 install 成功。那就是<strong>在 Podfile 中添加这个私有库，并为这个私有库设置本地路径 <code>:path</code></strong>。由于 <strong>s.dependency 其实是创建了一个外部依赖，所以只要外部存在这个私有库，s.denpendency 就会自动链接过去</strong>。这一点非常非常重要。我们平时用 pod 实现组件化就是这么做的。比如你的主工程同时依赖于私有库 pod A，pod B，以及本地私有库 pod C。与此同时，pod A 和 pod B 也依赖于 pod C。这个时候是不是一定要将 pod C 放到远端，然后才能成功设置 pod A 和 pod B 呢？肯定不用。因为 pod C 已经通过本地路径引入: <code>pod &#39;C&#39;, :path =&gt; &#39;../&#39;</code>。所以 pod A 和 pod B 的 s.dependency 就不需要再到远端去查找 pod C 了。</p>
+</li>
+<li><p>什么时候用 s.subspec 呢？一般一个大的项目写成pod的时候，它可能会分为多个subspec，这样的话当你用一个庞大的库时，只需要其中的一小部分，那么就可以使用其中的某个subspec了。</p>
+<p>我们拿AFNetworking.podspec来看:</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">pod <span class="string">'AFNetworking/Reachability'</span></span><br><span class="line">或者</span><br><span class="line">pod <span class="string">'AFNetworking'</span>,<span class="symbol">:subspecs=&gt;</span>[<span class="string">'Reachability'</span>,<span class="string">'Security'</span>]</span><br></pre></td></tr></table></figure>
+<p>所以可以把subspec当做一个小型的pod来看。来看一下用 subspec 后，在 pod install 后得到如下文件结构。使用了 subspec 后，subspec 会单独变成一个文件夹：</p>
+</li>
+</ol>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_cocoapods_sub.png?raw=true" alt="subspec"></p>
+<h4 id="添加文件"><a href="#添加文件" class="headerlink" title="添加文件"></a>添加文件</h4><p>向 <strong>sources_files</strong> 和 <strong>public_header_files</strong> 以及 <strong>resource_bundle</strong> 中添加图片和类文件。在 demo 的文件夹下执行 <code>pod install</code>。现在打开 demo 工程，可以看到创建的 <code>StaticWithCocoapods</code> 库的文件结构如下图：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_cocoapods_1.png?raw=true" alt="文件结构"></p>
+<blockquote>
+<p>现在工程里是带有 demo application 的，不过不用担心，在.podspec 中已经设置了源文件的目录，不会把 demo 中的各种测试文件也打包进去的。</p>
+<p>不要在意上面图片上的图片路径 和 .podspec 中设置的 s.resource_bundles 路径不一致。这里的 Resources 看似是个文件夹，其实是一个 group，不是实际文件路径的地址。本例中实际的地址就是  <code>[&#39;StaticWithCocoapods/Assets/*.png&#39;]</code> 这个路径。</p>
+</blockquote>
+<h5 id="加载图片资源的问题"><a href="#加载图片资源的问题" class="headerlink" title="加载图片资源的问题"></a>加载图片资源的问题</h5><p>到这里一切正常，也可以使用 <code>SVProgressHUD</code> ，但是当我想用 <code>[UIImage imageNamed:[[[NSBundle mainBundle] pathForResource:@&quot;StaticWithCocoapods&quot; ofType:@&quot;bundle&quot;] stringByAppendingString:@&quot;/author.png&quot;]]</code> 加载图片资源文件时，一直返回 <code>nil</code> 。最后在 Stackoverflow 的一个评论里总算找到了解决方法<a href="http://stackoverflow.com/questions/25402782/cocoapodsresource-bundle-not-accessbile" target="_blank" rel="noopener">[Cocoapods]:Resource Bundle not accessbile</a></p>
+<p>原先 demo 中 prdfile 的内容如下：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">use_frameworks!</span><br><span class="line"></span><br><span class="line">target <span class="string">'StaticWithCocoapods_Example'</span> <span class="keyword">do</span></span><br><span class="line">  pod <span class="string">'StaticWithCocoapods'</span>, <span class="symbol">:path</span> =&gt; <span class="string">'../'</span></span><br><span class="line"></span><br><span class="line">  target <span class="string">'StaticWithCocoapods_Tests'</span> <span class="keyword">do</span></span><br><span class="line">    inherit! <span class="symbol">:search_paths</span></span><br><span class="line"></span><br><span class="line">    pod <span class="string">'FBSnapshotTestCase'</span></span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<p>现在要删除 <code>use_frameworks!</code> 以及其相关内容，变成这样：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">target <span class="string">'StaticWithCocoapods_Example'</span> <span class="keyword">do</span></span><br><span class="line">  pod <span class="string">'StaticWithCocoapods'</span>, <span class="symbol">:path</span> =&gt; ‘../‘</span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<p>再次尝试加载图片，可以得到正确结果. ^_^。但是为什么会这样？</p>
+<p><code>use_frameworks!</code> 的添加与否，表示将 pod 中的库打包成静态库.a 还是动态库.framework。其实就是图片在盗宝成静态库或者动态库的时候所处的 bundle 不同。</p>
+<p>如果打包成了 .a，那么编译的时候库里的所有文件其实是被打包在主工程下的，即 mainBundle 中，即可像通常那样在 mainBundle 中获取 StaticWithCocoapods.bundle 中的图片。</p>
+<p>如果打包成了 .framework ，动态库里的文件不再被打包在主工程下了，而是在动态库自己的 bundle 中，比如本例中的动态库 bundle 路径如下：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_bundle_1.png?raw=true" alt=".a"></p>
+<p>此时就不能再在 mainBundle 中，而需要在动态库中的 bundle 下找文件了。我们可以学习下 <code>SVProgressHUD</code> 的做法，通过 <code>[NSBundle bundleForClass:[SVProgressHUD class]]</code> 拿到 SVProgressHUD 文件所在的 bundle，也就是资源文件所在的  <code>SVProgressHUD.Bundle</code> 所在的 bundle，然后获取图片：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSBundle</span> *bundle = [<span class="built_in">NSBundle</span> bundleForClass:[SVProgressHUD <span class="keyword">class</span>]];</span><br><span class="line"><span class="built_in">NSURL</span> *url = [bundle URLForResource:<span class="string">@"SVProgressHUD"</span> withExtension:<span class="string">@"bundle"</span>];</span><br><span class="line"><span class="built_in">NSBundle</span> *imageBundle = [<span class="built_in">NSBundle</span> bundleWithURL:url];</span><br><span class="line"><span class="built_in">UIImage</span>* infoImage = [<span class="built_in">UIImage</span> imageWithContentsOfFile:[imageBundle pathForResource:<span class="string">@"info"</span> ofType:<span class="string">@"png"</span>]];</span><br></pre></td></tr></table></figure>
+<h5 id="测试类库"><a href="#测试类库" class="headerlink" title="测试类库"></a>测试类库</h5><p>在 demo application 中，如果把自己的库使用 pod 引入，注意要修改 Podfile 中库的路径为本地 <code>podspec</code> 所在的路径，不然每次都要从远端拉了。另外还有一个问题是这样每次更新库里的内容，运行的时候都要先 pod install 一下，这样非常的麻烦。</p>
+<p>因此，我们可以直接将库里的文件添加到 demo application 中，同时要修改 Podfile，使其不要 pod 自身，而是 pod 其依赖的其他类库。这样做就是把类库的文件放到主工程下，就不用每次都 pod install 更新修改了。比如：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 原来可能是这样的</span></span><br><span class="line">target <span class="string">'StaticWithCocoapods_Example'</span> <span class="keyword">do</span></span><br><span class="line">  pod <span class="string">'StaticWithCocoapods'</span>, <span class="symbol">:path</span> =&gt; ‘../‘</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 现在要把依赖 StaticWithCocoapods 的类库加上，删除自己：</span></span><br><span class="line">target <span class="string">'StaticWithCocoapods_Example'</span> <span class="keyword">do</span></span><br><span class="line">  pod <span class="string">'SVProgressHUD'</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<p>不用担心这样做不会产生任何问题。demo 中的文件依赖的改动并不影响 <code>.podspec</code> 中的设置，只要文件还是放在 <code>.podspec</code> 的指定路径下就行。发布类库的时候还是按照 <code>.podspec</code> 进行的，所以没有任何影响。</p>
+<p>但是要注意一点，虽然你把文件放在主工程下编译，但是代码中获取资源文件的时候绝对不能偷懒使用 mainBundle 加载。因为别人可能将你发布的库打成动态库放到自身的工程中，这就会造成上面加载图片资源一样的问题。所以加载资源文件的时候一定要用上面说的通用的方法。</p>
+<h4 id="提交代码"><a href="#提交代码" class="headerlink" title="提交代码"></a>提交代码</h4><ol>
+<li>使用 sourcetree 添加本地仓库</li>
+<li>提交上面的所有改动</li>
+<li>为改动添加 tag 为 <code>0.1.0</code></li>
+</ol>
+<p>设置好后如图：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_cocoapods_3.png?raw=true" alt="提交代码"></p>
+<p>这里要注意，tag 一定要打上，版本控制的时候就是以 tag 来辨别的。</p>
+<h4 id="验证类库"><a href="#验证类库" class="headerlink" title="验证类库"></a>验证类库</h4><p>开发完成静态类库之后，需要运行pod lib lint验证一下类库是否符合pod的要求。添加 <code>--allow-warnings</code> 忽略警告：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_cocoapods_4.png?raw=true" alt="验证类库"></p>
+<h4 id="打包库"><a href="#打包库" class="headerlink" title="打包库"></a>打包库</h4><p>如果你要发布到 cocoapds，那么这个操作是不必要的。但是如果你想直接获得一个动态或者静态库，那么可以手动打包这个库。</p>
+<p>打包库需要一个 cocoapods 的插件 <strong>cocoapods-packager</strong>来完成类库的打包。</p>
+<p>在终端执行以下命令，安装插件：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo gem install cocoapods-packager</span><br></pre></td></tr></table></figure>
+<p>在目标文件夹内执行以下命令，完成打包：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pod package StaticWithCocoapods.podspec --force</span><br></pre></td></tr></table></figure>
+<p>打包成 <code>.framework</code> ，也可以用 <code>--library</code> 打包成 <code>.a</code> 。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_cocoapods_5.png?raw=true" alt="打包过程"></p>
+<p>现在在目标文件夹下就会多出一个 <code>StaticWithCocoapods-0.2.0</code> 目录，里面是打包好的 framework 。</p>
+<blockquote>
+<p>虽然 s.dependency 只是创建了一个链接，但是 package 会下载 dependency 的代码，并将其打包进你的库中</p>
+</blockquote>
+<h3 id="发布-podspec"><a href="#发布-podspec" class="headerlink" title="发布.podspec"></a>发布.podspec</h3><p>最后一步：发布。在仓库目录下执行：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pod trunk push xxxxx.podspec</span><br></pre></td></tr></table></figure>
+<p>上述命令将会更新本地的 repo 目录，然后将其提交到<code>Cocoapods</code>官方的仓库里去。</p>
+<p>提交完成后，我们可以通过一下命令查询是否上传成功：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pod search xxx</span><br></pre></td></tr></table></figure>
+<p>如果是多人开发，希望将其他人也加入到项目中去的话，可以通过以下方式：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pod trunk add-owner '项目名' '邮箱'</span><br></pre></td></tr></table></figure>
+<h3 id="更新删除等操作"><a href="#更新删除等操作" class="headerlink" title="更新删除等操作"></a>更新删除等操作</h3><p>当版本更新后，需要做的就是改变 <code>xxx.podspec</code> 中的版本号，然后重复上一步的步骤发布即可。</p>
+<p>至于删除废弃等操作可以详见<code>pod trunk</code> 的 help中：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/cocoapods_public_.png?raw=true" alt="help"></p>
+<p><a href>CocoaPods公有仓库的创建</a></p>
+<p><a href="http://www.pluto-y.com/cocoapods-contribute-for-open-source/" target="_blank" rel="noopener">Cocoapods系列教程(二)——开源主义接班人</a></p>
+<h2 id="创建一个私有库"><a href="#创建一个私有库" class="headerlink" title="创建一个私有库"></a>创建一个私有库</h2><h3 id="创建版本库（repo）"><a href="#创建版本库（repo）" class="headerlink" title="创建版本库（repo）"></a>创建版本库（repo）</h3><p>之前说到，在<code>~/.cocoapods/repos/</code> 目录下有一个 master 文件夹，对应着 cocoapods 官方的一个版本库，保存着各个第三方库的索引。我们要创建一个私有库，就得先创建一个私有的版本库来存放这些私有库的索引。</p>
+<p>我们先在远端创建一个空的仓库test，然后再终端执行：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> pod repo add <span class="built_in">test</span> https://git.oschina.net/baiyingqiu/test.git</span></span><br></pre></td></tr></table></figure>
+<p>这个仓库就被 clone 了下来，作为本地的版本目录了，可以进入<code>~/.cocoapods/repos/</code> 文件夹查看：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/cocoapods_private_1.png?raw=true" alt="版本库"></p>
+<h3 id="创建-podspec-1"><a href="#创建-podspec-1" class="headerlink" title="创建.podspec"></a>创建.podspec</h3><p>和上面公有的无二致。将本地代码推送到远程，并打上 tag。</p>
+<blockquote>
+<p>需要明确，cocoapods 是通过 tag 来区分版本信息的，而不是 branch。也就是说，不论你的 tag 是打在 master 还是 develop 亦或任意一个其他分支，cocoapods 都能够正确获取该 tag 所处的 commit 的文件。</p>
+<p>所以你的私有库其实不用再开一个新的 repo 去存储，可以直接在当前工程下开发。新开一个私有库的分支，专门开发私有库也是没有问题的。</p>
+</blockquote>
+<h3 id="将描述文件推送到版本库"><a href="#将描述文件推送到版本库" class="headerlink" title="将描述文件推送到版本库"></a>将描述文件推送到版本库</h3><p>将我们私有库的描述信息 push 到刚才的版本库中：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> pod repo push <span class="built_in">test</span> xxx.podspec  --verbose --allow-warnings</span></span><br></pre></td></tr></table></figure>
+<p>要加上 <code>--allow-warnings</code> 不然还是不能通过。</p>
+<p>现在就可以通过 <code>pod search xxx</code> 来搜索了。</p>
+<h3 id="使用私有库"><a href="#使用私有库" class="headerlink" title="使用私有库"></a>使用私有库</h3><p>使用私有库的时候要在使用的工程的 <code>Podfile</code> 中加上私有库的版本库的路径，若有还使用了公有的pod库，需要把公有库地址也带上。例子：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">source ‘<span class="symbol">https:</span>/<span class="regexp">/github.com/</span>CocoaPods/Specs.git’</span><br><span class="line">source ‘<span class="symbol">https:</span>/<span class="regexp">/github.com/zhang</span>759740844/test.git’</span><br><span class="line"></span><br><span class="line">platform <span class="symbol">:ios</span>, <span class="string">'8.0'</span></span><br><span class="line"></span><br><span class="line">target ‘Mike’ <span class="keyword">do</span></span><br><span class="line">  pod <span class="string">'xxx'</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<p>现在就可以 <code>pod install</code> 了。</p>
+<p><a href="http://qiubaiying.top/2017/03/10/CocoaPods私有仓库的创建/" target="_blank" rel="noopener">CocoaPods私有仓库的创建</a></p>
+<p><a href="http://www.pluto-y.com/cocoapod-private-pods-and-module-manager/" target="_blank" rel="noopener">Cocoapods系列教程(三)——私有库管理和模块化管理</a></p>
+<p><a href="http://blog.wtlucky.com/blog/2015/02/26/create-private-podspec/" target="_blank" rel="noopener">使用Cocoapods创建私有podspec</a>推荐</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tag/Cocoapods/" rel="tag"># Cocoapods</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/06/30/iOS中的宏/" rel="next" title="iOS 中的宏">
+                <i class="fa fa-chevron-left"></i> iOS 中的宏
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/07/02/app间的跳转/" rel="prev" title="app 间的跳转与信息传递">
+                app 间的跳转与信息传递 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.png" alt="Zachary Zhang">
+            
+              <p class="site-author-name" itemprop="name">Zachary Zhang</p>
+              <p class="site-description motion-element" itemprop="description">Stay Hungry. Stay Foolish!</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">116</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/zhang759740844" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:zch759740844@126.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Cocoapods-简单原理"><span class="nav-number">1.</span> <span class="nav-text">Cocoapods 简单原理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Cocoapods-本地目录"><span class="nav-number">1.1.</span> <span class="nav-text">Cocoapods 本地目录</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Pod-install-过程"><span class="nav-number">1.2.</span> <span class="nav-text">Pod install 过程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Podfile-中的一些关键词"><span class="nav-number">1.3.</span> <span class="nav-text">Podfile 中的一些关键词</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#path"><span class="nav-number">1.3.1.</span> <span class="nav-text">:path</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#platform"><span class="nav-number">1.3.2.</span> <span class="nav-text">platform</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#use-frameworks"><span class="nav-number">1.3.3.</span> <span class="nav-text">use_frameworks!</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#source"><span class="nav-number">1.3.4.</span> <span class="nav-text">source</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#创建一个公有库"><span class="nav-number">2.</span> <span class="nav-text">创建一个公有库</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#注册-CocoaPods-账号"><span class="nav-number">2.1.</span> <span class="nav-text">注册 CocoaPods 账号</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创建-podspec"><span class="nav-number">2.2.</span> <span class="nav-text">创建 .podspec</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#创建工程"><span class="nav-number">2.2.1.</span> <span class="nav-text">创建工程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#配置信息"><span class="nav-number">2.2.2.</span> <span class="nav-text">配置信息</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#添加文件"><span class="nav-number">2.2.3.</span> <span class="nav-text">添加文件</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#加载图片资源的问题"><span class="nav-number">2.2.3.1.</span> <span class="nav-text">加载图片资源的问题</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#测试类库"><span class="nav-number">2.2.3.2.</span> <span class="nav-text">测试类库</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#提交代码"><span class="nav-number">2.2.4.</span> <span class="nav-text">提交代码</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#验证类库"><span class="nav-number">2.2.5.</span> <span class="nav-text">验证类库</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#打包库"><span class="nav-number">2.2.6.</span> <span class="nav-text">打包库</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#发布-podspec"><span class="nav-number">2.3.</span> <span class="nav-text">发布.podspec</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#更新删除等操作"><span class="nav-number">2.4.</span> <span class="nav-text">更新删除等操作</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#创建一个私有库"><span class="nav-number">3.</span> <span class="nav-text">创建一个私有库</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#创建版本库（repo）"><span class="nav-number">3.1.</span> <span class="nav-text">创建版本库（repo）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创建-podspec-1"><span class="nav-number">3.2.</span> <span class="nav-text">创建.podspec</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#将描述文件推送到版本库"><span class="nav-number">3.3.</span> <span class="nav-text">将描述文件推送到版本库</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用私有库"><span class="nav-number">3.4.</span> <span class="nav-text">使用私有库</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zachary Zhang</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+
+
+
+
+  <meta name="keywords" content="持续更新,技巧,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="好久没有写新的博客了。最近在联系小程序。所以记录一下小程序的坑与技巧。由于用 mpvue 和原生都撸过小程序，所以记录一些都会面临的情况。">
+<meta name="keywords" content="持续更新,技巧">
+<meta property="og:type" content="article">
+<meta property="og:title" content="小程序技巧">
+<meta property="og:url" content="http://zhang759740844.github.io/2018/05/30/小程序技巧/index.html">
+<meta property="og:site_name" content="Zachary&#39;s blog">
+<meta property="og:description" content="好久没有写新的博客了。最近在联系小程序。所以记录一下小程序的坑与技巧。由于用 mpvue 和原生都撸过小程序，所以记录一些都会面临的情况。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/wrap.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/iconfont_1.png?raw=true">
+<meta property="og:updated_time" content="2020-02-27T15:13:37.662Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="小程序技巧">
+<meta name="twitter:description" content="好久没有写新的博客了。最近在联系小程序。所以记录一下小程序的坑与技巧。由于用 mpvue 和原生都撸过小程序，所以记录一些都会面临的情况。">
+<meta name="twitter:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/wrap.png?raw=true">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://zhang759740844.github.io/2018/05/30/小程序技巧/">
+
+
+
+
+
+  <title>小程序技巧 | Zachary's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Zachary's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">记录成长</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://zhang759740844.github.io/2018/05/30/小程序技巧/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zachary Zhang">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Zachary's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">小程序技巧</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-30T14:07:12+08:00">
+                2018-05-30
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/MiniProgram/" itemprop="url" rel="index">
+                    <span itemprop="name">MiniProgram</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>好久没有写新的博客了。最近在联系小程序。所以记录一下小程序的坑与技巧。由于用 mpvue 和原生都撸过小程序，所以记录一些都会面临的情况。</p>
+<a id="more"></a>
+<h2 id="页面相关"><a href="#页面相关" class="headerlink" title="页面相关"></a>页面相关</h2><h3 id="最外层占用整个屏幕"><a href="#最外层占用整个屏幕" class="headerlink" title="最外层占用整个屏幕"></a>最外层占用整个屏幕</h3><figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.container</span> &#123;</span><br><span class="line">  <span class="attribute">position</span>: fixed;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">100%</span>;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">100%</span>;</span><br><span class="line">  <span class="attribute">display</span>:flex;</span><br><span class="line">  <span class="attribute">flex-direction</span>:column;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="scroll-view-占满整个屏幕"><a href="#scroll-view-占满整个屏幕" class="headerlink" title="scroll-view 占满整个屏幕"></a>scroll-view 占满整个屏幕</h3><blockquote>
+<p>此方法在 6s 等机型上存在不能滑动的问题，必须要手动设置 scroll-view 的高度才可以解决。所以需要在 scroll-view 外再包裹一个 view，然后通过 <code>wx.createSelectorQuery()</code> 拿到 view 的高度，再设置给 scroll-view。注意拿到的高度是 px 不是 rpx</p>
+</blockquote>
+<p>scroll-view 如果设置 <code>flex: 1</code> 可以让 scroll-view 撑满屏幕。但是你会发现，scroll-view 无法滚动了。我们可以再设置一个样式：</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.scroll-view</span> &#123;</span><br><span class="line">  <span class="attribute">flex</span>: <span class="number">1</span>;</span><br><span class="line">  <span class="attribute">overflow</span>: hidden;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>设置超出部分隐藏。这样控件就自动拥有 scroll-view 的滚动功能了。</p>
+<h3 id="wxs-使用的坑"><a href="#wxs-使用的坑" class="headerlink" title="wxs 使用的坑"></a>wxs 使用的坑</h3><p>虽然我很抗拒 wxs，但是由于小程序不支持 computed，由于代码的美观，少在 data 中放几个字段，就需要借助 wxs 在 wxml 中生成计算后的数据。</p>
+<p>但是其中有一个坑就是，定义变量的时候，不能使用 es6 的 <code>let</code> 和 <code>const</code> 只能使用 <code>var</code>，否则也不报错，但就是无法显示。</p>
+<h3 id="绝对定位的居中"><a href="#绝对定位的居中" class="headerlink" title="绝对定位的居中"></a>绝对定位的居中</h3><p>绝对定位的左右两边没有占位，所以 <code>align-items</code> 是无效的 <code>align-self</code> 可能无效。这种居中分为两种情况：</p>
+<ol>
+<li>设置了控件宽度</li>
+<li>不设置控件宽度</li>
+</ol>
+<p>设置了 <code>width</code> 的情况下。我们只要使用 <code>left</code> 设置控件的位置即可。设置 <code>left: 50%</code> 可以让控件向右移动父视图的 50% 宽度。这样会移动过头，还需要设置 <code>margin-left: -{50%的控件宽度}</code> 修正控件的位置。</p>
+<p>如果没有设置 <code>width</code> 的情况下。可以同时设置 <code>left</code>和 <code>right</code>，让视图撑满剩余的空间。</p>
+<h3 id="在外部修改组件库的样式"><a href="#在外部修改组件库的样式" class="headerlink" title="在外部修改组件库的样式"></a>在外部修改组件库的样式</h3><p>项目中引入了有赞的组件库。但是使用的时候有些样式不太符合要求。这个时候不要放弃使用，我们可以在外部修改内部的样式。</p>
+<p>通过调试工具，找到不符合要求的视图的样式，在外部直接修改其样式：</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.van-popup--bottom</span> &#123;</span><br><span class="line">  <span class="attribute">background</span>: transparent <span class="meta">!important</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里我们修改了 <code>van-popup--bottom</code> 的背景颜色。同时在后面加上了 <code>!important</code>，这样是为了将我们的样式的权重提升，就不会被组件内部的样式覆盖了。</p>
+<h3 id="wx-key-取值"><a href="#wx-key-取值" class="headerlink" title="wx:key 取值"></a>wx:key 取值</h3><p>我们知道，无论是 react 还是 vue，在类表渲染的时候都提供了 key 这个关键字。key 相等的时候用来移动和改变状态，key 不等的则会进行销毁和重新创建。</p>
+<p>React:</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> listItems = numbers.map(<span class="function">(<span class="params">number</span>) =&gt;</span></span><br><span class="line">  &lt;li key=&#123;number.toString()&#125;&gt;</span><br><span class="line">    &#123;number&#125;</span><br><span class="line">  &lt;<span class="regexp">/li&gt;</span></span><br><span class="line"><span class="regexp">);</span></span><br></pre></td></tr></table></figure>
+<p>vue:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;my-component v-for=&quot;item in items&quot; :key=&quot;item.id&quot;&gt;&lt;/my-component&gt;</span><br></pre></td></tr></table></figure>
+<p>可以看到，这两种都是拿到 item，然后设置 item 的属性为 key。</p>
+<p>小程序则默认key就是 item 中的属性了：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">block</span> <span class="attr">wx:for</span>=<span class="string">"&#123;&#123;itemList&#125;&#125;"</span> <span class="attr">wx:key</span>=<span class="string">"id"</span>/&gt;</span></span><br></pre></td></tr></table></figure>
+<p>这样就是直接设置 item 中的 id 为 key。这样和 React 和 Vue 不统一的写法，让我有点难受。</p>
+<h3 id="scroll-view-横向排布排布"><a href="#scroll-view-横向排布排布" class="headerlink" title="scroll-view 横向排布排布"></a>scroll-view 横向排布排布</h3><p>scroll-view 横向排布有一些坑，如果按照常规的方式，你会发现 scroll-view 中的视图还是纵向排布的。我们需要做一些设置：</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.scroll-view</span> &#123;</span><br><span class="line">    <span class="attribute">white-space</span>: nowrap; </span><br><span class="line">    <span class="attribute">display</span>: flex;</span><br><span class="line">    <span class="attribute">flex-direction</span>: row;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-class">.scroll-item</span> &#123;</span><br><span class="line">    <span class="attribute">display</span>: inline-block;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>外部的 scroll-view 要设置 <code>white-space</code>，否则会换行。内部的 item 要把显示设置为 <code>inline-block</code>，否则还是纵向排布了。</p>
+<h3 id="如何只显示3行，超出显示省略号"><a href="#如何只显示3行，超出显示省略号" class="headerlink" title="如何只显示3行，超出显示省略号"></a>如何只显示3行，超出显示省略号</h3><p>要对 text 设置样式，一个也不能少：</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.text</span> &#123;</span><br><span class="line">  <span class="attribute">line-height</span>: <span class="number">36</span>rpx;</span><br><span class="line">  <span class="attribute">text-overflow</span>: ellipsis;</span><br><span class="line">  <span class="attribute">overflow</span>: hidden;</span><br><span class="line">  <span class="attribute">-webkit-line-clamp</span>: <span class="number">3</span>;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">108</span>rpx;</span><br><span class="line">  <span class="attribute">-webkit-box-orient</span>: vertical;</span><br><span class="line">  <span class="attribute">display</span>: -webkit-box;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>要注意一定要设置 <code>line-height</code> 和 <code>height</code> ，并且要显示几行 <code>height</code> 就是  <code>line-height</code> 的几倍。</p>
+<p>如果是单行的省略号改为：</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.text</span> &#123;</span><br><span class="line">  <span class="attribute">text-overflow</span>: ellipsis;</span><br><span class="line">  <span class="attribute">overflow</span>: hidden;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">123</span>rpx;</span><br><span class="line">  <span class="attribute">white-space</span>: nowrap;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注意，宽度一定要有。</p>
+<h3 id="滚动监听"><a href="#滚动监听" class="headerlink" title="滚动监听"></a>滚动监听</h3><p>小程序中滚动有两种方式。一种是直接视图的平铺，还有一种配合 scroll-view。</p>
+<h4 id="获取视图平铺时的滚动-offset"><a href="#获取视图平铺时的滚动-offset" class="headerlink" title="获取视图平铺时的滚动 offset"></a>获取视图平铺时的滚动 offset</h4><p>在平铺时候的滚动回调中每次都通过 <code>selectViewport().scrollOffset()</code> 拿到 </p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">onPageScroll: <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> query = wx.createSelectorQuery()</span><br><span class="line">  query.selectViewport().scrollOffset(<span class="function"><span class="keyword">function</span> (<span class="params">res</span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(res.scrollTop) <span class="comment">// 竖直的滚动位置</span></span><br><span class="line">  &#125;)</span><br><span class="line">  query.exec()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="获取-scrollView-的-offset"><a href="#获取-scrollView-的-offset" class="headerlink" title="获取 scrollView 的 offset"></a>获取 scrollView 的 offset</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// scroll-view 中绑定方法</span></span><br><span class="line">&lt;scroll-view bindscroll=<span class="string">"onScroll"</span>/&gt;</span><br><span class="line">  </span><br><span class="line"><span class="comment">// js 中滚动方法</span></span><br><span class="line">onScroll (e) &#123;</span><br><span class="line">	<span class="built_in">console</span>.log(e.detail.scrollTop)  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="平铺滚动到某一个位置"><a href="#平铺滚动到某一个位置" class="headerlink" title="平铺滚动到某一个位置"></a>平铺滚动到某一个位置</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wx.pageScrollTo(&#123;<span class="attr">scrollTop</span>: 一个offset&#125;)</span><br></pre></td></tr></table></figure>
+<h4 id="scroll-view-滚动到某一个-view-或者某一个位置"><a href="#scroll-view-滚动到某一个-view-或者某一个位置" class="headerlink" title="scroll-view 滚动到某一个 view 或者某一个位置"></a>scroll-view 滚动到某一个 view 或者某一个位置</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// wxml 中</span></span><br><span class="line">&lt;scroll-view scroll-top=<span class="string">"&#123;&#123;offset&#125;&#125;"</span> scroll-into-view=<span class="string">"&#123;&#123;id&#125;&#125;"</span>/&gt;</span><br><span class="line">  </span><br><span class="line"><span class="comment">// js 中</span></span><br><span class="line"><span class="keyword">this</span>.setData(&#123;</span><br><span class="line">	offset: <span class="number">1000</span>,</span><br><span class="line">&#125;)</span><br><span class="line"><span class="keyword">this</span>.setData(&#123;</span><br><span class="line">  id: <span class="string">'一个view的id'</span></span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<h4 id="获取平铺或者-scroll-view-中距离顶部的-offset"><a href="#获取平铺或者-scroll-view-中距离顶部的-offset" class="headerlink" title="获取平铺或者 scroll-view 中距离顶部的 offset"></a>获取平铺或者 scroll-view 中距离顶部的 offset</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> query = wx.createSelectorQuery()</span><br><span class="line">query.select(<span class="string">'#select'</span>).boundingClientRect(<span class="function"><span class="params">res</span> =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">this</span>.setData(&#123;</span><br><span class="line">    top: res.top</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;)</span><br><span class="line">query.exec()</span><br></pre></td></tr></table></figure>
+<p><code>#select</code> 表示当前视图的 id <code>&lt;view id=&quot;select /&gt;&quot;</code></p>
+<h3 id="绝对定位设置-padding-right-不符合预期"><a href="#绝对定位设置-padding-right-不符合预期" class="headerlink" title="绝对定位设置 padding-right 不符合预期"></a>绝对定位设置 padding-right 不符合预期</h3><p>padding 的宽度不在 width 的范围内。所以如果你绝对定位设置宽度为 100% 时，如果设置了 padding-left ，那么视图整体会向右移，即实际宽度大于 720rpx。</p>
+<p>这种情况下，只能把视图的宽度设置为 720-2*padding 值，才能让视图正常显示。</p>
+<h3 id="CSS-中设置高度为屏幕大小"><a href="#CSS-中设置高度为屏幕大小" class="headerlink" title="CSS 中设置高度为屏幕大小"></a>CSS 中设置高度为屏幕大小</h3><p>有时候我们要设置高度或者宽度为屏幕大小，但是使用 100% 不好用。这个时候，我们可以使用 <code>vh</code> 和 <code>vw</code> </p>
+<p>这是 CSS3 涌入的属性，分别表示高度/宽度基于窗口的大小,vh = view height,vw = view width:</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.window</span> &#123;</span><br><span class="line">    <span class="attribute">height</span>: <span class="number">100vh</span>;</span><br><span class="line">    <span class="attribute">width</span>: <span class="number">100vw</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="设置多行子元素"><a href="#设置多行子元素" class="headerlink" title="设置多行子元素"></a>设置多行子元素</h3><p>为了让子元素能够自动换行，可以使用样式 <code>flex-wrap: wrap</code>。当然这是第一步，这么做后你会发现，换行后的子元素贴在了一起。如图所示：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/wrap.png?raw=true" alt></p>
+<p>你需要设置元素间间隔。你会设置元素的 <code>margin-bottom: 20rpx</code>。 但是这样的话父元素的 bottom 也会向下移动 20rpx。所以，你可以把父元素的 <code>margin-bottom: -20rpx</code>。 这样，正负抵消，就是理想的间隔了。</p>
+<h3 id="小程序的button的边框"><a href="#小程序的button的边框" class="headerlink" title="小程序的button的边框"></a>小程序的button的边框</h3><p>小程序默认的button是有一个边框的，需要设置一个样式：</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-tag">button</span><span class="selector-pseudo">::after</span> &#123;</span><br><span class="line">    <span class="attribute">border</span>: none;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这样，所有的 button 标签都没有 border了</p>
+<h3 id="小程序捕捉事件"><a href="#小程序捕捉事件" class="headerlink" title="小程序捕捉事件"></a>小程序捕捉事件</h3><p>小程序默认的事件是冒泡的，也就是说点击了子控件触发方法后，父控件的点击事件还是会触发的，如果要阻止事件冒泡，可以把子控件的 <code>bind:tap</code> 改为 <code>catch:tap</code></p>
+<h3 id="组件中的-class-选择"><a href="#组件中的-class-选择" class="headerlink" title="组件中的 class 选择"></a>组件中的 class 选择</h3><p>很多时候我们需要根据组件传入的值，来设置组件使用不同的 class。我们可以使用或或者三元选择符，但是需要使用双括号包裹，只要返回一个 class 的名字即可：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">button</span></span></span><br><span class="line"><span class="tag">  <span class="attr">class</span>=<span class="string">"someclass &#123;&#123; item.disabled || item.loading ? 'some-class-disabled' : '' &#125;&#125; &#123;&#123; item.className || '' &#125;&#125;"</span></span></span><br><span class="line"><span class="tag">&gt;</span></span><br></pre></td></tr></table></figure>
+<h3 id="组件中的-style"><a href="#组件中的-style" class="headerlink" title="组件中的 style"></a>组件中的 style</h3><p>很多时候，我们需要传入值来控制 style，传入的值需要使用双括号包裹：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">style="width: 100%; height: &#123;&#123; itemHeight * visibleItemCount + 'px' &#125;&#125;"</span><br></pre></td></tr></table></figure>
+<h3 id="引入-iconfont"><a href="#引入-iconfont" class="headerlink" title="引入 iconfont"></a>引入 iconfont</h3><p>首先把 iconfont 下载下来，打开其中的 <strong>iconfont.css</strong> 文件，应该是下面的样子，把它复制到 <strong>app.wxss</strong> 中作为全局样式。</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">@<span class="keyword">font-face</span> &#123;<span class="attribute">font-family</span>: <span class="string">"ChameIconfont"</span>;</span><br><span class="line">	... 省略了其中很多的 src 和 url</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-class">.ChameIconfont</span> &#123;</span><br><span class="line">  <span class="attribute">font-family</span>:<span class="string">"ChameIconfont"</span> <span class="meta">!important</span>;</span><br><span class="line">  <span class="attribute">font-size</span>:<span class="number">16px</span>;</span><br><span class="line">  <span class="attribute">font-style</span>:normal;</span><br><span class="line">  <span class="attribute">-webkit-font-smoothing</span>: antialiased;</span><br><span class="line">  <span class="attribute">-moz-osx-font-smoothing</span>: grayscale;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-class">.icon-ickehu</span><span class="selector-pseudo">:before</span> &#123; <span class="attribute">content</span>: <span class="string">"\e60a"</span>; &#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-class">.icon-icshouye</span><span class="selector-pseudo">:before</span> &#123; <span class="attribute">content</span>: <span class="string">"\e610"</span>; &#125;</span><br></pre></td></tr></table></figure>
+<p>由于小程序不会把 ttf 文件打包，所以需要修改 <code>@font-face</code> 中的 src 和 url 为网络路径。我们还是到 iconfont 的网站上，生成一个线上的文件地址，用它替换上面的 <code>@font-face</code></p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/iconfont_1.png?raw=true" alt></p>
+<p>这样项目中就可以使用了：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">view</span> <span class="attr">class</span>=<span class="string">'ChameIconfont icon-ickehu'</span>/&gt;</span></span><br></pre></td></tr></table></figure>
+<h3 id="发布-npm-包"><a href="#发布-npm-包" class="headerlink" title="发布 npm 包"></a>发布 npm 包</h3><p>小程序用 npm 包需要把代码放在一个文件夹下，然后在 package.json 中增加一个 <code>miniprogram</code> 字段，标识代码所在目录：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"miniprogram"</span>: <span class="string">"dist"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当小程序开发工具 <code>工具-&gt;构建npm</code> 的时候，将该目录下的文件从 node_modules 移动到主目录下。</p>
+<p>在 <code>工具-&gt;构建npm</code> 后，项目最外层目录生成 <code>miniprogram_npm</code> 文件夹，文件夹内包含所有 node_modules 中的模块。</p>
+<p>在 <code>app.json</code> 中注册要使用的组件：<br><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"usingComponents"</span>: &#123;</span><br><span class="line">    <span class="attr">"van-button"</span>: <span class="string">"/miniprogram_npm/vant-weapp/button/index"</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>或者直接 import</p>
+<h3 id="隐藏-scroll-view-滚动条"><a href="#隐藏-scroll-view-滚动条" class="headerlink" title="隐藏 scroll-view 滚动条"></a>隐藏 scroll-view 滚动条</h3><p>直接在相应的 wxss 中写入样式：</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-pseudo">::-webkit-scrollbar</span> &#123;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">0</span>;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">0</span>;</span><br><span class="line">  <span class="attribute">color</span>: transparent;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="组件相关"><a href="#组件相关" class="headerlink" title="组件相关"></a>组件相关</h2><h3 id="外部全局样式影响组件内样式"><a href="#外部全局样式影响组件内样式" class="headerlink" title="外部全局样式影响组件内样式"></a>外部全局样式影响组件内样式</h3><p>在注册组建的时候添加一个选项，<code>addGlobalClass</code> 为 true：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Component(&#123;</span><br><span class="line">  options: &#123;</span><br><span class="line">    addGlobalClass: <span class="literal">true</span>,</span><br><span class="line">  &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<h3 id="监听组件内数据改变"><a href="#监听组件内数据改变" class="headerlink" title="监听组件内数据改变"></a>监听组件内数据改变</h3><p>类似于 watch，组件内通过 observers 字段定义：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">Component(&#123;</span><br><span class="line">  attached: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>.setData(&#123;</span><br><span class="line">      numberA: <span class="number">1</span>,</span><br><span class="line">      numberB: <span class="number">2</span>,</span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;,</span><br><span class="line">  observers: &#123;</span><br><span class="line">    <span class="string">'numberA, numberB'</span>: <span class="function"><span class="keyword">function</span>(<span class="params">numberA, numberB</span>) </span>&#123;</span><br><span class="line">      <span class="comment">// 在 numberA 或者 numberB 被设置时，执行这个函数</span></span><br><span class="line">      <span class="keyword">this</span>.setData(&#123;</span><br><span class="line">        sum: numberA + numberB</span><br><span class="line">      &#125;)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<h3 id="父子组件的通信"><a href="#父子组件的通信" class="headerlink" title="父子组件的通信"></a>父子组件的通信</h3><p>小程序的父子组件提供了双向通信的方式。子组件可以通过 link 的回调，以及 getRelationNodes 两种方式获取父组件。父组件可以通过 link 回调获取子组件。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 子组件 path/to/custom-li.js</span></span><br><span class="line">Component(&#123;</span><br><span class="line">  relations: &#123;</span><br><span class="line">    <span class="string">'&#123;相对路径&#125;/custom-ul-component'</span>: &#123;</span><br><span class="line">      type: <span class="string">'parent'</span>, <span class="comment">// 关联的目标节点应为父节点</span></span><br><span class="line">      linked: <span class="function"><span class="keyword">function</span>(<span class="params">target</span>) </span>&#123;</span><br><span class="line">        <span class="comment">// 保存父节点</span></span><br><span class="line">        <span class="keyword">this</span>.parent = target</span><br><span class="line">      &#125;,</span><br><span class="line">      unlinked: <span class="function"><span class="keyword">function</span>(<span class="params">target</span>) </span>&#123;</span><br><span class="line">        <span class="comment">// 移除子节点</span></span><br><span class="line">				<span class="keyword">this</span>.parent = <span class="literal">null</span></span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  methods: &#123;</span><br><span class="line">    someFunc: <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">      <span class="comment">// 获取页面上与子组件相关的组件的节点数组，取其中第一个节点，就是它的父节点</span></span><br><span class="line">      <span class="keyword">let</span> group = <span class="keyword">this</span>.getRelationNodes(<span class="string">'&#123;相对路径&#125;/custom-ul-component'</span>)[<span class="number">0</span>]     </span><br><span class="line">      <span class="comment">// 调用父节点方法</span></span><br><span class="line">      group.doSomeFunc()</span><br><span class="line">    &#125;      </span><br><span class="line">  &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 父组件</span></span><br><span class="line">Component(&#123;</span><br><span class="line">  relations: &#123;</span><br><span class="line">    <span class="string">'&#123;相对路径&#125;/custom-ul'</span>: &#123;</span><br><span class="line">      type: <span class="string">'child'</span>, <span class="comment">// 关联的目标节点应为子节点</span></span><br><span class="line">      linked: <span class="function"><span class="keyword">function</span>(<span class="params">target</span>) </span>&#123;</span><br><span class="line">        <span class="comment">// 保存子节点</span></span><br><span class="line">        <span class="keyword">this</span>.childs.push(target)</span><br><span class="line">      &#125;,</span><br><span class="line">      unlinked: <span class="function"><span class="keyword">function</span>(<span class="params">target</span>) </span>&#123;</span><br><span class="line">        <span class="comment">// 移除子节点</span></span><br><span class="line">        <span class="keyword">this</span>.childs = <span class="keyword">this</span>.childs.filter(<span class="function"><span class="keyword">function</span>(<span class="params">item</span>) </span>&#123;</span><br><span class="line">          <span class="keyword">return</span> item !== target</span><br><span class="line">        &#125;)</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  methods: &#123;</span><br><span class="line">    someFunc: <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">      <span class="comment">// 调用子节点方法</span></span><br><span class="line">	  <span class="keyword">this</span>.childs.doSomeFunc()</span><br><span class="line">    &#125;      </span><br><span class="line">  &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<h3 id="页面与组件的通信"><a href="#页面与组件的通信" class="headerlink" title="页面与组件的通信"></a>页面与组件的通信</h3><h4 id="组件调用页面提供的方法"><a href="#组件调用页面提供的方法" class="headerlink" title="组件调用页面提供的方法"></a>组件调用页面提供的方法</h4><ol>
+<li><p>页面将方法绑定给组件：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&lt;component-tag-name bind:myevent=<span class="string">"onMyEvent"</span> /&gt;</span><br><span class="line">  </span><br><span class="line">Page(&#123;</span><br><span class="line">  onMyEvent: <span class="function"><span class="keyword">function</span>(<span class="params">e</span>)</span>&#123;</span><br><span class="line">    e.detail <span class="comment">// 自定义组件触发事件时提供的detail对象</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>组件内部触发事件：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&lt;!-- 在自定义组件中 --&gt;</span><br><span class="line">&lt;button bindtap=<span class="string">"onTap"</span>&gt;点击这个按钮将触发“myevent”事件&lt;<span class="regexp">/button&gt;</span></span><br><span class="line"><span class="regexp"></span></span><br><span class="line"><span class="regexp">Component(&#123;</span></span><br><span class="line"><span class="regexp">  properties: &#123;&#125;,</span></span><br><span class="line"><span class="regexp">  methods: &#123;</span></span><br><span class="line"><span class="regexp">    onTap: function()&#123;</span></span><br><span class="line"><span class="regexp">      var param = &#123;&#125; /</span><span class="regexp">/ 提供给页面的 e.detail 的参数</span></span><br><span class="line"><span class="regexp">      this.triggerEvent('myevent', param)</span></span><br><span class="line"><span class="regexp">    &#125;</span></span><br><span class="line"><span class="regexp">  &#125;</span></span><br><span class="line"><span class="regexp">&#125;)</span></span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<h4 id="页面调用组件提供的方法"><a href="#页面调用组件提供的方法" class="headerlink" title="页面调用组件提供的方法"></a>页面调用组件提供的方法</h4><p>页面调用组件方法需要获取组件实例，可以通过 page 的 <code>selectComponent</code> 方法获取：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&lt;some-component id=<span class="string">"custom-selector"</span> /&gt;</span><br><span class="line">  </span><br><span class="line">  </span><br><span class="line"><span class="keyword">const</span> pages = getCurrentPages()</span><br><span class="line"><span class="keyword">const</span> currentPage = pages[pages.length - <span class="number">1</span>]</span><br><span class="line"><span class="keyword">let</span> component = currentPage.selectComponent(<span class="string">'custom-selector'</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 调用组件方法</span></span><br><span class="line">component.customFunction()</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tag/持续更新/" rel="tag"># 持续更新</a>
+          
+            <a href="/tag/技巧/" rel="tag"># 技巧</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/04/19/Masonry源码解析/" rel="next" title="Masonry 源码解析">
+                <i class="fa fa-chevron-left"></i> Masonry 源码解析
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/06/05/Redux基础/" rel="prev" title="Redux 基础">
+                Redux 基础 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.png" alt="Zachary Zhang">
+            
+              <p class="site-author-name" itemprop="name">Zachary Zhang</p>
+              <p class="site-description motion-element" itemprop="description">Stay Hungry. Stay Foolish!</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">116</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/zhang759740844" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:zch759740844@126.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#页面相关"><span class="nav-number">1.</span> <span class="nav-text">页面相关</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#最外层占用整个屏幕"><span class="nav-number">1.1.</span> <span class="nav-text">最外层占用整个屏幕</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#scroll-view-占满整个屏幕"><span class="nav-number">1.2.</span> <span class="nav-text">scroll-view 占满整个屏幕</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#wxs-使用的坑"><span class="nav-number">1.3.</span> <span class="nav-text">wxs 使用的坑</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#绝对定位的居中"><span class="nav-number">1.4.</span> <span class="nav-text">绝对定位的居中</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#在外部修改组件库的样式"><span class="nav-number">1.5.</span> <span class="nav-text">在外部修改组件库的样式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#wx-key-取值"><span class="nav-number">1.6.</span> <span class="nav-text">wx:key 取值</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#scroll-view-横向排布排布"><span class="nav-number">1.7.</span> <span class="nav-text">scroll-view 横向排布排布</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#如何只显示3行，超出显示省略号"><span class="nav-number">1.8.</span> <span class="nav-text">如何只显示3行，超出显示省略号</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#滚动监听"><span class="nav-number">1.9.</span> <span class="nav-text">滚动监听</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#获取视图平铺时的滚动-offset"><span class="nav-number">1.9.1.</span> <span class="nav-text">获取视图平铺时的滚动 offset</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#获取-scrollView-的-offset"><span class="nav-number">1.9.2.</span> <span class="nav-text">获取 scrollView 的 offset</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#平铺滚动到某一个位置"><span class="nav-number">1.9.3.</span> <span class="nav-text">平铺滚动到某一个位置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#scroll-view-滚动到某一个-view-或者某一个位置"><span class="nav-number">1.9.4.</span> <span class="nav-text">scroll-view 滚动到某一个 view 或者某一个位置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#获取平铺或者-scroll-view-中距离顶部的-offset"><span class="nav-number">1.9.5.</span> <span class="nav-text">获取平铺或者 scroll-view 中距离顶部的 offset</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#绝对定位设置-padding-right-不符合预期"><span class="nav-number">1.10.</span> <span class="nav-text">绝对定位设置 padding-right 不符合预期</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CSS-中设置高度为屏幕大小"><span class="nav-number">1.11.</span> <span class="nav-text">CSS 中设置高度为屏幕大小</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#设置多行子元素"><span class="nav-number">1.12.</span> <span class="nav-text">设置多行子元素</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#小程序的button的边框"><span class="nav-number">1.13.</span> <span class="nav-text">小程序的button的边框</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#小程序捕捉事件"><span class="nav-number">1.14.</span> <span class="nav-text">小程序捕捉事件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#组件中的-class-选择"><span class="nav-number">1.15.</span> <span class="nav-text">组件中的 class 选择</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#组件中的-style"><span class="nav-number">1.16.</span> <span class="nav-text">组件中的 style</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#引入-iconfont"><span class="nav-number">1.17.</span> <span class="nav-text">引入 iconfont</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#发布-npm-包"><span class="nav-number">1.18.</span> <span class="nav-text">发布 npm 包</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#隐藏-scroll-view-滚动条"><span class="nav-number">1.19.</span> <span class="nav-text">隐藏 scroll-view 滚动条</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#组件相关"><span class="nav-number">2.</span> <span class="nav-text">组件相关</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#外部全局样式影响组件内样式"><span class="nav-number">2.1.</span> <span class="nav-text">外部全局样式影响组件内样式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#监听组件内数据改变"><span class="nav-number">2.2.</span> <span class="nav-text">监听组件内数据改变</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#父子组件的通信"><span class="nav-number">2.3.</span> <span class="nav-text">父子组件的通信</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#页面与组件的通信"><span class="nav-number">2.4.</span> <span class="nav-text">页面与组件的通信</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#组件调用页面提供的方法"><span class="nav-number">2.4.1.</span> <span class="nav-text">组件调用页面提供的方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#页面调用组件提供的方法"><span class="nav-number">2.4.2.</span> <span class="nav-text">页面调用组件提供的方法</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zachary Zhang</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+
+
+
+
+  <meta name="keywords" content="学习笔记,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="本篇是学习 node.js 基础框架 Koa 的学习总结">
+<meta name="keywords" content="学习笔记">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Koa的基本使用">
+<meta property="og:url" content="http://zhang759740844.github.io/2019/04/23/koa/index.html">
+<meta property="og:site_name" content="Zachary&#39;s blog">
+<meta property="og:description" content="本篇是学习 node.js 基础框架 Koa 的学习总结">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/koa_1.png?raw=true">
+<meta property="og:updated_time" content="2020-02-27T15:13:37.653Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Koa的基本使用">
+<meta name="twitter:description" content="本篇是学习 node.js 基础框架 Koa 的学习总结">
+<meta name="twitter:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/koa_1.png?raw=true">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://zhang759740844.github.io/2019/04/23/koa/">
+
+
+
+
+
+  <title>Koa的基本使用 | Zachary's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Zachary's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">记录成长</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://zhang759740844.github.io/2019/04/23/koa/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zachary Zhang">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Zachary's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Koa的基本使用</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-04-23T14:07:12+08:00">
+                2019-04-23
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/JavaScript/" itemprop="url" rel="index">
+                    <span itemprop="name">JavaScript</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本篇是学习 node.js 基础框架 Koa 的学习总结</p>
+<a id="more"></a>
+<h2 id="koa-基本使用"><a href="#koa-基本使用" class="headerlink" title="koa 基本使用"></a>koa 基本使用</h2><p>安装</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install --save koa</span><br></pre></td></tr></table></figure>
+<p>创建 <code>app.js</code>:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> Koa = <span class="built_in">require</span>(<span class="string">'koa'</span>)</span><br><span class="line"><span class="keyword">const</span> app = Koa()</span><br><span class="line"></span><br><span class="line"><span class="comment">// express 的老写法</span></span><br><span class="line"><span class="comment">// app.use(function (req, res) &#123;</span></span><br><span class="line"><span class="comment">// 	res.send('haha')</span></span><br><span class="line"><span class="comment">// &#125;)</span></span><br><span class="line"></span><br><span class="line">app.use(<span class="keyword">async</span> ctx =&gt; &#123;</span><br><span class="line">  ctx.body = <span class="string">'hahh'</span></span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">app.listen(<span class="number">3000</span>)</span><br></pre></td></tr></table></figure>
+<h2 id="Koa-中间件"><a href="#Koa-中间件" class="headerlink" title="Koa 中间件"></a>Koa 中间件</h2><p>中间件就是匹配路由前和匹配路由后做的一系列操作。中间件的功能包括：</p>
+<ul>
+<li>修改请求和响应对象</li>
+<li>终止请求和响应循环</li>
+<li>调用堆栈中的下一个中间件</li>
+</ul>
+<p>中间件按照功能可以分为：</p>
+<ul>
+<li>应用级中间件</li>
+<li>路由中间件</li>
+<li>错误处理中间件</li>
+<li>第三方中间件</li>
+</ul>
+<h3 id="应用级中间件"><a href="#应用级中间件" class="headerlink" title="应用级中间件"></a>应用级中间件</h3><p>应用级中间件，我觉得可以叫做全局中间件，就是所有请求都要经过的。举例：对于每一个请求，打印它的请求时间：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> Koa = <span class="built_in">require</span>(<span class="string">'koa'</span>)</span><br><span class="line"><span class="keyword">const</span> Router = <span class="built_in">require</span>(<span class="string">'koa-router'</span>)</span><br><span class="line"><span class="keyword">const</span> app = <span class="keyword">new</span> Koa()</span><br><span class="line"><span class="keyword">const</span> router = <span class="keyword">new</span> Router()</span><br><span class="line"></span><br><span class="line"><span class="comment">// 应用级中间件</span></span><br><span class="line">app.use(<span class="keyword">async</span> (ctx, next) =&gt; &#123;</span><br><span class="line">  <span class="comment">// 打印时间</span></span><br><span class="line">  <span class="built_in">console</span>.log(<span class="keyword">new</span> <span class="built_in">Date</span>())</span><br><span class="line">  <span class="comment">// 等待后续中间件的执行</span></span><br><span class="line">  <span class="keyword">await</span> next()</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">router.get(<span class="string">'/'</span>, <span class="keyword">async</span> (ctx, next) &#123;</span><br><span class="line">	ctx.body = <span class="string">'hello koa'</span>           </span><br><span class="line">&#125;)</span><br><span class="line"><span class="comment">// 总的路由的中间件也是应用级中间件</span></span><br><span class="line">app.use(router.routes())</span><br><span class="line">	.use(router.allowedMethods())</span><br><span class="line"></span><br><span class="line">app.listen(<span class="number">3000</span>, () =&gt; &#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'starting at port 3000'</span>)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>类比 redux 中的中间件，中间件通过 <code>use</code> 注册，内部保存在一个中间件的数组中。可以通过调用 <code>next()</code> 方法执行下一个中间件。如果不调用，那么后面的中间件都不会继续执行。</p>
+<h3 id="路由级中间件"><a href="#路由级中间件" class="headerlink" title="路由级中间件"></a>路由级中间件</h3><p>路由级中间件可以使一个请求匹配多个路由:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> Koa = <span class="built_in">require</span>(<span class="string">'koa'</span>)</span><br><span class="line"><span class="keyword">const</span> Router = <span class="built_in">require</span>(<span class="string">'koa-router'</span>)</span><br><span class="line"><span class="keyword">const</span> app = <span class="keyword">new</span> Koa()</span><br><span class="line"><span class="keyword">const</span> router = <span class="keyword">new</span> Router()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">router.get(<span class="string">'/'</span>, <span class="keyword">async</span> (ctx, next) &#123;</span><br><span class="line">	<span class="built_in">console</span>.log(<span class="string">'调用 next 匹配下一个路由'</span>)</span><br><span class="line">	<span class="comment">// 执行 next 方法，可以匹配下一个路由</span></span><br><span class="line">	<span class="keyword">await</span> next()</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">router.get(<span class="string">'/'</span>, <span class="keyword">async</span> (ctx, next) &#123;</span><br><span class="line">	ctx.body = <span class="string">'hello koa again'</span>           </span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">app.use(router.routes())</span><br><span class="line">	.use(router.allowedMethods())</span><br><span class="line"></span><br><span class="line">app.listen(<span class="number">3000</span>, () =&gt; &#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'starting at port 3000'</span>)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>不同于应用级中间件，路由级中间件只针对路由。可以大概猜测出，应用级中间件中的 <code>next</code> 是 koa 提供的，而路由级中间件的 <code>next</code> 方法应该是 koa-router 提供的。</p>
+<h3 id="错误处理中间件"><a href="#错误处理中间件" class="headerlink" title="错误处理中间件"></a>错误处理中间件</h3><p>其实就是一个应用级中间件。错误处理用在没有匹配任何路由，返回一个 404 页面：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> Koa = <span class="built_in">require</span>(<span class="string">'koa'</span>)</span><br><span class="line"><span class="keyword">const</span> Router = <span class="built_in">require</span>(<span class="string">'koa-router'</span>)</span><br><span class="line"><span class="keyword">const</span> app = <span class="keyword">new</span> Koa()</span><br><span class="line"><span class="keyword">const</span> router = <span class="keyword">new</span> Router()</span><br><span class="line"></span><br><span class="line"><span class="comment">// 全局中间件。这个地方用来处理错误</span></span><br><span class="line">app.use(<span class="keyword">async</span> (ctx, next)) &#123;</span><br><span class="line">  <span class="comment">// 执行普通的路由匹配</span></span><br><span class="line">  <span class="keyword">await</span> next()</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 没有匹配上任何路由，那么状态就是404</span></span><br><span class="line">  <span class="keyword">if</span> (ctx.status === <span class="number">404</span>) &#123;</span><br><span class="line">    ctx.body = <span class="string">'这是一个404页面'</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">router.get(<span class="string">'/'</span>, <span class="keyword">async</span> (ctx, next) &#123;</span><br><span class="line">	ctx.body = <span class="string">'hello koa again'</span>           </span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">app.use(router.routes())</span><br><span class="line">	.use(router.allowedMethods())</span><br><span class="line"></span><br><span class="line">app.listen(<span class="number">3000</span>, () =&gt; &#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'starting at port 3000'</span>)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>利用这种方式可以做消息转发</p>
+</blockquote>
+<h2 id="koa-路由中间件"><a href="#koa-路由中间件" class="headerlink" title="koa 路由中间件"></a>koa 路由中间件</h2><p>安装：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install --save koa-router</span><br></pre></td></tr></table></figure>
+<h3 id="静态路由"><a href="#静态路由" class="headerlink" title="静态路由"></a>静态路由</h3><h4 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> Koa = <span class="built_in">require</span>(<span class="string">'koa'</span>)</span><br><span class="line"><span class="keyword">const</span> Router = <span class="built_in">require</span>(<span class="string">'koa-router'</span>)</span><br><span class="line"><span class="keyword">const</span> app = <span class="keyword">new</span> Koa()</span><br><span class="line"><span class="keyword">const</span> router = <span class="keyword">new</span> Router()</span><br><span class="line"></span><br><span class="line"><span class="comment">// 配置路由</span></span><br><span class="line">router.get(<span class="string">'/'</span>, <span class="keyword">async</span> (ctx) =&gt; &#123;</span><br><span class="line">  ctx.body = <span class="string">'首页'</span>  <span class="comment">// 相当于原生里的 res.writeHedr() res.end()</span></span><br><span class="line">&#125;).get(<span class="string">'/news'</span>, <span class="keyword">async</span> (ctx) =&gt; &#123;</span><br><span class="line">  ctx.body = <span class="string">'这是一个新闻页面'</span></span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">// </span></span><br><span class="line">app.use(router.routes()) <span class="comment">// 启动路由</span></span><br><span class="line">	.use(router.allowedMethods())  <span class="comment">// 可配置可不配置，建议配置。会根据 ctx.status 设置 response 响应头</span></span><br><span class="line">app.listen(<span class="number">3000</span>)</span><br></pre></td></tr></table></figure>
+<h4 id="获取-get-传值"><a href="#获取-get-传值" class="headerlink" title="获取 get 传值"></a>获取 get 传值</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">router.get(<span class="string">'/news'</span>, <span class="keyword">async</span> (ctx) =&gt; &#123;</span><br><span class="line">	<span class="comment">// 从 ctx 中读取get传值,获取的是对象；等同于 ctx.request.query</span></span><br><span class="line">  <span class="built_in">console</span>.log(ctx.query)</span><br><span class="line">  <span class="comment">// 获取 url; 等同于 ctx.request.url</span></span><br><span class="line">  <span class="built_in">console</span>.log(ctx.url)</span><br><span class="line">  <span class="comment">// 获取整个request</span></span><br><span class="line">  <span class="built_in">console</span>.log(ctx.request)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<h4 id="获取-post-传值"><a href="#获取-post-传值" class="headerlink" title="获取 post 传值"></a>获取 post 传值</h4><p>安装 koa-bodyparser</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install --save koa-bodyparser</span><br></pre></td></tr></table></figure>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> Koa = <span class="built_in">require</span>(<span class="string">'koa'</span>)</span><br><span class="line"><span class="keyword">const</span> Router = <span class="built_in">require</span>(<span class="string">'koa-router'</span>)</span><br><span class="line"><span class="keyword">const</span> BodyParser = <span class="built_in">require</span>(<span class="string">'koa-bodyparser'</span>)</span><br><span class="line"><span class="keyword">const</span> app = <span class="keyword">new</span> Koa()</span><br><span class="line"><span class="keyword">const</span> router = <span class="keyword">new</span> Router()</span><br><span class="line"><span class="keyword">const</span> bodyParser = <span class="keyword">new</span> BodyParser()</span><br><span class="line"></span><br><span class="line"><span class="comment">// 使用 bodyParser 中间件</span></span><br><span class="line">app.use(bodyParser)</span><br><span class="line"></span><br><span class="line">router.post(<span class="string">'/'</span>, <span class="keyword">async</span> (ctx, next) </span><br><span class="line">	<span class="comment">// 通过 ctx.request.body 获取表单提交的数据</span></span><br><span class="line">	<span class="comment">// 获取的 post 的 body 已经被转为对象</span></span><br><span class="line">	<span class="built_in">console</span>.log(ctx.request.body)     </span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">app.use(router.routes())</span><br><span class="line">	.use(router.allowedMethods())</span><br><span class="line"></span><br><span class="line">app.listen(<span class="number">3000</span>, () =&gt; &#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'starting at port 3000'</span>)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<h4 id="get-和-post-都支持"><a href="#get-和-post-都支持" class="headerlink" title="get 和 post 都支持"></a>get 和 post 都支持</h4><p>如果一个请求，既要支持 get 又要支持 post 也是可以的，可以使用 <code>.all</code> 方法：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">router.all(<span class="string">'/:pid'</span>, <span class="keyword">async</span> (ctx) =&gt; &#123;</span><br><span class="line">  <span class="built_in">console</span>.log(ctx.url)</span><br><span class="line">  <span class="keyword">const</span> buffer = <span class="keyword">await</span> fse.readFile(<span class="string">'./test.json'</span>)</span><br><span class="line">  ctx.body = buffer.toString()</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<h3 id="动态路由"><a href="#动态路由" class="headerlink" title="动态路由"></a>动态路由</h3><p>静态路由要求路径完全匹配，动态路由可以前部匹配，后部可以动态获取。koa 中通过 <code>:</code> 作为动态路由的标识：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 动态路由匹配 /news/xxxx</span></span><br><span class="line">router.get(<span class="string">'/news/:aid'</span>, <span class="keyword">async</span> (ctx) =&gt; &#123;</span><br><span class="line">	<span class="comment">// 动态路由的传值</span></span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'以下是动态路由路由:'</span> + (ctx.params).toString())</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 比如输入 localhost:3000/news/haha</span></span><br><span class="line"><span class="comment">// =&gt; 以下是动态路由的路由: &#123;aid: 'haha'&#125;</span></span><br></pre></td></tr></table></figure>
+<p>动态路由可以匹配多个值。如 <code>/news/:aid/:cid</code></p>
+<h2 id="设置-Cookie-和-Session"><a href="#设置-Cookie-和-Session" class="headerlink" title="设置 Cookie 和 Session"></a>设置 Cookie 和 Session</h2><h3 id="设置-cookie"><a href="#设置-cookie" class="headerlink" title="设置 cookie"></a>设置 cookie</h3><h4 id="设置-cookie-1"><a href="#设置-cookie-1" class="headerlink" title="设置 cookie"></a>设置 cookie</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">router.get(<span class="string">'/'</span>, <span class="keyword">async</span> (ctx) =&gt; &#123;</span><br><span class="line">  ctx.cookies.set(<span class="string">'userInfo'</span>, <span class="string">'zachary'</span>, &#123;</span><br><span class="line">    <span class="comment">// 设置过期时间</span></span><br><span class="line">    maxAge: <span class="number">60</span>*<span class="number">1000</span>*<span class="number">60</span>,</span><br><span class="line">    <span class="comment">// 配置可以访问的页面</span></span><br><span class="line">    path: <span class="string">'/news'</span>,</span><br><span class="line">    <span class="comment">// 当有多个子域名的时候使用，也可以不写，默认是请求的域名</span></span><br><span class="line">    domain: <span class="string">'.baidu.com'</span>,</span><br><span class="line">    <span class="comment">// true 表示这个 cookie 只有服务器端可以方位，false 表示客户端也可以访问</span></span><br><span class="line">    httpOnly: <span class="literal">true</span></span><br><span class="line">  &#125;)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<h4 id="获取-cookie"><a href="#获取-cookie" class="headerlink" title="获取 cookie"></a>获取 cookie</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">router.get(<span class="string">'/'</span>, <span class="keyword">async</span> (ctx) =&gt; &#123;</span><br><span class="line">  <span class="built_in">console</span>.log(ctx.cookies.get(<span class="string">'userInfo'</span>))</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>如果客户端需要拿到 cookie，那么必须设置 httpOnly 为 false</p>
+</blockquote>
+<h3 id="设置-Session"><a href="#设置-Session" class="headerlink" title="设置 Session"></a>设置 Session</h3><p><strong>session</strong> 是另一种记录客户状态的机制，不同的是 <strong>Cookie</strong> 保存在客户端浏览器中，而<br><strong>session</strong> 保存在服务器上。</p>
+<h4 id="Session-的工作流程"><a href="#Session-的工作流程" class="headerlink" title="Session 的工作流程"></a>Session 的工作流程</h4><p>当浏览器访问服务器并发送第一次请求时，服务器端会创建一个 session 对象，生<br>成一个类似于 key,value 的键值对， 然后将 key(cookie)返回到浏览器(客户)端，浏览<br>器下次再访问时，携带 key(cookie)，找到对应的 session(value)。 客户的信息都保存<br>在 session 中。</p>
+<h4 id="设置-Session-1"><a href="#设置-Session-1" class="headerlink" title="设置 Session"></a>设置 Session</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install --save koa-session</span><br></pre></td></tr></table></figure>
+<p>使用：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 引入</span></span><br><span class="line"><span class="keyword">const</span> session = <span class="built_in">require</span>(<span class="string">'koa-session'</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 设置中间件</span></span><br><span class="line">app.keys = [<span class="string">'some secret hurr'</span>]</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> CONFIG = &#123;</span><br><span class="line">	key: <span class="string">'koa:sess'</span>, <span class="comment">//cookie key (default is koa:sess)</span></span><br><span class="line">	maxAge: <span class="number">86400000</span>, <span class="comment">// cookie 的过期时间 maxAge in ms (default is 1 days) </span></span><br><span class="line">	httpOnly: <span class="literal">true</span>, <span class="comment">//cookie 是否只有服务器端可以访问 httpOnly or not (default true) signed: true, //签名默认 true</span></span><br><span class="line">	rolling: <span class="literal">false</span>, <span class="comment">//在每次请求时强行设置cookie，这将重置cookie过期时间(默认:false)</span></span><br><span class="line">	renew: <span class="literal">true</span>, <span class="comment">// 快过期的时候重新设置</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">app.use(session(CONFIG, app))</span><br><span class="line"></span><br><span class="line"><span class="comment">// 设置</span></span><br><span class="line">router.get(<span class="string">'/login'</span>, <span class="keyword">async</span> (ctx) =&gt; &#123;</span><br><span class="line">  <span class="comment">// 设置 session</span></span><br><span class="line">  ctx.session.userInfo = <span class="string">'zachary'</span></span><br><span class="line">  ctx.body = <span class="string">'登录成功'</span></span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 获取</span></span><br><span class="line">router.get(<span class="string">'/'</span>, <span class="keyword">async</span> (ctx) =&gt; &#123;</span><br><span class="line">	<span class="built_in">console</span>.log(ctx.session.userInfo)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p><code>koa-session</code> 的原理就是在内存中生成一个 session 的散列表。每次生成一个随机的字符串，并将其作为 cookie 下发给客户端，key 对应于 config 中的 key。设置的 <code>app.keys</code> 应该就是加密用的秘钥。</p>
+<p>当 session 量比较大的时候，就需要考虑通过使用外部存储的方式进行存储。比方说 mysql，redis 等</p>
+<h4 id="Session-和-Cookie-的区别"><a href="#Session-和-Cookie-的区别" class="headerlink" title="Session 和 Cookie 的区别"></a>Session 和 Cookie 的区别</h4><ol>
+<li>cookie 数据存放在客户的浏览器上，session 数据放在服务器上。</li>
+<li>cookie 会暴露用户的信息，所以使用 session，只在 cookie 中保存一个 id，每次请求通过这个 id 从 session 散列表中获取相应的信息。</li>
+<li>单个 cookie 保存的数据不能超过 4K，很多浏览器都限制一个站点最多保存 20 个 cookie。</li>
+</ol>
+<h2 id="访问静态文件"><a href="#访问静态文件" class="headerlink" title="访问静态文件"></a>访问静态文件</h2><p>如果不想使用模板渲染或者 nuxt.js 这种服务端渲染框架。可以尝试直接访问 vue 生成的 dist 文件。</p>
+<h3 id="生成-Vue-的-dist-目录"><a href="#生成-Vue-的-dist-目录" class="headerlink" title="生成 Vue 的 dist 目录"></a>生成 Vue 的 dist 目录</h3><p>通过 vue-cli 生成 Vue 项目，通过 <code>npm run build</code> 生成 dist 目录，把 dist 目录整个拷贝到 koa 所在目录下：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/koa_1.png?raw=true" alt></p>
+<h3 id="访问静态文件-1"><a href="#访问静态文件-1" class="headerlink" title="访问静态文件"></a>访问静态文件</h3><p>访问静态文件需要使用相关中间件 <code>koa-static</code>:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> Koa = <span class="built_in">require</span>(<span class="string">'koa'</span>)</span><br><span class="line"><span class="keyword">const</span> app = <span class="keyword">new</span> Koa()</span><br><span class="line"><span class="comment">// 访问当前目录下的 dist 目录中的文件</span></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">static</span> = <span class="built_in">require</span>(<span class="string">'koa-static'</span>)(<span class="string">'./dist'</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 配置静态资源文件路径</span></span><br><span class="line">app.use(<span class="keyword">static</span>)</span><br><span class="line"></span><br><span class="line">app.listen(<span class="number">3000</span>, () =&gt; &#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'正在监听3000端口'</span>)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>此时当你访问 <code>localhost:3000</code> 的时候，koa 就会将 <code>dist/index.html</code> 返回显示。</p>
+<blockquote>
+<p>如果同时使用了路由中间件，需要把资源文件的中间件先于路由中间件注册。否则会被路由拦截</p>
+</blockquote>
+<h2 id="路由模块化"><a href="#路由模块化" class="headerlink" title="路由模块化"></a>路由模块化</h2><p>把所有路由放在一个文件中显然是不好维护的，因此需要针对路由进行子路由拆分。</p>
+<h3 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h3><h4 id="创建子路由"><a href="#创建子路由" class="headerlink" title="创建子路由"></a>创建子路由</h4><p>首先创建 routes 文件夹，创建子路由文件，比如命名为 admin.js。在其中添加子路由：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 在 /routes/admin.js 目录下</span></span><br><span class="line"></span><br><span class="line">const Router = require('koa-router')</span><br><span class="line"><span class="keyword">const</span> router = new Router()</span><br><span class="line"></span><br><span class="line">router.get(<span class="string">'/'</span>, async (ctx) =&gt; &#123;</span><br><span class="line">	ctx.body = 'admin 首页'    </span><br><span class="line">&#125;)</span><br><span class="line">  </span><br><span class="line">router.get('/user', async (ctx) =&gt; &#123;</span><br><span class="line">	ctx.body = 'admin 用户页'    </span><br><span class="line">&#125;)</span><br><span class="line">  </span><br><span class="line">module.exports = router.routes()</span><br></pre></td></tr></table></figure>
+<h4 id="引入子路由"><a href="#引入子路由" class="headerlink" title="引入子路由"></a>引入子路由</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// app.js</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> router = <span class="built_in">require</span>(<span class="string">'koa-router'</span>)()</span><br><span class="line"><span class="keyword">const</span> app = <span class="built_in">require</span>(<span class="string">'koa'</span>)()</span><br><span class="line"></span><br><span class="line"><span class="comment">// 引入子路由</span></span><br><span class="line"><span class="keyword">const</span> admin = <span class="built_in">require</span>(<span class="string">'./routes/admin.js'</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 用子路由替代了原来的 async 方法</span></span><br><span class="line"><span class="comment">// 注意，一定是 use，不是 get 或者 post，我在这里卡了很久</span></span><br><span class="line">router.use(<span class="string">'/admin'</span>, admin)</span><br><span class="line"></span><br><span class="line">app.use(router.routes()).use(router.allowedMethods())</span><br></pre></td></tr></table></figure>
+<p>这样以下请求就会映射到相应子路由中：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">http://localhost:3000/admin</span><br><span class="line">http://localhost:3000/admin/user</span><br></pre></td></tr></table></figure>
+<h2 id="实践"><a href="#实践" class="headerlink" title="实践"></a>实践</h2><h3 id="node-自动重启"><a href="#node-自动重启" class="headerlink" title="node 自动重启"></a>node 自动重启</h3><p>开发的时候每次修改都要手动重新 run 一次 node 会非常的麻烦。因此需要一个能自动重启的库的帮助。这个库就是 nodemon:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install -g nodemon</span><br></pre></td></tr></table></figure>
+<p>全局安装 nodemon，然后启动的时候不要通过 node 了，而是 nodemon：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nodemon app.js</span><br></pre></td></tr></table></figure>
+<h3 id="文件操作"><a href="#文件操作" class="headerlink" title="文件操作"></a>文件操作</h3><p>使用 node 提供的 fs 操作文件比较复杂，尤其是使用 koa 的时候本生不支持 promise 写法。</p>
+<p>fs-extra 是一个比较完善的文件操作封装库：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install --save fs-extra</span><br></pre></td></tr></table></figure>
+<p>使用起来也和 fs 无异。下面例子中读取本地的 json 文件并返回：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> fse = <span class="built_in">require</span>(<span class="string">'fs-extra'</span>)</span><br><span class="line"></span><br><span class="line">router.get(<span class="string">'/'</span>, <span class="keyword">async</span> (ctx) =&gt; &#123;</span><br><span class="line">  <span class="keyword">const</span> buffer = <span class="keyword">await</span> fse.readFile(<span class="string">'./test.json'</span>)</span><br><span class="line">  ctx.body = buffer.toString()</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<h3 id="发送请求"><a href="#发送请求" class="headerlink" title="发送请求"></a>发送请求</h3><p>我们使用 koa 接收客户端请求。但是很多时候，我们需要对请求做转发。因此，需要使用 nodejs 发送请求。</p>
+<p>发送请求可以使用库 <em>request-promise</em>。它是 <em>request</em> 的 promise 版本：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">npm install --save request-promise</span><br><span class="line"><span class="comment"># request 是 request-promise 的依赖项，需要自己手动安装</span></span><br><span class="line">npm install --save request</span><br></pre></td></tr></table></figure>
+<p>请求方式很简单：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">app.use(<span class="keyword">async</span> (ctx, next) =&gt; &#123;</span><br><span class="line">	<span class="comment">// 先让路由响应</span></span><br><span class="line">  <span class="keyword">await</span> next()</span><br><span class="line">	<span class="comment">// 如果没有一个路由相应</span></span><br><span class="line">  <span class="keyword">if</span> (ctx.status === <span class="number">404</span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> url = <span class="string">`https://colorlab.lian-shang.cn<span class="subst">$&#123;ctx.url&#125;</span>`</span></span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      <span class="comment">// 尝试请求转发</span></span><br><span class="line">      <span class="keyword">let</span> obj = <span class="keyword">await</span> request.get(url)</span><br><span class="line">      ctx.body = obj</span><br><span class="line">    &#125; <span class="keyword">catch</span> (err) &#123;</span><br><span class="line">      <span class="comment">// 转发请求发送失败</span></span><br><span class="line">      <span class="built_in">console</span>.log(<span class="string">'发生了error'</span>)</span><br><span class="line">      <span class="built_in">console</span>.log(err.statusCode)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>要注意， <code>await</code> 中发生的 error 需要通过 try…catch 捕获。</p>
+<h3 id="设置环境变量"><a href="#设置环境变量" class="headerlink" title="设置环境变量"></a>设置环境变量</h3><p>node 中的环境变量在 <code>process.env</code> 中保存，使用库 <code>cross-env</code> 可以方便设置兼容 windows 的环境变量：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install --save-dev cross-env</span><br></pre></td></tr></table></figure>
+<p>package.json 中设置环境变量：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"scripts"</span>: &#123;</span><br><span class="line">    <span class="attr">"build"</span>: <span class="string">"cross-env NODE_ENV=production webpack --config build/webpack.config.js"</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>NODE_ENV</code> 环境变量将由 cross-env 设置。打印 <code>process.env.NODE_ENV === &#39;production&#39;</code> 为 true</p>
+<h3 id="允许跨域"><a href="#允许跨域" class="headerlink" title="允许跨域"></a>允许跨域</h3><p>跨域的请求需要借助第三方的库 <code>koa-cors</code> 进行允许跨域设置：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install koa-cors</span><br></pre></td></tr></table></figure>
+<p>使用：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">app.use(cors(&#123;</span><br><span class="line">  origin: <span class="function"><span class="keyword">function</span> (<span class="params">ctx</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (ctx.url === <span class="string">'/cors'</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="string">'*'</span> <span class="comment">// 允许来自所有域名请求</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">'http://localhost:3000'</span></span><br><span class="line">  &#125;,</span><br><span class="line">  exposeHeaders: [<span class="string">'WWW-Authenticate'</span>, <span class="string">'Server-Authorization'</span>],</span><br><span class="line">  credentials: <span class="literal">true</span>,</span><br><span class="line">  allowMethods: [<span class="string">'GET'</span>, <span class="string">'POST'</span>, <span class="string">'DELETE'</span>], <span class="comment">// 设置允许的HTTP请求类型</span></span><br><span class="line">  allowHeaders: [<span class="string">'Content-Type'</span>, <span class="string">'Authorization'</span>, <span class="string">'Accept'</span>]</span><br><span class="line">&#125;))</span><br></pre></td></tr></table></figure>
+<p>其中 origin 字段对应于 <code>access-control-allow-origin</code>，通过它设置哪些站点发起哪些请求可以进行跨域。上面🌰表示，请求路径为 <code>/cors</code> 的这个请求可以进行跨域，但是不能获取 cookie 信息，而 <code>http://localhost:3000</code> 这个域名下的所有请求都可以进行跨域，且可以获取 cookie 信息，是受信的站点。</p>
+<p>如果设置了 <code>access-control-allow-origin</code> 为 <code>*</code>，那么就是允许跨域了。但是跨域的客户端请求，无法携带该域名下的 cookie 信息给服务端。</p>
+<p>必须设置 <code>access-control-allow-origin</code> 为一个特定的域名，而不是 <code>*</code>。这样 <code>Access-Control-Allow-Credentials</code> 才会被默认置位 true，才可以跨域使用 cookie。</p>
+<blockquote>
+<p>所以这是一个三级保证。没有 *，那么无法发出请求，没有特定的域名，没有发送带 cookie 的请求。</p>
+</blockquote>
+<h3 id="连接-Mysql"><a href="#连接-Mysql" class="headerlink" title="连接 Mysql"></a>连接 Mysql</h3><p>Nodejs 连接 Mysql 需要 install 相关的库：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install --save mysql</span><br></pre></td></tr></table></figure>
+<p>基本使用：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> mysql = <span class="built_in">require</span>(<span class="string">'mysql'</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 创建连接对象</span></span><br><span class="line"><span class="keyword">const</span> con = mysql.createConnection(&#123;</span><br><span class="line">  host: <span class="string">'localhost'</span>,</span><br><span class="line">  user: <span class="string">'root'</span>,</span><br><span class="line">  password: <span class="string">''</span>,</span><br><span class="line">  port: <span class="string">'3306'</span>,</span><br><span class="line">  database: <span class="string">'your_database'</span></span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 开始连接</span></span><br><span class="line">con.connect()</span><br><span class="line"></span><br><span class="line"><span class="comment">// 执行简单的sql</span></span><br><span class="line"><span class="keyword">const</span> sql = <span class="string">'select * from your_databse'</span></span><br><span class="line">con.query(sql, (err, result) =&gt; &#123;</span><br><span class="line">  <span class="keyword">if</span> (err) &#123;</span><br><span class="line"> 		<span class="built_in">console</span>.error(err)</span><br><span class="line">    <span class="keyword">return</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">console</span>.log(result)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 关闭连接</span></span><br><span class="line">con.end()</span><br></pre></td></tr></table></figure>
+<h4 id="防止-sql-注入"><a href="#防止-sql-注入" class="headerlink" title="防止 sql 注入"></a>防止 sql 注入</h4><p>sql 如果是通过字符串拼接的方式注入的参数，那么容易引起 sql 注入。Nodejs 中的 mysql 库引入了 <code>escape</code> 方法，会对参数进行转义：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="keyword">id</span> <span class="keyword">from</span> <span class="keyword">User</span> <span class="keyword">where</span> username = $&#123;escape(username)&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="redis"><a href="#redis" class="headerlink" title="redis"></a>redis</h3><p>redis 是一种内存存储，可以配合 mysql 进行频繁操作的数据的存储。</p>
+<h4 id="安装-redis"><a href="#安装-redis" class="headerlink" title="安装 redis"></a>安装 redis</h4><h5 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew install redis</span><br></pre></td></tr></table></figure>
+<h5 id="启动-server"><a href="#启动-server" class="headerlink" title="启动 server"></a>启动 server</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">redis-server</span><br></pre></td></tr></table></figure>
+<h5 id="启动-client"><a href="#启动-client" class="headerlink" title="启动 client"></a>启动 client</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">redis-client</span><br></pre></td></tr></table></figure>
+<p>存取值</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 设置键值对</span></span><br><span class="line">&gt; <span class="built_in">set</span> myname zachary</span><br><span class="line"><span class="comment"># 取值</span></span><br><span class="line">&gt; get myname</span><br></pre></td></tr></table></figure>
+<h4 id="使用-redis"><a href="#使用-redis" class="headerlink" title="使用 redis"></a>使用 redis</h4><h4 id="安装-redis-nodejs-模块"><a href="#安装-redis-nodejs-模块" class="headerlink" title="安装 redis nodejs 模块"></a>安装 redis nodejs 模块</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install redis --save</span><br></pre></td></tr></table></figure>
+<h4 id="node-中使用"><a href="#node-中使用" class="headerlink" title="node 中使用"></a>node 中使用</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> redis = <span class="built_in">require</span>(<span class="string">'redis'</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 创建客户端</span></span><br><span class="line"><span class="comment">// 默认是 6379 端口</span></span><br><span class="line"><span class="keyword">const</span> redisClient = redis.createClient(<span class="number">6379</span>, <span class="string">'127.0.0.1'</span>)</span><br><span class="line">redisClient.on(<span class="string">'error'</span>, err =&gt; &#123;</span><br><span class="line">  <span class="built_in">console</span>.log(err)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 测试使用</span></span><br><span class="line">redisClient.set(<span class="string">'myname'</span>, <span class="string">'zachary'</span>, redis.print)</span><br><span class="line">redisClient.get(<span class="string">'myname'</span>, (err, val) =&gt; &#123;</span><br><span class="line">  <span class="keyword">if</span> (err) &#123;</span><br><span class="line">    <span class="built_in">console</span>.error(err)</span><br><span class="line">    <span class="keyword">return</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'val'</span>, val)</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 退出 redis</span></span><br><span class="line">  redisClient.quit()</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<h3 id="PM2"><a href="#PM2" class="headerlink" title="PM2"></a>PM2</h3><ul>
+<li>进程守护，系统奔溃自动重启</li>
+<li>启动多进程，充分利用 CPU 和内存</li>
+<li>自带日志记录</li>
+</ul>
+<h4 id="下载"><a href="#下载" class="headerlink" title="下载"></a>下载</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install pm2 -g</span><br></pre></td></tr></table></figure>
+<h4 id="启动"><a href="#启动" class="headerlink" title="启动"></a>启动</h4><p>开发环境下使用 <code>nodemon</code>，线上环境可以使用 <code>pm2</code>:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pm2 start app.js</span><br></pre></td></tr></table></figure>
+<h4 id="常用命令"><a href="#常用命令" class="headerlink" title="常用命令"></a>常用命令</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查看进程列表</span></span><br><span class="line">pm2 list</span><br><span class="line"><span class="comment"># 重启进程</span></span><br><span class="line">pm2 restart &lt;AppName&gt;/&lt;id&gt;</span><br><span class="line"><span class="comment"># 停止进程</span></span><br><span class="line">pm2 stop &lt;AppName&gt;/&lt;id&gt;</span><br><span class="line"><span class="comment"># 删除进程</span></span><br><span class="line">pm2 delete &lt;AppName&gt;/&lt;id&gt;</span><br><span class="line"><span class="comment"># 查看进程信息</span></span><br><span class="line">pm2 info &lt;AppName&gt;/&lt;id&gt;</span><br><span class="line"><span class="comment"># 查看日志(console.log/error/warn)</span></span><br><span class="line">pm2 <span class="built_in">log</span> &lt;AppName&gt;/&lt;id&gt;</span><br><span class="line"><span class="comment"># 监控</span></span><br><span class="line">pm2 monit &lt;AppName&gt;/&lt;id&gt;</span><br></pre></td></tr></table></figure>
+<h3 id="命令行"><a href="#命令行" class="headerlink" title="命令行"></a>命令行</h3><p>node 写脚本需要配合 shell 语法，<code>shelljs</code> 是一个封装的很晚上的库</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tag/学习笔记/" rel="tag"># 学习笔记</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/04/20/iqkeyboardmanager/" rel="next" title="IQKeyboardManager 源码解析">
+                <i class="fa fa-chevron-left"></i> IQKeyboardManager 源码解析
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/05/06/react/" rel="prev" title="react.js 使用">
+                react.js 使用 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.png" alt="Zachary Zhang">
+            
+              <p class="site-author-name" itemprop="name">Zachary Zhang</p>
+              <p class="site-description motion-element" itemprop="description">Stay Hungry. Stay Foolish!</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">116</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/zhang759740844" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:zch759740844@126.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#koa-基本使用"><span class="nav-number">1.</span> <span class="nav-text">koa 基本使用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Koa-中间件"><span class="nav-number">2.</span> <span class="nav-text">Koa 中间件</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#应用级中间件"><span class="nav-number">2.1.</span> <span class="nav-text">应用级中间件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#路由级中间件"><span class="nav-number">2.2.</span> <span class="nav-text">路由级中间件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#错误处理中间件"><span class="nav-number">2.3.</span> <span class="nav-text">错误处理中间件</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#koa-路由中间件"><span class="nav-number">3.</span> <span class="nav-text">koa 路由中间件</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#静态路由"><span class="nav-number">3.1.</span> <span class="nav-text">静态路由</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#示例"><span class="nav-number">3.1.1.</span> <span class="nav-text">示例</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#获取-get-传值"><span class="nav-number">3.1.2.</span> <span class="nav-text">获取 get 传值</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#获取-post-传值"><span class="nav-number">3.1.3.</span> <span class="nav-text">获取 post 传值</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#get-和-post-都支持"><span class="nav-number">3.1.4.</span> <span class="nav-text">get 和 post 都支持</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#动态路由"><span class="nav-number">3.2.</span> <span class="nav-text">动态路由</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#设置-Cookie-和-Session"><span class="nav-number">4.</span> <span class="nav-text">设置 Cookie 和 Session</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#设置-cookie"><span class="nav-number">4.1.</span> <span class="nav-text">设置 cookie</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#设置-cookie-1"><span class="nav-number">4.1.1.</span> <span class="nav-text">设置 cookie</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#获取-cookie"><span class="nav-number">4.1.2.</span> <span class="nav-text">获取 cookie</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#设置-Session"><span class="nav-number">4.2.</span> <span class="nav-text">设置 Session</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Session-的工作流程"><span class="nav-number">4.2.1.</span> <span class="nav-text">Session 的工作流程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#设置-Session-1"><span class="nav-number">4.2.2.</span> <span class="nav-text">设置 Session</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Session-和-Cookie-的区别"><span class="nav-number">4.2.3.</span> <span class="nav-text">Session 和 Cookie 的区别</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#访问静态文件"><span class="nav-number">5.</span> <span class="nav-text">访问静态文件</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#生成-Vue-的-dist-目录"><span class="nav-number">5.1.</span> <span class="nav-text">生成 Vue 的 dist 目录</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#访问静态文件-1"><span class="nav-number">5.2.</span> <span class="nav-text">访问静态文件</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#路由模块化"><span class="nav-number">6.</span> <span class="nav-text">路由模块化</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#实现"><span class="nav-number">6.1.</span> <span class="nav-text">实现</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#创建子路由"><span class="nav-number">6.1.1.</span> <span class="nav-text">创建子路由</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#引入子路由"><span class="nav-number">6.1.2.</span> <span class="nav-text">引入子路由</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实践"><span class="nav-number">7.</span> <span class="nav-text">实践</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#node-自动重启"><span class="nav-number">7.1.</span> <span class="nav-text">node 自动重启</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#文件操作"><span class="nav-number">7.2.</span> <span class="nav-text">文件操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#发送请求"><span class="nav-number">7.3.</span> <span class="nav-text">发送请求</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#设置环境变量"><span class="nav-number">7.4.</span> <span class="nav-text">设置环境变量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#允许跨域"><span class="nav-number">7.5.</span> <span class="nav-text">允许跨域</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#连接-Mysql"><span class="nav-number">7.6.</span> <span class="nav-text">连接 Mysql</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#防止-sql-注入"><span class="nav-number">7.6.1.</span> <span class="nav-text">防止 sql 注入</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#redis"><span class="nav-number">7.7.</span> <span class="nav-text">redis</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#安装-redis"><span class="nav-number">7.7.1.</span> <span class="nav-text">安装 redis</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#安装"><span class="nav-number">7.7.1.1.</span> <span class="nav-text">安装</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#启动-server"><span class="nav-number">7.7.1.2.</span> <span class="nav-text">启动 server</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#启动-client"><span class="nav-number">7.7.1.3.</span> <span class="nav-text">启动 client</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#使用-redis"><span class="nav-number">7.7.2.</span> <span class="nav-text">使用 redis</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#安装-redis-nodejs-模块"><span class="nav-number">7.7.3.</span> <span class="nav-text">安装 redis nodejs 模块</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#node-中使用"><span class="nav-number">7.7.4.</span> <span class="nav-text">node 中使用</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PM2"><span class="nav-number">7.8.</span> <span class="nav-text">PM2</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#下载"><span class="nav-number">7.8.1.</span> <span class="nav-text">下载</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#启动"><span class="nav-number">7.8.2.</span> <span class="nav-text">启动</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#常用命令"><span class="nav-number">7.8.3.</span> <span class="nav-text">常用命令</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#命令行"><span class="nav-number">7.9.</span> <span class="nav-text">命令行</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zachary Zhang</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

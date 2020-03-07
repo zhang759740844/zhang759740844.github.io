@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+
+
+
+
+  <meta name="keywords" content="基本控件,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="花了一周的时间看完了《iOS UICollectionView:The Complete Guide》。英文书读起来还是有点累人的，读完写了些代码做了些笔记和大家分享。书中深入的东西不是太多，时间不充裕的话不太建议大家自己读一遍了。">
+<meta name="keywords" content="基本控件">
+<meta property="og:type" content="article">
+<meta property="og:title" content="一篇较为详细的 UICollectionView 使用方法总结">
+<meta property="og:url" content="http://zhang759740844.github.io/2017/07/27/UICollectionView完全解析/index.html">
+<meta property="og:site_name" content="Zachary&#39;s blog">
+<meta property="og:description" content="花了一周的时间看完了《iOS UICollectionView:The Complete Guide》。英文书读起来还是有点累人的，读完写了些代码做了些笔记和大家分享。书中深入的东西不是太多，时间不充裕的话不太建议大家自己读一遍了。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/UICollectionViewBookName.jpeg?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/collectionview_cell.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/custom_layout.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/custom_copy.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/CollectionView_Demo.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/CollectionView_Example.png?raw=true">
+<meta property="og:updated_time" content="2020-02-27T15:13:37.639Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="一篇较为详细的 UICollectionView 使用方法总结">
+<meta name="twitter:description" content="花了一周的时间看完了《iOS UICollectionView:The Complete Guide》。英文书读起来还是有点累人的，读完写了些代码做了些笔记和大家分享。书中深入的东西不是太多，时间不充裕的话不太建议大家自己读一遍了。">
+<meta name="twitter:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/UICollectionViewBookName.jpeg?raw=true">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://zhang759740844.github.io/2017/07/27/UICollectionView完全解析/">
+
+
+
+
+
+  <title>一篇较为详细的 UICollectionView 使用方法总结 | Zachary's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Zachary's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">记录成长</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://zhang759740844.github.io/2017/07/27/UICollectionView完全解析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zachary Zhang">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Zachary's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">一篇较为详细的 UICollectionView 使用方法总结</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-07-27T14:07:12+08:00">
+                2017-07-27
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>花了一周的时间看完了《iOS UICollectionView:The Complete Guide》。英文书读起来还是有点累人的，读完写了些代码做了些笔记和大家分享。书中深入的东西不是太多，时间不充裕的话不太建议大家自己读一遍了。</p>
+<a id="more"></a>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/UICollectionViewBookName.jpeg?raw=true" alt="书名"></p>
+<h2 id="基本展示"><a href="#基本展示" class="headerlink" title="基本展示"></a>基本展示</h2><h3 id="UIScrollView-概述"><a href="#UIScrollView-概述" class="headerlink" title="UIScrollView 概述"></a>UIScrollView 概述</h3><p>UICollectionView 继承于 UIScrollView，<code>UICollectionViewDelegate</code> 协议继承于 <code>UIScrollViewDelegate</code> 协议。所以在使用 UICollectionView 的时候，可以直接使用 UIScrollView 的各个属性方法。</p>
+<p>UIScrollView 中有几个重要的属性，<code>contentSize</code> 用来标识 UIScrollView 的滚动范围；<code>contentOffset</code> 用来设置视图原点与可视区域左上角的距离；<code>contentInset</code> 可用通过 <code>UIEdgeInsetMake(10,10,10,10)</code> 的方法设置一个内边框，这个值可以是负的，能使视图超出可视的滚动范围。</p>
+<p>我们可以通过 <code>setContentOffset:animated:</code> 将视图滚动到某一个位置，也可以使用 <code>scrollRectToVisible:animated:</code> 将某块 rect 滚动到可视区域内（如果已经可见则不会滚动）。</p>
+<p>一些有用的 UIScrollViewDelegate 的方法：</p>
+<ul>
+<li><code>scrollViewDidScroll:</code>：在任何 <code>contentOffset</code> 发生改变的时刻调用。可以用来自定义一个下拉刷新控件。</li>
+<li><code>scrollViewWillBeginDragging:</code>：在 scrollView 被拖拽的时候调用。可以在此时暂停一些复杂操作以保证滑动的流畅性。</li>
+<li><code>scrollViewWillEndDragging:withVelocity:targetContentOffset:</code>：在用户结束拖拽并抬起手指后调用。第二个参数表示结束拖动时的速度。第三个参数表示最终结束滚动时的 <code>contentOffset</code> 值，这里是一个 <code>CGPoint</code> 的指针，我们可以让其指向一个新的 <code>CGPoint</code> 以自由控制最终的 <code>contentOffset</code> 大小。除了让我们改变最终停止的位置，这个方法还可以使我们能够对要展示区域的数据提前进行准备。</li>
+<li><code>scrollViewShouldScrollToTop:</code>：在用户点击状态栏的时候回调，返回 <code>YES</code> 允许 scrollView 滚动到顶端。</li>
+<li><code>scrollViewDidScrollToTop:</code>：在点击顶部状态栏并且滚动到顶端后回调。</li>
+<li><code>scrollViewDidEndDecelerating:</code>：在结束减速动画的时候调用。可以用来继续之前暂停的复杂操作。</li>
+</ul>
+<h3 id="如何重用-UICollectionViewCell"><a href="#如何重用-UICollectionViewCell" class="headerlink" title="如何重用 UICollectionViewCell"></a>如何重用 UICollectionViewCell</h3><p>可以通过 <code>UINib</code> 以及 <code>class</code> 两种方式注册 cell：</p>
+<ul>
+<li><code>registerClass:forCellWithReuserIdentifier:</code></li>
+<li><code>registerNib:forCellWithReuseIdentifer:</code></li>
+</ul>
+<p>当 <code>dequeueReuseableCellWithReuseIdentifirer:forIndexPath:</code> 被调用的时候，你将获得一个被重用的 cell，如果此时没有可用的 cell，系统会帮你创建一个。</p>
+<h3 id="展现内容"><a href="#展现内容" class="headerlink" title="展现内容"></a>展现内容</h3><h4 id="准备一个-cell-类"><a href="#准备一个-cell-类" class="headerlink" title="准备一个 cell 类"></a>准备一个 cell 类</h4><p>自定义一个类继承于 <code>UICollectionViewCell</code>:</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">SimpleCollectionViewCell</span> : <span class="title">UICollectionViewCell</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>,<span class="keyword">copy</span>) <span class="built_in">NSString</span> *num;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)refreshData;</span><br><span class="line"></span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure>
+<p>UICollectionViewCell 提供了一个重用前清空 cell 内数据的方法 <code>prepareForReuse</code>，重写它，：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)prepareForReuse &#123;</span><br><span class="line">    [<span class="keyword">super</span> prepareForReuse];</span><br><span class="line">    <span class="keyword">self</span>.num = <span class="string">@""</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>一定要调用 super 方法</p>
+</blockquote>
+<h4 id="设置-ViewController"><a href="#设置-ViewController" class="headerlink" title="设置 ViewController"></a>设置 ViewController</h4><p>先添加一个 CollectionView，然后注册，先定义一个 static 的 Identifier：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="built_in">NSString</span> *SIMPLECELLIDENTIFIER = <span class="string">@"Simple Cell Identifier"</span>;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)viewDidLoad &#123;</span><br><span class="line">    [<span class="keyword">super</span> viewDidLoad];</span><br><span class="line">    <span class="comment">// 设置 flowLayout</span></span><br><span class="line">    <span class="built_in">UICollectionViewFlowLayout</span> *flowLayout = [[<span class="built_in">UICollectionViewFlowLayout</span> alloc] init];</span><br><span class="line">    flowLayout.minimumInteritemSpacing = <span class="number">40</span>;</span><br><span class="line">    flowLayout.minimumLineSpacing = <span class="number">40</span>;</span><br><span class="line">    flowLayout.sectionInset = <span class="built_in">UIEdgeInsetsMake</span>(<span class="number">10</span>, <span class="number">10</span>, <span class="number">10</span>, <span class="number">10</span>);</span><br><span class="line">    flowLayout.itemSize = <span class="built_in">CGSizeMake</span>(<span class="number">50</span>, <span class="number">50</span>);</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">    <span class="comment">// 添加 collectionView，记得要设置 delegate 和 dataSource 的代理对象</span></span><br><span class="line">    _collectionView = [[<span class="built_in">UICollectionView</span> alloc] initWithFrame:<span class="keyword">self</span>.view.frame collectionViewLayout:flowLayout];</span><br><span class="line">    _collectionView.delegate = <span class="keyword">self</span>;</span><br><span class="line">    _collectionView.dataSource = <span class="keyword">self</span>;</span><br><span class="line">    _collectionView.backgroundColor = [<span class="built_in">UIColor</span> redColor];</span><br><span class="line">    [<span class="keyword">self</span>.view addSubview:_collectionView];</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 注册 cell</span></span><br><span class="line">    [_collectionView registerClass:[SimpleCollectionViewCell <span class="keyword">class</span>] forCellWithReuseIdentifier:SIMPLECELLIDENTIFIER];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>一定要先将 collectionView 的 delegate 和 dataSource 设置为 self 哦</p>
+</blockquote>
+<h4 id="实现代理"><a href="#实现代理" class="headerlink" title="实现代理"></a>实现代理</h4><p>实现两个必须的代理，一个返回 <code>item</code> 的数量，一个返回具体的 <code>cell</code>：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">NSInteger</span>)collectionView:(<span class="built_in">UICollectionView</span> *)collectionView numberOfItemsInSection:(<span class="built_in">NSInteger</span>)section &#123;</span><br><span class="line">    <span class="keyword">return</span> _count;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="built_in">UICollectionViewCell</span> *)collectionView:(<span class="built_in">UICollectionView</span> *)collectionView cellForItemAtIndexPath:(<span class="built_in">NSIndexPath</span> *)indexPath &#123;</span><br><span class="line">    SimpleCollectionViewCell *cell = (SimpleCollectionViewCell *)[collectionView dequeueReusableCellWithReuseIdentifier:SIMPLECELLIDENTIFIER forIndexPath:indexPath];</span><br><span class="line">    cell.num = [<span class="built_in">NSString</span> stringWithFormat:<span class="string">@"%ld"</span>,(<span class="keyword">long</span>)indexPath.item];</span><br><span class="line">    [cell refreshData];</span><br><span class="line">    <span class="keyword">return</span> cell;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="批量处理"><a href="#批量处理" class="headerlink" title="批量处理"></a>批量处理</h4><p>可以将这些操作通过 <code>performBatchUpdates:completion:</code> 方法进行批量处理：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)addItem:(<span class="keyword">id</span>)sender &#123;</span><br><span class="line">    [<span class="keyword">self</span>.collectionView performBatchUpdates:^&#123;</span><br><span class="line">        [<span class="keyword">self</span>.collectionView deleteItemsAtIndexPaths:@[[<span class="built_in">NSIndexPath</span> indexPathForItem:<span class="number">2</span> inSection:<span class="number">0</span>]]];</span><br><span class="line">        [<span class="keyword">self</span>.collectionView insertItemsAtIndexPaths:@[[<span class="built_in">NSIndexPath</span> indexPathForItem:<span class="number">5</span> inSection:<span class="number">0</span>]]];</span><br><span class="line">    &#125; completion:<span class="literal">nil</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Cell-的视图层级"><a href="#Cell-的视图层级" class="headerlink" title="Cell 的视图层级"></a>Cell 的视图层级</h3><p>在 cell 中添加视图的时候，我们要将视图添加到 <code>contentView</code> 上，而不是 <code>self</code>。我们可以观察 cell 的视图层级：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/collectionview_cell.png?raw=true" alt="视图层级"></p>
+<p>在 <code>contentView</code> 和 <code>UICollectionViewCell</code> 之间还存在着 <code>selectedBackgroundView</code> 和 <code>backgroundView</code>。一般情况下，这两个 view 都是 nil 的。如果你希望他们能显示出来，那么需要 alloc 出来，不需要手动设置 frame 大小，系统会自己撑满整个 cell：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">self</span>.backgroundView = [<span class="built_in">UIView</span> alloc] init];</span><br></pre></td></tr></table></figure>
+<h2 id="更进一步"><a href="#更进一步" class="headerlink" title="更进一步"></a>更进一步</h2><p>上面一节讲了如何展示一个最基本的 CollectionView，本节要在展示的基础上拓展一些操作方法。</p>
+<h3 id="Supplementary-Views"><a href="#Supplementary-Views" class="headerlink" title="Supplementary Views"></a>Supplementary Views</h3><p>Supplementary View 是 <code>UICollectionViewLayout</code> 提供的，可以随着 CollectionView 滚动，并且是数据驱动，可以展示信息的。</p>
+<p>在 <code>UICollectionViewFlowLayout</code> 中提供了两种 Supplementary View：头部视图和尾部视图。但是这只是在这种 Layout 方式下的特殊类型，之后我们会学习如何自定义 Supplementary View。只要记住，<strong>任何有数据展示的并且不是 cell 的视图，都可以用 Supplementary View 展示</strong>。</p>
+<p>Supplementary View 和 cell 类似，也需要注册 <code>Nib</code> 或者 <code>Class</code>，也会被一直重用。</p>
+<h4 id="定义一个-Supplementary-View-类"><a href="#定义一个-Supplementary-View-类" class="headerlink" title="定义一个 Supplementary View 类"></a>定义一个 Supplementary View 类</h4><p>自定义的 Supplementary View 继承于 <code>UICollectionReusableView</code>。这个类提供了一些和 <code>UICollectionViewCell</code> 相同的方法（其实 <code>UICollectionViewCell</code> 就是继承于 <code>UICollectionReusableView</code> 的），但是比其更轻量级，比如无法像 Cell 一样，处理点击以及高亮等（如果你想要，你需要自己实现）。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">SimpleReusableView</span> : <span class="title">UICollectionReusableView</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>,<span class="keyword">strong</span>) <span class="built_in">NSString</span> *num;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)refreshData;</span><br><span class="line"></span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure>
+<p>同样实现以下 <code>prepareForReuse</code> 方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)prepareForReuse &#123;</span><br><span class="line">    [<span class="keyword">super</span> prepareForReuse];</span><br><span class="line">    <span class="keyword">self</span>.num = <span class="string">@""</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="设置-ViewController-1"><a href="#设置-ViewController-1" class="headerlink" title="设置 ViewController"></a>设置 ViewController</h4><p>还是在 <code>viewDidLoad</code> 方法中注册，同样先定义一个 Identifier：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="built_in">NSString</span> *SIMPLESUPPLEMENTARYIDENTIFIER = <span class="string">@"Simple Supplementary Identifier"</span>;</span><br><span class="line"><span class="keyword">static</span> <span class="built_in">NSString</span> *SIMPLECELLIDENTIFIER = <span class="string">@"Simple Cell Identifier"</span>;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)viewDidLoad &#123;</span><br><span class="line">    [<span class="keyword">super</span> viewDidLoad];</span><br><span class="line">  	...</span><br><span class="line">      </span><br><span class="line">    <span class="comment">// 设置大小</span></span><br><span class="line">    flowLayout.headerReferenceSize = <span class="built_in">CGSizeMake</span>(<span class="keyword">self</span>.view.bounds.size.width, <span class="number">30</span>);</span><br><span class="line">  </span><br><span class="line">  	<span class="comment">// 注册 Supplementary View</span></span><br><span class="line">  	[_collectionView registerClass:[SimpleReusableView <span class="keyword">class</span>] forSupplementaryViewOfKind:<span class="built_in">UICollectionElementKindSectionHeader</span> withReuseIdentifier:SIMPLESUPPLEMENTARYIDENTIFIER];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里注册的是 header:<code>UICollectionElementKindSectionHeader</code>，类似的还可以注册 footer:<code>UICollectionElementKindSectionFooter</code></p>
+<p>另外，一定要设置 <code>UICollectionViewFlowLayout</code> 的 <code>headerReferenceSize</code> 属性，其默认是 <code>CGSizeZero</code> 的，如果不手动设置，Supplementary View 就无法显示。<strong>但是切记，如果你设置了这个值，就一定要实现 <code>collectionView:viewForSupplementaryElementOfKind:atIndexPath:</code> 返回一个 SupplementaryView，否则就会产生异常。</strong></p>
+<h4 id="实现代理："><a href="#实现代理：" class="headerlink" title="实现代理："></a>实现代理：</h4><p>同样实现两个代理，一个返回 <code>section</code> 的数量，一个返回 <code>Supplementary View</code> ：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">NSInteger</span>)numberOfSectionsInCollectionView:(<span class="built_in">UICollectionView</span> *)collectionView &#123;</span><br><span class="line">    <span class="keyword">return</span> _sectionCount;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="built_in">UICollectionReusableView</span> *)collectionView:(<span class="built_in">UICollectionView</span> *)collectionView viewForSupplementaryElementOfKind:(<span class="built_in">NSString</span> *)kind atIndexPath:(<span class="built_in">NSIndexPath</span> *)indexPath &#123;</span><br><span class="line">    SimpleReusableView *reuseableView = (SimpleReusableView *)[collectionView dequeueReusableSupplementaryViewOfKind:kind withReuseIdentifier:SIMPLESUPPLEMENTARYIDENTIFIER forIndexPath:indexPath];</span><br><span class="line">    reuseableView.num = [<span class="built_in">NSString</span> stringWithFormat:<span class="string">@"%ld"</span>,(<span class="keyword">long</span>)indexPath.section];</span><br><span class="line">    [reuseableView refreshData];</span><br><span class="line">    <span class="keyword">return</span> reuseableView;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="响应交互"><a href="#响应交互" class="headerlink" title="响应交互"></a>响应交互</h3><p>实现 <code>CollectionViewDelegate</code> 的方法 <code>collectionView:didSelectedAtIndexPath:</code></p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)collectionView:(<span class="built_in">UICollectionView</span> *)collectionView didSelectItemAtIndexPath:(<span class="built_in">NSIndexPath</span> *)indexPath &#123;</span><br><span class="line">    <span class="comment">// 取消选中</span></span><br><span class="line">    [collectionView deselectItemAtIndexPath:indexPath animated:<span class="literal">YES</span>];</span><br><span class="line">    <span class="comment">// 获取当前点击的 cell</span></span><br><span class="line">    SimpleCollectionViewCell *cell = (SimpleCollectionViewCell *)[collectionView cellForItemAtIndexPath:indexPath];</span><br><span class="line">	...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p> <code>deselectItemAtIndexPath:animted:</code> 方法取消选中。</p>
+<p><code>cellForItemAtIndexPath:</code> 方法通过 <code>indexPath</code> 获取当前 cell。</p>
+<h3 id="对-item-和-section-的操作"><a href="#对-item-和-section-的操作" class="headerlink" title="对 item 和 section 的操作"></a>对 item 和 section 的操作</h3><p>系统提供了以下方法来对 item 和 section 进行插入、删除、重载、移动操作：</p>
+<ul>
+<li><code>insertSections:</code></li>
+<li><code>deleteSections:</code></li>
+<li><code>reloadSections:</code></li>
+<li><code>moveSection:toSection:</code></li>
+<li><code>insertItemsAtIndexPaths:</code></li>
+<li><code>deleteItemsAtIndexPaths:</code></li>
+<li><code>reloadItemsAtIndexPaths:</code></li>
+<li><code>moveItemAtIndexPath:toIndexPath:</code></li>
+</ul>
+<p>注意一定要先改变 item 或者 section 的数量，然后才能对 item 或者 section 进行插入和删除。</p>
+<p>这些方法可以放在 <code>performBatchUpdates:completion:</code> 中进行批量处理。</p>
+<h3 id="改变-item-和-section-的大小"><a href="#改变-item-和-section-的大小" class="headerlink" title="改变 item 和 section 的大小"></a>改变 item 和 section 的大小</h3><p>前面，我们通过 <code>UICollectionViewFlowLayout</code>  的 <code>itemSize</code> 和 <code>headerReferenceSize</code> (包括 <code>footerReferenceSize</code>) 统一设置了 item 和 section 的大小。</p>
+<p>如何每个 item 和 section 的大小不规则呢？ 我们可以实现 <code>UICollectionViewDelegateFlowLayout</code> 协议中的以下方法实现：</p>
+<ul>
+<li><code>collectionView:layout:sizeForItemAtIndexPath:</code></li>
+<li><code>collectionView:layout:referenceSizeForHeaderInSection:</code></li>
+<li><code>collectionView:layout:referenceSizeForFooterInSection:</code></li>
+</ul>
+<p>实现这些方法，并在根据 <code>indexPath</code> 返回响应的 <code>CGSize</code>.</p>
+<p><code>UICollectionViewDelegateFlowLayout</code>协议继承于 <code>UICollectionViewDelegate</code>协议，所以仍然将 CollectionView 的 <code>delegate</code> 设置为 ViewController 就行了。</p>
+<h3 id="是否可以选中"><a href="#是否可以选中" class="headerlink" title="是否可以选中"></a>是否可以选中</h3><p>实现 <code>UICollectionViewDelegate</code> 协议中的以下方法可以实现控制 item 是否可以高亮，选中，取消选中：</p>
+<ul>
+<li><code>collectionView:shouldHighlightItemAtIndexPath:</code></li>
+<li><code>collectionView:shouldSelectItemAtIndexPath:</code></li>
+<li><code>collectionView:shouldDeselectedItemAtIndexPath:</code></li>
+</ul>
+<h3 id="复制粘贴操作"><a href="#复制粘贴操作" class="headerlink" title="复制粘贴操作"></a>复制粘贴操作</h3><p>有时候我们想复制一些 cell 中的东西，实现下面方法就可以复制：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 能否选中</span></span><br><span class="line">- (<span class="built_in">BOOL</span>)collectionView:(<span class="built_in">UICollectionView</span> *)collectionView shouldSelectItemAtIndexPath:(<span class="built_in">NSIndexPath</span> *)indexPath &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">YES</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 选中后能否弹出菜单</span></span><br><span class="line">- (<span class="built_in">BOOL</span>)collectionView:(<span class="built_in">UICollectionView</span> *)collectionView shouldShowMenuForItemAtIndexPath:(<span class="built_in">NSIndexPath</span> *)indexPath &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">YES</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 能否执行菜单里的某个操作</span></span><br><span class="line">- (<span class="built_in">BOOL</span>)collectionView:(<span class="built_in">UICollectionView</span> *)collectionView canPerformAction:(SEL)action forItemAtIndexPath:(<span class="built_in">NSIndexPath</span> *)indexPath withSender:(<span class="keyword">id</span>)sender &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">YES</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 棘突执行菜单选项的操作</span></span><br><span class="line">- (<span class="keyword">void</span>)collectionView:(<span class="built_in">UICollectionView</span> *)collectionView performAction:(SEL)action forItemAtIndexPath:(<span class="built_in">NSIndexPath</span> *)indexPath withSender:(<span class="keyword">id</span>)sender &#123;</span><br><span class="line">    <span class="keyword">if</span> ([<span class="built_in">NSStringFromSelector</span>(action) isEqualToString:<span class="string">@"copy:"</span>]) &#123;</span><br><span class="line">        <span class="built_in">UIPasteboard</span> *pasteboard = [<span class="built_in">UIPasteboard</span> generalPasteboard];</span><br><span class="line">        [pasteboard setString:((SimpleCollectionViewCell *)[collectionView cellForItemAtIndexPath:indexPath]).num];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="使用-UICollectionViewFlowLayout"><a href="#使用-UICollectionViewFlowLayout" class="headerlink" title="使用 UICollectionViewFlowLayout"></a>使用 UICollectionViewFlowLayout</h2><h3 id="创建-UICollectionViewFlowLayout-的子类"><a href="#创建-UICollectionViewFlowLayout-的子类" class="headerlink" title="创建 UICollectionViewFlowLayout 的子类"></a>创建 UICollectionViewFlowLayout 的子类</h3><p>系统的 <code>UICollectionViewFlowLayout</code> 虽然允许你定义 item 以及 Supplementary Views 的大小，但是你不能自定义每个 View 的位置。比如下图，你想让所有 item 都沿着虚线排布，只用 <code>UICollectionViewFlowLayout</code> 是不够的。我们需要继承它，并且重写其中的部分方法，实现自定义的布局。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/custom_layout.png?raw=true" alt="实际布局"></p>
+<h4 id="继承-UICollectionViewFlowLayout"><a href="#继承-UICollectionViewFlowLayout" class="headerlink" title="继承 UICollectionViewFlowLayout"></a>继承 UICollectionViewFlowLayout</h4><p>创建一个类，继承于 <code>UICollectionViewFlowlayout</code>，重写它 <code>init</code> 方法。我们可以把之前写在 ViewController 中的对于 layout 的设置移到 <code>init</code> 方法中，作为默认实现，减少 VC 中的代码量：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">instancetype</span>)init &#123;</span><br><span class="line">    <span class="keyword">if</span> (!(<span class="keyword">self</span> = [<span class="keyword">super</span> init])) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">self</span>.minimumInteritemSpacing = <span class="number">20</span>;</span><br><span class="line">    <span class="keyword">self</span>.minimumLineSpacing = <span class="number">40</span>;</span><br><span class="line">    <span class="keyword">self</span>.sectionInset = <span class="built_in">UIEdgeInsetsMake</span>(<span class="number">10</span>, <span class="number">10</span>, <span class="number">10</span>, <span class="number">10</span>);</span><br><span class="line">    <span class="keyword">self</span>.itemSize = <span class="built_in">CGSizeMake</span>(<span class="number">50</span>, <span class="number">50</span>);</span><br><span class="line">    <span class="keyword">self</span>.headerReferenceSize = <span class="built_in">CGSizeMake</span>([<span class="built_in">UIScreen</span> mainScreen].bounds.size.width, <span class="number">30</span>);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">self</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="重写布局方法-layoutAttributesForElementsInRect"><a href="#重写布局方法-layoutAttributesForElementsInRect" class="headerlink" title="重写布局方法 layoutAttributesForElementsInRect:"></a>重写布局方法 layoutAttributesForElementsInRect:</h4><p>我们需要重写 <code>layoutAttributesForElementsInRect:</code> 方法，该方法返回一个包含所有布局信息 <code>UICollectionViewLayoutAttributes</code>的数组。比如我们可以把 CollectionView 中所有 cell 都旋转 45°：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">NSArray</span>&lt;<span class="built_in">UICollectionViewLayoutAttributes</span> *&gt; *)layoutAttributesForElementsInRect:(<span class="built_in">CGRect</span>)rect &#123;</span><br><span class="line">    <span class="built_in">NSArray</span> *array = [<span class="keyword">super</span> layoutAttributesForElementsInRect:rect];</span><br><span class="line">    <span class="built_in">NSMutableArray</span> *newArray = [<span class="built_in">NSMutableArray</span> array];</span><br><span class="line">    <span class="keyword">for</span> (<span class="built_in">UICollectionViewLayoutAttributes</span> *attrs <span class="keyword">in</span> newArray) &#123;</span><br><span class="line">        <span class="built_in">UICollectionViewLayoutAttributes</span> *newAttrs = [attrs <span class="keyword">copy</span>];</span><br><span class="line">        <span class="keyword">if</span> (attrs.representedElementKind == <span class="literal">nil</span>) &#123;</span><br><span class="line">            newAttrs.transform = <span class="built_in">CGAffineTransformMakeRotation</span>(<span class="number">45</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        [newArray addObject:newAttrs];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> newArray;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们通过父类方法 <code>[super layoutAttributesForElementsInRect:rect]</code> 先创建了一个正常情况下的所有属性的数组。这个父类方法默认情况下，只会创建在 <code>rect</code> 范围内的视图的布局属性。所以如果你想把原来不会被现实的视图也显示出来的话，你就不得不自己把所有布局属性都创建出来，放入数组中。</p>
+<p>最好不要直接修改这个数组里的元素，而是创建一个新的拷贝。否则当你想增删修改 cell 的时候会出现下面的问题，极有可能引起应用崩溃：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/custom_copy.png?raw=true" alt="拷贝数组"></p>
+<p>修改的时候我们还要判断 <code>attrs.representedElementKind == nil</code>。这是由于这个属性数组包含了所有视图的布局信息，包括 cell,supplementary view,decortation view。当 <code>representedElementKind</code> 是 <code>nil</code> 的时候，表示这个布局信息是 Item 的布局信息。</p>
+<h4 id="重写其他布局方法"><a href="#重写其他布局方法" class="headerlink" title="重写其他布局方法"></a>重写其他布局方法</h4><p>除了<code>layoutAttributesForElementsInRect:</code> 方法，还提供了如下方法用来分别订制 Item，SupplementaryView，DecorationView：</p>
+<ul>
+<li><code>layoutAttributesForItemAtIndexPath:</code></li>
+<li><code>layoutAttributesForSupplementaryViewOfKind:atIndexPath:</code></li>
+<li><code>layoutAttributesForDecorationViewOfKind:atIndexPath:</code></li>
+</ul>
+<p>这些方法用来订制某个特殊的视图的布局。系统<strong>一般</strong>不会主动调用你你重写的这几个方法（<strong>不是绝对不会调用啊</strong>，比如下面的移动 Item 的时候，就是系统调用这个方法获取被点击的 Item 的布局属性。所以最好还是实现这几个方法，然后手动在 <code>layoutAttributesForElementsInRect:</code> 中调用），需要你自己在 <code>layoutAttributesForElementsInRect:</code> 中手动调用。比如将第二栏的第五个 Item 及第二栏的 SupplementaryView 旋转 45°：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">NSArray</span>&lt;<span class="built_in">UICollectionViewLayoutAttributes</span> *&gt; *)layoutAttributesForElementsInRect:(<span class="built_in">CGRect</span>)rect &#123;</span><br><span class="line">    <span class="built_in">NSArray</span> *array = [<span class="keyword">super</span> layoutAttributesForElementsInRect:rect];</span><br><span class="line">    <span class="built_in">NSMutableArray</span> *newArray = [<span class="built_in">NSMutableArray</span> array];</span><br><span class="line">    <span class="keyword">for</span> (<span class="built_in">UICollectionViewLayoutAttributes</span> *attrs <span class="keyword">in</span> array) &#123;</span><br><span class="line">        <span class="built_in">UICollectionViewLayoutAttributes</span> *newAttrs = [attrs <span class="keyword">copy</span>];</span><br><span class="line">        <span class="comment">// 设置每一个 item</span></span><br><span class="line">        <span class="keyword">if</span> (attrs.representedElementKind == <span class="literal">nil</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (attrs.indexPath.item == <span class="number">5</span> &amp;&amp; attrs.indexPath.section == <span class="number">1</span>) &#123;</span><br><span class="line">                newAttrs = [<span class="keyword">self</span> layoutAttributesForItemAtIndexPath:[<span class="built_in">NSIndexPath</span> indexPathForItem:<span class="number">5</span> inSection:<span class="number">1</span>]];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 设置每一个 SupplementaryView</span></span><br><span class="line">        <span class="keyword">if</span> (attrs.representedElementCategory == <span class="built_in">UICollectionElementCategorySupplementaryView</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (attrs.indexPath.section == <span class="number">1</span>) &#123;</span><br><span class="line">                newAttrs = [<span class="keyword">self</span> layoutAttributesForSupplementaryViewOfKind:<span class="built_in">UICollectionElementKindSectionHeader</span> atIndexPath:[<span class="built_in">NSIndexPath</span> indexPathForItem:<span class="number">0</span> inSection:<span class="number">1</span>]];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        [newArray addObject:newAttrs];</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> newArray;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="built_in">UICollectionViewLayoutAttributes</span> *)layoutAttributesForItemAtIndexPath:(<span class="built_in">NSIndexPath</span> *)indexPath &#123;</span><br><span class="line">    <span class="built_in">UICollectionViewLayoutAttributes</span> *itemAttributes = [<span class="keyword">super</span> layoutAttributesForItemAtIndexPath:indexPath];</span><br><span class="line">    itemAttributes.transform = <span class="built_in">CGAffineTransformMakeRotation</span>(<span class="number">-45</span>);</span><br><span class="line">    <span class="keyword">return</span> itemAttributes;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="built_in">UICollectionViewLayoutAttributes</span> *)layoutAttributesForSupplementaryViewOfKind:(<span class="built_in">NSString</span> *)elementKind atIndexPath:(<span class="built_in">NSIndexPath</span> *)indexPath &#123;</span><br><span class="line">    <span class="built_in">UICollectionViewLayoutAttributes</span> *supplementaryAttributes = [<span class="keyword">super</span> layoutAttributesForSupplementaryViewOfKind:elementKind atIndexPath:indexPath];</span><br><span class="line">    itemAttributes.transform = <span class="built_in">CGAffineTransformMakeRotation</span>(<span class="number">45</span>);</span><br><span class="line">    <span class="keyword">return</span> supplementaryAttributes;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其中判断 <code>representElementCategory</code> 是否为 <code>UICollectionElementCategorySupplementaryView</code> 来区分是否是 SupplementaryView。</p>
+<h4 id="使用-DecorationView"><a href="#使用-DecorationView" class="headerlink" title="使用 DecorationView"></a>使用 DecorationView</h4><p>DecorationView 不展示任何信息，所以不需要再 ViewController 中添加任何代码，所有的代码都在 <code>UICollectionViewFlowLayout</code> 的子类中。DecorationView 也是继承于 <code>UICollectionReusableView</code>。</p>
+<h5 id="创建一个-DecorationView-实例"><a href="#创建一个-DecorationView-实例" class="headerlink" title="创建一个 DecorationView 实例"></a>创建一个 DecorationView 实例</h5><p>DecorationView 除了继承于 <code>UICollectionReusableView</code> 之外和普通 View 的创建毫无差异。重写它的 <code>init</code> 方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">instancetype</span>)initWithFrame:(<span class="built_in">CGRect</span>)frame &#123;</span><br><span class="line">    <span class="keyword">if</span> (!(<span class="keyword">self</span> = [<span class="keyword">super</span> initWithFrame:frame])) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    _decorationView = [[<span class="built_in">UIView</span> alloc] initWithFrame:frame];</span><br><span class="line">    _decorationView.backgroundColor = [<span class="built_in">UIColor</span> blueColor];</span><br><span class="line">    [<span class="keyword">self</span> addSubview:_decorationView];</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">self</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)layoutSubviews &#123;</span><br><span class="line">    _decorationView.frame = <span class="keyword">self</span>.bounds;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="重写-layoutAttributesForDecorationViewOfKind-atIndexPath"><a href="#重写-layoutAttributesForDecorationViewOfKind-atIndexPath" class="headerlink" title="重写 layoutAttributesForDecorationViewOfKind:atIndexPath:"></a>重写 layoutAttributesForDecorationViewOfKind:atIndexPath:</h5><p>如果你愿意，你想设置多少个 DecorationView 就可以设置多少个。下面将实现为某个 section 添加一个 DecorationView 的背景：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">UICollectionViewLayoutAttributes</span> *)layoutAttributesForDecorationViewOfKind:(<span class="built_in">NSString</span> *)elementKind atIndexPath:(<span class="built_in">NSIndexPath</span> *)indexPath &#123;</span><br><span class="line">    <span class="built_in">UICollectionViewLayoutAttributes</span> *decorationAttributes = [<span class="built_in">UICollectionViewLayoutAttributes</span> layoutAttributesForDecorationViewOfKind:elementKind withIndexPath:indexPath];</span><br><span class="line">    <span class="built_in">UICollectionViewLayoutAttributes</span> *newDecorationAttributes = [decorationAttributes <span class="keyword">copy</span>];</span><br><span class="line">    <span class="keyword">if</span> ([elementKind isEqualToString:SIMPLEDECORATIONKIND]) &#123;</span><br><span class="line">        <span class="built_in">NSIndexPath</span> *indexPathFirst = [<span class="built_in">NSIndexPath</span> indexPathForItem:<span class="number">0</span> inSection:<span class="number">1</span>];</span><br><span class="line">        <span class="built_in">NSIndexPath</span> *indexPathLast = [<span class="built_in">NSIndexPath</span> indexPathForItem:[<span class="keyword">self</span>.collectionView numberOfItemsInSection:<span class="number">1</span>] inSection:<span class="number">1</span>];</span><br><span class="line">        <span class="built_in">UICollectionViewLayoutAttributes</span> *attrsFirst = [<span class="keyword">self</span> layoutAttributesForItemAtIndexPath:indexPathFirst];</span><br><span class="line">        <span class="built_in">UICollectionViewLayoutAttributes</span> *attrsLast = [<span class="keyword">self</span> layoutAttributesForItemAtIndexPath:indexPathLast];</span><br><span class="line">        newDecorationAttributes.frame = <span class="built_in">CGRectMake</span>(attrsFirst.frame.origin.x, attrsFirst.frame.origin.y, <span class="keyword">self</span>.collectionView.frame.size.width, attrsLast.frame.origin.y-attrsFirst.frame.origin.y);</span><br><span class="line">        <span class="comment">// 想要作为背景图像，就一定要将其 zIndex 设置为 -1</span></span><br><span class="line">        newDecorationAttributes.zIndex = <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> newDecorationAttributes;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个方法中，通过 section1 中最后一个 item 与第一个 item，计算得出了 section 的大小以及位置。将设置为 <code>UICollectionViewLayoutAttributes</code> 的 <code>frame</code> 属性。</p>
+<p>由于是背景所以一定要将其 <code>zIndex</code> 设置为一个负值，使其永远在图层的下部。</p>
+<p>这里判断的 <code>SIMPLEDECORATIONKIND</code> 是一个自己设定的字符串，用来标识是哪个 DecorationView。</p>
+<p>可以通过 <code>[UICollectionViewLayoutAttributes layoutAttributesForDecorationViewOfKind:elementKind withIndexPath:indexPath]</code> 这个类方法获取了一个默认的布局属性的值（之前我们都是用 super 获取的），Item 和 SupplementaryView 也有类似的方法：</p>
+<ul>
+<li><code>[UICollectionViewLayoutAttributes layoutAttributesForCellWithIndexPath:indexPath]</code></li>
+<li><code>[UICollectionViewLayoutAttributes layoutAttributesForSupplementaryViewOfKind:elementKind withIndexPath:indexPath]</code></li>
+</ul>
+<ul>
+<li><code>[UICollectionViewLayoutAttributes layoutAttributesForDecorationViewOfKind:elementKind withIndexPath:indexPath]</code></li>
+</ul>
+<h5 id="添加布局属性"><a href="#添加布局属性" class="headerlink" title="添加布局属性"></a>添加布局属性</h5><p>在 <code>layoutAttributesForElementsInRect:</code> 中调用上面的方法，将其属性添加到布局属性数组中。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">NSArray</span>&lt;<span class="built_in">UICollectionViewLayoutAttributes</span> *&gt; *)layoutAttributesForElementsInRect:(<span class="built_in">CGRect</span>)rect &#123;</span><br><span class="line">    <span class="built_in">NSArray</span> *array = [<span class="keyword">super</span> layoutAttributesForElementsInRect:rect];</span><br><span class="line">    <span class="built_in">NSMutableArray</span> *newArray = [<span class="built_in">NSMutableArray</span> array];</span><br><span class="line">    <span class="comment">// 设置 Item 和 SupplementaryView</span></span><br><span class="line">  	...</span><br><span class="line">    <span class="comment">// 设置 DecorationView</span></span><br><span class="line">    <span class="built_in">UICollectionViewLayoutAttributes</span> *newAttrs = [<span class="keyword">self</span> layoutAttributesForDecorationViewOfKind:SIMPLEDECORATIONKIND atIndexPath:[<span class="built_in">NSIndexPath</span> indexPathForItem:<span class="number">0</span> inSection:<span class="number">1</span>]];</span><br><span class="line">    [newArray addObject:newAttrs];</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> newArray;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="初始方法中注册自己"><a href="#初始方法中注册自己" class="headerlink" title="初始方法中注册自己"></a>初始方法中注册自己</h5><p>由于 DecorationView 是和数据无关的，不需要在 ViewController 中添加任何代码。我们在 <code>UICollectionViewFlowLayout</code> 中注册自己：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//  SimpleCollectionViewFlowLayout.m</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="built_in">NSString</span> *SIMPLEDECORATIONKIND = <span class="string">@"Simple Decoration Kind"</span>;</span><br><span class="line">- (<span class="keyword">instancetype</span>)init &#123;</span><br><span class="line">    <span class="keyword">if</span> (!(<span class="keyword">self</span> = [<span class="keyword">super</span> init])) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  	<span class="comment">// layout 的其他初始化设置</span></span><br><span class="line">	...</span><br><span class="line">    [<span class="keyword">self</span> registerClass:[SimpleDecorationView <span class="keyword">class</span>] forDecorationViewOfKind:SIMPLEDECORATIONKIND];</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">self</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>为什么要注册呢？因为布局属性中只知道 kind 这个标识的字符串是不行的，要将 kind 和 class 关联起来。所以需要 <code>registerClass:forDecorationViewOfKind:</code> 这一个步骤。Item 和 SupplementaryView 的注册也是类似的道理（这两个的注册是为了 class 和重用数组关联起来）。</p>
+<p>最终的显示效果：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/CollectionView_Demo.png?raw=true" alt="最终效果"></p>
+<h3 id="UICollectionViewLayoutAttributes-的属性"><a href="#UICollectionViewLayoutAttributes-的属性" class="headerlink" title="UICollectionViewLayoutAttributes 的属性"></a>UICollectionViewLayoutAttributes 的属性</h3><p>布局属性 <code>UICollectionViewLayoutAttributes</code> 包含了许多属性：</p>
+<ul>
+<li>Frame</li>
+<li>Center</li>
+<li>Size</li>
+<li>3D Transform</li>
+<li>Alpha</li>
+<li>Z-Index</li>
+<li>Hidden</li>
+<li>Element category （cell，supplementary view，or decoration view）</li>
+<li>Element kind （nil for cells）</li>
+</ul>
+<p>最后两个属性用来判断视图的类型，这个在之前也用到过了。<code>representedElementCategory</code> 是一个枚举，包含了表示 cell，SupplementaryView，DecorationView 的几个枚举值。<code>representedElementKind</code> 其实就是注册 SupplementaryView 和 DecorationView 时候传入的 kind，由于 Item 注册的时候不需要传入 kind，所以 Item 布局的这个属性就是 nil。</p>
+<h3 id="继承-UICollectionViewLayout"><a href="#继承-UICollectionViewLayout" class="headerlink" title="继承 UICollectionViewLayout"></a>继承 UICollectionViewLayout</h3><p>一般情况下，能用 <code>UICollectionViewFlowLayout</code> 的，我们就不需要自己继承 <code>UICollectionViewLayout</code>。</p>
+<p>新建一个类继承于 <code>UICollectionViewLayout</code>，该类提供了一个方法 <code>prepareLayout</code> 用来做布局前的准备，在每次布局的时候都会调用。我们可以把之前在 <code>init</code> 中的设置放到这个方法中：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)prepareLayout &#123;</span><br><span class="line">    [<span class="keyword">super</span> prepareLayout];</span><br><span class="line">    <span class="built_in">CGSize</span> size = <span class="keyword">self</span>.collectionView.bounds.size;</span><br><span class="line">    _cellCount = [<span class="keyword">self</span>.collectionView numberOfItemsInSection:<span class="number">0</span>];</span><br><span class="line">    _center = <span class="built_in">CGPointMake</span>(size.width/<span class="number">2</span>, size.height/<span class="number">2</span>);</span><br><span class="line">    _radius = size.width/<span class="number">2.5</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>同样的我们需要实现 <code>layoutAttributesForElementsInRect:</code> 来获取布局属性：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">NSArray</span>&lt;<span class="built_in">UICollectionViewLayoutAttributes</span> *&gt; *)layoutAttributesForElementsInRect:(<span class="built_in">CGRect</span>)rect &#123;</span><br><span class="line">    <span class="built_in">NSMutableArray</span> *attrs = [<span class="built_in">NSMutableArray</span> array];</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="keyword">self</span>.cellCount; i++) &#123;</span><br><span class="line">        <span class="built_in">NSIndexPath</span> *indexPath = [<span class="built_in">NSIndexPath</span> indexPathForItem:i inSection:<span class="number">0</span>];</span><br><span class="line">        [attrs addObject:[<span class="keyword">self</span> layoutAttributesForItemAtIndexPath:indexPath]];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> attrs; </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="built_in">UICollectionViewLayoutAttributes</span> *)layoutAttributesForItemAtIndexPath:(<span class="built_in">NSIndexPath</span> *)indexPath &#123;</span><br><span class="line">    <span class="built_in">UICollectionViewLayoutAttributes</span> *attrs = [<span class="built_in">UICollectionViewLayoutAttributes</span> layoutAttributesForCellWithIndexPath:indexPath];</span><br><span class="line">    attrs.size =  <span class="built_in">CGSizeMake</span>(<span class="number">70</span>, <span class="number">70</span>);</span><br><span class="line">    attrs.center = <span class="built_in">CGPointMake</span>(<span class="keyword">self</span>.center.x +<span class="keyword">self</span>.radius * cosf(<span class="number">2</span> * indexPath.item * M_PI / <span class="keyword">self</span>.cellCount -M_PI_2), <span class="keyword">self</span>.center.y +<span class="keyword">self</span>.radius * sinf(<span class="number">2</span> * indexPath.item * M_PI /<span class="keyword">self</span>.cellCount - M_PI_2));</span><br><span class="line">    attrs.transform3D = <span class="built_in">CATransform3DMakeRotation</span>(<span class="number">2</span> * M_PI *indexPath.item / <span class="keyword">self</span>.cellCount, <span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>);</span><br><span class="line">    <span class="keyword">return</span> attrs;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>和 <code>UICollectionViewFlowLayout</code> 不同的是，这里的所有布局属性都需要我们自己实现，没有父类方法可以调用了。另外，由于 <code>collectionView:sizeForItemAtIndexPath:</code> 这个获取 Item 大小的方法也是 FlowLayout 提供的，所以我们需要自己设置布局属性的 <code>size</code>。</p>
+<p>### </p>
+<h3 id="一个例子"><a href="#一个例子" class="headerlink" title="一个例子"></a>一个例子</h3><p>如何将布局切换到下面这个图片的效果呢？下面将分析几个基本点，具体详见 Demo。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/CollectionView_Example.png?raw=true" alt="例子"></p>
+<h4 id="切换布局"><a href="#切换布局" class="headerlink" title="切换布局"></a>切换布局</h4><p>一个 CollectionView 可以通过其自身的 <code>setCollectionViewLayout:animated:</code> 方法随时切换布局。在切换布局后，需要通过 <code>invalidateLayout</code> 方法刷新新设置的布局。</p>
+<h4 id="一列展示一个"><a href="#一列展示一个" class="headerlink" title="一列展示一个"></a>一列展示一个</h4><p>一列展示一个，你可以重写 Item 的布局方法手动计算每一个 Item 的 <code>frame</code>，但是这是没有必要的。<code>UICollectionViewFlowLayout</code> 默认在当前列不能排下下一个 Item 的时候自动换列，所以我们只要将 <code>minimumInteritemSpacing</code> 设置的很大就可以了。</p>
+<h4 id="设置布局属性"><a href="#设置布局属性" class="headerlink" title="设置布局属性"></a>设置布局属性</h4><p>我们要对在屏幕上显示的视图，根据其所在的位置设置布局属性。我们可以通过自定义的 FlowLayout 类拿到 CollectionView 实例的 <code>contentOffset</code>（<code>self.collectionView.contentOffset.x</code>），然后和布局属性的 <code>frame</code> 进行比较。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">NSArray</span>&lt;<span class="built_in">UICollectionViewLayoutAttributes</span> *&gt; *)layoutAttributesForElementsInRect:(<span class="built_in">CGRect</span>)rect &#123;</span><br><span class="line">    <span class="built_in">NSArray</span> *array = [<span class="keyword">super</span> layoutAttributesForElementsInRect:rect];</span><br><span class="line">    <span class="built_in">NSMutableArray</span> *newArray = [<span class="built_in">NSMutableArray</span> array];</span><br><span class="line">    <span class="keyword">float</span> centerX = <span class="keyword">self</span>.collectionView.contentOffset.x + <span class="keyword">self</span>.collectionView.bounds.size.width/<span class="number">2</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span> (<span class="built_in">UICollectionViewLayoutAttributes</span> *attrs <span class="keyword">in</span> array) &#123;</span><br><span class="line">        <span class="built_in">UICollectionViewLayoutAttributes</span> *newAttrs = [attrs <span class="keyword">copy</span>];</span><br><span class="line">        <span class="keyword">if</span> (newAttrs.representedElementCategory == <span class="built_in">UICollectionElementCategorySupplementaryView</span>) &#123;</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">float</span> offset = <span class="number">1.5</span> - fabs(centerX - attrs.center.x)/<span class="keyword">self</span>.collectionView.frame.size.width;</span><br><span class="line">        newAttrs.transform = <span class="built_in">CGAffineTransformScale</span>(newAttrs.transform, offset, offset);</span><br><span class="line">        [newArray addObject:newAttrs];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> newArray;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="动态计算布局属性"><a href="#动态计算布局属性" class="headerlink" title="动态计算布局属性"></a>动态计算布局属性</h4><p>获取布局属性只会在加载的时候进行一次，而这个例子需要时时根据 offset 更新。这就需要重写 FlowLayout 的 <code>shouldInvalidateLayoutForBoundsChange:</code> 方法，并返回 <code>YES</code>，保证用户滑动的时候，布局属性的方法总是会重新计算的：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">BOOL</span>)shouldInvalidateLayoutForBoundsChange:(<span class="built_in">CGRect</span>)newBounds &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">YES</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="滑动到特定位置"><a href="#滑动到特定位置" class="headerlink" title="滑动到特定位置"></a>滑动到特定位置</h4><p>这个例子中需要在停止滑动的时候，图片总是在最中间的，那就需要改变最终的 offset。可以重写 <code>targetContentOffsetForProposedContentOffset:withScrollingVelocity:</code>，该方法输入理想情况下的 <code>contentOffset</code>，返回一个自己设定的 <code>contentOffset</code>。因此，你可以找到离屏幕中心最近的布局属性，然后计算其与中心的差值作为补偿值：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">CGPoint</span>)targetContentOffsetForProposedContentOffset:(<span class="built_in">CGPoint</span>)proposedContentOffset withScrollingVelocity:(<span class="built_in">CGPoint</span>)velocity &#123;</span><br><span class="line">    <span class="built_in">CGRect</span> proposedRect = <span class="built_in">CGRectMake</span>(proposedContentOffset.x, <span class="number">0</span>, <span class="keyword">self</span>.collectionView.bounds.size.width, <span class="keyword">self</span>.collectionView.bounds.size.height);</span><br><span class="line">    <span class="built_in">NSArray</span> *array = [<span class="keyword">self</span> layoutAttributesForElementsInRect:proposedRect];</span><br><span class="line">    <span class="keyword">float</span> offset = <span class="number">1000</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="built_in">UICollectionViewLayoutAttributes</span> *attrs <span class="keyword">in</span> array) &#123;</span><br><span class="line">        <span class="keyword">if</span> (attrs.representedElementCategory == <span class="built_in">UICollectionElementCategorySupplementaryView</span>) &#123;</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (fabs(attrs.center.x - (proposedContentOffset.x+<span class="keyword">self</span>.collectionView.bounds.size.width/<span class="number">2</span>))&lt;fabs(offset)) &#123;</span><br><span class="line">            offset = attrs.center.x - (proposedContentOffset.x+<span class="keyword">self</span>.collectionView.bounds.size.width/<span class="number">2</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">CGPointMake</span>(proposedContentOffset.x + offset, proposedContentOffset.y);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><blockquote>
+<p>整个 CollectionView 可以划分为两个部分，视图部分和布局部分。这两者如何联系在一起的，或者说给定一块区域到底是如何知道应该显示哪个视图的呢？通过 <code>indexPath</code> 以及 <code>representedElementKind</code>。这两个都是 <code>UICollectionViewLayoutAttributes</code> 中的属性。</p>
+<p>在视图加载的时候，会在 <code>layoutAttributesForElementsInRect</code> 返回的数组中找到会在屏幕上显示的布局，然后根据这个布局的 <code>indexPath</code> 以及 <code>representedElementKind</code> 通过 <code>collectionView:viewForSupplementaryElementOfKind:atIndexPath</code>,<code>collectionView:cellForItemAtIndexPath</code> 这两个代理方法，获取相对应的视图展示出来。</p>
+<p>那么为什么有了 <code>indexPath</code> 了还要 <code>representedElementKind</code> 呢？对于 Item 来说，<code>indexPath</code> 可以通过 <code>item</code> 和 <code>section</code> 唯一地确定视图。但是对于 SupplementaryView 的 DecorationView，这两个视图通常只用到了 <code>section</code> 而不用 <code>item</code>（其实你想用 <code>item</code> 来标识也是可以的，<code>representedElementKind</code> 其实就相当于是个 <code>item</code> 的作用。比如一个 SupplementaryView 的头尾视图，你可以规定 <code>item</code> 为0代表头视图，<code>item</code> 为1代表尾视图，但是这样肯定没有用 <code>UICollectionElementKindSectionHeader</code>,<code>UICollectionElementKindSectionFooter</code> 来的直观），所以就要用一个 <code>representedElementKind</code> 来标识在同一个 <code>section</code> 内，这个位置到底是应该显示哪个视图。</p>
+</blockquote>
+<h2 id="一些应用"><a href="#一些应用" class="headerlink" title="一些应用"></a>一些应用</h2><h3 id="移动-Item"><a href="#移动-Item" class="headerlink" title="移动 Item"></a>移动 Item</h3><p>首先，在 ViewController 中为 CollectionView 添加长按手势：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)viewDidLoad &#123;</span><br><span class="line">	...</span><br><span class="line">    <span class="built_in">UILongPressGestureRecognizer</span> *longGesture = [[<span class="built_in">UILongPressGestureRecognizer</span> alloc] initWithTarget:<span class="keyword">self</span> action:<span class="keyword">@selector</span>(handlelongGesture:)];</span><br><span class="line">    [<span class="keyword">self</span>.collectionView addGestureRecognizer:longGesture];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>实现手势操作，算是比较固定的套路：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//再实现手势操作</span></span><br><span class="line">- (<span class="keyword">void</span>)handlelongGesture:(<span class="built_in">UILongPressGestureRecognizer</span> *)longGesture &#123;</span><br><span class="line">    <span class="comment">//判断手势状态</span></span><br><span class="line">    <span class="keyword">switch</span> (longGesture.state) &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="built_in">UIGestureRecognizerStateBegan</span>:&#123;</span><br><span class="line">            <span class="comment">//判断手势落点位置是否在路径上</span></span><br><span class="line">            <span class="built_in">NSIndexPath</span> *indexPath = [<span class="keyword">self</span>.collectionView indexPathForItemAtPoint:[longGesture locationInView:<span class="keyword">self</span>.collectionView]];</span><br><span class="line">            <span class="keyword">if</span> (indexPath == <span class="literal">nil</span>) &#123;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">//在路径上则开始移动该路径上的cell</span></span><br><span class="line">            [<span class="keyword">self</span>.collectionView beginInteractiveMovementForItemAtIndexPath:indexPath];</span><br><span class="line">        &#125;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> <span class="built_in">UIGestureRecognizerStateChanged</span>:</span><br><span class="line">            <span class="comment">//移动过程当中随时更新cell位置</span></span><br><span class="line">            [<span class="keyword">self</span>.collectionView updateInteractiveMovementTargetPosition:[longGesture locationInView:<span class="keyword">self</span>.collectionView]];</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> <span class="built_in">UIGestureRecognizerStateEnded</span>:</span><br><span class="line">            <span class="comment">//移动结束后关闭cell移动</span></span><br><span class="line">            [<span class="keyword">self</span>.collectionView endInteractiveMovement];</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">            [<span class="keyword">self</span>.collectionView cancelInteractiveMovement];</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其中 CollectionView 提供了 <code>indexPathForItemAtPoint:</code> 方法通过坐标找到对应的 Item。 </p>
+<p>在 CollectionView 中允许 Item 移动：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//返回YES允许其item移动</span></span><br><span class="line">- (<span class="built_in">BOOL</span>)collectionView:(<span class="built_in">UICollectionView</span> *)collectionView canMoveItemAtIndexPath:(<span class="built_in">NSIndexPath</span> *)indexPath&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">YES</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//移动item时回调</span></span><br><span class="line">- (<span class="keyword">void</span>)collectionView:(<span class="built_in">UICollectionView</span> *)collectionView moveItemAtIndexPath:(<span class="built_in">NSIndexPath</span> *)sourceIndexPath toIndexPath:(<span class="built_in">NSIndexPath</span>*)destinationIndexPath &#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="点击-Item-高亮操作"><a href="#点击-Item-高亮操作" class="headerlink" title="点击 Item 高亮操作"></a>点击 Item 高亮操作</h3><p>实现方式是在高亮的回调方法中获取当前点击的 Item，然后对其布局属性进行修改：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 允许选中时，高亮</span></span><br><span class="line">-(<span class="built_in">BOOL</span>)collectionView:(<span class="built_in">UICollectionView</span> *)collectionView shouldHighlightItemAtIndexPath:(<span class="built_in">NSIndexPath</span> *)indexPath&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">YES</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 高亮完成后回调</span></span><br><span class="line"><span class="comment">// 放大缩小效果</span></span><br><span class="line">-(<span class="keyword">void</span>)collectionView:(<span class="built_in">UICollectionView</span> *)collectionView didHighlightItemAtIndexPath:(<span class="built_in">NSIndexPath</span> *)indexPath&#123;</span><br><span class="line">    <span class="built_in">UICollectionViewCell</span> *selectedCell = [collectionView cellForItemAtIndexPath:indexPath];</span><br><span class="line">    [<span class="built_in">UIView</span> animateWithDuration:<span class="number">1</span> animations:^&#123;</span><br><span class="line">        selectedCell.transform = <span class="built_in">CGAffineTransformMakeScale</span>(<span class="number">2.0</span>f, <span class="number">2.0</span>f);</span><br><span class="line">    &#125;];</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 由高亮转成非高亮完成时的回调</span></span><br><span class="line">-(<span class="keyword">void</span>)collectionView:(<span class="built_in">UICollectionView</span> *)collectionView didUnhighlightItemAtIndexPath:(<span class="built_in">NSIndexPath</span> *)indexPath&#123;</span><br><span class="line">    <span class="built_in">UICollectionViewCell</span> *selectedCell = [collectionView cellForItemAtIndexPath:indexPath];</span><br><span class="line">    [<span class="built_in">UIView</span> animateWithDuration:<span class="number">1</span> animations:^&#123;</span><br><span class="line">        selectedCell.transform = <span class="built_in">CGAffineTransformMakeScale</span>(<span class="number">1.0</span>f, <span class="number">1.0</span>f);</span><br><span class="line">    &#125;];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="无限轮播"><a href="#无限轮播" class="headerlink" title="无限轮播"></a>无限轮播</h3><p>无限轮播的主要方法就是将 CollectionView 的 Item 设置的足够多以至于让用户不能一下子滚动到底部。并且，在滑动到临界区的时候修改器 <code>contentOffset</code>.</p>
+<h4 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h4><p>比如要实现一个图片的轮播，collectionview 传入了一组 url：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">instancetype</span>)initWithURLs:(<span class="built_in">NSArray</span> &lt;<span class="built_in">NSURL</span> *&gt; *)urls &#123;</span><br><span class="line">    <span class="comment">// UICollectionViewFlowLayout</span></span><br><span class="line">    <span class="keyword">self</span> = [<span class="keyword">super</span> initWithFrame:<span class="built_in">CGRectZero</span> collectionViewLayout:[[LoopViewLayout alloc] init]];</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>) &#123;</span><br><span class="line">        _urls = urls;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">self</span>.dataSource = <span class="keyword">self</span>;</span><br><span class="line">        <span class="keyword">self</span>.delegate = <span class="keyword">self</span>;</span><br><span class="line">        </span><br><span class="line">      	<span class="comment">// 自定义了一个 LoopViewCell 具体布局按照实际情况设置</span></span><br><span class="line">        [<span class="keyword">self</span> registerClass:[LoopViewCell <span class="keyword">class</span>] forCellWithReuseIdentifier:loopViewCellId];</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 初始显示第二组 [0,1,2] [3(_urls.count),4,5]</span></span><br><span class="line">        <span class="comment">// 主队列：</span></span><br><span class="line">        <span class="comment">// 1. 安排任务在主线程上执行</span></span><br><span class="line">        <span class="comment">// 2. 如果主线程当前有任务，主队列暂时不调度任务！所以等cell的数据源和代理方法执行完毕后才执行这个block里面的滚动任务.</span></span><br><span class="line">        <span class="built_in">dispatch_async</span>(dispatch_get_main_queue(), ^&#123;</span><br><span class="line">            </span><br><span class="line">            <span class="built_in">NSIndexPath</span> *indexPath = [<span class="built_in">NSIndexPath</span> indexPathForItem:_urls.count inSection:<span class="number">0</span>];</span><br><span class="line">            </span><br><span class="line">            <span class="comment">// 滚动位置！</span></span><br><span class="line">            [<span class="keyword">self</span> scrollToItemAtIndexPath:indexPath atScrollPosition:<span class="built_in">UICollectionViewScrollPositionLeft</span> animated:<span class="literal">NO</span>];</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">self</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>初始化的时候先将 collectionview 滚动到第二组的第一个cell。</p>
+<h4 id="设置cell个数"><a href="#设置cell个数" class="headerlink" title="设置cell个数"></a>设置cell个数</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">NSInteger</span>)collectionView:(<span class="built_in">UICollectionView</span> *)collectionView numberOfItemsInSection:(<span class="built_in">NSInteger</span>)section &#123;</span><br><span class="line">    <span class="comment">//这里为了防止滚动到最后一页来回跳动导致的卡顿,多写点组数让一直到不了最后一组,因为cell重用,所以不影响内存.</span></span><br><span class="line">    <span class="keyword">return</span> _urls.count * <span class="number">100</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>防止滚动太多引起卡顿，所以将数量设置的很大</p>
+<h4 id="边界设置"><a href="#边界设置" class="headerlink" title="边界设置"></a>边界设置</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#pragma mark - UICollectionViewDelegate</span></span><br><span class="line">- (<span class="keyword">void</span>)scrollViewDidEndDecelerating:(<span class="built_in">UIScrollView</span> *)scrollView &#123;</span><br><span class="line">    <span class="comment">// 1. 获取当前停止的页面</span></span><br><span class="line">    <span class="built_in">NSInteger</span> offset = scrollView.contentOffset.x / scrollView.bounds.size.width;</span><br><span class="line">    <span class="comment">// 2. 第0页，调转到，第1组的第0页</span></span><br><span class="line">    <span class="comment">// 最后一页，跳转到第0组的最后一页</span></span><br><span class="line">    <span class="keyword">if</span> (offset == <span class="number">0</span> || offset == ([<span class="keyword">self</span> numberOfItemsInSection:<span class="number">0</span>] - <span class="number">1</span>)) &#123;</span><br><span class="line"><span class="comment">//        NSLog(@"%zd", offset);</span></span><br><span class="line">        <span class="comment">// 第 0 页</span></span><br><span class="line">        <span class="keyword">if</span> (offset == <span class="number">0</span>) &#123;</span><br><span class="line">            offset = _urls.count;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            offset = _urls.count - <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 重新调整 contentOffset</span></span><br><span class="line">        scrollView.contentOffset = <span class="built_in">CGPointMake</span>(offset * scrollView.bounds.size.width, <span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>自行按照情况设置 contentOffse</p>
+<h3 id="流式布局"><a href="#流式布局" class="headerlink" title="流式布局"></a>流式布局</h3><p>其实就是在 <code>prepareLayout</code>  方法中，自定义了每一个 Item 的布局属性。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">MyLayout</span> : <span class="title">UICollectionViewFlowLayout</span></span></span><br><span class="line"><span class="keyword">@property</span>(<span class="keyword">nonatomic</span>,<span class="keyword">assign</span>)<span class="keyword">int</span> itemCount;</span><br><span class="line"><span class="keyword">@end</span></span><br><span class="line">  </span><br><span class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">MyLayout</span>()</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>,<span class="keyword">assign</span>) <span class="built_in">CGFloat</span> maxHeight;</span><br><span class="line"><span class="keyword">@end</span></span><br><span class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">MyLayout</span></span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">//这个数组就是我们自定义的布局配置数组</span></span><br><span class="line">    <span class="built_in">NSMutableArray</span> * _attributeAttay;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//数组的相关设置在这个方法中</span></span><br><span class="line"><span class="comment">//布局前的准备会调用这个方法</span></span><br><span class="line">-(<span class="keyword">void</span>)prepareLayout&#123;</span><br><span class="line">    _attributeAttay = [[<span class="built_in">NSMutableArray</span> alloc]init];</span><br><span class="line">    [<span class="keyword">super</span> prepareLayout];</span><br><span class="line">    <span class="comment">//演示方便 我们设置为静态的2列</span></span><br><span class="line">    <span class="comment">//计算每一个item的宽度</span></span><br><span class="line">    <span class="keyword">float</span> WIDTH = ([<span class="built_in">UIScreen</span> mainScreen].bounds.size.width-<span class="keyword">self</span>.sectionInset.left-<span class="keyword">self</span>.sectionInset.right-<span class="keyword">self</span>.minimumInteritemSpacing)/<span class="number">2</span>;</span><br><span class="line">    <span class="comment">//定义数组保存每一列的高度</span></span><br><span class="line">    <span class="comment">//这个数组的主要作用是保存每一列的总高度，这样在布局时，我们可以始终将下一个Item放在最短的列下面</span></span><br><span class="line">    <span class="built_in">CGFloat</span> colHight[<span class="number">2</span>]=&#123;<span class="keyword">self</span>.sectionInset.top,<span class="keyword">self</span>.sectionInset.bottom&#125;;</span><br><span class="line">    <span class="comment">//itemCount是外界传进来的item的个数 遍历来设置每一个item的布局</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i=<span class="number">0</span>; i&lt;_itemCount; i++) &#123;</span><br><span class="line">        <span class="comment">//设置每个item的位置等相关属性</span></span><br><span class="line">        <span class="built_in">NSIndexPath</span> *index = [<span class="built_in">NSIndexPath</span> indexPathForItem:i inSection:<span class="number">0</span>];</span><br><span class="line">        <span class="comment">//创建一个布局属性类，通过indexPath来创建</span></span><br><span class="line">        <span class="built_in">UICollectionViewLayoutAttributes</span> * attris = [<span class="built_in">UICollectionViewLayoutAttributes</span> layoutAttributesForCellWithIndexPath:index];</span><br><span class="line">        <span class="comment">//随机一个高度 在40——190之间</span></span><br><span class="line">        <span class="built_in">CGFloat</span> hight = arc4random()%<span class="number">150</span>+<span class="number">40</span>;</span><br><span class="line">        <span class="comment">//哪一列高度小 则放到那一列下面</span></span><br><span class="line">        <span class="comment">//标记最短的列</span></span><br><span class="line">        <span class="keyword">int</span> width=<span class="number">0</span>;</span><br><span class="line">        <span class="keyword">if</span> (colHight[<span class="number">0</span>]&lt;colHight[<span class="number">1</span>]) &#123;</span><br><span class="line">            <span class="comment">//将新的item高度加入到短的一列</span></span><br><span class="line">            colHight[<span class="number">0</span>] = colHight[<span class="number">0</span>]+hight+<span class="keyword">self</span>.minimumLineSpacing;</span><br><span class="line">            width=<span class="number">0</span>;</span><br><span class="line">        &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">            colHight[<span class="number">1</span>] = colHight[<span class="number">1</span>]+hight+<span class="keyword">self</span>.minimumLineSpacing;</span><br><span class="line">            width=<span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">//设置item的位置</span></span><br><span class="line">        attris.frame = <span class="built_in">CGRectMake</span>(<span class="keyword">self</span>.sectionInset.left+(<span class="keyword">self</span>.minimumInteritemSpacing+WIDTH)*width, colHight[width]-hight-<span class="keyword">self</span>.minimumLineSpacing, WIDTH, hight);</span><br><span class="line">        [_attributeAttay addObject:attris];</span><br><span class="line">        </span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (colHight[<span class="number">0</span>]&gt;colHight[<span class="number">1</span>]) &#123;</span><br><span class="line">        _maxHeight = colHight[<span class="number">0</span>];</span><br><span class="line">    &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">        _maxHeight = colHight[<span class="number">1</span>];</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">-(<span class="built_in">CGSize</span>)collectionViewContentSize&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">CGSizeMake</span>(<span class="number">100</span>, _maxHeight);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//这个方法中返回我们的布局数组</span></span><br><span class="line">-(<span class="built_in">NSArray</span>&lt;<span class="built_in">UICollectionViewLayoutAttributes</span> *&gt; *)layoutAttributesForElementsInRect:(<span class="built_in">CGRect</span>)rect&#123;</span><br><span class="line">    <span class="keyword">return</span> _attributeAttay;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure>
+<p><a href="https://github.com/zhang759740844/MyOCDemo/tree/develop/UICollectionViewDemo" target="_blank" rel="noopener">本文Demo</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tag/基本控件/" rel="tag"># 基本控件</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/07/25/第一次面试/" rel="next" title="记第一次面试">
+                <i class="fa fa-chevron-left"></i> 记第一次面试
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/07/31/datastructure/" rel="prev" title="数据结构与算法">
+                数据结构与算法 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.png" alt="Zachary Zhang">
+            
+              <p class="site-author-name" itemprop="name">Zachary Zhang</p>
+              <p class="site-description motion-element" itemprop="description">Stay Hungry. Stay Foolish!</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">116</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/zhang759740844" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:zch759740844@126.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#基本展示"><span class="nav-number">1.</span> <span class="nav-text">基本展示</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#UIScrollView-概述"><span class="nav-number">1.1.</span> <span class="nav-text">UIScrollView 概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#如何重用-UICollectionViewCell"><span class="nav-number">1.2.</span> <span class="nav-text">如何重用 UICollectionViewCell</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#展现内容"><span class="nav-number">1.3.</span> <span class="nav-text">展现内容</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#准备一个-cell-类"><span class="nav-number">1.3.1.</span> <span class="nav-text">准备一个 cell 类</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#设置-ViewController"><span class="nav-number">1.3.2.</span> <span class="nav-text">设置 ViewController</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#实现代理"><span class="nav-number">1.3.3.</span> <span class="nav-text">实现代理</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#批量处理"><span class="nav-number">1.3.4.</span> <span class="nav-text">批量处理</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Cell-的视图层级"><span class="nav-number">1.4.</span> <span class="nav-text">Cell 的视图层级</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#更进一步"><span class="nav-number">2.</span> <span class="nav-text">更进一步</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Supplementary-Views"><span class="nav-number">2.1.</span> <span class="nav-text">Supplementary Views</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#定义一个-Supplementary-View-类"><span class="nav-number">2.1.1.</span> <span class="nav-text">定义一个 Supplementary View 类</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#设置-ViewController-1"><span class="nav-number">2.1.2.</span> <span class="nav-text">设置 ViewController</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#实现代理："><span class="nav-number">2.1.3.</span> <span class="nav-text">实现代理：</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#响应交互"><span class="nav-number">2.2.</span> <span class="nav-text">响应交互</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#对-item-和-section-的操作"><span class="nav-number">2.3.</span> <span class="nav-text">对 item 和 section 的操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#改变-item-和-section-的大小"><span class="nav-number">2.4.</span> <span class="nav-text">改变 item 和 section 的大小</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#是否可以选中"><span class="nav-number">2.5.</span> <span class="nav-text">是否可以选中</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#复制粘贴操作"><span class="nav-number">2.6.</span> <span class="nav-text">复制粘贴操作</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用-UICollectionViewFlowLayout"><span class="nav-number">3.</span> <span class="nav-text">使用 UICollectionViewFlowLayout</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#创建-UICollectionViewFlowLayout-的子类"><span class="nav-number">3.1.</span> <span class="nav-text">创建 UICollectionViewFlowLayout 的子类</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#继承-UICollectionViewFlowLayout"><span class="nav-number">3.1.1.</span> <span class="nav-text">继承 UICollectionViewFlowLayout</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#重写布局方法-layoutAttributesForElementsInRect"><span class="nav-number">3.1.2.</span> <span class="nav-text">重写布局方法 layoutAttributesForElementsInRect:</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#重写其他布局方法"><span class="nav-number">3.1.3.</span> <span class="nav-text">重写其他布局方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#使用-DecorationView"><span class="nav-number">3.1.4.</span> <span class="nav-text">使用 DecorationView</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#创建一个-DecorationView-实例"><span class="nav-number">3.1.4.1.</span> <span class="nav-text">创建一个 DecorationView 实例</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#重写-layoutAttributesForDecorationViewOfKind-atIndexPath"><span class="nav-number">3.1.4.2.</span> <span class="nav-text">重写 layoutAttributesForDecorationViewOfKind:atIndexPath:</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#添加布局属性"><span class="nav-number">3.1.4.3.</span> <span class="nav-text">添加布局属性</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#初始方法中注册自己"><span class="nav-number">3.1.4.4.</span> <span class="nav-text">初始方法中注册自己</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#UICollectionViewLayoutAttributes-的属性"><span class="nav-number">3.2.</span> <span class="nav-text">UICollectionViewLayoutAttributes 的属性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#继承-UICollectionViewLayout"><span class="nav-number">3.3.</span> <span class="nav-text">继承 UICollectionViewLayout</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#一个例子"><span class="nav-number">3.4.</span> <span class="nav-text">一个例子</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#切换布局"><span class="nav-number">3.4.1.</span> <span class="nav-text">切换布局</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#一列展示一个"><span class="nav-number">3.4.2.</span> <span class="nav-text">一列展示一个</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#设置布局属性"><span class="nav-number">3.4.3.</span> <span class="nav-text">设置布局属性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#动态计算布局属性"><span class="nav-number">3.4.4.</span> <span class="nav-text">动态计算布局属性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#滑动到特定位置"><span class="nav-number">3.4.5.</span> <span class="nav-text">滑动到特定位置</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-number">3.5.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#一些应用"><span class="nav-number">4.</span> <span class="nav-text">一些应用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#移动-Item"><span class="nav-number">4.1.</span> <span class="nav-text">移动 Item</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#点击-Item-高亮操作"><span class="nav-number">4.2.</span> <span class="nav-text">点击 Item 高亮操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#无限轮播"><span class="nav-number">4.3.</span> <span class="nav-text">无限轮播</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#初始化"><span class="nav-number">4.3.1.</span> <span class="nav-text">初始化</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#设置cell个数"><span class="nav-number">4.3.2.</span> <span class="nav-text">设置cell个数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#边界设置"><span class="nav-number">4.3.3.</span> <span class="nav-text">边界设置</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#流式布局"><span class="nav-number">4.4.</span> <span class="nav-text">流式布局</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zachary Zhang</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

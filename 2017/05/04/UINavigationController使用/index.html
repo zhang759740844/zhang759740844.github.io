@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+
+
+
+
+  <meta name="keywords" content="基本控件,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="navigation 简单了解下使用">
+<meta name="keywords" content="基本控件">
+<meta property="og:type" content="article">
+<meta property="og:title" content="UINavigationController使用方法">
+<meta property="og:url" content="http://zhang759740844.github.io/2017/05/04/UINavigationController使用/index.html">
+<meta property="og:site_name" content="Zachary&#39;s blog">
+<meta property="og:description" content="navigation 简单了解下使用">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2020-02-27T15:13:37.639Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="UINavigationController使用方法">
+<meta name="twitter:description" content="navigation 简单了解下使用">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://zhang759740844.github.io/2017/05/04/UINavigationController使用/">
+
+
+
+
+
+  <title>UINavigationController使用方法 | Zachary's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Zachary's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">记录成长</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://zhang759740844.github.io/2017/05/04/UINavigationController使用/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zachary Zhang">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Zachary's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">UINavigationController使用方法</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-05-04T10:07:12+08:00">
+                2017-05-04
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>navigation 简单了解下使用</p>
+<a id="more"></a>
+<h2 id="常用方法"><a href="#常用方法" class="headerlink" title="常用方法"></a>常用方法</h2><h3 id="添加导航栏"><a href="#添加导航栏" class="headerlink" title="添加导航栏"></a>添加导航栏</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">TestViewController * mainVC = [[TestViewController alloc] init];</span><br><span class="line"><span class="built_in">UINavigationController</span> * nav = [[<span class="built_in">UINavigationController</span> alloc] initWithRootViewController:mainVC];</span><br><span class="line"><span class="keyword">self</span>.window.rootViewController = nav;</span><br></pre></td></tr></table></figure>
+<h3 id="push"><a href="#push" class="headerlink" title="push"></a>push</h3><p>首先是最常用的方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)pushViewController:(<span class="built_in">UIViewController</span> *)viewController animated:(<span class="built_in">BOOL</span>)animated;</span><br></pre></td></tr></table></figure>
+<p>使用 <code>setViewControllers</code> 一次性依次压入多个控制器，最后显示最后的控制器：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">UINavigationController</span> *nav = [[<span class="built_in">UINavigationController</span> alloc] init];</span><br><span class="line">window.rootViewController = nav;</span><br><span class="line"><span class="comment">// 创建3个测试控制器</span></span><br><span class="line"><span class="built_in">UIViewController</span> *vc1 = [[<span class="built_in">UIViewController</span> alloc] init];</span><br><span class="line">vc1.view.backgroundColor = [<span class="built_in">UIColor</span> blueColor];</span><br><span class="line"><span class="built_in">UIViewController</span> *vc2 = [[<span class="built_in">UIViewController</span> alloc] init];</span><br><span class="line">vc2.view.backgroundColor = [<span class="built_in">UIColor</span> redColor];</span><br><span class="line"><span class="built_in">UIViewController</span> *vc3 = [[<span class="built_in">UIViewController</span> alloc] init];</span><br><span class="line">vc3.view.backgroundColor = [<span class="built_in">UIColor</span> greenColor];</span><br><span class="line"><span class="comment">// 最终会显示vc3</span></span><br><span class="line">[nav setViewControllers:@[vc1,vc2,vc3] animated:<span class="literal">YES</span>];</span><br></pre></td></tr></table></figure>
+<h3 id="pop"><a href="#pop" class="headerlink" title="pop"></a>pop</h3><p>常用方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">UIViewController</span> *)popViewControllerAnimated:(<span class="built_in">BOOL</span>)animated;</span><br></pre></td></tr></table></figure>
+<p>一层层返回不方便，可以直接返回到某一个控制器：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 返回到某一个控制器</span></span><br><span class="line">- (<span class="built_in">NSArray</span> *)popToViewController:VC_A animated:(<span class="built_in">BOOL</span>)animated;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 返回到根控制器</span></span><br><span class="line">-(<span class="built_in">NSArray</span> *)popToRootViewControllerAnimated:(<span class="built_in">BOOL</span>)animated;</span><br></pre></td></tr></table></figure>
+<p>那么如何获取要 pop 到的控制器呢？</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// 当前管理的所有的控制器</span></span><br><span class="line"><span class="keyword">@property</span>(<span class="keyword">nonatomic</span>,<span class="keyword">copy</span>) <span class="built_in">NSArray</span>&lt;__kindof <span class="built_in">UIViewController</span> *&gt; *viewControllers;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// 栈顶控制器</span></span><br><span class="line"><span class="keyword">@property</span>(<span class="keyword">nullable</span>, <span class="keyword">nonatomic</span>,<span class="keyword">readonly</span>,<span class="keyword">strong</span>) <span class="built_in">UIViewController</span> *topViewController;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// 当前可见的VC，可能是topViewController，也可能是当前topViewController present(modal)出来的VC，总而言之就是可见的VC</span></span><br><span class="line"><span class="keyword">@property</span>(<span class="keyword">nullable</span>, <span class="keyword">nonatomic</span>,<span class="keyword">readonly</span>,<span class="keyword">strong</span>) <span class="built_in">UIViewController</span> *visibleViewController;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>注意，topViewController与visibleViewController大部分情况一样，也有可能不同</p>
+</blockquote>
+<h2 id="导航条"><a href="#导航条" class="headerlink" title="导航条"></a>导航条</h2><h3 id="基本属性"><a href="#基本属性" class="headerlink" title="基本属性"></a>基本属性</h3><p><code>NaviagationItem</code> 来决定大部分的显示与控制。首先看看有哪些属性：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 中间的标题文字</span></span><br><span class="line"><span class="keyword">@property</span>(<span class="keyword">nullable</span>, <span class="keyword">nonatomic</span>,<span class="keyword">copy</span>) <span class="built_in">NSString</span> *title;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 中间标题视图</span></span><br><span class="line"><span class="keyword">@property</span>(<span class="keyword">nullable</span>, <span class="keyword">nonatomic</span>,<span class="keyword">strong</span>) <span class="built_in">UIView</span> *titleView;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 自定义左上角的返回按钮</span></span><br><span class="line"><span class="keyword">@property</span>(<span class="keyword">nullable</span>, <span class="keyword">nonatomic</span>,<span class="keyword">strong</span>) <span class="built_in">UIBarButtonItem</span> *leftBarButtonItem;</span><br></pre></td></tr></table></figure>
+<h3 id="设置默认返回按钮"><a href="#设置默认返回按钮" class="headerlink" title="设置默认返回按钮"></a>设置默认返回按钮</h3><h4 id="设置返回箭头"><a href="#设置返回箭头" class="headerlink" title="设置返回箭头"></a>设置返回箭头</h4><p>导航栏默认有一个返回的按钮，我们可以自定义它的箭头：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 设置颜色时，imageWithRenderingMode 设置 UIImage 渲染为原来的颜色</span></span><br><span class="line">[[<span class="built_in">UINavigationBar</span> appearance] setBackIndicatorImage:[[<span class="built_in">UIImage</span> imageNamed:<span class="string">@"back"</span>] imageWithRenderingMode:<span class="built_in">UIImageRenderingModeAlwaysOriginal</span>]];</span><br><span class="line"></span><br><span class="line"><span class="comment">// 使用 tintColor 设置颜色</span></span><br><span class="line">[[<span class="built_in">UINavigationBar</span> appearance] setBackIndicatorImage:[<span class="built_in">UIImage</span> imageNamed:<span class="string">@"back"</span>]];</span><br><span class="line">[[<span class="built_in">UINavigationBar</span> appearance] setBackIndicatorTransitionMaskImage:[<span class="built_in">UIImage</span> imageNamed:<span class="string">@"back"</span>]];</span><br><span class="line">[[<span class="built_in">UINavigationBar</span> appearance] setTintColor:[<span class="built_in">UIColor</span> lightGrayColor]];</span><br></pre></td></tr></table></figure>
+<h4 id="通用的隐藏返回文字"><a href="#通用的隐藏返回文字" class="headerlink" title="通用的隐藏返回文字"></a>通用的隐藏返回文字</h4><p>返回按钮旁的标题默认是上一级页面的 title，可以如下设置隐藏 title:</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[[<span class="built_in">UIBarButtonItem</span> appearance] setBackButtonTitlePositionAdjustment:<span class="built_in">UIOffsetMake</span>(<span class="number">-100</span>, <span class="number">0</span>) forBarMetrics:<span class="built_in">UIBarMetricsDefault</span>];</span><br></pre></td></tr></table></figure>
+<h4 id="特殊页面设置返回按钮"><a href="#特殊页面设置返回按钮" class="headerlink" title="特殊页面设置返回按钮"></a>特殊页面设置返回按钮</h4><p>把自定义的 barbutton 设置到 <code>backBarButtonItem</code> 即可</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> backbtn = <span class="type">UIBarButtonItem</span>(title: <span class="string">"取消"</span>, style: <span class="type">UIBarButtonItemStyle</span>.<span class="type">Plain</span>, target:<span class="keyword">self</span>, action: <span class="literal">nil</span>)</span><br><span class="line"><span class="keyword">self</span>.navigationItem.backBarButtonItem = backbtn</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>注意，这段代码要写在上一个控制器中。因为 back 要返回的是上一个控制器。</p>
+</blockquote>
+<h3 id="自定义左侧按钮"><a href="#自定义左侧按钮" class="headerlink" title="自定义左侧按钮"></a>自定义左侧按钮</h3><p>按钮使用的是 <code>UIBarButtonItem</code> 这个类，通过 <code>initWithCustomView:</code> 方法初始化。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)viewDidLoad &#123;</span><br><span class="line">    [<span class="keyword">super</span> viewDidLoad];</span><br><span class="line">    <span class="comment">// 自定义导航栏左侧按钮</span></span><br><span class="line">    <span class="built_in">UIButton</span> * leftBtn = [<span class="built_in">UIButton</span> buttonWithType:<span class="built_in">UIButtonTypeRoundedRect</span>];</span><br><span class="line">    leftBtn.frame = <span class="built_in">CGRectMake</span>(<span class="number">0</span>, <span class="number">7</span>, <span class="number">83</span>, <span class="number">30</span>);</span><br><span class="line">    leftBtn.backgroundColor = [<span class="built_in">UIColor</span> orangeColor];</span><br><span class="line">    [leftBtn addTarget:<span class="keyword">self</span> action:<span class="keyword">@selector</span>(onTap) forControlEvents:<span class="built_in">UIControlEventTouchUpInside</span>];</span><br><span class="line">    <span class="built_in">UIBarButtonItem</span> * leftItem = [[<span class="built_in">UIBarButtonItem</span> alloc] initWithCustomView:leftBtn];</span><br><span class="line">    <span class="keyword">self</span>.navigationItem.leftBarButtonItem = leftItem;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 点击事件处理</span></span><br><span class="line">- (<span class="keyword">void</span>)onTap &#123;</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@"点击了导航栏左侧按钮"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>自定义右侧按钮和左侧按钮方法类似。</p>
+<blockquote>
+<p>注意，设置了 leftBarButtonItem 就替代了原来的的返回按钮。可以通过设置 <code>self.navigationItem.leftItemsSupplementBackButton = YES;</code> 保留返回按钮和 leftItems</p>
+</blockquote>
+<h3 id="自定义中间视图"><a href="#自定义中间视图" class="headerlink" title="自定义中间视图"></a>自定义中间视图</h3><p>自定义中间视图比较简单，直接设置 <code>navigationItem</code> 的 <code>titleView</code>。</p>
+<h3 id="给系统的-leftBarButtonItem-添加-Badge"><a href="#给系统的-leftBarButtonItem-添加-Badge" class="headerlink" title="给系统的 leftBarButtonItem 添加 Badge"></a>给系统的 leftBarButtonItem 添加 Badge</h3><p>上面提到了如何自定义左侧按钮，我们可以在自定义的 Button 上添加 Badge 实现效果。如果是系统的呢？由于 leftBarButtonItem 是 <code>UIBarButtonItem</code> 的实例，而 <code>UIBarButtonItem</code> 并非继承于 <code>UIView</code>，可以推测出，<code>UIBarButtonItem</code> 上显示的 image 和 label 是隐藏的属性。</p>
+<p>我们需要使用 runtime 查找 <code>UIBarButtonItem</code> 中视图的属性名，并且通过 KVC，拿到这个视图属性：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// UIBarButtonItem+Badge.m</span></span><br><span class="line"><span class="meta">#pragma mark - 获取Badge的父视图</span></span><br><span class="line">- (<span class="built_in">UIView</span> *)bottomView</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 通过Xcode视图调试工具找到UIBarButtonItem的Badge所在父视图为:UIImageView</span></span><br><span class="line">    <span class="built_in">UIView</span> *navigationButton = [<span class="keyword">self</span> valueForKey:<span class="string">@"_view"</span>];</span><br><span class="line">    <span class="keyword">for</span> (<span class="built_in">UIView</span> *subView <span class="keyword">in</span> navigationButton.subviews) &#123;</span><br><span class="line">        <span class="keyword">if</span> ([subView isKindOfClass:<span class="built_in">NSClassFromString</span>(<span class="string">@"UIImageView"</span>)]) &#123;</span><br><span class="line">            subView.layer.masksToBounds = <span class="literal">NO</span>;</span><br><span class="line">            <span class="keyword">return</span> subView;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> navigationButton;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>经过比对，发现视图属性名为 <code>_view</code>，拿到这个属性后，对其内部视图进行遍历，找到 UIImageView 的对象，我们就可以在 UIImageView 上添加 Badge 了。</p>
+<blockquote>
+<p>同样的，我们还可以通过这种方法，自定义 UITabBarItem 的 Badge</p>
+</blockquote>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#pragma mark - 获取Badge的父视图</span></span><br><span class="line">- (<span class="built_in">UIView</span> *)bottomView&#123;</span><br><span class="line">    <span class="comment">// 通过Xcode视图调试工具找到UITabBarItem原生Badge所在父视图为:UITabBarSwappableImageView</span></span><br><span class="line">    <span class="built_in">UIView</span> *tabBarButton = [<span class="keyword">self</span> valueForKey:<span class="string">@"_view"</span>];</span><br><span class="line">    <span class="keyword">for</span> (<span class="built_in">UIView</span> *subView <span class="keyword">in</span> tabBarButton.subviews) &#123;</span><br><span class="line">        <span class="keyword">if</span> ([subView isKindOfClass:<span class="built_in">NSClassFromString</span>(<span class="string">@"UITabBarSwappableImageView"</span>)]) &#123;</span><br><span class="line">            <span class="keyword">return</span> subView;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> tabBarButton;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><a href="https://github.com/jkpang/PPBadgeView" target="_blank" rel="noopener">Demo</a></p>
+<p><a href="http://www.jianshu.com/p/89fa23d53400" target="_blank" rel="noopener">参考自:iOS: 教你给 UI 控件添加 Badge(消息提醒小圆点)</a></p>
+<h3 id="自定义右上角按钮或多个按钮"><a href="#自定义右上角按钮或多个按钮" class="headerlink" title="自定义右上角按钮或多个按钮"></a>自定义右上角按钮或多个按钮</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">@property</span>(<span class="keyword">nullable</span>, <span class="keyword">nonatomic</span>,<span class="keyword">strong</span>) <span class="built_in">UIBarButtonItem</span> *rightBarButtonItem;</span><br><span class="line"><span class="comment">/// 一次设置多个按钮</span></span><br><span class="line"><span class="keyword">@property</span>(<span class="keyword">nullable</span>,<span class="keyword">nonatomic</span>,<span class="keyword">copy</span>) <span class="built_in">NSArray</span>&lt;<span class="built_in">UIBarButtonItem</span> *&gt; *rightBarButtonItems;</span><br></pre></td></tr></table></figure>
+<h3 id="设置-navigationItem-字体格式"><a href="#设置-navigationItem-字体格式" class="headerlink" title="设置 navigationItem 字体格式"></a>设置 navigationItem 字体格式</h3><p>可以通过 <code>[UINavigationBar appearance]</code> 方法 设置：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[[<span class="built_in">UINavigationBar</span> appearance]setTitleTextAttributes:@&#123;<span class="built_in">NSForegroundColorAttributeName</span>:[<span class="built_in">UIColor</span> whiteColor],<span class="built_in">NSFontAttributeName</span>:[<span class="built_in">UIFont</span> systemFontOfSize:<span class="number">18</span>]&#125;];</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>这个设置和是否隐藏导航栏一样，都是全局的，无法孤立地设置某一个 ViewController。如果有一个地方需要特殊设置，那么需要在其它地方再设置回去。</p>
+</blockquote>
+<h3 id="操作-navigationItem"><a href="#操作-navigationItem" class="headerlink" title="操作 navigationItem"></a>操作 navigationItem</h3><p>上面我们看到操作 navigationBar 都是通过 <code>self.navigationController.navigationBar</code>，操作 navigationItem 都是通过 <code>self.navigationItem</code>。</p>
+<p>事实上，UINavigationController 并没有<code>navigationItem</code>这样一个直接的属性，由于 UINavigationController 继承于 UIViewController ,而 UIViewController 是有<code>navigationItem</code>这个属性的是，所以对 navigationController 使用点语法获取 <code>navigationItem</code> 是编译得过的，但是这样操作是没有效果的。</p>
+<blockquote>
+<p>NavigationItem 是一个 NSObject 对象，里面保存了导航栏上的各个 view；</p>
+<p>NavigationBar 是一个 UIView 对象，NavigationItem 中的各个 view 都被添加到其上</p>
+</blockquote>
+<h3 id="UINavigationController-返回手势失效"><a href="#UINavigationController-返回手势失效" class="headerlink" title="UINavigationController 返回手势失效"></a>UINavigationController 返回手势失效</h3><p>系统为 UINavigationController 提供了一个 <code>interactivePopGestureRecognizer</code> 用于右滑返回(pop),但是，如果自定了 left button 或者隐藏了 navigationBar ，该手势就失效了。我们需要自己实现一下 delegate 方法;</p>
+<blockquote>
+<p>不过一般我们最好还是使用默认的 backbutton 返回为好。一般自定义了 left button，并且隐藏了 backbutton 的情况，都应该是不让用户能够直接返回的情况。</p>
+</blockquote>
+<p>新建一个 <code>BaseNavigationController</code> 实现 delegate：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)viewDidLoad &#123;</span><br><span class="line">    [<span class="keyword">super</span> viewDidLoad];</span><br><span class="line">    <span class="keyword">self</span>.interactivePopGestureRecognizer.delegate =  <span class="keyword">self</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>需要实现的代理方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">BOOL</span>)gestureRecognizerShouldBegin:(<span class="built_in">UIGestureRecognizer</span> *)gestureRecognizer &#123;</span><br><span class="line">		<span class="keyword">if</span> (gestureRecognizer == <span class="keyword">self</span>.interactivePopGestureRecognizer) &#123;</span><br><span class="line">        <span class="comment">//屏蔽调用rootViewController的滑动返回手势，避免右滑返回手势引起死机问题</span></span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">self</span>.viewControllers.count &lt; <span class="number">2</span> ||</span><br><span class="line"> <span class="keyword">self</span>.visibleViewController == [<span class="keyword">self</span>.viewControllers objectAtIndex:<span class="number">0</span>]) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">NO</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//这里就是非右滑手势调用的方法啦，统一允许激活</span></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">YES</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>考虑到在 push 动画发生的时候，要禁止滑动手势，所以继续在 <code>BaseNavigationController</code> 中实现代理方法，禁止滑动手势：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)pushViewController:(<span class="built_in">UIViewController</span> *)viewController animated:(<span class="built_in">BOOL</span>)animated &#123;</span><br><span class="line">    [<span class="keyword">super</span> pushViewController:viewController animated:animated];</span><br><span class="line">    <span class="keyword">self</span>.interactivePopGestureRecognizer.enabled = <span class="literal">NO</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后在新 push 出来的 ViewController 中设置启用滑动手势：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)viewDidAppear:(<span class="built_in">BOOL</span>)animated &#123;</span><br><span class="line">    [<span class="keyword">super</span> viewDidAppear:animated];</span><br><span class="line">    <span class="keyword">self</span>.navigationController.interactivePopGestureRecognizer.enabled = <span class="literal">YES</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这种是开启了全局的右滑返回，对于特定页面的禁用右滑手势可以通过：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)viewDidAppear:(<span class="built_in">BOOL</span>)animated &#123;</span><br><span class="line">		<span class="keyword">self</span>.navigationController.interactivePopGestureRecognizer.enabled = <span class="literal">NO</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)viewWillDisappear:(<span class="built_in">BOOL</span>)animated &#123;</span><br><span class="line">  	<span class="keyword">self</span>.navigationController.interactivePopGestureRecognizer.enabled = <span class="literal">YES</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="导航栏"><a href="#导航栏" class="headerlink" title="导航栏"></a>导航栏</h2><h3 id="隐藏导航栏"><a href="#隐藏导航栏" class="headerlink" title="隐藏导航栏"></a>隐藏导航栏</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)viewWillAppear:(<span class="built_in">BOOL</span>)animated&#123;</span><br><span class="line">    [<span class="keyword">self</span>.navigationController setNavigationBarHidden:<span class="literal">YES</span> animated:animated];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>这个方法设置之后，后面的页面的导航栏也都隐藏了。所以要注意一个原则，在当前页面 <code>viewWillAppear</code> 方法中做的修改，也要在当前页面的 <code>viewWillDisappear</code> 中还原回来。</p>
+</blockquote>
+<h3 id="修改导航栏背景色"><a href="#修改导航栏背景色" class="headerlink" title="修改导航栏背景色"></a>修改导航栏背景色</h3><h4 id="错误示范"><a href="#错误示范" class="headerlink" title="错误示范"></a>错误示范</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)viewDidLoad &#123;</span><br><span class="line">    [<span class="keyword">super</span> viewDidLoad];</span><br><span class="line">    <span class="comment">// 无效果</span></span><br><span class="line">    <span class="keyword">self</span>.navigationController.navigationBar.backgroundColor = [<span class="built_in">UIColor</span> redColor];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个方法无法达到理想效果，上面会盖上白色的一层 <code>UIImageView</code>，必须直接设置这个 <code>UIImageView</code> 才能达到理想的效果。</p>
+<h4 id="正确示范"><a href="#正确示范" class="headerlink" title="正确示范"></a>正确示范</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[<span class="keyword">self</span>.navigationController.navigationBar setBackgroundImage:[<span class="built_in">UIImage</span> imageNamed:<span class="string">@"xxx"</span>] forBarMetrics:<span class="built_in">UIBarMetricsDefault</span>];</span><br></pre></td></tr></table></figure>
+<p>就像上面说的，必须要直接设置 <code>UIImageView</code>，可以自己写个纯色的 <code>UIImage</code> 也可以直接放一张图片。</p>
+<h3 id="设置导航栏透明度"><a href="#设置导航栏透明度" class="headerlink" title="设置导航栏透明度"></a>设置导航栏透明度</h3><p>设置导航栏透明度需要自己创建一个带有透明度的 UIImage:</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 背景色</span></span><br><span class="line"><span class="built_in">UIImage</span> *image = [<span class="keyword">self</span> imageWithColor:[color colorWithAlphaComponent:alpha]];</span><br><span class="line">[<span class="keyword">self</span>.navigationController.navigationBar setBackgroundImage:image forBarMetrics:<span class="built_in">UIBarMetricsDefault</span>];</span><br><span class="line"></span><br><span class="line">- (<span class="built_in">UIImage</span> *)imageWithColor:(<span class="built_in">UIColor</span> *)color &#123;</span><br><span class="line">    <span class="built_in">CGRect</span> rect = <span class="built_in">CGRectMake</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">1</span>);</span><br><span class="line">    <span class="built_in">UIGraphicsBeginImageContext</span>(rect.size);</span><br><span class="line">    <span class="built_in">CGContextRef</span> context = <span class="built_in">UIGraphicsGetCurrentContext</span>();</span><br><span class="line">    <span class="built_in">CGContextSetFillColorWithColor</span>(context, [color <span class="built_in">CGColor</span>]);</span><br><span class="line">    <span class="built_in">CGContextFillRect</span>(context, rect);</span><br><span class="line">    <span class="built_in">UIImage</span> *image = <span class="built_in">UIGraphicsGetImageFromCurrentImageContext</span>();</span><br><span class="line">    <span class="built_in">UIGraphicsEndImageContext</span>();</span><br><span class="line">    <span class="keyword">return</span> image;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>这里只创建了一个像素的图片，但是还是能达到平铺整个导航栏的效果。</p>
+<p>创建的 UIImage 的大小只有一个像素的好处是节约 CPU 资源。</p>
+</blockquote>
+<h3 id="隐藏导航栏底部的分割线"><a href="#隐藏导航栏底部的分割线" class="headerlink" title="隐藏导航栏底部的分割线"></a>隐藏导航栏底部的分割线</h3><p>就是设置一个透明的图片，和设置导航栏背景色一个道理。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">UINavigationBar</span> *navigationBar = <span class="keyword">self</span>.navigationController.navigationBar;</span><br><span class="line"><span class="comment">//此处使底部线条失效</span></span><br><span class="line">[navigationBar setShadowImage:[<span class="built_in">UIImage</span> new]];</span><br></pre></td></tr></table></figure>
+<h3 id="导航栏的几个属性"><a href="#导航栏的几个属性" class="headerlink" title="导航栏的几个属性"></a>导航栏的几个属性</h3><p>这些属性一般用处不大，但是有点印象就行了。以下为默认值</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">self</span>.navigationController.navigationBar.translucent = <span class="literal">YES</span>;</span><br><span class="line"><span class="keyword">self</span>.edgesForExtendedLayout = <span class="built_in">UIRectEdgeAll</span>;</span><br><span class="line"><span class="keyword">self</span>.automaticallyAdjustsScrollViewInsets = <span class="literal">YES</span>;</span><br><span class="line"><span class="keyword">self</span>.extendedLayoutIncludesOpaqueBars = <span class="literal">NO</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>导航半透明的时候<ul>
+<li>设置 <code>edgesForExtendedLayout</code> 为 <code>UIRectEdgeAll</code> ，视图会延伸到导航栏下。默认为 YES<ul>
+<li>此时默认 <code>automaticallyAdjustScrollViewInsets</code> 为 YES。ScrollView 会自动设置 contentInset</li>
+</ul>
+</li>
+<li>设置<code>edgesForExtendedLayout</code> 为 <code>UIRectEdgeNone</code> ，视图不会延伸。</li>
+</ul>
+</li>
+<li>导航栏不透明的时候<ul>
+<li>设置 <code>edgesForExtendedLayout</code> 无效。</li>
+<li>设置 <code>extendedLayoutIncludesOpaqueBars</code> 为 YES，可以延伸到不透明的导航栏下</li>
+<li>设置<code>extendedLayoutIncludesOpaqueBars</code>  为 NO，不会延伸到透明的导航栏系下，默认为 NO</li>
+</ul>
+</li>
+</ul>
+<h3 id="更改顶部状态栏颜色"><a href="#更改顶部状态栏颜色" class="headerlink" title="更改顶部状态栏颜色"></a>更改顶部状态栏颜色</h3><ol>
+<li><p>在工程的Info.plist文件中添加一行<strong>UIViewControllerBasedStatusBarAppearance</strong>，选择Boolean类型，并设置为YES，Xcode会自动把名称变为View controller-based status bar appearance。</p>
+</li>
+<li><p>在你的ViewController中添加下面的方法</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">-(<span class="built_in">UIStatusBarStyle</span>)preferredStatusBarStyle&#123;</span><br><span class="line">    <span class="comment">// return UIStatusBarStyleDefault; 黑色</span></span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">UIStatusBarStyleLightContent</span>; <span class="comment">// 白色</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>调用 UIViewController 的 <code>setNeedsStatusBarAppearanceUpdate</code> 方法，通知状态栏颜色改变了。</p>
+</li>
+</ol>
+<h3 id="全屏滑动返回"><a href="#全屏滑动返回" class="headerlink" title="全屏滑动返回"></a>全屏滑动返回</h3><p>实现全屏滑动返回仅需在导航栏给导航栏添加<code>UIGestureRecognizerDelegate</code>协议，并在ViewDidLoad中设置。关键在于调用系统返回处理方法 <code>hyandleNavigationTransition</code></p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 获取系统自带滑动手势的target对象</span></span><br><span class="line"><span class="keyword">id</span> target = <span class="keyword">self</span>.interactivePopGestureRecognizer.delegate;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 创建全屏滑动手势，调用系统自带滑动手势的target的action方法</span></span><br><span class="line"><span class="built_in">UIPanGestureRecognizer</span> *pan = [[<span class="built_in">UIPanGestureRecognizer</span> alloc] initWithTarget:target action:<span class="keyword">@selector</span>(handleNavigationTransition:)];</span><br><span class="line"></span><br><span class="line"><span class="comment">// 设置手势代理，拦截手势触发</span></span><br><span class="line">pan.delegate = <span class="keyword">self</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 给导航控制器的view添加全屏滑动手势</span></span><br><span class="line">[<span class="keyword">self</span>.view addGestureRecognizer:pan];</span><br><span class="line"></span><br><span class="line"><span class="comment">// 禁止使用系统自带的滑动手势</span></span><br><span class="line"><span class="keyword">self</span>.interactivePopGestureRecognizer.enabled = <span class="literal">NO</span>;</span><br></pre></td></tr></table></figure>
+<h3 id="导航栏过渡"><a href="#导航栏过渡" class="headerlink" title="导航栏过渡"></a>导航栏过渡</h3><p>导航栏过渡是一个需要好好设计的功能。如果做得不好，push 和 pop 时候会非常僵硬。</p>
+<p>比较好的方式是通过 Method Swizzling 获取系统方法 <code>_updateInteractiveTransition</code> 拿到当前的进度。</p>
+<p>具体可参考如下两篇文章：</p>
+<p><a href="https://www.jianshu.com/p/859a1efd2bbf" target="_blank" rel="noopener">iOS: 记一次导航栏平滑过渡的实现</a></p>
+<p><a href="https://www.jianshu.com/p/540a7e6f7b40" target="_blank" rel="noopener">超简单！！！ iOS设置状态栏、导航栏按钮、标题、颜色、透明度，偏移等</a></p>
+<p>如果要求不高，对于特殊的页面，直接在 <code>viewWillAppear</code> 和 <code>viewWillDisapper</code> 中通过 <code>[self.navigationController setNavigationBarHidden:YES animated:YES]</code> 显示和隐藏即可。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tag/基本控件/" rel="tag"># 基本控件</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/04/23/UITextField学习笔记/" rel="next" title="UITextField 简介">
+                <i class="fa fa-chevron-left"></i> UITextField 简介
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/05/08/Vim技巧/" rel="prev" title="《Vim 实用技巧》读书笔记">
+                《Vim 实用技巧》读书笔记 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.png" alt="Zachary Zhang">
+            
+              <p class="site-author-name" itemprop="name">Zachary Zhang</p>
+              <p class="site-description motion-element" itemprop="description">Stay Hungry. Stay Foolish!</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">116</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/zhang759740844" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:zch759740844@126.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#常用方法"><span class="nav-number">1.</span> <span class="nav-text">常用方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#添加导航栏"><span class="nav-number">1.1.</span> <span class="nav-text">添加导航栏</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#push"><span class="nav-number">1.2.</span> <span class="nav-text">push</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pop"><span class="nav-number">1.3.</span> <span class="nav-text">pop</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#导航条"><span class="nav-number">2.</span> <span class="nav-text">导航条</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#基本属性"><span class="nav-number">2.1.</span> <span class="nav-text">基本属性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#设置默认返回按钮"><span class="nav-number">2.2.</span> <span class="nav-text">设置默认返回按钮</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#设置返回箭头"><span class="nav-number">2.2.1.</span> <span class="nav-text">设置返回箭头</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#通用的隐藏返回文字"><span class="nav-number">2.2.2.</span> <span class="nav-text">通用的隐藏返回文字</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#特殊页面设置返回按钮"><span class="nav-number">2.2.3.</span> <span class="nav-text">特殊页面设置返回按钮</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#自定义左侧按钮"><span class="nav-number">2.3.</span> <span class="nav-text">自定义左侧按钮</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#自定义中间视图"><span class="nav-number">2.4.</span> <span class="nav-text">自定义中间视图</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#给系统的-leftBarButtonItem-添加-Badge"><span class="nav-number">2.5.</span> <span class="nav-text">给系统的 leftBarButtonItem 添加 Badge</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#自定义右上角按钮或多个按钮"><span class="nav-number">2.6.</span> <span class="nav-text">自定义右上角按钮或多个按钮</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#设置-navigationItem-字体格式"><span class="nav-number">2.7.</span> <span class="nav-text">设置 navigationItem 字体格式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#操作-navigationItem"><span class="nav-number">2.8.</span> <span class="nav-text">操作 navigationItem</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#UINavigationController-返回手势失效"><span class="nav-number">2.9.</span> <span class="nav-text">UINavigationController 返回手势失效</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#导航栏"><span class="nav-number">3.</span> <span class="nav-text">导航栏</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#隐藏导航栏"><span class="nav-number">3.1.</span> <span class="nav-text">隐藏导航栏</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#修改导航栏背景色"><span class="nav-number">3.2.</span> <span class="nav-text">修改导航栏背景色</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#错误示范"><span class="nav-number">3.2.1.</span> <span class="nav-text">错误示范</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#正确示范"><span class="nav-number">3.2.2.</span> <span class="nav-text">正确示范</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#设置导航栏透明度"><span class="nav-number">3.3.</span> <span class="nav-text">设置导航栏透明度</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#隐藏导航栏底部的分割线"><span class="nav-number">3.4.</span> <span class="nav-text">隐藏导航栏底部的分割线</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#导航栏的几个属性"><span class="nav-number">3.5.</span> <span class="nav-text">导航栏的几个属性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#更改顶部状态栏颜色"><span class="nav-number">3.6.</span> <span class="nav-text">更改顶部状态栏颜色</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#全屏滑动返回"><span class="nav-number">3.7.</span> <span class="nav-text">全屏滑动返回</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#导航栏过渡"><span class="nav-number">3.8.</span> <span class="nav-text">导航栏过渡</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zachary Zhang</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

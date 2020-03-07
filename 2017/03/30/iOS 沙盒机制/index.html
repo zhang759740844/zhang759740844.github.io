@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+
+
+
+
+  <meta name="keywords" content="学习笔记,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="iOS 文件下载与处理相关">
+<meta name="keywords" content="学习笔记">
+<meta property="og:type" content="article">
+<meta property="og:title" content="iOS 文件下载与处理相关">
+<meta property="og:url" content="http://zhang759740844.github.io/2017/03/30/iOS 沙盒机制/index.html">
+<meta property="og:site_name" content="Zachary&#39;s blog">
+<meta property="og:description" content="iOS 文件下载与处理相关">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/download_2.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/download_1.png?raw=true">
+<meta property="og:updated_time" content="2020-02-27T15:13:37.645Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="iOS 文件下载与处理相关">
+<meta name="twitter:description" content="iOS 文件下载与处理相关">
+<meta name="twitter:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/download_2.png?raw=true">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://zhang759740844.github.io/2017/03/30/iOS 沙盒机制/">
+
+
+
+
+
+  <title>iOS 文件下载与处理相关 | Zachary's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Zachary's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">记录成长</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://zhang759740844.github.io/2017/03/30/iOS 沙盒机制/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zachary Zhang">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Zachary's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">iOS 文件下载与处理相关</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-03-30T16:07:12+08:00">
+                2017-03-30
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>iOS 文件下载与处理相关</p>
+<a id="more"></a>
+<h2 id="iOS-沙盒机制"><a href="#iOS-沙盒机制" class="headerlink" title="iOS 沙盒机制"></a>iOS 沙盒机制</h2><p>每个应用程序的活动范围都限定在自己的沙盒里。不能随意跨越自己的沙盒去访问别的应用程序沙盒中的内容。</p>
+<h3 id="沙盒中的目录类型"><a href="#沙盒中的目录类型" class="headerlink" title="沙盒中的目录类型"></a>沙盒中的目录类型</h3><h4 id="详解"><a href="#详解" class="headerlink" title="详解"></a>详解</h4><p>就像 url 一样，每个手机中的 app 都有一个独一无二的路径，通过这个路径，我们能拿到 app 中保存的资源。在根路径下保存着几个特定的文件夹，下面将介绍这几个文件夹：</p>
+<ul>
+<li>Document:保存应用运行时生成的需要持久化的数据。建议将在应用程序中<strong>只有用户生成的文件</strong>、<strong>应用程序不能重新创建的文件</strong>保存在该文件夹。iCloud 会自动备份这个文件夹。</li>
+<li>Library:该文件夹下又有两个子文件夹。<ul>
+<li>Caches:<strong>可以重新下载</strong>或者<strong>重新生成的数据</strong>应该保存在该目录下，该文件夹下的文件不会因为退出而清除。iCloud 不会自动备份该文件夹</li>
+<li>Preferences:保存应用程序的所有偏好设置 iOS 的 Settings，我们不应该直接在这里创建文件，而是需要通过 <code>NSUserDefault</code> 这个类来访问应用程序的偏好设置。</li>
+</ul>
+</li>
+<li>Tmp:保存临时使用的数据，其中的数据会在应用退出后清除。</li>
+</ul>
+<p>根路径一般形式如下，各个文件夹都保存在该目录下:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/var/mobile/Containers/Data/Application/一串随机字符用以和其他app区分开</span><br></pre></td></tr></table></figure>
+<p>除了上面的提到的根目录，随着 app 一起打包的资源文件都会被放在一个 bundle 目录下，路径一般为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/var/containers/Bundle/Application/随机字符串，和上面的不同/应用名.app</span><br></pre></td></tr></table></figure>
+<p>资源文件都是通过这个根路径拼接获得的，比如要得到一个 <code>www</code> 目录下的 <code>test.js</code> 文件，那么路径就是</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/var/containers/Bundle/Application/随机字符串，和上面的不同/应用名.app/www/test.js</span><br></pre></td></tr></table></figure>
+<h4 id="注意"><a href="#注意" class="headerlink" title="注意"></a>注意</h4><p>如果你做个记事本的app，那么用户写了东西，总要把东西存起来。那么这个文件则是用户自行生成的，就放在documents文件夹里面。</p>
+<p>如果你有一个app，需要和服务器配合，经常从服务器下载东西，展示给用户看。那么这些下载下来的东西就放在 library/cache。</p>
+<blockquote>
+<p>在 cache 目录下的文件在存储空间不足的情况下，会被清空。所以一些重要的文件最好不要放在 cache 中。</p>
+</blockquote>
+<p>apple对这个很严格，放错了就会被拒。主要原因是ios的icloud的同步问题。</p>
+<h3 id="获取沙盒路径"><a href="#获取沙盒路径" class="headerlink" title="获取沙盒路径"></a>获取沙盒路径</h3><h4 id="获取沙盒的-Home-目录"><a href="#获取沙盒的-Home-目录" class="headerlink" title="获取沙盒的 Home 目录"></a>获取沙盒的 Home 目录</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//获取根目录 </span></span><br><span class="line"><span class="built_in">NSString</span> *homePath = <span class="built_in">NSHomeDirectory</span>(); </span><br><span class="line"><span class="built_in">NSLog</span>(<span class="string">@"Home目录：%@"</span>,homePath);</span><br></pre></td></tr></table></figure>
+<h4 id="获取沙盒的-Documents-目录"><a href="#获取沙盒的-Documents-目录" class="headerlink" title="获取沙盒的 Documents 目录"></a>获取沙盒的 Documents 目录</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSString</span> *filePath = [<span class="built_in">NSSearchPathForDirectoriesInDomains</span>(<span class="built_in">NSDocumentDirectory</span>,<span class="built_in">NSUserDomainMask</span>,<span class="literal">YES</span>) firstObject];</span><br></pre></td></tr></table></figure>
+<h4 id="获取-Library-文件路径"><a href="#获取-Library-文件路径" class="headerlink" title="获取 Library 文件路径"></a>获取 Library 文件路径</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSString</span> *filePath = [<span class="built_in">NSSearchPathForDirectoriesInDomains</span>(<span class="built_in">NSLibraryDirectory</span>,<span class="built_in">NSUserDomainMask</span>,<span class="literal">YES</span>) firstObject];</span><br></pre></td></tr></table></figure>
+<h4 id="获取-Caches-文件路径"><a href="#获取-Caches-文件路径" class="headerlink" title="获取 Caches 文件路径"></a>获取 Caches 文件路径</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSString</span> *filePath = [<span class="built_in">NSSearchPathForDirectoriesInDomains</span>(<span class="built_in">NSCachesDirectory</span>,<span class="built_in">NSUserDomainMask</span>,<span class="literal">YES</span>) firstObject];</span><br></pre></td></tr></table></figure>
+<h4 id="获取-Tmp-文件路径"><a href="#获取-Tmp-文件路径" class="headerlink" title="获取 Tmp 文件路径"></a>获取 Tmp 文件路径</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSString</span> *filePath = <span class="built_in">NSTemporaryDirectory</span>();</span><br></pre></td></tr></table></figure>
+<p>其中 <code>NSUserDomainMask</code> 表示在当前沙盒范围内查找，<code>YES</code> 表示展开路径，<code>NO</code> 表示不展开路径。<strong>里面的所有文件夹都可以通过 Home 目录拼接而成</strong>。</p>
+<p>沙盒里还有很多其他的文件夹，上面只是列举了常用的几个。</p>
+<h4 id="获取-Bundle-文件路径"><a href="#获取-Bundle-文件路径" class="headerlink" title="获取 Bundle 文件路径"></a>获取 Bundle 文件路径</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSString</span> *bundle = [[<span class="built_in">NSBundle</span> mainBundle] resourcePath];</span><br></pre></td></tr></table></figure>
+<p>这个 Bundle 路径就是工程的主路径，可以通过拼接路径的方式，获取工程下的各种资源文件。需要注意，路径是文件夹的绝对路径，而不是 xcode 中显示的 group 路径。</p>
+<h2 id="文件下载"><a href="#文件下载" class="headerlink" title="文件下载"></a>文件下载</h2><h3 id="文件操作"><a href="#文件操作" class="headerlink" title="文件操作"></a>文件操作</h3><h4 id="创建文件夹"><a href="#创建文件夹" class="headerlink" title="创建文件夹"></a>创建文件夹</h4><p>在 Document 目录下创建 test 文件夹：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//创建文件夹  </span></span><br><span class="line">-(<span class="keyword">void</span>)createDir&#123;  </span><br><span class="line">    <span class="built_in">NSString</span> *documentsPath =[<span class="keyword">self</span> dirDoc];  </span><br><span class="line">    <span class="built_in">NSFileManager</span> *fileManager = [<span class="built_in">NSFileManager</span> defaultManager];  </span><br><span class="line">    <span class="built_in">NSString</span> *testDirectory = [documentsPath stringByAppendingPathComponent:<span class="string">@"test"</span>];  </span><br><span class="line">    <span class="comment">// 创建目录  </span></span><br><span class="line">    <span class="built_in">BOOL</span> res=[fileManager createDirectoryAtPath:testDirectory withIntermediateDirectories:<span class="literal">YES</span> attributes:<span class="literal">nil</span> error:<span class="literal">nil</span>];  </span><br><span class="line">    <span class="keyword">if</span> (res) &#123;  </span><br><span class="line">        <span class="built_in">NSLog</span>(<span class="string">@"文件夹创建成功"</span>);  </span><br><span class="line">    &#125;<span class="keyword">else</span>  </span><br><span class="line">        <span class="built_in">NSLog</span>(<span class="string">@"文件夹创建失败"</span>);  </span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<p><code>NSFileManger</code>  是一个文件处理的类。 <code>self dirDoc</code> 是自定义的获得 Document 文件路径的方法，上面说到过。</p>
+<h4 id="创建文件"><a href="#创建文件" class="headerlink" title="创建文件"></a>创建文件</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//创建文件  </span></span><br><span class="line">-(<span class="keyword">void</span>)createFile&#123;  </span><br><span class="line">    <span class="built_in">NSString</span> *documentsPath =[<span class="keyword">self</span> dirDoc];  </span><br><span class="line">    <span class="built_in">NSString</span> *testDirectory = [documentsPath stringByAppendingPathComponent:<span class="string">@"test"</span>];  </span><br><span class="line">    <span class="built_in">NSFileManager</span> *fileManager = [<span class="built_in">NSFileManager</span> defaultManager];  </span><br><span class="line">    <span class="built_in">NSString</span> *testPath = [testDirectory stringByAppendingPathComponent:<span class="string">@"test.txt"</span>];  </span><br><span class="line">    <span class="built_in">BOOL</span> res=[fileManager createFileAtPath:testPath contents:<span class="literal">nil</span> attributes:<span class="literal">nil</span>];  </span><br><span class="line">    <span class="keyword">if</span> (res) &#123;  </span><br><span class="line">        <span class="built_in">NSLog</span>(<span class="string">@"文件创建成功: %@"</span> ,testPath);  </span><br><span class="line">    &#125;<span class="keyword">else</span>  </span><br><span class="line">        <span class="built_in">NSLog</span>(<span class="string">@"文件创建失败"</span>);  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="写数据到文件"><a href="#写数据到文件" class="headerlink" title="写数据到文件"></a>写数据到文件</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//写文件  </span></span><br><span class="line">-(<span class="keyword">void</span>)writeFile&#123;  </span><br><span class="line">    <span class="built_in">NSString</span> *documentsPath =[<span class="keyword">self</span> dirDoc];  </span><br><span class="line">    <span class="built_in">NSString</span> *testDirectory = [documentsPath stringByAppendingPathComponent:<span class="string">@"test"</span>];  </span><br><span class="line">    <span class="built_in">NSString</span> *testPath = [testDirectory stringByAppendingPathComponent:<span class="string">@"test.txt"</span>];  </span><br><span class="line">    <span class="built_in">NSString</span> *content=<span class="string">@"测试写入内容！"</span>;  </span><br><span class="line">    <span class="built_in">BOOL</span> res=[content writeToFile:testPath atomically:<span class="literal">YES</span> encoding:<span class="built_in">NSUTF8StringEncoding</span> error:<span class="literal">nil</span>];  </span><br><span class="line">    <span class="keyword">if</span> (res) &#123;  </span><br><span class="line">        <span class="built_in">NSLog</span>(<span class="string">@"文件写入成功"</span>);  </span><br><span class="line">    &#125;<span class="keyword">else</span>  </span><br><span class="line">        <span class="built_in">NSLog</span>(<span class="string">@"文件写入失败"</span>);  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="从文件读数据"><a href="#从文件读数据" class="headerlink" title="从文件读数据"></a>从文件读数据</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//读文件  </span></span><br><span class="line">-(<span class="keyword">void</span>)readFile&#123;  </span><br><span class="line">    <span class="built_in">NSString</span> *documentsPath =[<span class="keyword">self</span> dirDoc];  </span><br><span class="line">    <span class="built_in">NSString</span> *testDirectory = [documentsPath stringByAppendingPathComponent:<span class="string">@"test"</span>];  </span><br><span class="line">    <span class="built_in">NSString</span> *testPath = [testDirectory stringByAppendingPathComponent:<span class="string">@"test.txt"</span>];  </span><br><span class="line"><span class="comment">//    NSData *data = [NSData dataWithContentsOfFile:testPath];  </span></span><br><span class="line"><span class="comment">//    NSLog(@"文件读取成功: %@",[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);  </span></span><br><span class="line">    <span class="built_in">NSString</span> *content=[<span class="built_in">NSString</span> stringWithContentsOfFile:testPath encoding:<span class="built_in">NSUTF8StringEncoding</span> error:<span class="literal">nil</span>];  </span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@"文件读取成功: %@"</span>,content);  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="文件大小"><a href="#文件大小" class="headerlink" title="文件大小"></a>文件大小</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">+(<span class="keyword">float</span>)fileSizeAtPath:(<span class="built_in">NSString</span> *)path&#123;</span><br><span class="line">    <span class="built_in">NSFileManager</span> *fileManager=[<span class="built_in">NSFileManager</span> defaultManager];</span><br><span class="line">    <span class="keyword">if</span>([fileManager fileExistsAtPath:path])&#123;</span><br><span class="line">        <span class="keyword">long</span> <span class="keyword">long</span> size=[fileManager attributesOfItemAtPath:path error:<span class="literal">nil</span>].fileSize;</span><br><span class="line">        <span class="keyword">return</span> size/<span class="number">1024.0</span>/<span class="number">1024.0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个方法获得文件的各个属性，其中一个属性是 <code>fileSize</code>。一般清除缓存的时候需要用到计算文件大小。</p>
+<h4 id="删除文件"><a href="#删除文件" class="headerlink" title="删除文件"></a>删除文件</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//删除文件  </span></span><br><span class="line">-(<span class="keyword">void</span>)deleteFile&#123;  </span><br><span class="line">    <span class="built_in">NSString</span> *documentsPath =[<span class="keyword">self</span> dirDoc];  </span><br><span class="line">    <span class="built_in">NSString</span> *testDirectory = [documentsPath stringByAppendingPathComponent:<span class="string">@"test"</span>];  </span><br><span class="line">    <span class="built_in">NSFileManager</span> *fileManager = [<span class="built_in">NSFileManager</span> defaultManager];  </span><br><span class="line">    <span class="built_in">NSString</span> *testPath = [testDirectory stringByAppendingPathComponent:<span class="string">@"test.txt"</span>];     </span><br><span class="line">    <span class="built_in">BOOL</span> res=[fileManager removeItemAtPath:testPath error:<span class="literal">nil</span>];  </span><br><span class="line">    <span class="keyword">if</span> (res) &#123;  </span><br><span class="line">        <span class="built_in">NSLog</span>(<span class="string">@"文件删除成功"</span>);  </span><br><span class="line">    &#125;<span class="keyword">else</span>  </span><br><span class="line">        <span class="built_in">NSLog</span>(<span class="string">@"文件删除失败"</span>);     </span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@"文件是否存在: %@"</span>,[fileManager isExecutableFileAtPath:testPath]?<span class="string">@"YES"</span>:<span class="string">@"NO"</span>);  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="NSData-使用"><a href="#NSData-使用" class="headerlink" title="NSData 使用"></a>NSData 使用</h3><p>下载得到的文件，一般是以 <code>NSData</code> 的形式出现，使用时需要将其转换成相应的类，比如 <code>NSString</code>,<code>UIImage</code> 等类的形式。</p>
+<h4 id="NSData-与-NSString"><a href="#NSData-与-NSString" class="headerlink" title="NSData 与 NSString"></a>NSData 与 NSString</h4><p>NSData 转 NSString：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSString</span> *newStr = [[<span class="built_in">NSString</span> alloc] initWithData:data encoding:<span class="built_in">NSUTF8StringEncoding</span>];</span><br></pre></td></tr></table></figure>
+<p>NSString 转 NSData：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSData</span> *data = [str dataUsingEncoding:<span class="built_in">NSUTF8StringEncoding</span>];</span><br></pre></td></tr></table></figure>
+<h4 id="NSData-与-UIImage"><a href="#NSData-与-UIImage" class="headerlink" title="NSData 与 UIImage"></a>NSData 与 UIImage</h4><p>NSData 转 UIImage：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">UIImage</span> *aimage = [<span class="built_in">UIImage</span> imageWithData: imageData];</span><br></pre></td></tr></table></figure>
+<p>UIImage 转 NSData：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSData</span> *imageData = <span class="built_in">UIImagePNGRepresentation</span>(aImage);</span><br></pre></td></tr></table></figure>
+<h3 id="下载"><a href="#下载" class="headerlink" title="下载"></a>下载</h3><p>可以通过 <code>NSURLConnection</code>类创建下载，不过该类在 iOS9 中被废弃了，取而代之的是 <code>NSURLSession</code> 类。我们下面只学习下该类的使用方式和技巧。</p>
+<h4 id="普通的网络请求"><a href="#普通的网络请求" class="headerlink" title="普通的网络请求"></a>普通的网络请求</h4><p>创建任务后，不会自动发送请求，需要手动开始任务：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 1.得到session对象</span></span><br><span class="line"><span class="built_in">NSURLSession</span>* session = [<span class="built_in">NSURLSession</span> sharedSession];</span><br><span class="line"><span class="built_in">NSURL</span>* url = [<span class="built_in">NSURL</span> URLWithString:<span class="string">@""</span>];</span><br><span class="line"></span><br><span class="line"><span class="comment">// 2.创建一个task，任务</span></span><br><span class="line"><span class="built_in">NSURLSessionDataTask</span>* dataTask = [session dataTaskWithURL:url completionHandler:^(<span class="built_in">NSData</span> *data, <span class="built_in">NSURLResponse</span> *response, <span class="built_in">NSError</span> *error) &#123;</span><br><span class="line">    <span class="comment">// data 为返回数据</span></span><br><span class="line">		<span class="built_in">dispatch_async</span>(dispatch_get_main_queue(), ^&#123;</span><br><span class="line">			[_image setImage:[<span class="built_in">UIImage</span> imageWithData:data]];</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;];</span><br><span class="line"></span><br><span class="line"><span class="comment">// 3.开始任务</span></span><br><span class="line">[dataTask resume];</span><br></pre></td></tr></table></figure>
+<p>因为是主要讲下载文件的，所以这里省略了 Session 创建的具体过程。一般情况下，我们是需要为 Session 设置 delegate 的，以此监听下载情况，这里都省略了。 </p>
+<blockquote>
+<p>注意，<code>completionHandler</code> 这个回调是在后台线程中的，如果想要改变UI，就必须dispatch到主线程中去，否则会等待很长时间才能显示出来</p>
+</blockquote>
+<h4 id="下载文件"><a href="#下载文件" class="headerlink" title="下载文件"></a>下载文件</h4><p>如果使用 <code>NSURLSessionDataTask</code> 下载文件，那么就要考虑边下边存的情况，如果文件很大，那么内存很容易爆炸。但是使用 <code>NSURLSessionDownloadTask</code> 就不需要边下载边写入等问题，苹果做好了封装。只需要在结束的时候将临时文件移动到目标文件目录中即可：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSURL</span>* url = [<span class="built_in">NSURL</span> URLWithString:<span class="string">@"http://dlsw.baidu.com/sw-search-sp/soft/9d/25765/sogou_mac_32c_V3.2.0.1437101586.dmg"</span>];</span><br><span class="line"></span><br><span class="line"><span class="comment">// 得到session对象</span></span><br><span class="line"><span class="built_in">NSURLSession</span>* session = [<span class="built_in">NSURLSession</span> sharedSession];</span><br><span class="line"></span><br><span class="line"><span class="comment">// 创建任务</span></span><br><span class="line"><span class="built_in">NSURLSessionDownloadTask</span>* downloadTask = [session downloadTaskWithURL:url completionHandler:^(<span class="built_in">NSURL</span> *location, <span class="built_in">NSURLResponse</span> *response, <span class="built_in">NSError</span> *error) &#123;</span><br><span class="line">	<span class="comment">// ... 省略了将 location 下的文件移动到目标文件目录中的过程</span></span><br><span class="line">&#125;];</span><br><span class="line"><span class="comment">// 开始任务</span></span><br><span class="line">[downloadTask resume];</span><br></pre></td></tr></table></figure>
+<p>这里回调参数没有了 <code>NSData</code>，多了一个 <code>location</code>，这个就是下载好的文件写入沙盒的地址，打印后发现下载好的文件被写入了 temp 文件夹下。</p>
+<blockquote>
+<p>这里直接在创建 downloadTask 的时候提供了结束的回调，其实也可以设置 delegate，比如要监听下载进度的时候，就必须使用 delegate 了。具体见下方</p>
+</blockquote>
+<p>所以我们需要将 temp 目录下的文件转移到不会被删除的 caches 目录下。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSString</span> *caches = [<span class="built_in">NSSearchPathForDirectoriesInDomains</span>(<span class="built_in">NSCachesDirectory</span>, <span class="built_in">NSUserDomainMask</span>, <span class="literal">YES</span>) lastObject];</span><br><span class="line"><span class="comment">// response.suggestedFilename ： 建议使用的文件名，一般跟服务器端的文件名一致</span></span><br><span class="line"><span class="built_in">NSString</span> *file = [caches stringByAppendingPathComponent:response.suggestedFilename];</span><br><span class="line"></span><br><span class="line"><span class="comment">// 将临时文件剪切或者复制Caches文件夹</span></span><br><span class="line"><span class="built_in">NSFileManager</span> *mgr = [<span class="built_in">NSFileManager</span> defaultManager];</span><br><span class="line"></span><br><span class="line"><span class="comment">// AtPath : 剪切前的文件路径</span></span><br><span class="line"><span class="comment">// ToPath : 剪切后的文件路径</span></span><br><span class="line">[mgr moveItemAtPath:location.path toPath:file error:<span class="literal">nil</span>];</span><br></pre></td></tr></table></figure>
+<h4 id="监听下载进度"><a href="#监听下载进度" class="headerlink" title="监听下载进度"></a>监听下载进度</h4><p>上面的方法可以下载，但是无法监听下载的进度。想要监听下载进度，需要通过 delegate，要遵循协议<code>NSURLSessionDownloadDelegate</code> ：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * Messages related to the operation of a task that writes data to a</span></span><br><span class="line"><span class="comment"> * file and notifies the delegate upon completion.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="class"><span class="keyword">@protocol</span> <span class="title">NSURLSessionDownloadDelegate</span> &lt;<span class="title">NSURLSessionTaskDelegate</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* Sent when a download task that has completed a download.  The delegate should </span></span><br><span class="line"><span class="comment"> * copy or move the file at the given location to a new location as it will be </span></span><br><span class="line"><span class="comment"> * removed when the delegate message returns. URLSession:task:didCompleteWithError: will</span></span><br><span class="line"><span class="comment"> * still be called.</span></span><br><span class="line"><span class="comment"> *  下载完毕会调用</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> *  @param location     文件临时地址</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">- (<span class="keyword">void</span>)URLSession:(<span class="built_in">NSURLSession</span> *)session downloadTask:(<span class="built_in">NSURLSessionDownloadTask</span> *)downloadTask</span><br><span class="line">                              didFinishDownloadingToURL:(<span class="built_in">NSURL</span> *)location;</span><br><span class="line"></span><br><span class="line"><span class="keyword">@optional</span></span><br><span class="line"><span class="comment">/* Sent periodically to notify the delegate of download progress. </span></span><br><span class="line"><span class="comment"> *  每次写入沙盒完毕调用</span></span><br><span class="line"><span class="comment"> *  在这里面监听下载进度，totalBytesWritten/totalBytesExpectedToWrite</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> *  @param bytesWritten              这次写入的大小</span></span><br><span class="line"><span class="comment"> *  @param totalBytesWritten         已经写入沙盒的大小</span></span><br><span class="line"><span class="comment"> *  @param totalBytesExpectedToWrite 文件总大小</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">- (<span class="keyword">void</span>)URLSession:(<span class="built_in">NSURLSession</span> *)session downloadTask:(<span class="built_in">NSURLSessionDownloadTask</span> *)downloadTask</span><br><span class="line">                                           didWriteData:(int64_t)bytesWritten</span><br><span class="line">                                      totalBytesWritten:(int64_t)totalBytesWritten</span><br><span class="line">                              totalBytesExpectedToWrite:(int64_t)totalBytesExpectedToWrite;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* Sent when a download has been resumed. If a download failed with an</span></span><br><span class="line"><span class="comment"> * error, the -userInfo dictionary of the error will contain an</span></span><br><span class="line"><span class="comment"> * NSURLSessionDownloadTaskResumeData key, whose value is the resume</span></span><br><span class="line"><span class="comment"> * data. </span></span><br><span class="line"><span class="comment"> *  恢复下载后调用，</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">- (<span class="keyword">void</span>)URLSession:(<span class="built_in">NSURLSession</span> *)session downloadTask:(<span class="built_in">NSURLSessionDownloadTask</span> *)downloadTask</span><br><span class="line">                                      didResumeAtOffset:(int64_t)fileOffset</span><br><span class="line">                                     expectedTotalBytes:(int64_t)expectedTotalBytes;</span><br><span class="line"></span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure>
+<p>上面说到设置 delegate 时， <code>NSURLSessionDownloadTask</code> 创建方式有所不同：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 得到session对象</span></span><br><span class="line"><span class="built_in">NSURLSessionConfiguration</span>* cfg = [<span class="built_in">NSURLSessionConfiguration</span> defaultSessionConfiguration]; <span class="comment">// 默认配置</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">NSURLSession</span>* session = [<span class="built_in">NSURLSession</span> sessionWithConfiguration:cfg delegate:<span class="keyword">self</span> delegateQueue:[<span class="built_in">NSOperationQueue</span> mainQueue]];</span><br><span class="line"></span><br><span class="line"><span class="comment">// 创建任务</span></span><br><span class="line"><span class="built_in">NSURLSessionDownloadTask</span>* downloadTask = [session downloadTaskWithURL:url];</span><br><span class="line"></span><br><span class="line"><span class="comment">// 开始任务</span></span><br><span class="line">[downloadTask resume];</span><br></pre></td></tr></table></figure>
+<h4 id="断点下载"><a href="#断点下载" class="headerlink" title="断点下载"></a>断点下载</h4><h5 id="主动暂停"><a href="#主动暂停" class="headerlink" title="主动暂停"></a>主动暂停</h5><p>文件的暂停和恢复可以通过 <code>resume</code> 和 <code>suspend</code> 方法实现。但是这样做，程序退出后再开启就不能接着下载了。一般如果是主动暂停的话会使用 <code>cancelByProducingResumeData:</code> 方法:</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">__<span class="keyword">weak</span> <span class="keyword">typeof</span>(<span class="keyword">self</span>) selfVc = <span class="keyword">self</span>;</span><br><span class="line">[<span class="keyword">self</span>.downloadTask cancelByProducingResumeData:^(<span class="built_in">NSData</span> *resumeData) &#123;</span><br><span class="line">    <span class="comment">//  resumeData : 包含了继续下载的开始位置\下载的url</span></span><br><span class="line">    selfVc.resumeData = resumeData;</span><br><span class="line">    selfVc.downloadTask = <span class="literal">nil</span>;</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
+<p>调用该取消方法后会回调一个 block，并传入 <code>resumeData</code>，该参数包含了继续下载文件的位置信息，你可以将其转换为 <code>NSString</code>，打印出来可以看到其实是 plist 的形式，你可以将其保存为 plist 文件。上面 <code>selfVc.downloadTask = nil</code> 直接将 <code>downloadTask</code> 直接置为了 <code>nil</code>，因为后面继续下载的时候会重新创建一个。</p>
+<p>继续下载的时候需要重新创建一个与 <code>resumeData</code> 相关的<code>downloadTask</code>：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 传入上次暂停下载返回的数据，就可以恢复下载</span></span><br><span class="line"><span class="keyword">self</span>.downloadTask = [<span class="keyword">self</span>.session downloadTaskWithResumeData:<span class="keyword">self</span>.resumeData];</span><br><span class="line">[<span class="keyword">self</span>.downloadTask resume]; <span class="comment">// 开始任务</span></span><br></pre></td></tr></table></figure>
+<h5 id="手动杀掉应用后的被动暂停"><a href="#手动杀掉应用后的被动暂停" class="headerlink" title="手动杀掉应用后的被动暂停"></a>手动杀掉应用后的被动暂停</h5><p>不论是普通的 <code>NSURLSession</code> 还是可以在后台使用的 <code>NSURLSession</code>，它们在被手动杀掉后都会保存当前的 <code>NSURLSession</code> 信息，在下次启动并且创建了相同 Identifier 的 session 实例之后，就会自动调用 <code>NSURLSessionTaskDelegate</code> 中的 task 结束回调。由于是下载失败，所以 error 中会包含信息，可以从其中取出 resumeData，并重新创建下载：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)URLSession:(<span class="built_in">NSURLSession</span> *)session</span><br><span class="line">              task:(<span class="built_in">NSURLSessionTask</span> *)task</span><br><span class="line">didCompleteWithError:(<span class="built_in">NSError</span> *)error</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span> (error) &#123;</span><br><span class="line">        <span class="comment">// check if resume data are available</span></span><br><span class="line">        <span class="keyword">if</span> ([error.userInfo objectForKey:<span class="built_in">NSURLSessionDownloadTaskResumeData</span>]) &#123;</span><br><span class="line">            <span class="built_in">NSData</span> *resumeData = [error.userInfo objectForKey:<span class="built_in">NSURLSessionDownloadTaskResumeData</span>];</span><br><span class="line">          	<span class="comment">// 重新创建一个 DownloadTask，并开始下载</span></span><br><span class="line">            <span class="built_in">NSURLSessionDownloadTask</span> *task = [<span class="keyword">self</span>.session] downloadTaskWithResumeData:resumeData];</span><br><span class="line">            [task resume];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="各个系统版本导致的-resumeData-的错误"><a href="#各个系统版本导致的-resumeData-的错误" class="headerlink" title="各个系统版本导致的 resumeData 的错误"></a>各个系统版本导致的 resumeData 的错误</h5><p>iOS10.0 - 10.1 中使用系统的 <code>resumeData</code> 无法直接恢复下载，原因是<code>currentRequest</code>和<code>originalRequest</code> 的<code>NSKeyArchived</code>编码异常。获取到<code>resumeData</code>后，需要对它进行修正，使用修正后的<code>resumeData</code>创建downloadTask，再对downloadTask的<code>currentRequest</code>和<code>originalRequest</code>赋值，<a href="https://stackoverflow.com/questions/39346231/resume-nsurlsession-on-ios10/39347461#39347461" target="_blank" rel="noopener">Stack Overflow</a>上面有具体说明。</p>
+<p>iOS 11.0 - 11.2 中由于多次对downloadTask进行 <code>取消 - 恢复</code> 操作，生成的<code>resumeData</code>会多出一个key为<code>NSURLSessionResumeByteRange</code>的键值对，所以会导致直接下载成功（实际上没有），下载的文件大小直接变成0。需要把key为<code>NSURLSessionResumeByteRange</code>的键值对删除。</p>
+<h4 id="普通下载与后台下载"><a href="#普通下载与后台下载" class="headerlink" title="普通下载与后台下载"></a>普通下载与后台下载</h4><p>普通下载后后台下载的区别在于创建的 <code>NSURLSession</code> 是普通的还是支持后台的，也就是创建时传入的 config 的区别：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 支持后下载的 NSURLSession 的 config</span></span><br><span class="line"><span class="built_in">NSURLSessionConfiguration</span>* sessionConfig = [<span class="built_in">NSURLSessionConfiguration</span> backgroundSessionConfigurationWithIdentifier:<span class="string">@"some Identifier"</span>];</span><br><span class="line"></span><br><span class="line"><span class="comment">// 普通的 NSURLSession 的 config</span></span><br><span class="line"><span class="built_in">NSURLSessionConfiguration</span>* sessionConfig = [<span class="built_in">NSURLSessionConfiguration</span> <span class="keyword">default</span>];</span><br></pre></td></tr></table></figure>
+<p>后台的 config 要求传入一个 Identifier，而普通的 config 则是默认的。</p>
+<h5 id="进入后台、应用-crash"><a href="#进入后台、应用-crash" class="headerlink" title="进入后台、应用 crash"></a>进入后台、应用 crash</h5><p>普通下载在后台 crash 时会立刻停止下载；而后台下载则不同，它在进入后台后，会和 background task 一样让应用获取 3 分钟的活动时间，时间到后还没下载完成的，会被系统的 watchdog 杀死，进而由另一个系统的进程继续下载。其他各种代码不严谨导致的 crash 也是一样，系统会创建另一个进程下载。</p>
+<p>在回到前台，或者重新创建 Session 之后，session 的代理方法会被继续调用。在重建 Session 的时候，可以通过 Session 的 <code>getTasksWithCompletionHandler:</code> 方法获取重建 Session 之后，恢复的之前的 downloadTask，并对其做一定的设置(比如你用一个包装类将 Task 包装了起来，Task 回调中使用的是包装类的方法，那么你就一定要在创建完 Session 之后立即获取所有的 Task，重建包装类。)</p>
+<h5 id="下载完成"><a href="#下载完成" class="headerlink" title="下载完成"></a>下载完成</h5><p>普通下载的下载完成就是正常的前台下载完成。而后台下载完成则区分各种情况：</p>
+<ol>
+<li>应用在前台</li>
+<li>应用在后台</li>
+<li>应用被杀，且下载完成时应用没有被打开</li>
+<li>应用被杀，且下载完成时应用被打开，且同时创建好相同 Identifier 的 Session</li>
+<li>应用被杀，且下载完成时应用被打开，但没有创建相同 Identifier 的 Session</li>
+</ol>
+<p>1 就是走普通的回调</p>
+<p>2 全部 task 完成后回调下面方法激活 app：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//在应用处于后台，且后台任务下载完成时回调</span></span><br><span class="line"> - (<span class="keyword">void</span>)application:(<span class="built_in">UIApplication</span> *)application</span><br><span class="line">handleEventsForBackgroundURLSession:(<span class="built_in">NSString</span> *)identifier </span><br><span class="line"> completionHandler:(<span class="keyword">void</span> (^)())completionHandler;</span><br></pre></td></tr></table></figure>
+<p>之后会调用 session 相关代理方法，最后调用:</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* 应用在后台，而且后台所有下载任务完成后，</span></span><br><span class="line"><span class="comment"> * 在所有其他NSURLSession和NSURLSessionDownloadTask委托方法执行完后回调，</span></span><br><span class="line"><span class="comment"> * 可以在该方法中做下载数据管理和UI刷新</span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line"> - (<span class="keyword">void</span>)URLSessionDidFinishEventsForBackgroundURLSession:(<span class="built_in">NSURLSession</span> *)session;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>最好将<code>handleEventsForBackgroundURLSession</code>中<code>completionHandler</code>保存，在该方法中待所有载数据管理和UI刷新做完后，再调用<code>completionHandler()</code></p>
+</blockquote>
+<p>3 由于应用没有被打开，会先启动 app，回调 AppDelegate 中的 <code>didFinishLaunchingWithOptions:</code> 方法。随后会回调 2 中的 <code>handleEventsForBackgroundURLSession</code>。由于 2 在后台，Session 没有被清除，所以后面就可以直接回调 Session 的代理方法。而 3 此时刚刚重新启动，没有创建 Session，因此，需要在 <code>handleEventsForBackgroundURLSession</code> 方法中通过 Identifier 重建 Session，才能进行后续的回调方法。重建好 Session 之后的过程和 2 相同。</p>
+<p>4 由于在前台，且创建好了 Session，因此和 1 一样</p>
+<p>5 由于没有创建 Session，会调用 <code>handleEventsForBackgroundURLSession</code> 创建 Session，和 3 类似。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/download_2.png?raw=true" alt="前台下载流程"></p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/download_1.png?raw=true" alt="后台下载流程"></p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a href="https://www.jianshu.com/p/1211cf99dfc3" target="_blank" rel="noopener">iOS使用NSURLSession进行下载（包括后台下载，断点下载）</a> 写的非常好</p>
+<p><a href="https://juejin.im/post/5c4ed0b0e51d4511dc730799#heading-17" target="_blank" rel="noopener">iOS原生级别后台下载详解</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tag/学习笔记/" rel="tag"># 学习笔记</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/03/04/iOS证书/" rel="next" title="iOS 证书相关">
+                <i class="fa fa-chevron-left"></i> iOS 证书相关
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/03/31/由于IPv6被拒/" rel="prev" title="因为IPv6被拒之后">
+                因为IPv6被拒之后 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.png" alt="Zachary Zhang">
+            
+              <p class="site-author-name" itemprop="name">Zachary Zhang</p>
+              <p class="site-description motion-element" itemprop="description">Stay Hungry. Stay Foolish!</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">116</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/zhang759740844" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:zch759740844@126.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#iOS-沙盒机制"><span class="nav-number">1.</span> <span class="nav-text">iOS 沙盒机制</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#沙盒中的目录类型"><span class="nav-number">1.1.</span> <span class="nav-text">沙盒中的目录类型</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#详解"><span class="nav-number">1.1.1.</span> <span class="nav-text">详解</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#注意"><span class="nav-number">1.1.2.</span> <span class="nav-text">注意</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#获取沙盒路径"><span class="nav-number">1.2.</span> <span class="nav-text">获取沙盒路径</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#获取沙盒的-Home-目录"><span class="nav-number">1.2.1.</span> <span class="nav-text">获取沙盒的 Home 目录</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#获取沙盒的-Documents-目录"><span class="nav-number">1.2.2.</span> <span class="nav-text">获取沙盒的 Documents 目录</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#获取-Library-文件路径"><span class="nav-number">1.2.3.</span> <span class="nav-text">获取 Library 文件路径</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#获取-Caches-文件路径"><span class="nav-number">1.2.4.</span> <span class="nav-text">获取 Caches 文件路径</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#获取-Tmp-文件路径"><span class="nav-number">1.2.5.</span> <span class="nav-text">获取 Tmp 文件路径</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#获取-Bundle-文件路径"><span class="nav-number">1.2.6.</span> <span class="nav-text">获取 Bundle 文件路径</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#文件下载"><span class="nav-number">2.</span> <span class="nav-text">文件下载</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#文件操作"><span class="nav-number">2.1.</span> <span class="nav-text">文件操作</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#创建文件夹"><span class="nav-number">2.1.1.</span> <span class="nav-text">创建文件夹</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#创建文件"><span class="nav-number">2.1.2.</span> <span class="nav-text">创建文件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#写数据到文件"><span class="nav-number">2.1.3.</span> <span class="nav-text">写数据到文件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#从文件读数据"><span class="nav-number">2.1.4.</span> <span class="nav-text">从文件读数据</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#文件大小"><span class="nav-number">2.1.5.</span> <span class="nav-text">文件大小</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#删除文件"><span class="nav-number">2.1.6.</span> <span class="nav-text">删除文件</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#NSData-使用"><span class="nav-number">2.2.</span> <span class="nav-text">NSData 使用</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#NSData-与-NSString"><span class="nav-number">2.2.1.</span> <span class="nav-text">NSData 与 NSString</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#NSData-与-UIImage"><span class="nav-number">2.2.2.</span> <span class="nav-text">NSData 与 UIImage</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#下载"><span class="nav-number">2.3.</span> <span class="nav-text">下载</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#普通的网络请求"><span class="nav-number">2.3.1.</span> <span class="nav-text">普通的网络请求</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#下载文件"><span class="nav-number">2.3.2.</span> <span class="nav-text">下载文件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#监听下载进度"><span class="nav-number">2.3.3.</span> <span class="nav-text">监听下载进度</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#断点下载"><span class="nav-number">2.3.4.</span> <span class="nav-text">断点下载</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#主动暂停"><span class="nav-number">2.3.4.1.</span> <span class="nav-text">主动暂停</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#手动杀掉应用后的被动暂停"><span class="nav-number">2.3.4.2.</span> <span class="nav-text">手动杀掉应用后的被动暂停</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#各个系统版本导致的-resumeData-的错误"><span class="nav-number">2.3.4.3.</span> <span class="nav-text">各个系统版本导致的 resumeData 的错误</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#普通下载与后台下载"><span class="nav-number">2.3.5.</span> <span class="nav-text">普通下载与后台下载</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#进入后台、应用-crash"><span class="nav-number">2.3.5.1.</span> <span class="nav-text">进入后台、应用 crash</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#下载完成"><span class="nav-number">2.3.5.2.</span> <span class="nav-text">下载完成</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考"><span class="nav-number">3.</span> <span class="nav-text">参考</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zachary Zhang</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

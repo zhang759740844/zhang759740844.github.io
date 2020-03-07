@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+
+
+
+
+  <meta name="keywords" content="基本控件,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="UITextFied 是经常用到的一个控件。还是有一些点需要注意的。">
+<meta name="keywords" content="基本控件">
+<meta property="og:type" content="article">
+<meta property="og:title" content="UITextField 简介">
+<meta property="og:url" content="http://zhang759740844.github.io/2017/04/23/UITextField学习笔记/index.html">
+<meta property="og:site_name" content="Zachary&#39;s blog">
+<meta property="og:description" content="UITextFied 是经常用到的一个控件。还是有一些点需要注意的。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2020-02-27T15:13:37.640Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="UITextField 简介">
+<meta name="twitter:description" content="UITextFied 是经常用到的一个控件。还是有一些点需要注意的。">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://zhang759740844.github.io/2017/04/23/UITextField学习笔记/">
+
+
+
+
+
+  <title>UITextField 简介 | Zachary's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Zachary's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">记录成长</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://zhang759740844.github.io/2017/04/23/UITextField学习笔记/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zachary Zhang">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Zachary's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">UITextField 简介</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-04-23T14:07:12+08:00">
+                2017-04-23
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><code>UITextFied</code> 是经常用到的一个控件。还是有一些点需要注意的。 </p>
+<a id="more"></a>
+<h3 id="基本属性"><a href="#基本属性" class="headerlink" title="基本属性"></a>基本属性</h3><p>挑选一些可能会忘记需要查阅的常用的基本属性，可能不完全，比如背景色啊，占位符啊，设置和读取文字啊都没列入。</p>
+<h4 id="设置边框样式"><a href="#设置边框样式" class="headerlink" title="设置边框样式"></a>设置边框样式</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">textField.borderStyle = <span class="built_in">UITextBorderStyleRoundedRect</span>;<span class="comment">//圆角</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//可选属性：</span></span><br><span class="line"><span class="built_in">UITextBorderStyleNone</span>,无边框</span><br><span class="line"><span class="built_in">UITextBorderStyleLine</span>,有边框</span><br><span class="line"><span class="built_in">UITextBorderStyleBezel</span>,有边框和阴影</span><br><span class="line"><span class="built_in">UITextBorderStyleRoundedRect</span>圆角</span><br></pre></td></tr></table></figure>
+<h4 id="设置字体"><a href="#设置字体" class="headerlink" title="设置字体"></a>设置字体</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[textField setFont:[<span class="built_in">UIFont</span> fontWithName:<span class="string">@"Arial"</span> size:<span class="number">30</span>]];</span><br></pre></td></tr></table></figure>
+<h4 id="密文输入"><a href="#密文输入" class="headerlink" title="密文输入"></a>密文输入</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">textField.secureTextEntry = <span class="literal">YES</span>;</span><br></pre></td></tr></table></figure>
+<h4 id="键盘类型"><a href="#键盘类型" class="headerlink" title="键盘类型"></a>键盘类型</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">textField.keyboardType = <span class="built_in">UIKeyboardTypeNumberPad</span>;  数字键</span><br><span class="line"></span><br><span class="line"><span class="comment">//全部类型    </span></span><br><span class="line"><span class="built_in">UIKeyboardTypeDefault</span>,当前键盘（默认）</span><br><span class="line"><span class="built_in">UIKeyboardTypeASCIICapable</span>,字母输入键</span><br><span class="line"><span class="built_in">UIKeyboardTypeNumbersAndPunctuation</span>,数字和符号</span><br><span class="line"><span class="built_in">UIKeyboardTypeURL</span>,URL键盘</span><br><span class="line"><span class="built_in">UIKeyboardTypeNumberPad</span>,数字键盘</span><br><span class="line"><span class="built_in">UIKeyboardTypePhonePad</span>,电话号码输入键盘   </span><br><span class="line"><span class="built_in">UIKeyboardTypeEmailAddress</span>,邮件地址输入键盘</span><br></pre></td></tr></table></figure>
+<h4 id="键盘风格"><a href="#键盘风格" class="headerlink" title="键盘风格"></a>键盘风格</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">textView.keyboardAppearance=<span class="built_in">UIKeyboardAppearanceDefault</span>；</span><br><span class="line"></span><br><span class="line"><span class="comment">//可选属性</span></span><br><span class="line"><span class="built_in">UIKeyboardAppearanceDefault</span>， 默认外观，浅灰色</span><br><span class="line"><span class="built_in">UIKeyboardAppearanceAlert</span>，     深灰 石墨色</span><br></pre></td></tr></table></figure>
+<h4 id="设置左右视图"><a href="#设置左右视图" class="headerlink" title="设置左右视图"></a>设置左右视图</h4><p><code>textField</code> 可以 <code>leftView</code> 和 <code>rightView</code>，文本输入区域在两者之间。设置清除按钮样式</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">textField.clearButtonMode = <span class="built_in">UITextFieldViewModeAlways</span>;</span><br><span class="line"><span class="comment">//Mode同左右视图的mode一样。</span></span><br></pre></td></tr></table></figure>
+<h4 id="再次编辑时是否清除之前内容"><a href="#再次编辑时是否清除之前内容" class="headerlink" title="再次编辑时是否清除之前内容"></a>再次编辑时是否清除之前内容</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 默认是NO</span></span><br><span class="line">textField.clearsOnBeginEditing = <span class="literal">YES</span></span><br></pre></td></tr></table></figure>
+<h4 id="对齐方式"><a href="#对齐方式" class="headerlink" title="对齐方式"></a>对齐方式</h4><p>垂直对齐：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">textField.contentVerticalAlignment = <span class="built_in">UIControlContentVerticalAlignmentCenter</span> </span><br><span class="line"></span><br><span class="line"><span class="comment">//可选属性：</span></span><br><span class="line"><span class="built_in">UIControlContentVerticalAlignmentCenter</span>  居中对齐</span><br><span class="line"><span class="built_in">UIControlContentVerticalAlignmentTop</span>    顶部对齐，默认是顶部对齐</span><br><span class="line"><span class="built_in">UIControlContentVerticalAlignmentBottom</span> 底部对齐</span><br><span class="line"><span class="built_in">UIControlContentVerticalAlignmentFill</span>    完全填充</span><br></pre></td></tr></table></figure>
+<p>水平对齐：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">textField.textAlignment = <span class="built_in">UITextAlignmentCenter</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//可选属性：</span></span><br><span class="line"><span class="built_in">UITextAlignmentLeft</span>，左对齐，默认是左对齐</span><br><span class="line"><span class="built_in">UITextAlignmentCenter</span>，</span><br><span class="line"><span class="built_in">UITextAlignmentRight</span>，右对齐</span><br></pre></td></tr></table></figure>
+<h4 id="设置滚动"><a href="#设置滚动" class="headerlink" title="设置滚动"></a>设置滚动</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">textField.adjustsFontSizeToFitWidth = <span class="literal">YES</span>;</span><br></pre></td></tr></table></figure>
+<p>默认是 NO。当是  YES当充满边框时，文字会缩小，当小到一定程度时仍然会滚动。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">textField.minimumFontSize = <span class="number">20</span>;</span><br></pre></td></tr></table></figure>
+<p>设置滚动时候的最小字号。</p>
+<h4 id="设置return键"><a href="#设置return键" class="headerlink" title="设置return键"></a>设置return键</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">textField.returnKeyType = <span class="built_in">UIReturnKeyGoogle</span>;search</span><br><span class="line"></span><br><span class="line"><span class="comment">//可选属性</span></span><br><span class="line"><span class="built_in">UIReturnKeyDefault</span>, 默认 灰色按钮，标有Return</span><br><span class="line"><span class="built_in">UIReturnKeyGo</span>,标有Go的蓝色按钮</span><br><span class="line"><span class="built_in">UIReturnKeyGoogle</span>,标有Google的蓝色按钮，用语搜索</span><br><span class="line"><span class="built_in">UIReturnKeyJoin</span>,标有Join的蓝色按钮</span><br><span class="line"><span class="built_in">UIReturnKeyNext</span>,标有Next的蓝色按钮</span><br><span class="line"><span class="built_in">UIReturnKeyRoute</span>,标有Route的蓝色按钮</span><br><span class="line"><span class="built_in">UIReturnKeySearch</span>,标有Search的蓝色按钮</span><br><span class="line"><span class="built_in">UIReturnKeySend</span>,标有Send的蓝色按钮</span><br><span class="line"><span class="built_in">UIReturnKeyYahoo</span>,标有Yahoo的蓝色按钮</span><br><span class="line"><span class="built_in">UIReturnKeyYahoo</span>,标有Yahoo的蓝色按钮</span><br><span class="line"><span class="built_in">UIReturnKeyEmergencyCall</span>, 紧急呼叫按钮</span><br></pre></td></tr></table></figure>
+<h3 id="文本编辑框代理"><a href="#文本编辑框代理" class="headerlink" title="文本编辑框代理"></a>文本编辑框代理</h3><p>首先要注意，必须先设置当前 textField 的 <code>delegate</code>，否则下面的回调无法响应。可以代码设置，也可以在 xib 中连当前 textField 的 <code>delegate</code> 到 <code>file&#39;s owner</code> 上。</p>
+<h4 id="是否进入编辑模式"><a href="#是否进入编辑模式" class="headerlink" title="是否进入编辑模式"></a>是否进入编辑模式</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">BOOL</span>)textFieldShouldBeginEditing:(<span class="built_in">UITextField</span> *)textField</span><br></pre></td></tr></table></figure>
+<p>默认返回YES，进入编辑模式。NO不进入编辑模式。</p>
+<h4 id="进入编辑模式"><a href="#进入编辑模式" class="headerlink" title="进入编辑模式"></a>进入编辑模式</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)textFieldDidBeginEditing:(<span class="built_in">UITextField</span> *)textField</span><br></pre></td></tr></table></figure>
+<h4 id="是否退出编辑模式"><a href="#是否退出编辑模式" class="headerlink" title="是否退出编辑模式"></a>是否退出编辑模式</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">BOOL</span>)textFieldShouldEndEditing:(<span class="built_in">UITextField</span> *)textField</span><br></pre></td></tr></table></figure>
+<p>默认返回YES，退出编辑模式。NO不退出编辑模式</p>
+<h4 id="退出编辑模式"><a href="#退出编辑模式" class="headerlink" title="退出编辑模式"></a>退出编辑模式</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)textFieldDidEndEditing:(<span class="built_in">UITextField</span> *)textField</span><br></pre></td></tr></table></figure>
+<h4 id="点击清除按钮是否清空"><a href="#点击清除按钮是否清空" class="headerlink" title="点击清除按钮是否清空"></a>点击清除按钮是否清空</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">BOOL</span>)textFieldShouldClear:(<span class="built_in">UITextField</span> *)textField</span><br></pre></td></tr></table></figure>
+<p>默认返回YES，返回NO不清除。</p>
+<h4 id="点击键盘上Return按钮时候调用"><a href="#点击键盘上Return按钮时候调用" class="headerlink" title="点击键盘上Return按钮时候调用"></a>点击键盘上Return按钮时候调用</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">BOOL</span>)textFieldShouldReturn:(<span class="built_in">UITextField</span> *)textField</span><br></pre></td></tr></table></figure>
+<h4 id="输入任何字符的时候调用该方法"><a href="#输入任何字符的时候调用该方法" class="headerlink" title="输入任何字符的时候调用该方法"></a>输入任何字符的时候调用该方法</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-(<span class="built_in">BOOL</span>)textField:(<span class="built_in">UITextField</span> *)field shouldChangeCharactersInRange:(<span class="built_in">NSRange</span>)range replacementString:(<span class="built_in">NSString</span> *)string</span><br></pre></td></tr></table></figure>
+<p>当输入字符时，代理调用该方法，如果返回YES则这次输入可以成功，如果返回NO，不能输入成功。range表示光标位置，string表示这次输入的字符串。</p>
+<h3 id="一些技巧"><a href="#一些技巧" class="headerlink" title="一些技巧"></a>一些技巧</h3><h4 id="全屏触摸关闭"><a href="#全屏触摸关闭" class="headerlink" title="全屏触摸关闭"></a>全屏触摸关闭</h4><p>监听手势，当点击开始时，关闭 textfield</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)touchesBegan:(<span class="built_in">NSSet</span>&lt;<span class="built_in">UITouch</span> *&gt; *)touches withEvent:(<span class="built_in">UIEvent</span> *)event&#123;</span><br><span class="line">    [<span class="keyword">self</span>.textField resignFirstResponder];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果你不能拿到 textfield 的实例，其实可以直接设置 <code>endEditing</code> 属性，表示结束编辑：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[<span class="keyword">self</span>.view endEditing:<span class="literal">YES</span>];</span><br></pre></td></tr></table></figure>
+<h4 id="限制长度"><a href="#限制长度" class="headerlink" title="限制长度"></a>限制长度</h4><p>使用上面的 <code>shouldChangeCharactersInRange:</code> 方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">BOOL</span>)textField:(<span class="built_in">UITextField</span> *)textField shouldChangeCharactersInRange:(<span class="built_in">NSRange</span>)range replacementString:(<span class="built_in">NSString</span> *)string&#123;  </span><br><span class="line">  	<span class="comment">//string就是此时输入的那个字符textField就是此时正在输入的那个输入框返回YES就是可以改变输入框的值NO相反</span></span><br><span class="line">	<span class="comment">//按会车可以改变</span></span><br><span class="line">  	<span class="keyword">if</span> ([string isEqualToString:<span class="string">@"\n"</span>])&#123; </span><br><span class="line">        <span class="keyword">return</span> <span class="literal">YES</span>; </span><br><span class="line">    &#125; </span><br><span class="line"></span><br><span class="line">    <span class="built_in">NSString</span> * toBeString = [textField.text stringByReplacingCharactersInRange:range withString:string]; <span class="comment">//得到输入框的内容</span></span><br><span class="line">	<span class="comment">//判断是否时我们想要限定的那个输入框</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.myTextField == textField)&#123; </span><br><span class="line">        <span class="keyword">if</span> ([toBeString length] &gt; <span class="number">20</span>) &#123; <span class="comment">//如果输入框内容大于20则弹出警告</span></span><br><span class="line">            textField.text = [toBeString substringToIndex:<span class="number">20</span>]; </span><br><span class="line">            <span class="built_in">UIAlertView</span> *alert = [[[<span class="built_in">UIAlertView</span> alloc] initWithTitle:<span class="literal">nil</span> message:<span class="string">@"超过最大字数不能输入了"</span> delegate:<span class="literal">nil</span> cancelButtonTitle:<span class="string">@"Ok"</span> otherButtonTitles:<span class="literal">nil</span>, <span class="literal">nil</span>] autorelease]; </span><br><span class="line">            [alert show]; </span><br><span class="line">            <span class="keyword">return</span> <span class="literal">NO</span>; </span><br><span class="line">        &#125; </span><br><span class="line">    &#125; </span><br><span class="line">    <span class="keyword">return</span> <span class="literal">YES</span>; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="UITextField输入中文时文字下沉的解决方法"><a href="#UITextField输入中文时文字下沉的解决方法" class="headerlink" title="UITextField输入中文时文字下沉的解决方法"></a>UITextField输入中文时文字下沉的解决方法</h4><p>出现情况：在 xib 创建的 <code>UITextField</code> 中输入中文的时候，<code>Border Style</code> 这个属性设置为第一种 <code>UITextBorderStyleNone</code>，同时 <code>Clear Button</code> 设置为 <code>Never appears</code> 时会出现这种情况</p>
+<p>解决方法：可以设置 <code>Clear Button</code> 的出现时机，或者设置 <code>Border Style</code> 为其他类型 。如果一定要是这种 <code>Border Style</code> 和 <code>Clear Button</code>，那么可以将 xib 中的 <code>UITextField</code> 拖出来，通过代码设置 <code>Border Style</code> 的方式设置其为<code>UITextBorderStyleNone</code> (在 xib 中要先设置为其他的再在代码里这样设置才能成功)。</p>
+<h4 id="多个-UITextField-点击换行按钮，切换-FirstResponder"><a href="#多个-UITextField-点击换行按钮，切换-FirstResponder" class="headerlink" title="多个 UITextField 点击换行按钮，切换 FirstResponder"></a>多个 UITextField 点击换行按钮，切换 FirstResponder</h4><p>主要就是利用 <code>textFieldShouldReturn:</code> 这个回调方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">BOOL</span>)textFieldShouldReturn:(<span class="built_in">UITextField</span> *)textField&#123;</span><br><span class="line">    <span class="keyword">if</span> (textField == errorTF1) &#123;</span><br><span class="line">        [errorTF2 becomeFirstResponder];</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (textField == errorTF2) &#123;</span><br><span class="line">        [errorTF3 becomeFirstResponder];</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (textField == errorTF3) &#123;</span><br><span class="line">        [errorTF4 becomeFirstResponder];</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (textField == errorTF4)&#123;</span><br><span class="line">        [errorTF4 resignFirstResponder];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NO</span>;<span class="comment">//YES or NO,that is a question</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="textField-键盘遮挡界面上移"><a href="#textField-键盘遮挡界面上移" class="headerlink" title="textField 键盘遮挡界面上移"></a>textField 键盘遮挡界面上移</h4><p>主要的思想就是监听键盘弹出和消失的通知，然后判断是否需要将屏幕上移。完整代码如下：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)viewDidLoad  &#123;  </span><br><span class="line">    [<span class="keyword">super</span> viewDidLoad];  </span><br><span class="line">    <span class="comment">//Do any additional setup after loading the view, typically from a nib.  </span></span><br><span class="line">    <span class="comment">//self.view.backgroundColor = [UIColor underPageBackgroundColor];  </span></span><br><span class="line">    myTextField = [[<span class="built_in">UITextField</span> alloc] init];<span class="comment">//初始化UITextField  </span></span><br><span class="line">    myTextField.frame = <span class="built_in">CGRectMake</span>(<span class="number">35</span>, <span class="number">230</span>, <span class="number">250</span>, <span class="number">35</span>);  </span><br><span class="line">    myTextField.delegate = <span class="keyword">self</span>;<span class="comment">//设置代理  </span></span><br><span class="line">    myTextField.borderStyle = <span class="built_in">UITextBorderStyleRoundedRect</span>;  </span><br><span class="line">    myTextField.contentVerticalAlignment = <span class="built_in">UIControlContentVerticalAlignmentCenter</span>;<span class="comment">//垂直居中  </span></span><br><span class="line">    myTextField.placeholder = <span class="string">@"Please entry your content!"</span>;<span class="comment">//内容为空时默认文字  </span></span><br><span class="line">    myTextField.returnKeyType = <span class="built_in">UIReturnKeyDone</span>;<span class="comment">//设置放回按钮的样式  </span></span><br><span class="line">    myTextField.keyboardType = <span class="built_in">UIKeyboardTypeNumbersAndPunctuation</span>;<span class="comment">//设置键盘样式为数字  </span></span><br><span class="line">    [<span class="keyword">self</span>.view addSubview:myTextField];  </span><br><span class="line">      </span><br><span class="line">      </span><br><span class="line">    <span class="comment">//注册键盘出现与隐藏时候的通知  </span></span><br><span class="line">    [[<span class="built_in">NSNotificationCenter</span> defaultCenter] addObserver:<span class="keyword">self</span>  </span><br><span class="line">                                             selector:<span class="keyword">@selector</span>(keyboadWillShow:)  </span><br><span class="line">                                             name:<span class="built_in">UIKeyboardWillShowNotification</span>  </span><br><span class="line">                                             object:<span class="literal">nil</span>];  </span><br><span class="line">    [[<span class="built_in">NSNotificationCenter</span> defaultCenter] addObserver:<span class="keyword">self</span>  </span><br><span class="line">                                             selector:<span class="keyword">@selector</span>(keyboardWillHide:)  </span><br><span class="line">                                          name:<span class="built_in">UIKeyboardWillHideNotification</span>  </span><br><span class="line">                                          object:<span class="literal">nil</span>];  </span><br><span class="line">    <span class="comment">//添加手势，点击屏幕其他区域关闭键盘的操作  </span></span><br><span class="line">    <span class="built_in">UITapGestureRecognizer</span> *gesture = [[<span class="built_in">UITapGestureRecognizer</span> alloc] initWithTarget:<span class="keyword">self</span> action:<span class="keyword">@selector</span>(hideKeyboard)];  </span><br><span class="line">    gesture.numberOfTapsRequired = <span class="number">1</span>;<span class="comment">//手势敲击的次数  </span></span><br><span class="line">    [<span class="keyword">self</span>.view addGestureRecognizer:gesture];  </span><br><span class="line">&#125;  </span><br><span class="line">  </span><br><span class="line"><span class="comment">//键盘出现时候调用的事件  </span></span><br><span class="line">-(<span class="keyword">void</span>) keyboadWillShow:(<span class="built_in">NSNotification</span> *)note&#123;  </span><br><span class="line">    <span class="built_in">NSDictionary</span> *info = [note userInfo];  </span><br><span class="line">    <span class="built_in">CGSize</span> keyboardSize = [[info objectForKey:<span class="built_in">UIKeyboardFrameEndUserInfoKey</span>] <span class="built_in">CGRectValue</span>].size;<span class="comment">//键盘的frame  </span></span><br><span class="line">    <span class="built_in">CGFloat</span> offY = (<span class="number">460</span>-keyboardSize.height)-myTextField.frame.size.height;<span class="comment">//屏幕总高度-键盘高度-UITextField高度  </span></span><br><span class="line">    [<span class="built_in">UIView</span> beginAnimations:<span class="literal">nil</span> context:<span class="literal">NULL</span>];<span class="comment">//此处添加动画，使之变化平滑一点  </span></span><br><span class="line">    [<span class="built_in">UIView</span> setAnimationDuration:<span class="number">0.3</span>];<span class="comment">//设置动画时间 秒为单位  </span></span><br><span class="line">    myTextField.frame = <span class="built_in">CGRectMake</span>(<span class="number">35</span>, offY, <span class="number">250</span>, <span class="number">35</span>);<span class="comment">//UITextField位置的y坐标移动到offY  </span></span><br><span class="line">    [<span class="built_in">UIView</span> commitAnimations];<span class="comment">//开始动画效果  </span></span><br><span class="line">      </span><br><span class="line">&#125;  </span><br><span class="line"><span class="comment">//键盘消失时候调用的事件  </span></span><br><span class="line">-(<span class="keyword">void</span>)keyboardWillHide:(<span class="built_in">NSNotification</span> *)note&#123;  </span><br><span class="line">    [<span class="built_in">UIView</span> beginAnimations:<span class="literal">nil</span> context:<span class="literal">NULL</span>];<span class="comment">//此处添加动画，使之变化平滑一点  </span></span><br><span class="line">    [<span class="built_in">UIView</span> setAnimationDuration:<span class="number">0.3</span>];  </span><br><span class="line">    myTextField.frame = <span class="built_in">CGRectMake</span>(<span class="number">35</span>, <span class="number">230</span>, <span class="number">250</span>, <span class="number">35</span>);<span class="comment">//UITextField位置复原  </span></span><br><span class="line">  </span><br><span class="line">    [<span class="built_in">UIView</span> commitAnimations];  </span><br><span class="line">&#125;  </span><br><span class="line"><span class="comment">//隐藏键盘方法  </span></span><br><span class="line">-(<span class="keyword">void</span>)hideKeyboard&#123;  </span><br><span class="line">    [myTextField resignFirstResponder];  </span><br><span class="line">&#125;  </span><br><span class="line"><span class="meta">#pragma mark -  </span></span><br><span class="line"><span class="meta">#pragma mark UITextFieldDelegate  </span></span><br><span class="line"><span class="comment">//开始编辑：  </span></span><br><span class="line">- (<span class="built_in">BOOL</span>)textFieldShouldBeginEditing:(<span class="built_in">UITextField</span> *)textField  &#123;  </span><br><span class="line">    <span class="keyword">return</span> <span class="literal">YES</span>;  </span><br><span class="line">&#125;  </span><br><span class="line">  </span><br><span class="line"><span class="comment">//点击return按钮所做的动作：  </span></span><br><span class="line">- (<span class="built_in">BOOL</span>)textFieldShouldReturn:(<span class="built_in">UITextField</span> *)textField  &#123;  </span><br><span class="line">    [textField resignFirstResponder];<span class="comment">//取消第一响应  </span></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">YES</span>;  </span><br><span class="line">&#125;  </span><br><span class="line">  </span><br><span class="line"><span class="comment">//编辑完成：  </span></span><br><span class="line">- (<span class="keyword">void</span>)textFieldDidEndEditing:(<span class="built_in">UITextField</span> *)textField  &#123;  </span><br><span class="line">&#125;  </span><br><span class="line">  </span><br><span class="line">-(<span class="keyword">void</span>)viewDidDisappear:(<span class="built_in">BOOL</span>)animated&#123;  </span><br><span class="line">    [<span class="keyword">super</span> viewDidDisappear:animated];  </span><br><span class="line">    [[<span class="built_in">NSNotificationCenter</span> defaultCenter] removeObserver:<span class="keyword">self</span>];<span class="comment">//移除观察者  </span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="设置-UITextField-的-Padding（leftview-和-rightview）"><a href="#设置-UITextField-的-Padding（leftview-和-rightview）" class="headerlink" title="设置 UITextField 的 Padding（leftview 和 rightview）"></a>设置 UITextField 的 Padding（leftview 和 rightview）</h4><p>当设置 <code>UITextField</code> 为左对齐的时候，就会发现输入的字和 <code>placeholder</code> 会紧贴着左边框。想要将字往右移，可以利用好 <code>leftView</code> 和 <code>rightView</code> 这两个属性。</p>
+<p>这两个属性会被放在 <code>textField</code> 的最左边和最右边。我们只要创建一个 <code>UIView</code> 然后赋值给 <code>leftView</code> 就可以了：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">UIView</span> spacerView = [[<span class="built_in">UIView</span> alloc] initWithFrame: <span class="built_in">CGRectMake</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="number">10</span>, <span class="number">10</span>)]; </span><br><span class="line">[textfield setLeftViewMode: <span class="built_in">UITextFieldViewModeAlways</span>]; </span><br><span class="line">[textfield setLeftView: spacerView];</span><br></pre></td></tr></table></figure>
+<p>注意这里要将 mode 设置为 <code>UITextFieldViewModeAlways</code>，否则左视图无法显现出来。</p>
+<h4 id="点击事件，不触发弹出键盘，触发其他事件"><a href="#点击事件，不触发弹出键盘，触发其他事件" class="headerlink" title="点击事件，不触发弹出键盘，触发其他事件"></a>点击事件，不触发弹出键盘，触发其他事件</h4><p>就是不让直接修改，点击后触发自己的响应。只要实现代理方法就可以了：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">BOOL</span>)textFieldShouldBeginEditing:(<span class="built_in">UITextField</span> *)textField&#123;</span><br><span class="line"><span class="comment">//写你要实现的：页面跳转的相关代码</span></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NO</span>；</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>先完成自己的操作，然后设置这个 <code>textField</code> 不能响应。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tag/基本控件/" rel="tag"># 基本控件</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/04/03/Notification学习/" rel="next" title="Notification 使用小结">
+                <i class="fa fa-chevron-left"></i> Notification 使用小结
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/05/04/UINavigationController使用/" rel="prev" title="UINavigationController使用方法">
+                UINavigationController使用方法 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.png" alt="Zachary Zhang">
+            
+              <p class="site-author-name" itemprop="name">Zachary Zhang</p>
+              <p class="site-description motion-element" itemprop="description">Stay Hungry. Stay Foolish!</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">116</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/zhang759740844" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:zch759740844@126.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#基本属性"><span class="nav-number">1.</span> <span class="nav-text">基本属性</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#设置边框样式"><span class="nav-number">1.1.</span> <span class="nav-text">设置边框样式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#设置字体"><span class="nav-number">1.2.</span> <span class="nav-text">设置字体</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#密文输入"><span class="nav-number">1.3.</span> <span class="nav-text">密文输入</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#键盘类型"><span class="nav-number">1.4.</span> <span class="nav-text">键盘类型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#键盘风格"><span class="nav-number">1.5.</span> <span class="nav-text">键盘风格</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#设置左右视图"><span class="nav-number">1.6.</span> <span class="nav-text">设置左右视图</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#再次编辑时是否清除之前内容"><span class="nav-number">1.7.</span> <span class="nav-text">再次编辑时是否清除之前内容</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#对齐方式"><span class="nav-number">1.8.</span> <span class="nav-text">对齐方式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#设置滚动"><span class="nav-number">1.9.</span> <span class="nav-text">设置滚动</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#设置return键"><span class="nav-number">1.10.</span> <span class="nav-text">设置return键</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#文本编辑框代理"><span class="nav-number">2.</span> <span class="nav-text">文本编辑框代理</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#是否进入编辑模式"><span class="nav-number">2.1.</span> <span class="nav-text">是否进入编辑模式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#进入编辑模式"><span class="nav-number">2.2.</span> <span class="nav-text">进入编辑模式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#是否退出编辑模式"><span class="nav-number">2.3.</span> <span class="nav-text">是否退出编辑模式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#退出编辑模式"><span class="nav-number">2.4.</span> <span class="nav-text">退出编辑模式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#点击清除按钮是否清空"><span class="nav-number">2.5.</span> <span class="nav-text">点击清除按钮是否清空</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#点击键盘上Return按钮时候调用"><span class="nav-number">2.6.</span> <span class="nav-text">点击键盘上Return按钮时候调用</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#输入任何字符的时候调用该方法"><span class="nav-number">2.7.</span> <span class="nav-text">输入任何字符的时候调用该方法</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#一些技巧"><span class="nav-number">3.</span> <span class="nav-text">一些技巧</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#全屏触摸关闭"><span class="nav-number">3.1.</span> <span class="nav-text">全屏触摸关闭</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#限制长度"><span class="nav-number">3.2.</span> <span class="nav-text">限制长度</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#UITextField输入中文时文字下沉的解决方法"><span class="nav-number">3.3.</span> <span class="nav-text">UITextField输入中文时文字下沉的解决方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#多个-UITextField-点击换行按钮，切换-FirstResponder"><span class="nav-number">3.4.</span> <span class="nav-text">多个 UITextField 点击换行按钮，切换 FirstResponder</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#textField-键盘遮挡界面上移"><span class="nav-number">3.5.</span> <span class="nav-text">textField 键盘遮挡界面上移</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#设置-UITextField-的-Padding（leftview-和-rightview）"><span class="nav-number">3.6.</span> <span class="nav-text">设置 UITextField 的 Padding（leftview 和 rightview）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#点击事件，不触发弹出键盘，触发其他事件"><span class="nav-number">3.7.</span> <span class="nav-text">点击事件，不触发弹出键盘，触发其他事件</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zachary Zhang</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

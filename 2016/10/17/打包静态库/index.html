@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+
+
+
+
+  <meta name="keywords" content="Xcode,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="最近由于要接入第三方库，因此想要了解库的相关知识。网上查阅了许多资料，仍然比较疑惑。比如，静态库能否以及如何引入动态库？动态库能否以及如何引入静态库？自建动态库(非系统动态库)的好处体现在哪，怎么实现？等等。在一番探索之后，总结了一篇较为详尽全面的库的使用方法。">
+<meta name="keywords" content="Xcode">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ios中库的介绍与使用">
+<meta property="og:url" content="http://zhang759740844.github.io/2016/10/17/打包静态库/index.html">
+<meta property="og:site_name" content="Zachary&#39;s blog">
+<meta property="og:description" content="最近由于要接入第三方库，因此想要了解库的相关知识。网上查阅了许多资料，仍然比较疑惑。比如，静态库能否以及如何引入动态库？动态库能否以及如何引入静态库？自建动态库(非系统动态库)的好处体现在哪，怎么实现？等等。在一番探索之后，总结了一篇较为详尽全面的库的使用方法。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/库.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/lib_1.jpg?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/lib_2.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/lib_3.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/lib_4.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/lib_5.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/lib_6.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/lib_7.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/lib_8.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/lib_9.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/lib_10.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/lib_11.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/lib_12.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/lib_13.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/lib_14.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/lib_15.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/fram_1.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/fram_2.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/fram_3.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/fram_4.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/newLib_1.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/newLib_2.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/newLib_6.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/fram_5.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/fram_6.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/fram_7.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/fram_8.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/newLib_3.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/newLib_4.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/newLib_5.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/newLib_9.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/newLib_10.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/newLib_11.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/newLib_12.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/newLib_13.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/newLib_14.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/newLib_15.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/newLib_16.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/newLib_17.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/newLib_18.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/newLib_19.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/newLib_20.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/newLib_21.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_point_1.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_point_2.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_point_3.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_point_4.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_point_5.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_point_6.png?raw=true">
+<meta property="og:updated_time" content="2020-02-27T15:13:37.663Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ios中库的介绍与使用">
+<meta name="twitter:description" content="最近由于要接入第三方库，因此想要了解库的相关知识。网上查阅了许多资料，仍然比较疑惑。比如，静态库能否以及如何引入动态库？动态库能否以及如何引入静态库？自建动态库(非系统动态库)的好处体现在哪，怎么实现？等等。在一番探索之后，总结了一篇较为详尽全面的库的使用方法。">
+<meta name="twitter:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/库.png?raw=true">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://zhang759740844.github.io/2016/10/17/打包静态库/">
+
+
+
+
+
+  <title>ios中库的介绍与使用 | Zachary's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Zachary's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">记录成长</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://zhang759740844.github.io/2016/10/17/打包静态库/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zachary Zhang">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Zachary's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">ios中库的介绍与使用</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-10-17T10:07:12+08:00">
+                2016-10-17
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>最近由于要接入第三方库，因此想要了解库的相关知识。网上查阅了许多资料，仍然比较疑惑。比如，静态库能否以及如何引入动态库？动态库能否以及如何引入静态库？自建动态库(非系统动态库)的好处体现在哪，怎么实现？等等。在一番探索之后，总结了一篇较为详尽全面的库的使用方法。</p>
+<a id="more"></a>
+<p>先来看一张思维导图：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/库.png?raw=true" alt="库"></p>
+<h2 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h2><h3 id="什么是库"><a href="#什么是库" class="headerlink" title="什么是库"></a>什么是库</h3><p>库是共享程序代码的方式。库从本质上来说是一种可执行代码的二进制格式，可以被载入内存中执行。在开发过程中，一些核心技术或者常用框架，出于安全性和稳定性的考虑，不想被外界知道，所以会把核心代码打包成库，只暴露出头文件以供使用。库分静态库和动态库两种。</p>
+<h3 id="库的分类"><a href="#库的分类" class="headerlink" title="库的分类"></a>库的分类</h3><h4 id="静态库"><a href="#静态库" class="headerlink" title="静态库"></a>静态库</h4><p>存在 <code>.a</code> 和 <code>.framework</code> 两种形式。 <code>.a</code> 是一个纯二进制文件，<code>.framework</code> 中除了有二进制文件之外还有资源文件。 <code>.a</code> ，要有 <code>.h</code> 文件以及资源文件配合， <code>.framework</code> 文件可以直接使用。总的来说，<code>.a + .h + sourceFile = .framework</code>。所以创建静态库最好还是用<code>.framework</code>的形式。</p>
+<p>对于静态库而言，类似于一个编译好的 <code>.o</code> 的集合。在build的过程中，只会参与链接的操作，链接器会将静态库中被使用的部分合并到可执行文件中去，用函数的实际地址来代替函数引用。链接流程如下图：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/lib_1.jpg?raw=true" alt="静态库的链接过程"></p>
+<h4 id="动态库"><a href="#动态库" class="headerlink" title="动态库"></a>动态库</h4><p>存在<code>.framework</code>和<code>.tbd</code>两种形式。</p>
+<p>在 iOS8 之前，苹果不允许第三方框架使用动态方式加载，从 iOS8 开始允许开发者有条件地创建和使用动态框架，这种框架叫做 Cocoa Touch Framework。虽然同样是动态框架，但是和系统 framework 不同，app 中的使用的 Cocoa Touch Framework 在打包和提交 app 时会被放到 app bundle 中，运行在沙盒里，而不是系统中。也就是说，不同的 app 就算使用了同样的 framework，但还是会有多份的框架被分别签名，打包和加载。不过 iOS8 上开放了 <strong>App Extension</strong> 功能，可以为一个应用创建插件，这样主app和插件之间共享动态库还是可行的。</p>
+<p>动态链接是使用了 <strong>Procedure Linkage Table (PLT)</strong>。首先这个 <strong>PLT</strong> 列出了程序中每一个函数的调用，<strong>当程序开始运行</strong>，如果动态库被加载到内存中，<strong>PLT</strong> 会去寻找动态的地址并记录下来，如果函数被调用过的话，下一次调用就可以通过 <strong>PLT</strong> 直接跳转了。</p>
+<h3 id="优劣"><a href="#优劣" class="headerlink" title="优劣"></a>优劣</h3><p>静态库，在链接时会被完整地复制到可执行文件中，被多次使用就有多份冗余拷贝。<br>好处很明显，编译完成之后，库文件实际上就没有作用了。目标程序没有外部依赖，直接就可以运行。当然其缺点也很明显，就是会使用目标程序的体积增大。</p>
+<p>动态库，与静态库相反，动态库在编译时并不会被拷贝到目标程序中，目标程序中只会存储指向动态库的引用。等到程序运行时，动态库才会被真正加载进来。<br>系统的动态库不需要拷贝到目标程序中，自建的动态库可以由工程内的多个库共享，因此可以减小目标程序的体积。但是，由于其把静态链接做的事情都搬到运行时来做，程序的启动会变慢。</p>
+<h2 id="库的创建"><a href="#库的创建" class="headerlink" title="库的创建"></a>库的创建</h2><h3 id="a静态库的创建"><a href="#a静态库的创建" class="headerlink" title=".a静态库的创建"></a>.a静态库的创建</h3><p>创建一个 <code>.a</code> 静态库项目，如下图所示：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/lib_2.png?raw=true" alt="lib_2"><br>静态库的文件列表如下，在 <strong>products</strong> 文件夹内的就是要生成的静态库。此刻是红色的，等到生成成功就会变成黑色。<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/lib_3.png?raw=true" alt="lib_3"><br>现在新建自己的类<code>PrintString.h</code>，声明和实现一个第三方库的方法。<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/lib_4.png?raw=true" alt="lib_4"><br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/lib_5.png?raw=true" alt="lib_5"><br>现在可以打包这个静态库了。由于模拟器和真机架构不同，需要选择该包将运行在哪个环境下，如下图所示，选择运行在真机上：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/lib_6.png?raw=true" alt="lib_6"><br>打包生成了静态库在 <strong>products</strong> 文件夹内：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/lib_7.png?raw=true" alt="lib_7"><br>打开 <strong>products</strong> 文件夹， 但是此时暴露出来的头文件并没有<code>PrintString.h</code>。需要对暴露的头文件进行设置。<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/lib_8.png?raw=true" alt="lib_8"><br>如下图，在 <strong>Build Phase</strong> ，的 <strong>Copy Files</strong> 目录下加入想要公开的头文件：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/lib_9.png?raw=true" alt="lib_9"><br>现在再 run 一次，就得到了正确的静态库。</p>
+<p><strong>实践证明，即使不在 CopyFiles 中设置，只要把想暴露的头文件提供给使用者，照样能够使用。这里只是把你想要暴露的头文件单独汇集在一个目录中</strong></p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/lib_10.png?raw=true" alt="lib_10"><br>现在，可以测试一下这个静态库。可以再创建一个工程，把<strong>库连同要暴露的头文件</strong>一起拖进去。这里我新建了一个 <strong>target</strong> ：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/lib_11.png?raw=true" alt="lib_11"><br>先要在工程和库间建立关联。如下图所示，在 <strong>Link Binary With Libraries</strong> 中添加库：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/lib_12.png?raw=true" alt="lib_12"><br>在 <code>ViewController.m</code> 中调用库的方法：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/lib_13.png?raw=true" alt="lib_13"><br>现在可以运行了，不过运行前要选择对 <strong>target</strong> ：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/lib_14.png?raw=true" alt="lib_14"><br>可以在控制台看到库中的方法被调用了：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/lib_15.png?raw=true" alt="lib_15"></p>
+<h3 id="framework的创建"><a href="#framework的创建" class="headerlink" title=".framework的创建"></a>.framework的创建</h3><h4 id="动态framework"><a href="#动态framework" class="headerlink" title="动态framework"></a>动态framework</h4><p>创建一个framework：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/fram_1.png?raw=true" alt="frame_1"><br>创建后的文件列表如下，可以看到只有一个 <code>framework.h</code> 头文件。通过注释，我们可以理解，这个头文件是所有 public 头文件的集合：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/fram_2.png?raw=true" alt="frame_2"></p>
+<p>实践证明，即使你不按照他的要求这样 <code>#import &lt;Frameworks/PublicHeader.h&gt;</code> 而是 <code>#import &quot;PublicHeader.h&quot;</code> 也是没问题的</p>
+<p>将前面创建的 <code>PrintString.h</code> 和 <code>PrintString.m</code> 导入，并且 import 到 <code>framework.h</code> 中去：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/fram_3.png?raw=true" alt="frame_3"><br>设置需要暴露的头文件，头文件默认在 <strong>project header</strong> 中，将需要暴露出来的拖到 <strong>public header</strong> 中去。<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/fram_4.png?raw=true" alt="frame_4"></p>
+<p>实践证明，不想暴露的头文件不要多次一举的放到 Private 中去。如果在 Private 中添加了文件，生成的 Framework 中是会有一个 PrivateHeaders 文件夹的，并且这些 PrivateHeaders 是能被应用方使用的。所以 Private 的直接不理，让它们留在 Project 中就行了。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/newLib_1.png?raw=true" alt="新增"></p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/newLib_2.png?raw=true" alt="新增2"></p>
+<p>我们可以看到此处有三种头文件，分别是 <strong>project header</strong> ， <strong>public header</strong> ， <strong>private header</strong> 。区别如下，<strong>不想让别人知道的放在 Project 下就行了</strong>：</p>
+<blockquote>
+<p>Public: The interface is finalized and meant to be used by your product’s clients. A public header is included in the product as readable source code without restriction.</p>
+</blockquote>
+<blockquote>
+<p>Private: The interface isn’t intended for your clients or it’s in early stages of development. A private header is included in the product, but it’s marked “private”. Thus the symbols are visible to all clients, but clients should understand that they’re not supposed to use them.</p>
+</blockquote>
+<blockquote>
+<p>Project: The interface is for use only by implementation files in the current project. A project header is not included in the target, except in object code. The symbols are not visible to clients at all, only to you.</p>
+</blockquote>
+<hr>
+<p><strong>切记切记 </strong>要暴露的头文件一定要放在 Public 下，否则到时候引入的时候会出现如下错误(反正我是老是忘记这个)：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/newLib_6.png?raw=true" alt="new"></p>
+<p>这个错误是因为，我在 <code>DynamicWithStatic.h</code> 中 import 的头文件并没有被被设置为 Public 导致的。</p>
+<hr>
+<p>生成的 framework 文件目录如下：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/fram_5.png?raw=true" alt="frame_5"></p>
+<p>将生成的 framework 放入工程中测试。<strong>和 .a直接 <code>#import &quot;文件名.h&quot;</code> 不同，framework 引入头文件的时候要按照 <code>#import &lt;framework名/头文件名.h&gt;</code> 的方式引入，静态的 Framework 也要如此</strong>。</p>
+<p>现在编译可以通过，运行时出现如下错误：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/fram_6.png?raw=true" alt="frame_6"></p>
+<p>需要将动态库嵌入工程的 bundle 中。因此，需要在 General 中的 <strong>Embedded Binary</strong> 一项中加入相应动态库：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/fram_7.png?raw=true" alt="frame_7"></p>
+<p>现在就可以正确运行了</p>
+<h4 id="静态framework"><a href="#静态framework" class="headerlink" title="静态framework"></a>静态framework</h4><p>静态framework和动态framework创建的基本流程一致，唯一的区别需要设置 <strong>Mach-O Type</strong> 为 <code>Static Library</code> ：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/fram_8.png?raw=true" alt="frame_8"></p>
+<h4 id="Bundle-的创建与使用"><a href="#Bundle-的创建与使用" class="headerlink" title="Bundle 的创建与使用"></a>Bundle 的创建与使用</h4><p>有时候，我们需要自己创建一个 Bundle，包含一些图片或者 xib 文件。那么如何创建以及使用 Bundle 呢？</p>
+<p>新建 Target，在 iOS 选项中找不到 Bundle，那么我们就在 macOS 下选取创建 Bundle：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/newLib_3.png?raw=true" alt="bundle"></p>
+<p>这个创建的是 macOS 使用的 Bundle，需要修改其 <code>Base SDK</code> 为 iOS 使用：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/newLib_4.png?raw=true" alt="bundle"></p>
+<p>我们在这个 Bundle 里添加一张图片，现在运行生成 Bundle。将生成好的 Bundle放到测试工程中，可以看到图片添加了进去。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/newLib_5.png?raw=true" alt="bundle"></p>
+<p>使用的时候由于不是直接在 mainBundle 下，所以不能直接使用 <code>[UIImage imageNamed:@&quot;author&quot;]</code>。需要找到 Bundle 所在的路径：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[<span class="built_in">UIImage</span> imageNamed:[[[<span class="built_in">NSBundle</span> mainBundle] pathForResource:<span class="string">@"NewBundle"</span> ofType:<span class="string">@"bundle"</span>] stringByAppendingString:<span class="string">@"/author.png"</span>]]</span><br></pre></td></tr></table></figure>
+<p>通过路径拼接就能找到正确的图片路径。（对于有些不在 mainBundle 中的 bundle，比如动态库的 bundle，将在用 Cocoapods 创建一个库中介绍）</p>
+<h3 id="静态库与动态库的引用"><a href="#静态库与动态库的引用" class="headerlink" title="静态库与动态库的引用"></a>静态库与动态库的引用</h3><p>一个库的开发经常会需要用到其他的库(如 <code>AFNetWorking</code> )的配合，因此，需要在库中嵌入其他的库。如何在自己的静态/动态库中集成第三方的静态/动态库，以及如何配合使用 cocoapods 是我比较困惑的点。下面我就对其进行探。</p>
+<p><em>网上没有找到相关教程，以下是我不断尝试后得出的结论，如果有错误还请指正。</em></p>
+<h4 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h4><p>本次我将使用 <code>SVProgressHUD</code> 作为测试的第三方库。我下载了其 2.1.2 的代码，并手动分别打成了静态库 <code>StaticSVProgressHUD</code>以及动态库 <code>DynamicSVProgressHUD</code></p>
+<p>这里强调一点：<strong>静态库无论是 .a 还是 .framework，都是无法把图片等资源文件打进去的（包括在工程中引入其他的 xcodeproj 最后也是生成一个 .a 的静态库）。</strong>如果有与静态库相匹配的资源文件，需要打一个 bundle 和静态库一起添加到工程中，然后就可以用代码到 mainBundle 中获取。动态库没有这个问题。</p>
+<h4 id="动态库引用静态库"><a href="#动态库引用静态库" class="headerlink" title="动态库引用静态库"></a>动态库引用静态库</h4><h5 id="创建"><a href="#创建" class="headerlink" title="创建"></a>创建</h5><p>首先创建一个动态库 <code>DynamicWithStatic</code>，然后链接刚才生成的 <code>StaticSVProgressHUD</code> ：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/newLib_9.png?raw=true" alt="链接静态库"></p>
+<p>向其中添加自己的显示 HUD 的类 <code>DWSShowPic</code>，并且将资源文件 <code>SVProgressHUD.bundle</code> 加入库中。之后设置好头文件就可以直接运行了。因为<strong>动态库引用静态库就相当于将代码直接添加在了动态库里</strong>，所以和普通动态库没有什么差别，具体可以看我的 Demo。记得一定要在测试工程中 <code>Embedded Binaries</code> 这个动态库。</p>
+<h5 id="引入-Cocoapods"><a href="#引入-Cocoapods" class="headerlink" title="引入 Cocoapods"></a>引入 Cocoapods</h5><p>现在模拟上面创建的库是工作中要引入的，然后你本身使用 Cocoapods 管理第三方库的，并且也用到了 <code>SVProgressHUD</code>。那么这会产生什么冲突吗？我们实验一下。</p>
+<p>我们将测试工程中引入 Cocoapods：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/newLib_10.png?raw=true" alt="引入Cocoapods"></p>
+<p>好的，运行项目，看看会发生什么：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/newLib_11.png?raw=true" alt="冲突"></p>
+<p>运行时没有问题的，但是出现了一些警告。这是因为你在动态库中引入了静态库 <code>SVProgressHUD</code>，并且又用 Cocoapods 引入了一遍静态库 <code>SVProgressHUD</code>。这就产生了冲突，执行的时候会选择其中一个执行。我们需要对动态库中引入的静态库的文件进行改名，比如加上前缀。</p>
+<p>如果在 Cocoapods 中引入的是动态库 <code>SVProgressHUD</code> 呢？结果也是一样的。会出现上面的警告，但是不影响运行。</p>
+<h4 id="动态库引用动态库"><a href="#动态库引用动态库" class="headerlink" title="动态库引用动态库"></a>动态库引用动态库</h4><h5 id="创建-1"><a href="#创建-1" class="headerlink" title="创建"></a>创建</h5><p>创建一个动态库 <code>DynamicWithDynamic</code>，然后链接之前的动态库 <code>DynamicSVProgressHUD</code>:</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/newLib_12.png?raw=true" alt="链接"></p>
+<p>和之前一样的，添加自己的显示类 <code>DWDShowPic</code>。由于 <code>DynamicSVProgressHUD</code> 中自带了资源 bundle，所以这里就不需要再添加了。没有什么特别的直接运行生成动态库。现在放到测试工程里运行。同样的，要 <code>Embedded Binaries</code> 中添加这个动态库。</p>
+<p>不出意外的，程序崩了：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/newLib_13.png?raw=true" alt="错误"></p>
+<p>这个问题上面看到过。是因为没有链接上动态库。不过这里不是没有链接上 <code>DynamicWithDynamic</code> 而是没有链接上 <code>DynamicSVProgressHUD</code>。<strong>动态库不会被打包进动态库中，它只会创建一个引用，需要在项目中手动添加被引用的动态库</strong>。现在我们在测试工程的 <code>Embedded Binaries</code> 中添加所需的动态库：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/newLib_14.png?raw=true" alt="添加DynamicSVProgressHUD"></p>
+<p>可以顺利运行。</p>
+<h5 id="引入-Cocoapods-1"><a href="#引入-Cocoapods-1" class="headerlink" title="引入 Cocoapods"></a>引入 Cocoapods</h5><p>现在模拟的是你的工程里使用 Cocoapods 使用了某个动态库，比如 <code>DynamicSVProgressHUD</code>，然后 SDK 提供者给你提供了一个使用 <code>DynamicSVProgressHUD</code> 的动态库 <code>DynamicWithDynamic</code>。那么引入会有什么问题吗？</p>
+<p>由于我之前用的都是对 <code>SVProgressHUD</code> 的封装 <code>DynamicSVProgressHUD</code>，现在看来是多此一举了，因为我还得自己创建一个能被 Cocoapods 引入的 <code>DynamicSVprogressHUD</code>。如果直接用 <code>SVProgressHUD</code> 就很开心了。现在修改 Podfile：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/newLib_15.png?raw=true" alt="修改podfile"></p>
+<p>通过 <code>use_frameworks</code> 使 Cocoapods 创建动态库，然后自己创建了一个本地的 <code>DynamicSVProgressHUD</code>。</p>
+<p>现在我们把刚才手动加入的 <code>DynamicSVProgressHUD</code> 删去，然后 <code>pod install</code> ，运行。结果正常，运行没有问题。</p>
+<p>如果我们 pod 加载的是个静态的 <code>DynamicSVProgressHUD</code>，但是需要的是个动态的 <code>DynamicSVProgressHUD</code> 会这样？会产生和上面没有在 <code>Embedded Binaries</code> 中添加动态库相同原因的崩溃。</p>
+<p>现在还有一个问题，如果我不将之前加入的 <code>DynamicSVProgressHUD</code> 删去呢？即工程中保留了两个同名的动态库 <code>DynamicSVProgressHUD</code>。会发生什么样的情况？</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/newLib_16.png?raw=true" alt="两个动态库"></p>
+<p>运行，没有任何问题，也不会产生任何 warning。为了区分到底是哪个被执行了，我在 pod 添加的库的代码中添加了 log。运行时打印出了 log，证明运行的是 pod 的库。当然这不绝对，也有可能不执行 pod 的库的方法。<strong>问题的核心在于你在 <code>Linked Frameworks and Libraries</code> 时哪个库是先被添加的</strong>。上面的之所以总是执行 pod 的库，就是因为在 <code>Linked Frameworks and Libraries</code> 中，先添加的是 pod 的库。pod 的库执行时被加载后，手动添加的同名库就不会被加载了。</p>
+<p>动态库引入动态库，不会将要引入的动态库打包到自身中，即只是 link 产生关联，而不是和静态库一样完全写入。 需要在外部使用该动态库时，手动 embed 动态库内要使用的动态库。这样的做法很麻烦，那么有什么意义呢？正如动态库本身的作用，如果工程本身也要用到该 <code>SVProgressHUD</code> 动态库时，那么仅需导入一份，就不会产生重复代码了。</p>
+<h4 id="静态库引用静态库"><a href="#静态库引用静态库" class="headerlink" title="静态库引用静态库"></a>静态库引用静态库</h4><h5 id="创建-2"><a href="#创建-2" class="headerlink" title="创建"></a>创建</h5><p>现在来到静态库引用静态库的实验环节。我们还是先创建一个 <code>StaticWithStatic</code> 的静态库，在其中引入 <code>StaticSVProgressHUD</code>。然后创建一个类 <code>SWSShowPic</code> 用来调用静态库。由于上面说到静态库的资源文件无法打包在静态库中，因此，资源文件将直接放到测试工程中去：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/newLib_17.png?raw=true" alt="创建静态库"></p>
+<p>把生成的静态库放到测试工程中去执行。编译时产生错误：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/newLib_18.png?raw=true" alt="缺少静态库"></p>
+<p>这个错误说明静态库 <code>StaticWithStatic</code> 并没有把 <code>StaticSVProgressHUD</code> 嵌入其中，即<strong>静态库无法嵌入静态库中</strong>。动态库确实是把静态库打在了自己的库中，但是静态库无法做到这一点。我想这应该和资源文件无法打进静态库类似。</p>
+<p>所以，为了解决这个问题。我们需要在测试工程中添加所需的静态库 <code>StaticSVProgressHUD</code>:</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/newLib_19.png?raw=true" alt="创建链接"></p>
+<p>现在再编译运行，一切正常。</p>
+<h5 id="引入-Cocoapods-2"><a href="#引入-Cocoapods-2" class="headerlink" title="引入 Cocoapods"></a>引入 Cocoapods</h5><p>同样用 Cocoapods 模拟一下通过 Cocoapods 是否可以为静态库提供静态库的链接。按照上面的方式，创建一个供静态库引入的 <code>StaticSVProgressHUD</code>。注意要修改 Podfile，把 <code>use_frameworks!</code> 注释掉：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/newLib_20.png?raw=true" alt="修改Podfile"></p>
+<p>将原来手动引入的 <code>StaticSVProgressHUD</code> 删除，然后直接运行，没有任何问题。</p>
+<p>那么再来思考一个问题，如果我不把手动引入的库删除，即有两个相同的静态库会怎样？</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/newLib_21.png?raw=true" alt="编译出错"></p>
+<p>可以看到，编译的时候直接报 <code>duplicate symbol</code> 的错。其实就是<strong>两个静态库中，不能有相同的文件名，否则编译不通过。不过之前对于动态库包含静态库中的文件和工程中文件重名的情况就只报了个 warning。</strong>（特指不能有同名文件，和库同名没有关系 -.-）</p>
+<h4 id="静态库引用动态库"><a href="#静态库引用动态库" class="headerlink" title="静态库引用动态库"></a>静态库引用动态库</h4><h5 id="创建-3"><a href="#创建-3" class="headerlink" title="创建"></a>创建</h5><p>最后我们试验一下静态库如何引用动态库。还是如法炮制。创建一个静态库 <code>StaticWithDynamic</code>，然后在 <code>Link FrameWorks and Libraries</code> 中添加动态库 <code>DynamicSVProgressHUD</code>。现在把生成的静态库拖到测试工程中，运行，编译时出错。还是那个由于没有链接动态库产生的  <code>image not found</code> 错误，我就不贴图片了。</p>
+<p>解决方式也是上面说的，要把动态库 <code>DynamicSVProgressHUD</code> 单独添加到 <code>EMbedded Binaries</code>中去。这样运行一切正常。</p>
+<h5 id="引入-Cocoapods-3"><a href="#引入-Cocoapods-3" class="headerlink" title="引入 Cocoapods"></a>引入 Cocoapods</h5><p>通过之前的学习，到这里，不用试也应该知道会发生什么了。运行正常，如果项目里有多个同名动态库，先添加的会被执行。</p>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>到这里静态库动态库相互引用，以及配合 Cocoapods 的所有情况我都已经列举完毕了。累。应该所有接入 SDK 时候会遇到的情况都已经枚举过一遍了。</p>
+<h2 id="一些需要知道的点"><a href="#一些需要知道的点" class="headerlink" title="一些需要知道的点"></a>一些需要知道的点</h2><h3 id="debug与release"><a href="#debug与release" class="headerlink" title="debug与release"></a>debug与release</h3><p>库分为 debug 和 release 两种版本。一般来说, 我们应该发布的是 release 版本。</p>
+<ul>
+<li><strong>debug</strong> :调试版本, 系统本身也会有一些调试代码. 此版本体积会稍大, 运行会稍慢。</li>
+<li><strong>release</strong> : 发布版本, 系统会去除调试代码, 体积变小, 运行速度变快. 对用户来说没有明显的感觉。</li>
+</ul>
+<p>debug 与 release 的设置方式如下图：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_point_1.png?raw=true" alt="debug与release设置"></p>
+<p>对于别人给的库，貌似并不能区分是 debug 还是 release 版本的。</p>
+<h3 id="多架构编译"><a href="#多架构编译" class="headerlink" title="多架构编译"></a>多架构编译</h3><p>库不仅按 debug 和 release 分类，还会因为运行系统的不同而编译出不同框架的版本。上面的例子都是在真机下的编译，为 arm64 版本，在其他的框架下不能正确运行。</p>
+<p>框架分类：</p>
+<ul>
+<li>模拟器架构: </li>
+</ul>
+<ul>
+<li>i386   : 32位架构  4S ~ 5</li>
+<li>x86_64 : 64位架构  5S ~ 现在的机型</li>
+</ul>
+<ul>
+<li>真机架构:</li>
+</ul>
+<ul>
+<li>arm7: 在最老的支持iOS7的设备上使用</li>
+<li>arm7s: 在iPhone5和5C上使用 </li>
+<li>arm64: 运行于iPhone5S的64位 ARM 处理器 上</li>
+</ul>
+<p>修改框架的方式如下图：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_point_2.png?raw=true" alt="修改框架设置"></p>
+<p>debug 项默认为 YES ，表示仅生成当前选择的框架的库； release 项默认为 NO ，表示生成支持所有模拟器或真机的库。生成的库将会保存在 products 目录下的不同分类目录内：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_point_3.png?raw=true" alt="库所在目录"></p>
+<h3 id="lipo"><a href="#lipo" class="headerlink" title="lipo"></a>lipo</h3><p>lipo 是个很有用的命令，主要用来查看库支持的架构以及合并拆分库。</p>
+<h4 id="info"><a href="#info" class="headerlink" title="-info"></a>-info</h4><p>查看刚才编译的 Framework 库在 debug 和 release 下支持的框架：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_point_4.png?raw=true" alt="查看库"><br>可以看到正如上面所说 debug 下不是 fat file ，只支持 arm64 ， release 下是 fat file ， 支持 arm7 和 arm64。</p>
+<h4 id="create"><a href="#create" class="headerlink" title="-create"></a>-create</h4><p>上面生成的库，要么是只支持模拟器的，要么是只支持真机的，那么如何才能又能兼顾真机和模拟器呢？ -create 使用方式：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lipo -create 库<span class="number">1</span> 库<span class="number">2</span> -output 新库</span><br></pre></td></tr></table></figure>
+<p>使用结果如下图：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_point_5.png?raw=true" alt="合并"></p>
+<h4 id="thin"><a href="#thin" class="headerlink" title="-thin"></a>-thin</h4><p>如果有一个 fat file 但是你不需要支持那么多框架，也可以通过拆分，为库瘦身， -thin 使用方式：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lipo 旧库 -thin 需拆分框架 -output 新库</span><br></pre></td></tr></table></figure>
+<p>使用结果如下图：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/framework_point_6.png?raw=true" alt="拆分"></p>
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><p><a href="http://foggry.com/blog/2014/06/12/wwdc2014zhi-iosshi-yong-dong-tai-ku/" target="_blank" rel="noopener">WWDC2014之iOS使用动态库</a><br><a href="http://blog.csdn.net/lijuan3203/article/details/52105911" target="_blank" rel="noopener">手把手教你使用CocoaPods打包静态库</a><br><a href="http://www.jianshu.com/p/8f5b9855efb8" target="_blank" rel="noopener">iOS 静态库开发</a><br><a href="http://www.cnblogs.com/brycezhang/p/4117180.html" target="_blank" rel="noopener">使用CocoaPods开发并打包静态库</a><br><a href="http://www.cocoachina.com/ios/20150228/11206.html" target="_blank" rel="noopener">使用Cocoapods创建私有podspec</a><br><a href="https://my.oschina.net/kaqijiang/blog/649632" target="_blank" rel="noopener">iOS静态库 【.a 和framework】【超详细】</a><br><a href="http://www.samirchen.com/create-a-framework/" target="_blank" rel="noopener">创建一个 iOS Framework 项目</a><br><a href="http://blog.csdn.net/u013604612/article/details/43197465" target="_blank" rel="noopener">iOS开发——创建你自己的Framework</a><br><a href="http://chenhuaizhe.com/jekyll/update/2015/12/13/iOS中的workspace与静态库.html" target="_blank" rel="noopener">iOS中workspace与静态库</a><br><a href="http://www.cocoachina.com/ios/20150906/13323.html" target="_blank" rel="noopener">Cocoapods 应用第一部分 - Xcode 创建 .framework 相关</a><br><a href="http://www.lhjzzu.com/2016/05/06/static-lib/" target="_blank" rel="noopener">ios打包–打包静态库(五)</a></p>
+<p>呼~总算把库的相关知识看完了，写成这第二篇。花了半个月才写完。期间各种问题，各种错误不知道怎么解决，真的累。以后还是研究些经常能用得到的东西吧。自己基本不需要打包库<del>~</del></p>
+<p><a href="https://github.com/zhang759740844/FrameworkDemo" target="_blank" rel="noopener">我的demo地址，欢迎参考</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tag/Xcode/" rel="tag"># Xcode</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/10/13/storyboard基础/" rel="next" title="Storyboard 使用方法">
+                <i class="fa fa-chevron-left"></i> Storyboard 使用方法
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/11/01/runloop/" rel="prev" title="runLoop学习笔记">
+                runLoop学习笔记 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.png" alt="Zachary Zhang">
+            
+              <p class="site-author-name" itemprop="name">Zachary Zhang</p>
+              <p class="site-description motion-element" itemprop="description">Stay Hungry. Stay Foolish!</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">116</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/zhang759740844" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:zch759740844@126.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#概念"><span class="nav-number">1.</span> <span class="nav-text">概念</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#什么是库"><span class="nav-number">1.1.</span> <span class="nav-text">什么是库</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#库的分类"><span class="nav-number">1.2.</span> <span class="nav-text">库的分类</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#静态库"><span class="nav-number">1.2.1.</span> <span class="nav-text">静态库</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#动态库"><span class="nav-number">1.2.2.</span> <span class="nav-text">动态库</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#优劣"><span class="nav-number">1.3.</span> <span class="nav-text">优劣</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#库的创建"><span class="nav-number">2.</span> <span class="nav-text">库的创建</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#a静态库的创建"><span class="nav-number">2.1.</span> <span class="nav-text">.a静态库的创建</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#framework的创建"><span class="nav-number">2.2.</span> <span class="nav-text">.framework的创建</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#动态framework"><span class="nav-number">2.2.1.</span> <span class="nav-text">动态framework</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#静态framework"><span class="nav-number">2.2.2.</span> <span class="nav-text">静态framework</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Bundle-的创建与使用"><span class="nav-number">2.2.3.</span> <span class="nav-text">Bundle 的创建与使用</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#静态库与动态库的引用"><span class="nav-number">2.3.</span> <span class="nav-text">静态库与动态库的引用</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#准备"><span class="nav-number">2.3.1.</span> <span class="nav-text">准备</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#动态库引用静态库"><span class="nav-number">2.3.2.</span> <span class="nav-text">动态库引用静态库</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#创建"><span class="nav-number">2.3.2.1.</span> <span class="nav-text">创建</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#引入-Cocoapods"><span class="nav-number">2.3.2.2.</span> <span class="nav-text">引入 Cocoapods</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#动态库引用动态库"><span class="nav-number">2.3.3.</span> <span class="nav-text">动态库引用动态库</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#创建-1"><span class="nav-number">2.3.3.1.</span> <span class="nav-text">创建</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#引入-Cocoapods-1"><span class="nav-number">2.3.3.2.</span> <span class="nav-text">引入 Cocoapods</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#静态库引用静态库"><span class="nav-number">2.3.4.</span> <span class="nav-text">静态库引用静态库</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#创建-2"><span class="nav-number">2.3.4.1.</span> <span class="nav-text">创建</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#引入-Cocoapods-2"><span class="nav-number">2.3.4.2.</span> <span class="nav-text">引入 Cocoapods</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#静态库引用动态库"><span class="nav-number">2.3.5.</span> <span class="nav-text">静态库引用动态库</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#创建-3"><span class="nav-number">2.3.5.1.</span> <span class="nav-text">创建</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#引入-Cocoapods-3"><span class="nav-number">2.3.5.2.</span> <span class="nav-text">引入 Cocoapods</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#总结"><span class="nav-number">2.3.6.</span> <span class="nav-text">总结</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#一些需要知道的点"><span class="nav-number">3.</span> <span class="nav-text">一些需要知道的点</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#debug与release"><span class="nav-number">3.1.</span> <span class="nav-text">debug与release</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#多架构编译"><span class="nav-number">3.2.</span> <span class="nav-text">多架构编译</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#lipo"><span class="nav-number">3.3.</span> <span class="nav-text">lipo</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#info"><span class="nav-number">3.3.1.</span> <span class="nav-text">-info</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#create"><span class="nav-number">3.3.2.</span> <span class="nav-text">-create</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#thin"><span class="nav-number">3.3.3.</span> <span class="nav-text">-thin</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考链接"><span class="nav-number">4.</span> <span class="nav-text">参考链接</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zachary Zhang</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

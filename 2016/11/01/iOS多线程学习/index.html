@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+
+
+
+
+  <meta name="keywords" content="学习笔记,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="在学习 RunLoop 的时候，碰到了一些不太理解的东西，查阅资料后发现是多线程的相关方法。因此在完成 RunLoop 的笔记前，先学习下多线程的使用方法。">
+<meta name="keywords" content="学习笔记">
+<meta property="og:type" content="article">
+<meta property="og:title" content="iOS中的多线程学习笔记">
+<meta property="og:url" content="http://zhang759740844.github.io/2016/11/01/iOS多线程学习/index.html">
+<meta property="og:site_name" content="Zachary&#39;s blog">
+<meta property="og:description" content="在学习 RunLoop 的时候，碰到了一些不太理解的东西，查阅资料后发现是多线程的相关方法。因此在完成 RunLoop 的笔记前，先学习下多线程的使用方法。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2020-02-27T15:13:37.647Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="iOS中的多线程学习笔记">
+<meta name="twitter:description" content="在学习 RunLoop 的时候，碰到了一些不太理解的东西，查阅资料后发现是多线程的相关方法。因此在完成 RunLoop 的笔记前，先学习下多线程的使用方法。">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://zhang759740844.github.io/2016/11/01/iOS多线程学习/">
+
+
+
+
+
+  <title>iOS中的多线程学习笔记 | Zachary's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Zachary's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">记录成长</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://zhang759740844.github.io/2016/11/01/iOS多线程学习/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zachary Zhang">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Zachary's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">iOS中的多线程学习笔记</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-11-01T14:07:12+08:00">
+                2016-11-01
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>在学习 RunLoop 的时候，碰到了一些不太理解的东西，查阅资料后发现是多线程的相关方法。因此在完成 RunLoop 的笔记前，先学习下多线程的使用方法。<br><a id="more"></a></p>
+<p>可以通过三种方式实现 iOS 的多线程：</p>
+<ul>
+<li>NSThread</li>
+<li>GCD</li>
+<li>NSOperation&amp;NSOperationQueue</li>
+</ul>
+<h2 id="NSThread"><a href="#NSThread" class="headerlink" title="NSThread"></a>NSThread</h2><h3 id="创建并启动"><a href="#创建并启动" class="headerlink" title="创建并启动"></a>创建并启动</h3><h4 id="先创建线程类，再启动"><a href="#先创建线程类，再启动" class="headerlink" title="先创建线程类，再启动"></a>先创建线程类，再启动</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 创建</span></span><br><span class="line"><span class="built_in">NSThread</span> *thread = [[<span class="built_in">NSThread</span> alloc] initWithTarget:<span class="keyword">self</span> selector:<span class="keyword">@selector</span>(run:) object:<span class="literal">nil</span>];</span><br><span class="line"><span class="comment">// 启动</span></span><br><span class="line">[thread start];</span><br></pre></td></tr></table></figure>
+<p>其中，<code>run:</code> 是即将执行的方法，<code>object</code> 是 <code>run:</code> 方法的参数。规定 <code>run:</code> 方法最多可有一个参数，且返回类型必须是 <code>void</code>。</p>
+<h4 id="创建并自动启动"><a href="#创建并自动启动" class="headerlink" title="创建并自动启动"></a>创建并自动启动</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[<span class="built_in">NSThread</span> detachNewThreadSelector:<span class="keyword">@selector</span>(run:) toTarget:<span class="keyword">self</span> withObject:<span class="literal">nil</span>];</span><br></pre></td></tr></table></figure>
+<h4 id="使用-NSObject-的方法创建并自动启动"><a href="#使用-NSObject-的方法创建并自动启动" class="headerlink" title="使用 NSObject 的方法创建并自动启动"></a>使用 NSObject 的方法创建并自动启动</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[<span class="keyword">self</span> performSelectorInBackground:<span class="keyword">@selector</span>(run:) withObject:<span class="literal">nil</span>];</span><br></pre></td></tr></table></figure>
+<h3 id="其他方法"><a href="#其他方法" class="headerlink" title="其他方法"></a>其他方法</h3><p>除了创建启动外，NSThread 还以很多方法，下面我列举一些常见的方法，当然我列举的并不完整，更多方法可以去类的定义里去看。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//取消线程</span></span><br><span class="line">- (<span class="keyword">void</span>)cancel;</span><br><span class="line"></span><br><span class="line"><span class="comment">//启动线程</span></span><br><span class="line">- (<span class="keyword">void</span>)start;</span><br><span class="line"></span><br><span class="line"><span class="comment">//判断某个线程的状态的属性</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">readonly</span>, <span class="keyword">getter</span>=isExecuting) <span class="built_in">BOOL</span> executing;</span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">readonly</span>, <span class="keyword">getter</span>=isFinished) <span class="built_in">BOOL</span> finished;</span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">readonly</span>, <span class="keyword">getter</span>=isCancelled) <span class="built_in">BOOL</span> cancelled;</span><br><span class="line"></span><br><span class="line"><span class="comment">//设置和获取线程名字</span></span><br><span class="line">-(<span class="keyword">void</span>)setName:(<span class="built_in">NSString</span> *)n;</span><br><span class="line">-(<span class="built_in">NSString</span> *)name;</span><br><span class="line"></span><br><span class="line"><span class="comment">//获取当前线程信息</span></span><br><span class="line">+ (<span class="built_in">NSThread</span> *)currentThread;</span><br><span class="line"></span><br><span class="line"><span class="comment">//获取主线程信息</span></span><br><span class="line">+ (<span class="built_in">NSThread</span> *)mainThread;</span><br><span class="line"></span><br><span class="line"><span class="comment">//使当前线程暂停一段时间，或者暂停到某个时刻</span></span><br><span class="line">+ (<span class="keyword">void</span>)sleepForTimeInterval:(<span class="built_in">NSTimeInterval</span>)time;</span><br><span class="line">+ (<span class="keyword">void</span>)sleepUntilDate:(<span class="built_in">NSDate</span> *)date;</span><br></pre></td></tr></table></figure>
+<h2 id="GCD"><a href="#GCD" class="headerlink" title="GCD"></a>GCD</h2><p>该部分前一篇关于 GCD 的文章已经较为详细的研究过了。</p>
+<h2 id="NSOperation"><a href="#NSOperation" class="headerlink" title="NSOperation"></a>NSOperation</h2><h3 id="创建"><a href="#创建" class="headerlink" title="创建"></a>创建</h3><p>NSOperation 是个抽象类，不能用来封装操作。我们只有使用它的子类来封装操作。我们有三种方式来封装操作。</p>
+<ol>
+<li>使用子类 NSInvocationOperation</li>
+<li>使用子类 NSBlockOperation</li>
+<li>自定义继承自 NSOperation 的子类，通过实现内部相应的方法来封装操作。</li>
+</ol>
+<p>在不使用 NSOperationQueue，单独使用 NSOperation 的情况下系统同步执行操作，下面我们学习以下操作的两种创建方式。</p>
+<blockquote>
+<p><strong>NSOperation 一大优点就是可以通过 cancel 方法取消</strong></p>
+<p>NSOperation 还可以通过 KVO 监听 <code>finished</code> 以及 <code>executing</code> 状态</p>
+</blockquote>
+<h4 id="NSInvocationOperation"><a href="#NSInvocationOperation" class="headerlink" title="NSInvocationOperation"></a>NSInvocationOperation</h4> <figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 使用子类 NSInvocationOperation</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">- (<span class="keyword">void</span>)useInvocationOperation &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 1.创建 NSInvocationOperation 对象</span></span><br><span class="line">    <span class="built_in">NSInvocationOperation</span> *op = [[<span class="built_in">NSInvocationOperation</span> alloc] initWithTarget:<span class="keyword">self</span> selector:<span class="keyword">@selector</span>(task1) object:<span class="literal">nil</span>];</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 2.调用 start 方法开始执行操作</span></span><br><span class="line">    [op start];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 任务1</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">- (<span class="keyword">void</span>)task1 &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">2</span>; i++) &#123;</span><br><span class="line">        [<span class="built_in">NSThread</span> sleepForTimeInterval:<span class="number">2</span>]; <span class="comment">// 模拟耗时操作</span></span><br><span class="line">        <span class="built_in">NSLog</span>(<span class="string">@"1---%@"</span>, [<span class="built_in">NSThread</span> currentThread]); <span class="comment">// 打印当前线程</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在没有使用 NSOperationQueue、在主线程中单独使用使用子类 NSInvocationOperation 执行一个操作的情况下，<strong>操作是在当前线程执行的，并没有开启新线程</strong>。</p>
+<h4 id="NSBlockOperation"><a href="#NSBlockOperation" class="headerlink" title="NSBlockOperation"></a>NSBlockOperation</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 使用子类 NSBlockOperation</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">- (<span class="keyword">void</span>)useBlockOperation &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 1.创建 NSBlockOperation 对象</span></span><br><span class="line">    <span class="built_in">NSBlockOperation</span> *op = [<span class="built_in">NSBlockOperation</span> blockOperationWithBlock:^&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">2</span>; i++) &#123;</span><br><span class="line">            [<span class="built_in">NSThread</span> sleepForTimeInterval:<span class="number">2</span>]; <span class="comment">// 模拟耗时操作</span></span><br><span class="line">            <span class="built_in">NSLog</span>(<span class="string">@"1---%@"</span>, [<span class="built_in">NSThread</span> currentThread]); <span class="comment">// 打印当前线程</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;];</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 2.调用 start 方法开始执行操作</span></span><br><span class="line">    [op start];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在没有使用 NSOperationQueue、在主线程中单独使用 NSBlockOperation 执行一个操作的情况下，<strong>操作是在当前线程执行的，并没有开启新线程</strong>。</p>
+<p>但是，NSBlockOperation 还提供了一个方法 <code>addExecutionBlock:</code>，通过 <code>addExecutionBlock:</code> 就可以为 NSBlockOperation 添加额外的操作。这些操作（包括 blockOperationWithBlock 中的操作）可以在不同的线程中同时（并发）执行。只有当所有相关的操作已经完成执行时，才视为完成。</p>
+<p>使用子类 <code>NSBlockOperation</code>，并调用方法 <code>AddExecutionBlock:</code> 的情况下，<code>blockOperationWithBlock:</code>方法中的操作 和 <code>addExecutionBlock:</code> 中的操作是在不同的线程中异步执行的。而且，这次执行结果中 <code>blockOperationWithBlock:</code>方法中的操作也不是在当前线程（主线程）中执行的。从而印证了<code>blockOperationWithBlock:</code> 中的操作也可能会在其他线程（非当前线程）中执行。</p>
+<h3 id="创建队列"><a href="#创建队列" class="headerlink" title="创建队列"></a>创建队列</h3><p>NSOperationQueue 一共有两种队列：主队列、自定义队列。其中自定义队列同时包含了串行、并发功能。下边是主队列、自定义队列的基本创建方法和特点。</p>
+<ul>
+<li>主队列 <ul>
+<li>凡是添加到主队列中的操作，都会放到主线程中执行。</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 主队列获取方法</span></span><br><span class="line"><span class="built_in">NSOperationQueue</span> *queue = [<span class="built_in">NSOperationQueue</span> mainQueue];</span><br></pre></td></tr></table></figure>
+<ul>
+<li>自定义队列（非主队列） <ul>
+<li>添加到这种队列中的操作，就会自动放到子线程中执行。</li>
+<li>同时包含了：串行、并发功能。</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 自定义队列创建方法</span></span><br><span class="line"><span class="built_in">NSOperationQueue</span> *queue = [[<span class="built_in">NSOperationQueue</span> alloc] init];</span><br></pre></td></tr></table></figure>
+<h4 id="将操作加入到队列中"><a href="#将操作加入到队列中" class="headerlink" title="将操作加入到队列中"></a>将操作加入到队列中</h4><p>上边我们说到 NSOperation 需要配合 NSOperationQueue 来实现多线程。</p>
+<p>那么我们需要将创建好的操作加入到队列中去。总共有两种方法。</p>
+<h5 id="void-addOperation-NSOperation-op"><a href="#void-addOperation-NSOperation-op" class="headerlink" title="- (void)addOperation:(NSOperation *)op;"></a>- (void)addOperation:(NSOperation *)op;</h5><p>需要先创建操作，再将创建好的操作加入到创建好的队列中去。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 使用 addOperation: 将操作加入到操作队列中</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">- (<span class="keyword">void</span>)addOperationToQueue &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 1.创建队列</span></span><br><span class="line">    <span class="built_in">NSOperationQueue</span> *queue = [[<span class="built_in">NSOperationQueue</span> alloc] init];</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 2.创建操作</span></span><br><span class="line">    <span class="comment">// 使用 NSInvocationOperation 创建操作1</span></span><br><span class="line">    <span class="built_in">NSInvocationOperation</span> *op1 = [[<span class="built_in">NSInvocationOperation</span> alloc] initWithTarget:<span class="keyword">self</span> selector:<span class="keyword">@selector</span>(task1) object:<span class="literal">nil</span>];</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 使用 NSInvocationOperation 创建操作2</span></span><br><span class="line">    <span class="built_in">NSInvocationOperation</span> *op2 = [[<span class="built_in">NSInvocationOperation</span> alloc] initWithTarget:<span class="keyword">self</span> selector:<span class="keyword">@selector</span>(task2) object:<span class="literal">nil</span>];</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 使用 NSBlockOperation 创建操作3</span></span><br><span class="line">    <span class="built_in">NSBlockOperation</span> *op3 = [<span class="built_in">NSBlockOperation</span> blockOperationWithBlock:^&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">2</span>; i++) &#123;</span><br><span class="line">            [<span class="built_in">NSThread</span> sleepForTimeInterval:<span class="number">2</span>]; <span class="comment">// 模拟耗时操作</span></span><br><span class="line">            <span class="built_in">NSLog</span>(<span class="string">@"3---%@"</span>, [<span class="built_in">NSThread</span> currentThread]); <span class="comment">// 打印当前线程</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;];</span><br><span class="line">    [op3 addExecutionBlock:^&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">2</span>; i++) &#123;</span><br><span class="line">            [<span class="built_in">NSThread</span> sleepForTimeInterval:<span class="number">2</span>]; <span class="comment">// 模拟耗时操作</span></span><br><span class="line">            <span class="built_in">NSLog</span>(<span class="string">@"4---%@"</span>, [<span class="built_in">NSThread</span> currentThread]); <span class="comment">// 打印当前线程</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;];</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 3.使用 addOperation: 添加所有操作到队列中</span></span><br><span class="line">    [queue addOperation:op1]; <span class="comment">// [op1 start]</span></span><br><span class="line">    [queue addOperation:op2]; <span class="comment">// [op2 start]</span></span><br><span class="line">    [queue addOperation:op3]; <span class="comment">// [op3 start]</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>使用 NSOperation 子类创建操作，并使用 <code>addOperation:</code> 将操作加入到操作队列后<strong>能够开启新线程，进行并发执行</strong>。</p>
+<h5 id="void-addOperationWithBlock-void-void-block"><a href="#void-addOperationWithBlock-void-void-block" class="headerlink" title="- (void)addOperationWithBlock:(void (^)(void))block;"></a>- (void)addOperationWithBlock:(void (^)(void))block;</h5><p>无需先创建操作，在 block 中添加操作，直接将包含操作的 block 加入到队列中</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 使用 addOperationWithBlock: 将操作加入到操作队列中</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)addOperationWithBlockToQueue &#123;</span><br><span class="line">    <span class="comment">// 1.创建队列</span></span><br><span class="line">    <span class="built_in">NSOperationQueue</span> *queue = [[<span class="built_in">NSOperationQueue</span> alloc] init];</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 2.使用 addOperationWithBlock: 添加操作到队列中</span></span><br><span class="line">    [queue addOperationWithBlock:^&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">2</span>; i++) &#123;</span><br><span class="line">            [<span class="built_in">NSThread</span> sleepForTimeInterval:<span class="number">2</span>]; <span class="comment">// 模拟耗时操作</span></span><br><span class="line">            <span class="built_in">NSLog</span>(<span class="string">@"1---%@"</span>, [<span class="built_in">NSThread</span> currentThread]); <span class="comment">// 打印当前线程</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;];</span><br><span class="line">    [queue addOperationWithBlock:^&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">2</span>; i++) &#123;</span><br><span class="line">            [<span class="built_in">NSThread</span> sleepForTimeInterval:<span class="number">2</span>]; <span class="comment">// 模拟耗时操作</span></span><br><span class="line">            <span class="built_in">NSLog</span>(<span class="string">@"2---%@"</span>, [<span class="built_in">NSThread</span> currentThread]); <span class="comment">// 打印当前线程</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;];</span><br><span class="line">    [queue addOperationWithBlock:^&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">2</span>; i++) &#123;</span><br><span class="line">            [<span class="built_in">NSThread</span> sleepForTimeInterval:<span class="number">2</span>]; <span class="comment">// 模拟耗时操作</span></span><br><span class="line">            <span class="built_in">NSLog</span>(<span class="string">@"3---%@"</span>, [<span class="built_in">NSThread</span> currentThread]); <span class="comment">// 打印当前线程</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>使用 addOperationWithBlock: 将操作加入到操作队列后<strong>能够开启新线程，进行并发执行</strong>.</p>
+<h3 id="NSOperationQueue-控制串行执行、并发执行"><a href="#NSOperationQueue-控制串行执行、并发执行" class="headerlink" title="NSOperationQueue 控制串行执行、并发执行"></a>NSOperationQueue 控制串行执行、并发执行</h3><p>这里有个关键属性 <code>maxConcurrentOperationCount</code>，叫做<strong>最大并发操作数</strong>。用来控制一个特定队列中可以有多少个操作同时参与并发执行。</p>
+<blockquote>
+<p>注意：这里 <code>maxConcurrentOperationCount</code> 控制的不是并发线程的数量，而是一个队列中同时能并发执行的最大操作数。而且一个操作也并非只能在一个线程中运行。</p>
+</blockquote>
+<p>最大并发操作数：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">maxConcurrentOperationCount</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>maxConcurrentOperationCount</code> 默认情况下为-1，表示不进行限制，可进行并发执行。</li>
+<li><code>maxConcurrentOperationCount</code> 为1时，队列为串行队列。只能串行执行。</li>
+<li><code>maxConcurrentOperationCount</code> 大于1时，队列为并发队列。操作并发执行，当然这个值不应超过系统限制，即使自己设置一个很大的值，系统也会自动调整为 min{自己设定的值，系统设定的默认最大值}。</li>
+</ul>
+<h3 id="NSOperation操作依赖"><a href="#NSOperation操作依赖" class="headerlink" title="NSOperation操作依赖"></a>NSOperation操作依赖</h3><p>NSOperation、NSOperationQueue 最吸引人的地方是它能添加操作之间的依赖关系。通过操作依赖，我们可以很方便的控制操作之间的执行先后顺序。NSOperation 提供了3个接口供我们管理和查看依赖。</p>
+<ul>
+<li><code>- (void)addDependency:(NSOperation *)op;</code> 添加依赖，使当前操作依赖于操作 op 的完成。</li>
+<li><code>- (void)removeDependency:(NSOperation *)op;</code> 移除依赖，取消当前操作对操作 op 的依赖。</li>
+<li><code>@property (readonly, copy) NSArray&lt;NSOperation *&gt; *dependencies;</code> 在当前操作开始执行之前完成执行的所有操作对象数组。</li>
+</ul>
+<p>当然，我们经常用到的还是添加依赖操作。现在考虑这样的需求，比如说有 A、B 两个操作，其中 A 执行完操作，B 才能执行操作。</p>
+<p>如果使用依赖来处理的话，那么就需要让操作 B 依赖于操作 A。具体代码如下：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 操作依赖</span></span><br><span class="line"><span class="comment"> * 使用方法：addDependency:</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">- (<span class="keyword">void</span>)addDependency &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 1.创建队列</span></span><br><span class="line">    <span class="built_in">NSOperationQueue</span> *queue = [[<span class="built_in">NSOperationQueue</span> alloc] init];</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 2.创建操作</span></span><br><span class="line">    <span class="built_in">NSBlockOperation</span> *op1 = [<span class="built_in">NSBlockOperation</span> blockOperationWithBlock:^&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">2</span>; i++) &#123;</span><br><span class="line">            [<span class="built_in">NSThread</span> sleepForTimeInterval:<span class="number">2</span>]; <span class="comment">// 模拟耗时操作</span></span><br><span class="line">            <span class="built_in">NSLog</span>(<span class="string">@"1---%@"</span>, [<span class="built_in">NSThread</span> currentThread]); <span class="comment">// 打印当前线程</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;];</span><br><span class="line">    <span class="built_in">NSBlockOperation</span> *op2 = [<span class="built_in">NSBlockOperation</span> blockOperationWithBlock:^&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">2</span>; i++) &#123;</span><br><span class="line">            [<span class="built_in">NSThread</span> sleepForTimeInterval:<span class="number">2</span>]; <span class="comment">// 模拟耗时操作</span></span><br><span class="line">            <span class="built_in">NSLog</span>(<span class="string">@"2---%@"</span>, [<span class="built_in">NSThread</span> currentThread]); <span class="comment">// 打印当前线程</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;];</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 3.添加依赖</span></span><br><span class="line">    [op2 addDependency:op1]; <span class="comment">// 让op2 依赖于 op1，则先执行op1，在执行op2</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 4.添加操作到队列中</span></span><br><span class="line">    [queue addOperation:op1];</span><br><span class="line">    [queue addOperation:op2];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>通过添加操作依赖，无论运行几次，其结果都是 op1 先执行，op2 后执行。</p>
+<h3 id="NSOperation-优先级"><a href="#NSOperation-优先级" class="headerlink" title="NSOperation 优先级"></a>NSOperation 优先级</h3><p>NSOperation 提供了<code>queuePriority</code>（优先级）属性，<code>queuePriority</code>属性适用于同一操作队列中的操作，不适用于不同操作队列中的操作。默认情况下，所有新创建的操作对象优先级都是<code>NSOperationQueuePriorityNormal</code>。但是我们可以通过<code>setQueuePriority:</code>方法来改变当前操作在同一队列中的执行优先级。</p>
+<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><h3 id="NSNotification-与-多线程"><a href="#NSNotification-与-多线程" class="headerlink" title="NSNotification 与 多线程"></a>NSNotification 与 多线程</h3><p><code>NSNotification</code> 在哪个线程 post，最终就会在哪个线程执行。如果我们不是在主线程 post 的，但是却在主线程接收的，而且我们期望 selector 在主线程执行。这时候我们需要注意下，在 selector 需要 dispatch 到主线程才可以</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">BLPostNotification</span></span></span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)postNotification &#123;</span><br><span class="line">    <span class="built_in">dispatch_queue_t</span> queue = dispatch_queue_create(<span class="string">"com.bool.post.notification"</span>, DISPATCH_QUEUE_SERIAL);</span><br><span class="line">    <span class="built_in">dispatch_async</span>(queue, ^&#123;</span><br><span class="line">        <span class="comment">// 从非主线程发送通知 （通知名字最好定义成一个常量）</span></span><br><span class="line">        [[<span class="built_in">NSNotificationCenter</span> defaultCenter] postNotificationName:<span class="string">@"downloadImage"</span> object:<span class="literal">nil</span>];</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">@end</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">ImageViewController</span></span></span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)viewDidLoad &#123;</span><br><span class="line">    [<span class="keyword">super</span> viewDidLoad];</span><br><span class="line">    [[<span class="built_in">NSNotificationCenter</span> defaultCenter] addObserver:<span class="keyword">self</span> selector:<span class="keyword">@selector</span>(show) name:<span class="string">@"downloadImage"</span> object:<span class="literal">nil</span>];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)showImage &#123;</span><br><span class="line">    <span class="comment">// 需要 dispatch 到主线程更新 UI</span></span><br><span class="line">    <span class="built_in">dispatch_async</span>(dispatch_get_main_queue(), ^&#123;</span><br><span class="line">        <span class="comment">// update UI</span></span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure>
+<h3 id="线程同步"><a href="#线程同步" class="headerlink" title="线程同步"></a>线程同步</h3><h4 id="互斥锁"><a href="#互斥锁" class="headerlink" title="互斥锁"></a>互斥锁</h4><p>使用 <code>@synchronized</code>:</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">@synchronized</span>(<span class="keyword">self</span>) &#123;</span><br><span class="line">    <span class="comment">//需要执行的代码块</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="同步执行"><a href="#同步执行" class="headerlink" title="同步执行"></a>同步执行</h4><p>把多个线程都要执行此段代码添加到同一个串行队列，这样就实现了线程同步的概念。</p>
+<h3 id="从其他线程回到主线程的方法"><a href="#从其他线程回到主线程的方法" class="headerlink" title="从其他线程回到主线程的方法"></a>从其他线程回到主线程的方法</h3><p>在其他线程操作完成后必须到主线程更新UI</p>
+<h4 id="NSThread-1"><a href="#NSThread-1" class="headerlink" title="NSThread"></a>NSThread</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[<span class="keyword">self</span> performSelectorOnMainThread:<span class="keyword">@selector</span>(run) withObject:<span class="literal">nil</span> waitUntilDone:<span class="literal">NO</span>];</span><br></pre></td></tr></table></figure>
+<h4 id="GCD-1"><a href="#GCD-1" class="headerlink" title="GCD"></a>GCD</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">dispatch_async</span>(dispatch_get_main_queue(), ^&#123;</span><br><span class="line">  ...</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<h4 id="NSOperation-1"><a href="#NSOperation-1" class="headerlink" title="NSOperation"></a>NSOperation</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 线程间通信</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">- (<span class="keyword">void</span>)communication &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 1.创建队列</span></span><br><span class="line">    <span class="built_in">NSOperationQueue</span> *queue = [[<span class="built_in">NSOperationQueue</span> alloc]init];</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 2.添加操作</span></span><br><span class="line">    [queue addOperationWithBlock:^&#123;</span><br><span class="line">        <span class="comment">// 异步进行耗时操作</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">2</span>; i++) &#123;</span><br><span class="line">            [<span class="built_in">NSThread</span> sleepForTimeInterval:<span class="number">2</span>]; <span class="comment">// 模拟耗时操作</span></span><br><span class="line">            <span class="built_in">NSLog</span>(<span class="string">@"1---%@"</span>, [<span class="built_in">NSThread</span> currentThread]); <span class="comment">// 打印当前线程</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 回到主线程</span></span><br><span class="line">        [[<span class="built_in">NSOperationQueue</span> mainQueue] addOperationWithBlock:^&#123;</span><br><span class="line">            <span class="comment">// 进行一些 UI 刷新等操作</span></span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">2</span>; i++) &#123;</span><br><span class="line">                [<span class="built_in">NSThread</span> sleepForTimeInterval:<span class="number">2</span>]; <span class="comment">// 模拟耗时操作</span></span><br><span class="line">                <span class="built_in">NSLog</span>(<span class="string">@"2---%@"</span>, [<span class="built_in">NSThread</span> currentThread]); <span class="comment">// 打印当前线程</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;];</span><br><span class="line">    &#125;];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="锁"><a href="#锁" class="headerlink" title="锁"></a>锁</h2><h3 id="自旋锁"><a href="#自旋锁" class="headerlink" title="自旋锁"></a>自旋锁</h3><h4 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h4><p>自旋锁不会引起调用者睡眠，而是不停的循环，直到锁被释放。适用于多核。</p>
+<h4 id="OSSpinLock"><a href="#OSSpinLock" class="headerlink" title="OSSpinLock"></a>OSSpinLock</h4><p>iOS 中的自旋锁为 <strong>OSSpinLock</strong>。但是不建议使用。因为会产生优先级反转的现象。</p>
+<h4 id="优先级反转"><a href="#优先级反转" class="headerlink" title="优先级反转"></a>优先级反转</h4><p>由于线程存在优先级，即根据优先级来分配 CPU 执行时间。但是会产生问题：如果一个低优先级的线程获得锁并访问共享资源，这时一个高优先级的线程也尝试获得这个锁，它会处于 spin lock 的忙等状态从而占用大量 CPU。此时低优先级线程无法与高优先级线程争夺 CPU 时间，从而导致任务迟迟完不成、无法释放 lock。</p>
+<h4 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h4><p>由于不停循环，避免了线程上下文切换的时间损耗。在能快速获取资源的多线程环境中速度最快。</p>
+<h3 id="互斥锁-1"><a href="#互斥锁-1" class="headerlink" title="互斥锁"></a>互斥锁</h3><h4 id="定义-1"><a href="#定义-1" class="headerlink" title="定义"></a>定义</h4><p>顾名思义，等待锁的线程会处于休眠状态。</p>
+<h4 id="常见类型"><a href="#常见类型" class="headerlink" title="常见类型"></a>常见类型</h4><p> iOS 使用以 <code>pthread_mutex</code> 为基础的各种封装。常见三种类型：</p>
+<ul>
+<li>PTHREAD_MUTEX_NORMAL</li>
+<li>PTHREAD_MUTEX_ERRORCHECK</li>
+<li>PTHREAD_MUTEX_RECURSIVE </li>
+</ul>
+<h4 id="NSLock"><a href="#NSLock" class="headerlink" title="NSLock"></a>NSLock</h4><p>针对第二种类型，iOS 封装了 <code>NSLock</code>。它会损失一定性能换来错误提示。并简化直接使用 pthread_mutex 的定义。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//主线程中</span></span><br><span class="line"><span class="built_in">NSLock</span> *lock = [[<span class="built_in">NSLock</span> alloc] init];</span><br><span class="line">    </span><br><span class="line"><span class="comment">//线程1</span></span><br><span class="line">    <span class="built_in">dispatch_async</span>(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, <span class="number">0</span>), ^&#123;</span><br><span class="line">        [lock lock];</span><br><span class="line">        <span class="built_in">NSLog</span>(<span class="string">@"线程1"</span>);</span><br><span class="line">        sleep(<span class="number">2</span>);</span><br><span class="line">        [lock unlock];</span><br><span class="line">        <span class="built_in">NSLog</span>(<span class="string">@"线程1解锁成功"</span>);</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//线程2</span></span><br><span class="line">    <span class="built_in">dispatch_async</span>(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, <span class="number">0</span>), ^&#123;</span><br><span class="line">        sleep(<span class="number">1</span>);<span class="comment">//以保证让线程2的代码后执行</span></span><br><span class="line">        [lock lock];</span><br><span class="line">        <span class="built_in">NSLog</span>(<span class="string">@"线程2"</span>);</span><br><span class="line">        [lock unlock];</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line"><span class="number">2016</span><span class="number">-08</span><span class="number">-19</span> <span class="number">14</span>:<span class="number">23</span>:<span class="number">09.659</span> ThreadLockControlDemo[<span class="number">1754</span>:<span class="number">129663</span>] 线程<span class="number">1</span></span><br><span class="line"><span class="number">2016</span><span class="number">-08</span><span class="number">-19</span> <span class="number">14</span>:<span class="number">23</span>:<span class="number">11.663</span> ThreadLockControlDemo[<span class="number">1754</span>:<span class="number">129663</span>] 线程<span class="number">1</span>解锁成功</span><br><span class="line"><span class="number">2016</span><span class="number">-08</span><span class="number">-19</span> <span class="number">14</span>:<span class="number">23</span>:<span class="number">11.665</span> ThreadLockControlDemo[<span class="number">1754</span>:<span class="number">129659</span>] 线程<span class="number">2</span></span><br></pre></td></tr></table></figure>
+<h4 id="NSReursiveLock-和-synchronized"><a href="#NSReursiveLock-和-synchronized" class="headerlink" title="NSReursiveLock 和 @synchronized"></a>NSReursiveLock 和 @synchronized</h4><p>针对第三种类型，iOS 封装了 <code>NSRecursiveLock</code> 和 <code>@synchronized</code>。它们是<strong>递归锁</strong>，也就是说同一个线程可以重复获取递归锁，不会死锁。<code>NSRecursiveLock</code> 和 <code>NSLock</code> 使用类似。</p>
+<h5 id="synchronized-实现原理"><a href="#synchronized-实现原理" class="headerlink" title="@synchronized 实现原理"></a>@synchronized 实现原理</h5><p><code>@synchronized</code> 中传入的object的内存地址，被用作key，系统创建了一个递归锁，作为值，保存在一个 hash map 中。每当再次遇到 <code>@synchronized</code> 关键字的时候，就会到 hash map 中得到这个锁，并且尝试获取这个锁，失败则挂起。</p>
+<p>所以，如果object 被外部访问变化，<code>@synchronized</code> 就失去了锁的作用。因此一定要注意，不能改变 object 的地址。</p>
+<blockquote>
+<p>这是一个考点，<code>@synchronized</code> 如何实现的</p>
+</blockquote>
+<h4 id="NSConditionLock"><a href="#NSConditionLock" class="headerlink" title="NSConditionLock"></a>NSConditionLock</h4><p>另外还有一种<strong>条件锁</strong><code>NSConditionLock</code>。基于 <code>pthread_cond_t</code> 实现。只有 condition 参数与初始化时候的 condition 相等，lock 才能正确进行加锁操作。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//主线程中</span></span><br><span class="line"><span class="built_in">NSConditionLock</span> *lock = [[<span class="built_in">NSConditionLock</span> alloc] initWithCondition:<span class="number">0</span>];</span><br><span class="line"></span><br><span class="line"><span class="comment">//线程1</span></span><br><span class="line"><span class="built_in">dispatch_async</span>(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, <span class="number">0</span>), ^&#123;</span><br><span class="line">    [lock lockWhenCondition:<span class="number">1</span>];</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@"线程1"</span>);</span><br><span class="line">    sleep(<span class="number">2</span>);</span><br><span class="line">    [lock unlock];</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">//线程2</span></span><br><span class="line"><span class="built_in">dispatch_async</span>(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, <span class="number">0</span>), ^&#123;</span><br><span class="line">    <span class="keyword">if</span> ([lock lockWhenCondition:<span class="number">0</span>]) &#123;</span><br><span class="line">        <span class="built_in">NSLog</span>(<span class="string">@"线程2"</span>);</span><br><span class="line">        [lock unlockWithCondition:<span class="number">1</span>];</span><br><span class="line">        <span class="built_in">NSLog</span>(<span class="string">@"线程2解锁成功"</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="built_in">NSLog</span>(<span class="string">@"线程2尝试加锁失败"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p><code>NSConditionLock</code> 就针对于多个线程在复制场景下的同步。</p>
+<h3 id="信号量"><a href="#信号量" class="headerlink" title="信号量"></a>信号量</h3><h4 id="定义-2"><a href="#定义-2" class="headerlink" title="定义"></a>定义</h4><p>信号量的初始值，可以用来控制线程并发访问的最大数量。信号量的初始值为1，代表同时只允许1条线程访问资源，保证线程同步。</p>
+<p>信号量是负几，就表示有几个线程在等待资源。</p>
+<h4 id="dispatch-semaphore"><a href="#dispatch-semaphore" class="headerlink" title="dispatch_semaphore"></a>dispatch_semaphore</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">dispatch_semaphore_t signal = dispatch_semaphore_create(<span class="number">1</span>);</span><br><span class="line"><span class="comment">// 如果信号量的值 &gt; 0，就让信号量的值减1，然后继续往下执行代码</span></span><br><span class="line"><span class="comment">// 如果信号量的值 &lt;= 0，就会休眠等待，直到信号量的值变成&gt;0，就让信号量的值减1，然后继续往下执行代码</span></span><br><span class="line">dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);</span><br><span class="line"><span class="comment">// 让信号量的值+1</span></span><br><span class="line">dispatch_semaphore_signal(signal);</span><br></pre></td></tr></table></figure>
+<h3 id="信号量和互斥锁的区别"><a href="#信号量和互斥锁的区别" class="headerlink" title="信号量和互斥锁的区别"></a>信号量和互斥锁的区别</h3><p>虽然 Semaphore=1时可以看成互斥锁，但是它们真正的使用场景是有差别的。</p>
+<p>锁是服务于共享资源的；而semaphore是服务于多个线程间的执行的逻辑顺序的。比如，a 和 b 执行完了再执行 c，就可以通过信号量实现，但是无法通过互斥锁实现。</p>
+<blockquote>
+<p>二元信号量和互斥锁的区别在《程序员的自我修养》中提及，信号量作为 IPC 的一种方式，可以在非当前进程释放，而互斥锁只能在当前进程中释放。</p>
+<p>以上说法是关于进程的，在线程中的试验结果是都可以释放。</p>
+</blockquote>
+<h3 id="条件变量和信号量区别"><a href="#条件变量和信号量区别" class="headerlink" title="条件变量和信号量区别"></a>条件变量和信号量区别</h3><p>每个信号量有一个与之关联的值，发出时+1，等待时-1，任何线程都可以发出一个信号，即使没有线程在等待该信号量的值。</p>
+<p>可是对于条件变量，例如 pthread_cond_signal 发出信号后，没有任何线程阻塞在 pthread_cond_wait 上，那这个条件变量上的信号会直接丢失掉。</p>
+<h3 id="速度比较"><a href="#速度比较" class="headerlink" title="速度比较"></a>速度比较</h3><p>OSSpinLock &gt; dispatch_semaphore &gt; pthread_mutex &gt; NSLock &gt; NSRecursiveLock &gt; NSConditionLock &gt; @synchronized</p>
+<h3 id="如何使用互斥锁实现读写锁？"><a href="#如何使用互斥锁实现读写锁？" class="headerlink" title="如何使用互斥锁实现读写锁？"></a>如何使用互斥锁实现读写锁？</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">readwrite_lock</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	readwrite_lock()</span><br><span class="line">		: read_cnt(<span class="number">0</span>)</span><br><span class="line">	&#123;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">readLock</span><span class="params">()</span></span></span><br><span class="line"><span class="function">	</span>&#123;</span><br><span class="line">		read_mtx.lock();</span><br><span class="line">		<span class="keyword">if</span> (++read_cnt == <span class="number">1</span>)</span><br><span class="line">			write_mtx.lock();</span><br><span class="line"></span><br><span class="line">		read_mtx.unlock();</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">readUnlock</span><span class="params">()</span></span></span><br><span class="line"><span class="function">	</span>&#123;</span><br><span class="line">		read_mtx.lock();</span><br><span class="line">		<span class="keyword">if</span> (--read_cnt == <span class="number">0</span>)</span><br><span class="line">			write_mtx.unlock();</span><br><span class="line"></span><br><span class="line">		read_mtx.unlock();</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">writeLock</span><span class="params">()</span></span></span><br><span class="line"><span class="function">	</span>&#123;</span><br><span class="line">		write_mtx.lock();</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">writeUnlock</span><span class="params">()</span></span></span><br><span class="line"><span class="function">	</span>&#123;</span><br><span class="line">		write_mtx.unlock();</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">	mutex read_mtx;</span><br><span class="line">	mutex write_mtx;</span><br><span class="line">	<span class="keyword">int</span> read_cnt; <span class="comment">// 已加读锁个数</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h2 id="其他-1"><a href="#其他-1" class="headerlink" title="其他"></a>其他</h2><h3 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h3><ol>
+<li>i++ 在两个线程中分别执行100次，不加锁，最后 i 的取值范围？</li>
+</ol>
+<p>2-200，200 的情况不用多说，2 的情况是：</p>
+<ul>
+<li>两个线程同时读取了初始值 0。</li>
+<li>线程1执行了 99 次，写回。此时内存为 99。</li>
+<li>线程2执行了一次，写回。此时内存为 1。</li>
+<li>两个线程同时读取值 1。</li>
+<li>线程2执行 99 次，写回。此时内存为 99</li>
+<li>线程1执行1次，写回。此时内存为 2</li>
+</ul>
+<p>问题的关键在于，一个线程的写入与读取这两个操作之间，可以穿插别的线程的写入操作。</p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a href="https://juejin.im/post/5a8fdb1c5188257a856f55a8#heading-26" target="_blank" rel="noopener">谈 iOS 的锁</a></p>
+<p><a href="https://juejin.im/post/5a9e57af6fb9a028df222555#heading-9" target="_blank" rel="noopener">iOS多线程：『NSOperation、NSOperationQueue』详尽总结</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tag/学习笔记/" rel="tag"># 学习笔记</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/11/01/runloop/" rel="next" title="runLoop学习笔记">
+                <i class="fa fa-chevron-left"></i> runLoop学习笔记
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/11/11/Effective_oc2笔记/" rel="prev" title="Effective Objective-C 学习笔记">
+                Effective Objective-C 学习笔记 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.png" alt="Zachary Zhang">
+            
+              <p class="site-author-name" itemprop="name">Zachary Zhang</p>
+              <p class="site-description motion-element" itemprop="description">Stay Hungry. Stay Foolish!</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">116</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/zhang759740844" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:zch759740844@126.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#NSThread"><span class="nav-number">1.</span> <span class="nav-text">NSThread</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#创建并启动"><span class="nav-number">1.1.</span> <span class="nav-text">创建并启动</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#先创建线程类，再启动"><span class="nav-number">1.1.1.</span> <span class="nav-text">先创建线程类，再启动</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#创建并自动启动"><span class="nav-number">1.1.2.</span> <span class="nav-text">创建并自动启动</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#使用-NSObject-的方法创建并自动启动"><span class="nav-number">1.1.3.</span> <span class="nav-text">使用 NSObject 的方法创建并自动启动</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#其他方法"><span class="nav-number">1.2.</span> <span class="nav-text">其他方法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GCD"><span class="nav-number">2.</span> <span class="nav-text">GCD</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#NSOperation"><span class="nav-number">3.</span> <span class="nav-text">NSOperation</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#创建"><span class="nav-number">3.1.</span> <span class="nav-text">创建</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#NSInvocationOperation"><span class="nav-number">3.1.1.</span> <span class="nav-text">NSInvocationOperation</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#NSBlockOperation"><span class="nav-number">3.1.2.</span> <span class="nav-text">NSBlockOperation</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创建队列"><span class="nav-number">3.2.</span> <span class="nav-text">创建队列</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#将操作加入到队列中"><span class="nav-number">3.2.1.</span> <span class="nav-text">将操作加入到队列中</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#void-addOperation-NSOperation-op"><span class="nav-number">3.2.1.1.</span> <span class="nav-text">- (void)addOperation:(NSOperation *)op;</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#void-addOperationWithBlock-void-void-block"><span class="nav-number">3.2.1.2.</span> <span class="nav-text">- (void)addOperationWithBlock:(void (^)(void))block;</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#NSOperationQueue-控制串行执行、并发执行"><span class="nav-number">3.3.</span> <span class="nav-text">NSOperationQueue 控制串行执行、并发执行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#NSOperation操作依赖"><span class="nav-number">3.4.</span> <span class="nav-text">NSOperation操作依赖</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#NSOperation-优先级"><span class="nav-number">3.5.</span> <span class="nav-text">NSOperation 优先级</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#其他"><span class="nav-number">4.</span> <span class="nav-text">其他</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#NSNotification-与-多线程"><span class="nav-number">4.1.</span> <span class="nav-text">NSNotification 与 多线程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#线程同步"><span class="nav-number">4.2.</span> <span class="nav-text">线程同步</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#互斥锁"><span class="nav-number">4.2.1.</span> <span class="nav-text">互斥锁</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#同步执行"><span class="nav-number">4.2.2.</span> <span class="nav-text">同步执行</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#从其他线程回到主线程的方法"><span class="nav-number">4.3.</span> <span class="nav-text">从其他线程回到主线程的方法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#NSThread-1"><span class="nav-number">4.3.1.</span> <span class="nav-text">NSThread</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#GCD-1"><span class="nav-number">4.3.2.</span> <span class="nav-text">GCD</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#NSOperation-1"><span class="nav-number">4.3.3.</span> <span class="nav-text">NSOperation</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#锁"><span class="nav-number">5.</span> <span class="nav-text">锁</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#自旋锁"><span class="nav-number">5.1.</span> <span class="nav-text">自旋锁</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#定义"><span class="nav-number">5.1.1.</span> <span class="nav-text">定义</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#OSSpinLock"><span class="nav-number">5.1.2.</span> <span class="nav-text">OSSpinLock</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#优先级反转"><span class="nav-number">5.1.3.</span> <span class="nav-text">优先级反转</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#特点"><span class="nav-number">5.1.4.</span> <span class="nav-text">特点</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#互斥锁-1"><span class="nav-number">5.2.</span> <span class="nav-text">互斥锁</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#定义-1"><span class="nav-number">5.2.1.</span> <span class="nav-text">定义</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#常见类型"><span class="nav-number">5.2.2.</span> <span class="nav-text">常见类型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#NSLock"><span class="nav-number">5.2.3.</span> <span class="nav-text">NSLock</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#NSReursiveLock-和-synchronized"><span class="nav-number">5.2.4.</span> <span class="nav-text">NSReursiveLock 和 @synchronized</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#synchronized-实现原理"><span class="nav-number">5.2.4.1.</span> <span class="nav-text">@synchronized 实现原理</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#NSConditionLock"><span class="nav-number">5.2.5.</span> <span class="nav-text">NSConditionLock</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#信号量"><span class="nav-number">5.3.</span> <span class="nav-text">信号量</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#定义-2"><span class="nav-number">5.3.1.</span> <span class="nav-text">定义</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#dispatch-semaphore"><span class="nav-number">5.3.2.</span> <span class="nav-text">dispatch_semaphore</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#信号量和互斥锁的区别"><span class="nav-number">5.4.</span> <span class="nav-text">信号量和互斥锁的区别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#条件变量和信号量区别"><span class="nav-number">5.5.</span> <span class="nav-text">条件变量和信号量区别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#速度比较"><span class="nav-number">5.6.</span> <span class="nav-text">速度比较</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#如何使用互斥锁实现读写锁？"><span class="nav-number">5.7.</span> <span class="nav-text">如何使用互斥锁实现读写锁？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#其他-1"><span class="nav-number">6.</span> <span class="nav-text">其他</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#问题"><span class="nav-number">6.1.</span> <span class="nav-text">问题</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考"><span class="nav-number">7.</span> <span class="nav-text">参考</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zachary Zhang</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+
+
+
+
+  <meta name="keywords" content="学习笔记,源码解析,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="本篇是 AFNetworking 源码解读的第三篇了。主要讲解接收到响应后的处理。">
+<meta name="keywords" content="学习笔记,源码解析">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AFNetworking 源码解析 - 响应序列化">
+<meta property="og:url" content="http://zhang759740844.github.io/2018/12/27/AFNetworking3/index.html">
+<meta property="og:site_name" content="Zachary&#39;s blog">
+<meta property="og:description" content="本篇是 AFNetworking 源码解读的第三篇了。主要讲解接收到响应后的处理。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2020-02-27T15:13:37.610Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="AFNetworking 源码解析 - 响应序列化">
+<meta name="twitter:description" content="本篇是 AFNetworking 源码解读的第三篇了。主要讲解接收到响应后的处理。">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://zhang759740844.github.io/2018/12/27/AFNetworking3/">
+
+
+
+
+
+  <title>AFNetworking 源码解析 - 响应序列化 | Zachary's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Zachary's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">记录成长</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://zhang759740844.github.io/2018/12/27/AFNetworking3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zachary Zhang">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Zachary's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">AFNetworking 源码解析 - 响应序列化</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-27T14:07:12+08:00">
+                2018-12-27
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本篇是 AFNetworking 源码解读的第三篇了。主要讲解接收到响应后的处理。</p>
+<a id="more"></a>
+<h2 id="AFURLResponseSerialization-协议"><a href="#AFURLResponseSerialization-协议" class="headerlink" title="AFURLResponseSerialization 协议"></a>AFURLResponseSerialization 协议</h2><p><code>AFURLResponseSerialization</code> 协议只有一个方法需要实现：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">nullable</span> <span class="keyword">id</span>)responseObjectForResponse:(<span class="keyword">nullable</span> <span class="built_in">NSURLResponse</span> *)response</span><br><span class="line">                           data:(<span class="keyword">nullable</span> <span class="built_in">NSData</span> *)data</span><br><span class="line">                          error:(<span class="built_in">NSError</span> * _Nullable __autoreleasing *)error <span class="built_in">NS_SWIFT_NOTHROW</span>;</span><br></pre></td></tr></table></figure>
+<p>这个协议会拿到响应对象 <code>NSURLResponse</code> ，响应数据 <code>NSData</code>。可以根据 <code>NSURLResponse</code> 返回数据类型标识 <code>content-type</code> 选取相应的解析器，来解析 data.</p>
+<h2 id="AFHTTPResponseSerializer-基类"><a href="#AFHTTPResponseSerializer-基类" class="headerlink" title="AFHTTPResponseSerializer 基类"></a>AFHTTPResponseSerializer 基类</h2><p> <code>AFHTTPResponseSerializer</code> 是一个基类，提供最基本的属性和方法，针对不同 <code>content-type</code> 的响应报文，需要实例化不同的子类进行解析。</p>
+<p><code>AFHTTPResponseSerializer</code> 有两个重要的属性：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// 设置接收的状态码，不在此内的状态码返回错误</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">copy</span>, <span class="keyword">nullable</span>) <span class="built_in">NSIndexSet</span> *acceptableStatusCodes;</span><br><span class="line"><span class="comment">/// 设置接受的content-type</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">copy</span>, <span class="keyword">nullable</span>) <span class="built_in">NSSet</span> &lt;<span class="built_in">NSString</span> *&gt; *acceptableContentTypes;</span><br></pre></td></tr></table></figure>
+<p>它们会在初始化方法中赋值：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">instancetype</span>)init &#123;</span><br><span class="line">    <span class="keyword">self</span> = [<span class="keyword">super</span> init];</span><br><span class="line">    <span class="keyword">if</span> (!<span class="keyword">self</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// 设置i接受的返回code 接收范围是 200-299</span></span><br><span class="line">    <span class="keyword">self</span>.acceptableStatusCodes = [<span class="built_in">NSIndexSet</span> indexSetWithIndexesInRange:<span class="built_in">NSMakeRange</span>(<span class="number">200</span>, <span class="number">100</span>)];</span><br><span class="line">    <span class="comment">/// 设置接受的返回content-type 为任何 type</span></span><br><span class="line">    <span class="keyword">self</span>.acceptableContentTypes = <span class="literal">nil</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">self</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>因为 <code>AFHTTPResponseSerializer</code> 不做任何类型校验，因此其 <code>acceptableContentTypes</code> 为 nil，表示所有类型皆可，这个属性会在不同子类中设置为不同类型。</p>
+<p><code>acceptableStatusCodes</code> 是一个 <code>NSIndexSet</code> 实例，是一个有序的，唯一的，无符号整数的集合。比如：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSMutableIndexSet</span> *indexSetM = [<span class="built_in">NSMutableIndexSet</span> indexSet];</span><br><span class="line">[indexSetM addIndex:<span class="number">6</span>];</span><br><span class="line">[indexSetM addIndex:<span class="number">8</span>];</span><br><span class="line">[indexSetM addIndexesInRange:<span class="built_in">NSMakeRange</span>(<span class="number">20</span>, <span class="number">5</span>)];</span><br><span class="line"></span><br><span class="line">=&gt; [<span class="number">6</span>,<span class="number">8</span>,<span class="number">20</span>,<span class="number">21</span>,<span class="number">22</span>,<span class="number">23</span>,<span class="number">24</span>]</span><br></pre></td></tr></table></figure>
+<p><code>addIndexesInRange:</code> 方法可以设定一个范围。因此上面的代码中 <code>acceptableStatusCodes</code> 代表的是只接受 200-299 的状态码。</p>
+<p>根据上面的有效状态码和有效 content-type，基类中还有一个验证方法。如果验证无效，会抛出 <code>NSError</code>：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// 验证服务器返回的数据，是否符合接收的状态码和 content-type</span></span><br><span class="line">- (<span class="built_in">BOOL</span>)validateResponse:(<span class="built_in">NSHTTPURLResponse</span> *)response</span><br><span class="line">                    data:(<span class="built_in">NSData</span> *)data</span><br><span class="line">                   error:(<span class="built_in">NSError</span> * __autoreleasing *)error</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">/// 默认响应都是有效的</span></span><br><span class="line">    <span class="built_in">BOOL</span> responseIsValid = <span class="literal">YES</span>;</span><br><span class="line">    <span class="built_in">NSError</span> *validationError = <span class="literal">nil</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (response &amp;&amp; [response isKindOfClass:[<span class="built_in">NSHTTPURLResponse</span> <span class="keyword">class</span>]]) &#123;</span><br><span class="line">        <span class="comment">/// 如果设置了接受的 content-type 并且响应的 content-type 不在其之内，并且 response 的 MIMEType 和 data 都不为空</span></span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">self</span>.acceptableContentTypes &amp;&amp; ![<span class="keyword">self</span>.acceptableContentTypes containsObject:[response MIMEType]] &amp;&amp;</span><br><span class="line">            !([response MIMEType] == <span class="literal">nil</span> &amp;&amp; [data length] == <span class="number">0</span>)) &#123;</span><br><span class="line"></span><br><span class="line">            <span class="comment">/// 生成错误信息</span></span><br><span class="line">            <span class="keyword">if</span> ([data length] &gt; <span class="number">0</span> &amp;&amp; [response URL]) &#123;</span><br><span class="line">                <span class="built_in">NSMutableDictionary</span> *mutableUserInfo = [@&#123;</span><br><span class="line">                                                          <span class="built_in">NSLocalizedDescriptionKey</span>: [<span class="built_in">NSString</span> stringWithFormat:<span class="built_in">NSLocalizedStringFromTable</span>(<span class="string">@"Request failed: unacceptable content-type: %@"</span>, <span class="string">@"AFNetworking"</span>, <span class="literal">nil</span>), [response MIMEType]],</span><br><span class="line">                                                          <span class="built_in">NSURLErrorFailingURLErrorKey</span>:[response URL],</span><br><span class="line">                                                          AFNetworkingOperationFailingURLResponseErrorKey: response,</span><br><span class="line">                                                        &#125; mutableCopy];</span><br><span class="line">                <span class="keyword">if</span> (data) &#123;</span><br><span class="line">                    mutableUserInfo[AFNetworkingOperationFailingURLResponseDataErrorKey] = data;</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                validationError = AFErrorWithUnderlyingError([<span class="built_in">NSError</span> errorWithDomain:AFURLResponseSerializationErrorDomain code:<span class="built_in">NSURLErrorCannotDecodeContentData</span> userInfo:mutableUserInfo], validationError);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            responseIsValid = <span class="literal">NO</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">/// 校验响应状态码</span></span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">self</span>.acceptableStatusCodes &amp;&amp; ![<span class="keyword">self</span>.acceptableStatusCodes containsIndex:(<span class="built_in">NSUInteger</span>)response.statusCode] &amp;&amp; [response URL]) &#123;</span><br><span class="line">            <span class="built_in">NSMutableDictionary</span> *mutableUserInfo = [@&#123;</span><br><span class="line">                                               <span class="built_in">NSLocalizedDescriptionKey</span>: [<span class="built_in">NSString</span> stringWithFormat:<span class="built_in">NSLocalizedStringFromTable</span>(<span class="string">@"Request failed: %@ (%ld)"</span>, <span class="string">@"AFNetworking"</span>, <span class="literal">nil</span>), [<span class="built_in">NSHTTPURLResponse</span> localizedStringForStatusCode:response.statusCode], (<span class="keyword">long</span>)response.statusCode],</span><br><span class="line">                                               <span class="built_in">NSURLErrorFailingURLErrorKey</span>:[response URL],</span><br><span class="line">                                               AFNetworkingOperationFailingURLResponseErrorKey: response,</span><br><span class="line">                                       &#125; mutableCopy];</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (data) &#123;</span><br><span class="line">                mutableUserInfo[AFNetworkingOperationFailingURLResponseDataErrorKey] = data;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            validationError = AFErrorWithUnderlyingError([<span class="built_in">NSError</span> errorWithDomain:AFURLResponseSerializationErrorDomain code:<span class="built_in">NSURLErrorBadServerResponse</span> userInfo:mutableUserInfo], validationError);</span><br><span class="line"></span><br><span class="line">            responseIsValid = <span class="literal">NO</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (error &amp;&amp; !responseIsValid) &#123;</span><br><span class="line">        *error = validationError;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> responseIsValid;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="AFJSONResponseSerializer"><a href="#AFJSONResponseSerializer" class="headerlink" title="AFJSONResponseSerializer"></a>AFJSONResponseSerializer</h2><p>解析 JSON 的序列化类。它的 <code>content-type</code> 为 <code>@&quot;application/json&quot;, @&quot;text/json&quot;, @&quot;text/javascript&quot;</code></p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">instancetype</span>)init &#123;</span><br><span class="line">    <span class="keyword">self</span> = [<span class="keyword">super</span> init];</span><br><span class="line">    <span class="keyword">if</span> (!<span class="keyword">self</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// 接受的 content-type 为 @"application/json", @"text/json", @"text/javascript"</span></span><br><span class="line">    <span class="keyword">self</span>.acceptableContentTypes = [<span class="built_in">NSSet</span> setWithObjects:<span class="string">@"application/json"</span>, <span class="string">@"text/json"</span>, <span class="string">@"text/javascript"</span>, <span class="literal">nil</span>];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">self</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>序列化方法通过 <code>NSJSONSerialization</code> 将 <code>NSData</code> 转为 json 对象，一般是一个字典或者数组：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">id</span>)responseObjectForResponse:(<span class="built_in">NSURLResponse</span> *)response</span><br><span class="line">                           data:(<span class="built_in">NSData</span> *)data</span><br><span class="line">                          error:(<span class="built_in">NSError</span> *__autoreleasing *)error</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">/// 验证 response</span></span><br><span class="line">    <span class="keyword">if</span> (![<span class="keyword">self</span> validateResponse:(<span class="built_in">NSHTTPURLResponse</span> *)response data:data error:error]) &#123;</span><br><span class="line">        <span class="keyword">if</span> (!error || AFErrorOrUnderlyingErrorHasCodeInDomain(*error, <span class="built_in">NSURLErrorCannotDecodeContentData</span>, AFURLResponseSerializationErrorDomain)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">BOOL</span> isSpace = [data isEqualToData:[<span class="built_in">NSData</span> dataWithBytes:<span class="string">" "</span> length:<span class="number">1</span>]];</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (data.length == <span class="number">0</span> || isSpace) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">NSError</span> *serializationError = <span class="literal">nil</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">id</span> responseObject = [<span class="built_in">NSJSONSerialization</span> JSONObjectWithData:data options:<span class="keyword">self</span>.readingOptions error:&amp;serializationError];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (!responseObject)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span> (error) &#123;</span><br><span class="line">            *error = AFErrorWithUnderlyingError(serializationError, *error);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/// 移除空的 key</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.removesKeysWithNullValues) &#123;</span><br><span class="line">        <span class="keyword">return</span> AFJSONObjectByRemovingKeysWithNullValues(responseObject, <span class="keyword">self</span>.readingOptions);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> responseObject;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最后还会删除数据中值为 <code>NSNull</code> 的 key：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// 移除空的 key</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">id</span> AFJSONObjectByRemovingKeysWithNullValues(<span class="keyword">id</span> JSONObject, <span class="built_in">NSJSONReadingOptions</span> readingOptions) &#123;</span><br><span class="line">    <span class="comment">/// 如果是数组</span></span><br><span class="line">    <span class="keyword">if</span> ([JSONObject isKindOfClass:[<span class="built_in">NSArray</span> <span class="keyword">class</span>]]) &#123;</span><br><span class="line">        <span class="built_in">NSMutableArray</span> *mutableArray = [<span class="built_in">NSMutableArray</span> arrayWithCapacity:[(<span class="built_in">NSArray</span> *)JSONObject count]];</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">id</span> value <span class="keyword">in</span> (<span class="built_in">NSArray</span> *)JSONObject) &#123;</span><br><span class="line">            <span class="comment">/// 递归调用</span></span><br><span class="line">            [mutableArray addObject:AFJSONObjectByRemovingKeysWithNullValues(value, readingOptions)];</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> (readingOptions &amp; <span class="built_in">NSJSONReadingMutableContainers</span>) ? mutableArray : [<span class="built_in">NSArray</span> arrayWithArray:mutableArray];</span><br><span class="line">    <span class="comment">/// 如果字典</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> ([JSONObject isKindOfClass:[<span class="built_in">NSDictionary</span> <span class="keyword">class</span>]]) &#123;</span><br><span class="line">        <span class="built_in">NSMutableDictionary</span> *mutableDictionary = [<span class="built_in">NSMutableDictionary</span> dictionaryWithDictionary:JSONObject];</span><br><span class="line">        <span class="comment">/// 循环字典中所有的 key</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">id</span> &lt;<span class="built_in">NSCopying</span>&gt; key <span class="keyword">in</span> [(<span class="built_in">NSDictionary</span> *)JSONObject allKeys]) &#123;</span><br><span class="line">            <span class="keyword">id</span> value = (<span class="built_in">NSDictionary</span> *)JSONObject[key];</span><br><span class="line">            <span class="comment">/// 如果 value 是 NSNull</span></span><br><span class="line">            <span class="keyword">if</span> (!value || [value isEqual:[<span class="built_in">NSNull</span> null]]) &#123;</span><br><span class="line">                <span class="comment">/// removeObjectForKey</span></span><br><span class="line">                [mutableDictionary removeObjectForKey:key];</span><br><span class="line">            <span class="comment">/// 如果 value 还是数组或者字典类型</span></span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> ([value isKindOfClass:[<span class="built_in">NSArray</span> <span class="keyword">class</span>]] || [value isKindOfClass:[<span class="built_in">NSDictionary</span> <span class="keyword">class</span>]]) &#123;</span><br><span class="line">                <span class="comment">/// 递归调用</span></span><br><span class="line">                mutableDictionary[key] = AFJSONObjectByRemovingKeysWithNullValues(value, readingOptions);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> (readingOptions &amp; <span class="built_in">NSJSONReadingMutableContainers</span>) ? mutableDictionary : [<span class="built_in">NSDictionary</span> dictionaryWithDictionary:mutableDictionary];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> JSONObject;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>注意，数组中的空对象是不会被删除的，只会删除字典中的值为 nil 的键</p>
+</blockquote>
+<h2 id="AFXMLParserResponseSerializer"><a href="#AFXMLParserResponseSerializer" class="headerlink" title="AFXMLParserResponseSerializer"></a>AFXMLParserResponseSerializer</h2><p>解析 xml 的序列化类。它的 <code>content-type</code> 为 <code>@&quot;application/xml&quot;, @&quot;text/xml&quot;</code>:</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">instancetype</span>)init &#123;</span><br><span class="line">    <span class="keyword">self</span> = [<span class="keyword">super</span> init];</span><br><span class="line">    <span class="keyword">if</span> (!<span class="keyword">self</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">self</span>.acceptableContentTypes = [[<span class="built_in">NSSet</span> alloc] initWithObjects:<span class="string">@"application/xml"</span>, <span class="string">@"text/xml"</span>, <span class="literal">nil</span>];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">self</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>通过系统类 <code>NSXMLParser</code> 解析：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">id</span>)responseObjectForResponse:(<span class="built_in">NSHTTPURLResponse</span> *)response</span><br><span class="line">                           data:(<span class="built_in">NSData</span> *)data</span><br><span class="line">                          error:(<span class="built_in">NSError</span> *__autoreleasing *)error</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span> (![<span class="keyword">self</span> validateResponse:(<span class="built_in">NSHTTPURLResponse</span> *)response data:data error:error]) &#123;</span><br><span class="line">        <span class="keyword">if</span> (!error || AFErrorOrUnderlyingErrorHasCodeInDomain(*error, <span class="built_in">NSURLErrorCannotDecodeContentData</span>, AFURLResponseSerializationErrorDomain)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> [[<span class="built_in">NSXMLParser</span> alloc] initWithData:data];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="AFPropertyListResponseSerializer"><a href="#AFPropertyListResponseSerializer" class="headerlink" title="AFPropertyListResponseSerializer"></a>AFPropertyListResponseSerializer</h2><p>解析 plist 的序列化类。它的 content-type 为 <code>@&quot;application/x-plist&quot;</code></p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">instancetype</span>)init &#123;</span><br><span class="line">    <span class="keyword">self</span> = [<span class="keyword">super</span> init];</span><br><span class="line">    <span class="keyword">if</span> (!<span class="keyword">self</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">self</span>.acceptableContentTypes = [[<span class="built_in">NSSet</span> alloc] initWithObjects:<span class="string">@"application/x-plist"</span>, <span class="literal">nil</span>];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">self</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>通过 <code>NSPropertyListSerialization</code> 解析：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">id</span>)responseObjectForResponse:(<span class="built_in">NSURLResponse</span> *)response</span><br><span class="line">                           data:(<span class="built_in">NSData</span> *)data</span><br><span class="line">                          error:(<span class="built_in">NSError</span> *__autoreleasing *)error</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span> (![<span class="keyword">self</span> validateResponse:(<span class="built_in">NSHTTPURLResponse</span> *)response data:data error:error]) &#123;</span><br><span class="line">        <span class="keyword">if</span> (!error || AFErrorOrUnderlyingErrorHasCodeInDomain(*error, <span class="built_in">NSURLErrorCannotDecodeContentData</span>, AFURLResponseSerializationErrorDomain)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (!data) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">NSError</span> *serializationError = <span class="literal">nil</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">id</span> responseObject = [<span class="built_in">NSPropertyListSerialization</span> propertyListWithData:data options:<span class="keyword">self</span>.readOptions format:<span class="literal">NULL</span> error:&amp;serializationError];</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (!responseObject)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span> (error) &#123;</span><br><span class="line">            *error = AFErrorWithUnderlyingError(serializationError, *error);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> responseObject;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="AFImageResponseSerializer"><a href="#AFImageResponseSerializer" class="headerlink" title="AFImageResponseSerializer"></a>AFImageResponseSerializer</h2><p>解析 image 的序列化类。它的 content-type 为 <code>@&quot;image/tiff&quot;, @&quot;image/jpeg&quot;, @&quot;image/gif&quot;, @&quot;image/png&quot;, @&quot;image/ico&quot;, @&quot;image/x-icon&quot;, @&quot;image/bmp&quot;, @&quot;image/x-bmp&quot;, @&quot;image/x-xbitmap&quot;, @&quot;image/x-win-bitmap&quot;</code>。</p>
+<p>它还有一个属性 <code>automaticallyInflatesResponseImage</code> 用来设置是否自动解码：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">instancetype</span>)init &#123;</span><br><span class="line">    <span class="keyword">self</span> = [<span class="keyword">super</span> init];</span><br><span class="line">    <span class="keyword">if</span> (!<span class="keyword">self</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">self</span>.acceptableContentTypes = [[<span class="built_in">NSSet</span> alloc] initWithObjects:<span class="string">@"image/tiff"</span>, <span class="string">@"image/jpeg"</span>, <span class="string">@"image/gif"</span>, <span class="string">@"image/png"</span>, <span class="string">@"image/ico"</span>, <span class="string">@"image/x-icon"</span>, <span class="string">@"image/bmp"</span>, <span class="string">@"image/x-bmp"</span>, <span class="string">@"image/x-xbitmap"</span>, <span class="string">@"image/x-win-bitmap"</span>, <span class="literal">nil</span>];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">self</span>.imageScale = [[<span class="built_in">UIScreen</span> mainScreen] scale];</span><br><span class="line">    <span class="keyword">self</span>.automaticallyInflatesResponseImage = <span class="literal">YES</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">self</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>它的解析方式如下：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">id</span>)responseObjectForResponse:(<span class="built_in">NSURLResponse</span> *)response</span><br><span class="line">                           data:(<span class="built_in">NSData</span> *)data</span><br><span class="line">                          error:(<span class="built_in">NSError</span> *__autoreleasing *)error</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span> (![<span class="keyword">self</span> validateResponse:(<span class="built_in">NSHTTPURLResponse</span> *)response data:data error:error]) &#123;</span><br><span class="line">        <span class="keyword">if</span> (!error || AFErrorOrUnderlyingErrorHasCodeInDomain(*error, <span class="built_in">NSURLErrorCannotDecodeContentData</span>, AFURLResponseSerializationErrorDomain)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.automaticallyInflatesResponseImage) &#123;</span><br><span class="line">        <span class="keyword">return</span> AFInflatedImageFromResponseWithDataAtScale((<span class="built_in">NSHTTPURLResponse</span> *)response, data, <span class="keyword">self</span>.imageScale);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> AFImageWithDataAtScale(data, <span class="keyword">self</span>.imageScale);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其中涉及到两个方法 <code>AFInflatedImageFromResponseWithDataAtScale</code> 和 <code>AFImageWithDataAtScale</code>。先来看后者，它通过 NSData 创建 image：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// 创建 image</span></span><br><span class="line">+ (<span class="built_in">UIImage</span> *)af_safeImageWithData:(<span class="built_in">NSData</span> *)data &#123;</span><br><span class="line">    <span class="built_in">UIImage</span>* image = <span class="literal">nil</span>;</span><br><span class="line">    <span class="keyword">static</span> <span class="built_in">dispatch_once_t</span> onceToken;</span><br><span class="line">    <span class="built_in">dispatch_once</span>(&amp;onceToken, ^&#123;</span><br><span class="line">        imageLock = [[<span class="built_in">NSLock</span> alloc] init];</span><br><span class="line">    &#125;);</span><br><span class="line">    </span><br><span class="line">    [imageLock lock];</span><br><span class="line">    image = [<span class="built_in">UIImage</span> imageWithData:data];</span><br><span class="line">    [imageLock unlock];</span><br><span class="line">    <span class="keyword">return</span> image;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">@end</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/// data scale 创建 image</span></span><br><span class="line"><span class="keyword">static</span> <span class="built_in">UIImage</span> * AFImageWithDataAtScale(<span class="built_in">NSData</span> *data, <span class="built_in">CGFloat</span> scale) &#123;</span><br><span class="line">    <span class="built_in">UIImage</span> *image = [<span class="built_in">UIImage</span> af_safeImageWithData:data];</span><br><span class="line">    <span class="keyword">if</span> (image.images) &#123;</span><br><span class="line">        <span class="keyword">return</span> image;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> [[<span class="built_in">UIImage</span> alloc] initWithCGImage:[image <span class="built_in">CGImage</span>] scale:scale orientation:image.imageOrientation];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面创建图片的方式比较普通，不太能理解为什么要加锁。然后是 <code>AFInflatedImageFromResponseWithDataAtScale</code> ：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// 将png和jpeg图片解码</span></span><br><span class="line"><span class="keyword">static</span> <span class="built_in">UIImage</span> * AFInflatedImageFromResponseWithDataAtScale(<span class="built_in">NSHTTPURLResponse</span> *response, <span class="built_in">NSData</span> *data, <span class="built_in">CGFloat</span> scale) &#123;</span><br><span class="line">    <span class="keyword">if</span> (!data || [data length] == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">CGImageRef</span> imageRef = <span class="literal">NULL</span>;</span><br><span class="line">    <span class="built_in">CGDataProviderRef</span> dataProvider = <span class="built_in">CGDataProviderCreateWithCFData</span>((__bridge <span class="built_in">CFDataRef</span>)data);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> ([response.MIMEType isEqualToString:<span class="string">@"image/png"</span>]) &#123;</span><br><span class="line">        imageRef = <span class="built_in">CGImageCreateWithPNGDataProvider</span>(dataProvider,  <span class="literal">NULL</span>, <span class="literal">true</span>, kCGRenderingIntentDefault);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> ([response.MIMEType isEqualToString:<span class="string">@"image/jpeg"</span>]) &#123;</span><br><span class="line">        imageRef = <span class="built_in">CGImageCreateWithJPEGDataProvider</span>(dataProvider, <span class="literal">NULL</span>, <span class="literal">true</span>, kCGRenderingIntentDefault);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (imageRef) &#123;</span><br><span class="line">            <span class="built_in">CGColorSpaceRef</span> imageColorSpace = <span class="built_in">CGImageGetColorSpace</span>(imageRef);</span><br><span class="line">            <span class="built_in">CGColorSpaceModel</span> imageColorSpaceModel = <span class="built_in">CGColorSpaceGetModel</span>(imageColorSpace);</span><br><span class="line"></span><br><span class="line">            <span class="comment">// CGImageCreateWithJPEGDataProvider does not properly handle CMKY, so fall back to AFImageWithDataAtScale</span></span><br><span class="line">            <span class="keyword">if</span> (imageColorSpaceModel == kCGColorSpaceModelCMYK) &#123;</span><br><span class="line">                <span class="built_in">CGImageRelease</span>(imageRef);</span><br><span class="line">                imageRef = <span class="literal">NULL</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">CGDataProviderRelease</span>(dataProvider);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">UIImage</span> *image = AFImageWithDataAtScale(data, scale);</span><br><span class="line">    <span class="keyword">if</span> (!imageRef) &#123;</span><br><span class="line">        <span class="keyword">if</span> (image.images || !image) &#123;</span><br><span class="line">            <span class="keyword">return</span> image;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        imageRef = <span class="built_in">CGImageCreateCopy</span>([image <span class="built_in">CGImage</span>]);</span><br><span class="line">        <span class="keyword">if</span> (!imageRef) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    size_t width = <span class="built_in">CGImageGetWidth</span>(imageRef);</span><br><span class="line">    size_t height = <span class="built_in">CGImageGetHeight</span>(imageRef);</span><br><span class="line">    size_t bitsPerComponent = <span class="built_in">CGImageGetBitsPerComponent</span>(imageRef);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// 如果图片太大就不解码了。因为解码的图片很占内存</span></span><br><span class="line">    <span class="keyword">if</span> (width * height &gt; <span class="number">1024</span> * <span class="number">1024</span> || bitsPerComponent &gt; <span class="number">8</span>) &#123;</span><br><span class="line">        <span class="built_in">CGImageRelease</span>(imageRef);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> image;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// CGImageGetBytesPerRow() calculates incorrectly in iOS 5.0, so defer to CGBitmapContextCreate</span></span><br><span class="line">    <span class="comment">/// 解码相关方法</span></span><br><span class="line">    size_t bytesPerRow = <span class="number">0</span>;</span><br><span class="line">    <span class="built_in">CGColorSpaceRef</span> colorSpace = <span class="built_in">CGColorSpaceCreateDeviceRGB</span>();</span><br><span class="line">    <span class="built_in">CGColorSpaceModel</span> colorSpaceModel = <span class="built_in">CGColorSpaceGetModel</span>(colorSpace);</span><br><span class="line">    <span class="built_in">CGBitmapInfo</span> bitmapInfo = <span class="built_in">CGImageGetBitmapInfo</span>(imageRef);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (colorSpaceModel == kCGColorSpaceModelRGB) &#123;</span><br><span class="line">        uint32_t alpha = (bitmapInfo &amp; kCGBitmapAlphaInfoMask);</span><br><span class="line"><span class="meta">#pragma clang diagnostic push</span></span><br><span class="line"><span class="meta">#pragma clang diagnostic ignored <span class="meta-string">"-Wassign-enum"</span></span></span><br><span class="line">        <span class="keyword">if</span> (alpha == kCGImageAlphaNone) &#123;</span><br><span class="line">            bitmapInfo &amp;= ~kCGBitmapAlphaInfoMask;</span><br><span class="line">            bitmapInfo |= kCGImageAlphaNoneSkipFirst;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (!(alpha == kCGImageAlphaNoneSkipFirst || alpha == kCGImageAlphaNoneSkipLast)) &#123;</span><br><span class="line">            bitmapInfo &amp;= ~kCGBitmapAlphaInfoMask;</span><br><span class="line">            bitmapInfo |= kCGImageAlphaPremultipliedFirst;</span><br><span class="line">        &#125;</span><br><span class="line"><span class="meta">#pragma clang diagnostic pop</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">CGContextRef</span> context = <span class="built_in">CGBitmapContextCreate</span>(<span class="literal">NULL</span>, width, height, bitsPerComponent, bytesPerRow, colorSpace, bitmapInfo);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">CGColorSpaceRelease</span>(colorSpace);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (!context) &#123;</span><br><span class="line">        <span class="built_in">CGImageRelease</span>(imageRef);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> image;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">CGContextDrawImage</span>(context, <span class="built_in">CGRectMake</span>(<span class="number">0.0</span>f, <span class="number">0.0</span>f, width, height), imageRef);</span><br><span class="line">    <span class="built_in">CGImageRef</span> inflatedImageRef = <span class="built_in">CGBitmapContextCreateImage</span>(context);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">CGContextRelease</span>(context);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">UIImage</span> *inflatedImage = [[<span class="built_in">UIImage</span> alloc] initWithCGImage:inflatedImageRef scale:scale orientation:image.imageOrientation];</span><br><span class="line"></span><br><span class="line">    <span class="built_in">CGImageRelease</span>(inflatedImageRef);</span><br><span class="line">    <span class="built_in">CGImageRelease</span>(imageRef);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> inflatedImage;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个方法能解析 png 和 jpeg 图片，会将图片解码，这样能加速图片的显示速度。</p>
+<h2 id="AFCompoundResponseSerializer"><a href="#AFCompoundResponseSerializer" class="headerlink" title="AFCompoundResponseSerializer"></a>AFCompoundResponseSerializer</h2><p>复合类型的序列化器。在创建的时候需要传入上面的各种序列化方式的实例：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">+ (<span class="keyword">instancetype</span>)compoundSerializerWithResponseSerializers:(<span class="built_in">NSArray</span> *)responseSerializers &#123;</span><br><span class="line">    AFCompoundResponseSerializer *serializer = [[<span class="keyword">self</span> alloc] init];</span><br><span class="line">    serializer.responseSerializers = responseSerializers;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> serializer;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在获取到响应信息的时候会调用内部的各种序列化器尝试转换：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">id</span>)responseObjectForResponse:(<span class="built_in">NSURLResponse</span> *)response</span><br><span class="line">                           data:(<span class="built_in">NSData</span> *)data</span><br><span class="line">                          error:(<span class="built_in">NSError</span> *__autoreleasing *)error</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">id</span> &lt;AFURLResponseSerialization&gt; serializer <span class="keyword">in</span> <span class="keyword">self</span>.responseSerializers) &#123;</span><br><span class="line">        <span class="keyword">if</span> (![serializer isKindOfClass:[AFHTTPResponseSerializer <span class="keyword">class</span>]]) &#123;</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="built_in">NSError</span> *serializerError = <span class="literal">nil</span>;</span><br><span class="line">        <span class="keyword">id</span> responseObject = [serializer responseObjectForResponse:response data:data error:&amp;serializerError];</span><br><span class="line">        <span class="keyword">if</span> (responseObject) &#123;</span><br><span class="line">            <span class="keyword">if</span> (error) &#123;</span><br><span class="line">                *error = AFErrorWithUnderlyingError(serializerError, *error);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">return</span> responseObject;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> [<span class="keyword">super</span> responseObjectForResponse:response data:data error:error];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>总体来说，响应的序列化类不像请求那样涉及到输入流，因此还是比较清晰简单的。只要针对不同的 <code>content-type</code> 选取不同的系统类进行解析即可。</p>
+<p>针对图片格式，AFNetworking 做了一部分图片解码转换的功能，但是和 SDWebImage 相比还是简单了很多。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tag/学习笔记/" rel="tag"># 学习笔记</a>
+          
+            <a href="/tag/源码解析/" rel="tag"># 源码解析</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/12/25/AFNetworking2/" rel="next" title="AFNetworking 源码解析 - 请求序列化">
+                <i class="fa fa-chevron-left"></i> AFNetworking 源码解析 - 请求序列化
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/01/05/AFNetworking1/" rel="prev" title="AFNetworking 源码解析 - 网络状态与安全策略">
+                AFNetworking 源码解析 - 网络状态与安全策略 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.png" alt="Zachary Zhang">
+            
+              <p class="site-author-name" itemprop="name">Zachary Zhang</p>
+              <p class="site-description motion-element" itemprop="description">Stay Hungry. Stay Foolish!</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">116</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/zhang759740844" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:zch759740844@126.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#AFURLResponseSerialization-协议"><span class="nav-number">1.</span> <span class="nav-text">AFURLResponseSerialization 协议</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#AFHTTPResponseSerializer-基类"><span class="nav-number">2.</span> <span class="nav-text">AFHTTPResponseSerializer 基类</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#AFJSONResponseSerializer"><span class="nav-number">3.</span> <span class="nav-text">AFJSONResponseSerializer</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#AFXMLParserResponseSerializer"><span class="nav-number">4.</span> <span class="nav-text">AFXMLParserResponseSerializer</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#AFPropertyListResponseSerializer"><span class="nav-number">5.</span> <span class="nav-text">AFPropertyListResponseSerializer</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#AFImageResponseSerializer"><span class="nav-number">6.</span> <span class="nav-text">AFImageResponseSerializer</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#AFCompoundResponseSerializer"><span class="nav-number">7.</span> <span class="nav-text">AFCompoundResponseSerializer</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">8.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zachary Zhang</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

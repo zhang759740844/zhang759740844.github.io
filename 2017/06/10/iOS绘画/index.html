@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+
+
+
+
+  <meta name="keywords" content="UI,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="有些时候需求上的动画效果不能仅通过贴图来解决，这就需要我们自定义各种图案，然后动态的绘制完成动态效果。比较复杂，但是实现出来的东西非常精致。">
+<meta name="keywords" content="UI">
+<meta property="og:type" content="article">
+<meta property="og:title" content="iOS 绘图">
+<meta property="og:url" content="http://zhang759740844.github.io/2017/06/10/iOS绘画/index.html">
+<meta property="og:site_name" content="Zachary&#39;s blog">
+<meta property="og:description" content="有些时候需求上的动画效果不能仅通过贴图来解决，这就需要我们自定义各种图案，然后动态的绘制完成动态效果。比较复杂，但是实现出来的东西非常精致。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/bezier1.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/drawrect_1.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/drawrect_2.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/drawrect_3.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/drawrect_4?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/drawrect_5.png?raw=true">
+<meta property="og:updated_time" content="2020-02-27T15:13:37.649Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="iOS 绘图">
+<meta name="twitter:description" content="有些时候需求上的动画效果不能仅通过贴图来解决，这就需要我们自定义各种图案，然后动态的绘制完成动态效果。比较复杂，但是实现出来的东西非常精致。">
+<meta name="twitter:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/bezier1.png?raw=true">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://zhang759740844.github.io/2017/06/10/iOS绘画/">
+
+
+
+
+
+  <title>iOS 绘图 | Zachary's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Zachary's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">记录成长</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://zhang759740844.github.io/2017/06/10/iOS绘画/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zachary Zhang">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Zachary's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">iOS 绘图</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-06-10T14:07:12+08:00">
+                2017-06-10
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>有些时候需求上的动画效果不能仅通过贴图来解决，这就需要我们自定义各种图案，然后动态的绘制完成动态效果。比较复杂，但是实现出来的东西非常精致。</p>
+<a id="more"></a>
+<h2 id="drawRect-获取当前图形上下文绘图"><a href="#drawRect-获取当前图形上下文绘图" class="headerlink" title="drawRect 获取当前图形上下文绘图"></a>drawRect 获取当前图形上下文绘图</h2><h3 id="绘制矩形"><a href="#绘制矩形" class="headerlink" title="绘制矩形"></a>绘制矩形</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)drawRect:(<span class="built_in">CGRect</span>)rect</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">UIColor</span> *color = [<span class="built_in">UIColor</span> colorWithRed:<span class="number">0</span> green:<span class="number">0</span> blue:<span class="number">0.7</span> alpha:<span class="number">1</span>];</span><br><span class="line">    [color set]; <span class="comment">//设置线条颜色</span></span><br><span class="line"></span><br><span class="line">    <span class="built_in">UIBezierPath</span>* aPath = [<span class="built_in">UIBezierPath</span> bezierPathWithRect:<span class="built_in">CGRectMake</span>(<span class="number">20</span>, <span class="number">20</span>, <span class="number">100</span>, <span class="number">50</span>)];</span><br><span class="line">    aPath.lineWidth = <span class="number">8.0</span>;</span><br><span class="line">    aPath.lineCapStyle = kCGLineCapRound; <span class="comment">//线条拐角</span></span><br><span class="line">    aPath.lineJoinStyle = kCGLineCapRound; <span class="comment">//终点处理</span></span><br><span class="line"></span><br><span class="line">    [aPath stroke];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="圆和椭圆"><a href="#圆和椭圆" class="headerlink" title="圆和椭圆"></a><strong>圆和椭圆</strong></h3><p>替换上面的代码为：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 圆</span></span><br><span class="line"><span class="built_in">UIBezierPath</span>* aPath = [<span class="built_in">UIBezierPath</span> bezierPathWithOvalInRect:<span class="built_in">CGRectMake</span>(<span class="number">20</span>, <span class="number">20</span>, <span class="number">100</span>, <span class="number">100</span>)];</span><br><span class="line"><span class="comment">// 椭圆</span></span><br><span class="line"><span class="built_in">UIBezierPath</span>* aPath = [<span class="built_in">UIBezierPath</span> bezierPathWithOvalInRect:<span class="built_in">CGRectMake</span>(<span class="number">20</span>, <span class="number">20</span>, <span class="number">100</span>, <span class="number">50</span>)];</span><br></pre></td></tr></table></figure>
+<p>都是需要一个外接矩形，椭圆和圆不同之处在于圆的外接矩形是个正方形。</p>
+<h3 id="多边形"><a href="#多边形" class="headerlink" title="多边形"></a>多边形</h3><p>多边形是一些简单的形状,这些形状是由一些直线线条组成，我们可以用 <code>moveToPoint:</code> 和 <code>addLineToPoint:</code> 方法去构建。<code>moveToPoint:</code> 设置我们想要创建形状的起点。从这点开始，我们可以用方法 <code>addLineToPoint:</code> 去创建一个形状的线段。我们可以连续的创建 line，每一个 line 的起点都是先前的终点，终点就是指定的点。<code>closePath</code> 可以在最后一个点和第一个点之间画一条线段。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)drawRect:(<span class="built_in">CGRect</span>)rect</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">UIColor</span> *color = [<span class="built_in">UIColor</span> colorWithRed:<span class="number">0</span> green:<span class="number">0.7</span> blue:<span class="number">0</span> alpha:<span class="number">1</span>];</span><br><span class="line">    [color set];</span><br><span class="line"></span><br><span class="line">    <span class="built_in">UIBezierPath</span>* aPath = [<span class="built_in">UIBezierPath</span> bezierPath];</span><br><span class="line">    aPath.lineWidth = <span class="number">5.0</span>;</span><br><span class="line"></span><br><span class="line">    aPath.lineCapStyle = kCGLineCapRound;</span><br><span class="line">    aPath.lineJoinStyle = kCGLineCapRound;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 起点</span></span><br><span class="line">    [aPath moveToPoint:<span class="built_in">CGPointMake</span>(<span class="number">100.0</span>, <span class="number">0.0</span>)];</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 绘制线条</span></span><br><span class="line">    [aPath addLineToPoint:<span class="built_in">CGPointMake</span>(<span class="number">200.0</span>, <span class="number">40.0</span>)];</span><br><span class="line">    [aPath addLineToPoint:<span class="built_in">CGPointMake</span>(<span class="number">160</span>, <span class="number">140</span>)];</span><br><span class="line">    [aPath addLineToPoint:<span class="built_in">CGPointMake</span>(<span class="number">40.0</span>, <span class="number">140</span>)];</span><br><span class="line">    [aPath addLineToPoint:<span class="built_in">CGPointMake</span>(<span class="number">0.0</span>, <span class="number">40.0</span>)];</span><br><span class="line">    [aPath closePath];<span class="comment">//第五条线通过调用closePath方法得到的</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//根据坐标点连线</span></span><br><span class="line">    [aPath stroke];</span><br><span class="line">  	<span class="comment">// 将图形填充满</span></span><br><span class="line">    [aPath fill];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>closePath 可以将路径封闭</p>
+</blockquote>
+<h3 id="不规则形状"><a href="#不规则形状" class="headerlink" title="不规则形状"></a>不规则形状</h3><p>要用弧线组成不规则的形状，我们需要用到中心点、弧度和半径。弧度以顺时针为准，0° 指向右边。</p>
+<h4 id="绘制一段弧度"><a href="#绘制一段弧度" class="headerlink" title="绘制一段弧度"></a>绘制一段弧度</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)drawRect:(<span class="built_in">CGRect</span>)rect</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">UIColor</span> *color = [<span class="built_in">UIColor</span> redColor];</span><br><span class="line">    [color set]; <span class="comment">//设置线条颜色</span></span><br><span class="line"></span><br><span class="line">    <span class="built_in">UIBezierPath</span>* aPath = [<span class="built_in">UIBezierPath</span> bezierPathWithArcCenter:<span class="built_in">CGPointMake</span>(<span class="number">80</span>, <span class="number">80</span>)</span><br><span class="line">                                                         radius:<span class="number">75</span></span><br><span class="line">                                                     startAngle:<span class="number">0</span></span><br><span class="line">                                                       endAngle:DEGREES_TO_RADIANS(<span class="number">135</span>)</span><br><span class="line">                                                      clockwise:<span class="literal">YES</span>];</span><br><span class="line"></span><br><span class="line">    aPath.lineWidth = <span class="number">5.0</span>;</span><br><span class="line">    aPath.lineCapStyle = kCGLineCapRound; <span class="comment">//线条拐角</span></span><br><span class="line">    aPath.lineJoinStyle = kCGLineCapRound; <span class="comment">//终点处理</span></span><br><span class="line"></span><br><span class="line">    [aPath stroke];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="贝塞尔曲线"><a href="#贝塞尔曲线" class="headerlink" title="贝塞尔曲线"></a>贝塞尔曲线</h4><p>贝塞尔曲线需要一个起始点，终点和控制点</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/bezier1.png?raw=true" alt="bezier曲线"></p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)drawRect:(<span class="built_in">CGRect</span>)rect</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">UIColor</span> *color = [<span class="built_in">UIColor</span> redColor];</span><br><span class="line">    [color set]; <span class="comment">//设置线条颜色</span></span><br><span class="line"></span><br><span class="line">    <span class="built_in">UIBezierPath</span>* aPath = [<span class="built_in">UIBezierPath</span> bezierPath];</span><br><span class="line"></span><br><span class="line">    aPath.lineWidth = <span class="number">5.0</span>;</span><br><span class="line">    aPath.lineCapStyle = kCGLineCapRound; <span class="comment">//线条拐角</span></span><br><span class="line">    aPath.lineJoinStyle = kCGLineCapRound; <span class="comment">//终点处理</span></span><br><span class="line">	<span class="comment">// 起始点</span></span><br><span class="line">    [aPath moveToPoint:<span class="built_in">CGPointMake</span>(<span class="number">20</span>, <span class="number">100</span>)];</span><br><span class="line">	<span class="comment">// 终点 和 控制点</span></span><br><span class="line">    [aPath addQuadCurveToPoint:<span class="built_in">CGPointMake</span>(<span class="number">120</span>, <span class="number">100</span>) controlPoint:<span class="built_in">CGPointMake</span>(<span class="number">70</span>, <span class="number">0</span>)];</span><br><span class="line"></span><br><span class="line">    [aPath stroke];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>贝塞尔曲线可以有多个控制点，可以实现类似波浪的效果：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)drawRect:(<span class="built_in">CGRect</span>)rect</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">UIColor</span> *color = [<span class="built_in">UIColor</span> redColor];</span><br><span class="line">    [color set]; <span class="comment">//设置线条颜色</span></span><br><span class="line"></span><br><span class="line">    <span class="built_in">UIBezierPath</span>* aPath = [<span class="built_in">UIBezierPath</span> bezierPath];</span><br><span class="line"></span><br><span class="line">    aPath.lineWidth = <span class="number">5.0</span>;</span><br><span class="line">    aPath.lineCapStyle = kCGLineCapRound; <span class="comment">//线条拐角</span></span><br><span class="line">    aPath.lineJoinStyle = kCGLineCapRound; <span class="comment">//终点处理</span></span><br><span class="line"></span><br><span class="line">    [aPath moveToPoint:<span class="built_in">CGPointMake</span>(<span class="number">5</span>, <span class="number">80</span>)];</span><br><span class="line"></span><br><span class="line">    [aPath addCurveToPoint:<span class="built_in">CGPointMake</span>(<span class="number">155</span>, <span class="number">80</span>) controlPoint1:<span class="built_in">CGPointMake</span>(<span class="number">80</span>, <span class="number">0</span>) controlPoint2:<span class="built_in">CGPointMake</span>(<span class="number">110</span>, <span class="number">100</span>)];</span><br><span class="line"></span><br><span class="line">    [aPath stroke];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="根据手势绘图"><a href="#根据手势绘图" class="headerlink" title="根据手势绘图"></a>根据手势绘图</h3><p>方法是根据手势移动生成相应的贝塞尔曲线，然后设置重绘。在 <code>drawRect</code> 中把这些曲线绘制出来：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/drawrect_1.png?raw=true" alt></p>
+<h3 id="stroke-方法的解释"><a href="#stroke-方法的解释" class="headerlink" title="stroke 方法的解释"></a>stroke 方法的解释</h3><p>上文中都是在 <code>drawRect</code> 方法中通过 <code>UIBezierPath</code> 绘制的。<code>stroke</code> 实质上帮我们省略了好几个步骤，包括：</p>
+<ol>
+<li>获取当前上下文：<code>CGContextRef ctx = UIGraphicsGetCurrentContext()</code></li>
+<li>把贝塞尔曲线添加到上下文中：<code>CGContextAddPath(ctx, aPath.CGPath)</code> </li>
+<li>绘制图形：<code>CGContextStrokePath(ctx)</code></li>
+</ol>
+<p>也就是说在 <code>drawRect</code> 中都是需要开启上下文的。只不过通过 <code>stroke</code> 方式就省略了。</p>
+<h3 id="drawRect-的问题"><a href="#drawRect-的问题" class="headerlink" title="drawRect 的问题"></a>drawRect 的问题</h3><p>drawRect 会生成一个图形上下文，这个空间为 <code>图层宽*图层高*4 字节</code>，会引起内存的暴增。所以，一般情况下，不要使用 drawRect 方法。</p>
+<p>CAShapeLayer是一个通过矢量图形而不是bitmap来绘制的图层子类。用CGPath来定义想要绘制的图形，它的优点有:</p>
+<pre><code>1. 渲染快，有 GPU 硬件加速
+2. 不会占用系统内存
+3. 不会被图层边界裁减掉
+4. 不会有像素化
+</code></pre><p>推荐使用 CAShapeLayer，使用方式差不多，drawRect 是把 path add 到 context 上，CAShapeLayer 是把 path 赋给 layer.path</p>
+<h2 id="创建新的图形上下文绘图"><a href="#创建新的图形上下文绘图" class="headerlink" title="创建新的图形上下文绘图"></a>创建新的图形上下文绘图</h2><p>上面 <code>drawRect</code> 使用的是当前图形上下文<code>UIGraphicsGetCurrentContext()</code> 绘制的。事实上，可以在任何时候，创建新的图形上下文新建 UIImage</p>
+<h3 id="在图片上写字生成新的图片"><a href="#在图片上写字生成新的图片" class="headerlink" title="在图片上写字生成新的图片"></a>在图片上写字生成新的图片</h3><p>生成一个位图上下文，然后把图片和文字画上去，再获取位图：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/drawrect_2.png?raw=true" alt></p>
+<h3 id="裁剪图片（这个方法可以用来绘制圆角图片）"><a href="#裁剪图片（这个方法可以用来绘制圆角图片）" class="headerlink" title="裁剪图片（这个方法可以用来绘制圆角图片）"></a>裁剪图片（这个方法可以用来绘制圆角图片）</h3><p>先设置裁剪的范围为一个贝塞尔曲线，然后把图片画到贝塞尔曲线中：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/drawrect_3.png?raw=true" alt></p>
+<h3 id="生成一张带边框的圆角图片"><a href="#生成一张带边框的圆角图片" class="headerlink" title="生成一张带边框的圆角图片"></a>生成一张带边框的圆角图片</h3><p>这在上面的基础上添加边框，也就是改变绘图的位置：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/drawrect_4?raw=true" alt></p>
+<h3 id="截图"><a href="#截图" class="headerlink" title="截图"></a>截图</h3><p>开启一个上下文，然后把视图通过 <code>renderInContext:</code> 绘制到上下文上。这种方式获取的是 UIImage 对象：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/drawrect_5.png?raw=true" alt> </p>
+<p>当然还有一种情况，直接通过系统 api 获取，该方法生成一个 UIView：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">UIView</span> *)snapshotView &#123;</span><br><span class="line">    <span class="built_in">UIView</span> *snapView = [<span class="keyword">self</span> snapshotViewAfterScreenUpdates:<span class="literal">YES</span>];</span><br><span class="line">    <span class="keyword">return</span> snapView;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="CAShapeLayer-的使用"><a href="#CAShapeLayer-的使用" class="headerlink" title="CAShapeLayer 的使用"></a>CAShapeLayer 的使用</h2><p>只要把贝塞尔曲线的 CGPath 赋值给 CAShapeLayer 的 path 就可以了，不需要调用任何重绘方法。它的基本属性有：</p>
+<ul>
+<li>path：绘制路径</li>
+<li>fillColor：填充颜色</li>
+<li>fillRule：填充规则，就是如果图形里面也有线条，那么是否中间也要填充</li>
+<li>strokeColor：描边的颜色</li>
+<li>strokeStart：描边的开始点，默认为0最大为1</li>
+<li>strokeEnd：描边的结束点，默认为1 (<strong>配合核心动画可以实现那种慢慢变化的效果</strong>)</li>
+<li>lineWidth：线宽</li>
+<li>lineCap：线的端点的样式</li>
+<li>lineJoin：线交界处样式</li>
+</ul>
+<h3 id="使用-CAShapeLayer-设置圆角"><a href="#使用-CAShapeLayer-设置圆角" class="headerlink" title="使用 CAShapeLayer 设置圆角"></a>使用 CAShapeLayer 设置圆角</h3><p>将 CAShapeLayer 作为图片的 layer 的mask：<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">let roundedRectPath = <span class="built_in">UIBezierPath</span>(roundedRect: avatorView.bounds, byRoundingCorners: .AllCorners, cornerRadii: <span class="built_in">CGSize</span>(width: <span class="number">10</span>, height: <span class="number">10</span>))</span><br><span class="line">let shapeLayer = <span class="built_in">CAShapeLayer</span>()</span><br><span class="line">shapeLayer.path = roundedRectPath.CGPath</span><br><span class="line">avatorView.layer.mask = shapeLayer</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p>这种通过 mask 的方式不会消除离屏渲染，只是这种方式比 cornerRadius 性能好一些。</p>
+</blockquote>
+<h3 id="进度条"><a href="#进度条" class="headerlink" title="进度条"></a>进度条</h3><p>不断的给 layer 赋不断边长的贝塞尔曲线</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)viewDidLoad &#123;</span><br><span class="line">    <span class="comment">// 创建一个 layer</span></span><br><span class="line">    <span class="built_in">CAShapeLayer</span> *layer = [<span class="built_in">CAShapeLayer</span> layer];</span><br><span class="line">    layer.bounds = <span class="built_in">CGRectMake</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="number">200</span>, <span class="number">45</span>);</span><br><span class="line">    layer.position = <span class="keyword">self</span>.view.center;</span><br><span class="line">    layer.path = [<span class="built_in">UIBezierPath</span> bezierPathWithRect:<span class="built_in">CGRectMake</span>(<span class="number">0</span>, <span class="number">0</span>, count / <span class="number">6</span> * <span class="number">2</span>, <span class="number">45</span>)].CGPath;</span><br><span class="line">    layer.fillColor = [<span class="built_in">UIColor</span> redColor].CGColor;</span><br><span class="line">    layer.fillRule = kCAFillRuleEvenOdd;</span><br><span class="line">    <span class="keyword">self</span>.redLayer = layer;</span><br><span class="line">    <span class="comment">// 添加 layer 到图层上</span></span><br><span class="line">    [<span class="keyword">self</span>.view.layer addSublayer:<span class="keyword">self</span>.redLayer];</span><br><span class="line">    <span class="comment">// 添加一个定时器</span></span><br><span class="line">    <span class="keyword">self</span>.displayLink = [<span class="built_in">CADisplayLink</span> displayLinkWithTarget:<span class="keyword">self</span> selector:<span class="keyword">@selector</span>(action)];</span><br><span class="line">    [<span class="keyword">self</span>.displayLink addToRunLoop:[<span class="built_in">NSRunLoop</span> currentRunLoop] forMode:<span class="built_in">NSRunLoopCommonModes</span>];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 定时器方法</span></span><br><span class="line">- (<span class="keyword">void</span>)action &#123;</span><br><span class="line">    count ++;</span><br><span class="line">    <span class="keyword">self</span>.redLayer.path = [<span class="built_in">UIBezierPath</span> bezierPathWithRect:<span class="built_in">CGRectMake</span>(<span class="number">0</span>, <span class="number">0</span>, count / <span class="number">6</span> * <span class="number">2</span>, <span class="number">45</span>)].CGPath;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (count &gt; <span class="number">60</span> * <span class="number">10</span> <span class="number">-1</span>) &#123;</span><br><span class="line">        [<span class="keyword">self</span>.displayLink invalidate];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>图层的 bounds 的 x，y 不能瞎改，否则 path 会跟着 x，y 变化</p>
+</blockquote>
+<h3 id="View-消除阴影的离屏渲染"><a href="#View-消除阴影的离屏渲染" class="headerlink" title="View 消除阴影的离屏渲染"></a>View 消除阴影的离屏渲染</h3><p>准确的说，这不属于 CAShapeLayer。</p>
+<p>如果直接对一个 View 加一个 shadow，那么会产生离屏渲染。我们可以指定 <code>shaowPath</code>，避免离屏渲染：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">let imageViewLayer = avatorView.layer</span><br><span class="line">imageViewLayer.shadowColor = <span class="built_in">UIColor</span>.blackColor().CGColor</span><br><span class="line">imageViewLayer.shadowOpacity = <span class="number">1.0</span> <span class="comment">//此参数默认为0，即阴影不显示</span></span><br><span class="line">imageViewLayer.shadowRadius = <span class="number">2.0</span> <span class="comment">//给阴影加上圆角，对性能无明显影响</span></span><br><span class="line">imageViewLayer.shadowOffset = <span class="built_in">CGSize</span>(width: <span class="number">5</span>, height: <span class="number">5</span>)</span><br><span class="line"><span class="comment">//设定路径：与视图的边界相同</span></span><br><span class="line">let path = <span class="built_in">UIBezierPath</span>(rect: cell.imageView.bounds)</span><br><span class="line">imageViewLayer.shadowPath = path.CGPath<span class="comment">//路径默认为 nil</span></span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tag/UI/" rel="tag"># UI</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/05/31/HTML+CSS/" rel="next" title="HTML+CSS 使用方式">
+                <i class="fa fa-chevron-left"></i> HTML+CSS 使用方式
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/06/19/iOS链接 /" rel="prev" title="Xcode other link flags 分析">
+                Xcode other link flags 分析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.png" alt="Zachary Zhang">
+            
+              <p class="site-author-name" itemprop="name">Zachary Zhang</p>
+              <p class="site-description motion-element" itemprop="description">Stay Hungry. Stay Foolish!</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">116</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/zhang759740844" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:zch759740844@126.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#drawRect-获取当前图形上下文绘图"><span class="nav-number">1.</span> <span class="nav-text">drawRect 获取当前图形上下文绘图</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#绘制矩形"><span class="nav-number">1.1.</span> <span class="nav-text">绘制矩形</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#圆和椭圆"><span class="nav-number">1.2.</span> <span class="nav-text">圆和椭圆</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#多边形"><span class="nav-number">1.3.</span> <span class="nav-text">多边形</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#不规则形状"><span class="nav-number">1.4.</span> <span class="nav-text">不规则形状</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#绘制一段弧度"><span class="nav-number">1.4.1.</span> <span class="nav-text">绘制一段弧度</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#贝塞尔曲线"><span class="nav-number">1.4.2.</span> <span class="nav-text">贝塞尔曲线</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#根据手势绘图"><span class="nav-number">1.5.</span> <span class="nav-text">根据手势绘图</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#stroke-方法的解释"><span class="nav-number">1.6.</span> <span class="nav-text">stroke 方法的解释</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#drawRect-的问题"><span class="nav-number">1.7.</span> <span class="nav-text">drawRect 的问题</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#创建新的图形上下文绘图"><span class="nav-number">2.</span> <span class="nav-text">创建新的图形上下文绘图</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#在图片上写字生成新的图片"><span class="nav-number">2.1.</span> <span class="nav-text">在图片上写字生成新的图片</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#裁剪图片（这个方法可以用来绘制圆角图片）"><span class="nav-number">2.2.</span> <span class="nav-text">裁剪图片（这个方法可以用来绘制圆角图片）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#生成一张带边框的圆角图片"><span class="nav-number">2.3.</span> <span class="nav-text">生成一张带边框的圆角图片</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#截图"><span class="nav-number">2.4.</span> <span class="nav-text">截图</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CAShapeLayer-的使用"><span class="nav-number">3.</span> <span class="nav-text">CAShapeLayer 的使用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#使用-CAShapeLayer-设置圆角"><span class="nav-number">3.1.</span> <span class="nav-text">使用 CAShapeLayer 设置圆角</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#进度条"><span class="nav-number">3.2.</span> <span class="nav-text">进度条</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#View-消除阴影的离屏渲染"><span class="nav-number">3.3.</span> <span class="nav-text">View 消除阴影的离屏渲染</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zachary Zhang</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

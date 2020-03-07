@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+
+
+
+
+  <meta name="keywords" content="Animation,UI,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="这两天想大致学习下animation的使用方法。看了文顶顶的ios开发UI篇专题，写的很好，学习了很多。再摘录部分，以作备忘。">
+<meta name="keywords" content="Animation,UI">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CALayer学习小结">
+<meta property="og:url" content="http://zhang759740844.github.io/2016/08/12/CALayer学习小结/index.html">
+<meta property="og:site_name" content="Zachary&#39;s blog">
+<meta property="og:description" content="这两天想大致学习下animation的使用方法。看了文顶顶的ios开发UI篇专题，写的很好，学习了很多。再摘录部分，以作备忘。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/mask_sample.jpeg?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/mask_sample2.gif?raw=true">
+<meta property="og:updated_time" content="2020-02-27T15:13:37.611Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="CALayer学习小结">
+<meta name="twitter:description" content="这两天想大致学习下animation的使用方法。看了文顶顶的ios开发UI篇专题，写的很好，学习了很多。再摘录部分，以作备忘。">
+<meta name="twitter:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/mask_sample.jpeg?raw=true">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://zhang759740844.github.io/2016/08/12/CALayer学习小结/">
+
+
+
+
+
+  <title>CALayer学习小结 | Zachary's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Zachary's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">记录成长</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://zhang759740844.github.io/2016/08/12/CALayer学习小结/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zachary Zhang">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Zachary's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">CALayer学习小结</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-08-12T14:07:12+08:00">
+                2016-08-12
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>这两天想大致学习下animation的使用方法。看了<a href="http://www.cnblogs.com/wendingding/tag/UI高级/" target="_blank" rel="noopener">文顶顶的ios开发UI篇</a>专题，写的很好，学习了很多。再摘录部分，以作备忘。</p>
+<a id="more"></a>
+<h2 id="CALayer简介"><a href="#CALayer简介" class="headerlink" title="CALayer简介"></a>CALayer简介</h2><h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>UIView之所以能显示在屏幕上，因为内部的layer。创建UIView的时候自动创建CALayer对象。UIView本身不具备显示的功能，拥有显示功能的是它内部的图层。</p>
+<h3 id="基本属性"><a href="#基本属性" class="headerlink" title="基本属性"></a>基本属性</h3><p>通过操作这个CALayer对象，可以很方便地调整UIView的一些界面属性，比如：阴影、圆角大小、边框宽度和颜色等。<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//设置边框的宽度为20</span></span><br><span class="line"><span class="keyword">self</span>.customView.layer.borderWidth=<span class="number">20</span>;</span><br><span class="line"><span class="comment">//设置边框的颜色(borderColor是CGColor类型)</span></span><br><span class="line"><span class="keyword">self</span>.customView.layer.borderColor=[<span class="built_in">UIColor</span> greenColor].CGColor;</span><br><span class="line"></span><br><span class="line"><span class="comment">//设置layer的圆角</span></span><br><span class="line"><span class="keyword">self</span>.customView.layer.cornerRadius=<span class="number">20</span>;</span><br><span class="line"><span class="comment">//设置超过子图层的部分裁减掉</span></span><br><span class="line"><span class="keyword">self</span>.iconView.layer.masksToBounds=<span class="literal">YES</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//在view的图层上添加一个image，contents表示接受内容</span></span><br><span class="line"><span class="keyword">self</span>.customView.layer.contents=(<span class="keyword">id</span>)[<span class="built_in">UIImage</span> imageNamed:<span class="string">@"cat"</span>].CGImage;</span><br><span class="line"></span><br><span class="line"><span class="comment">//设置阴影的颜色</span></span><br><span class="line"><span class="keyword">self</span>.customView.layer.shadowColor=[<span class="built_in">UIColor</span> blackColor].CGColor;</span><br><span class="line"><span class="comment">//设置阴影的偏移量，如果为正数，则代表为往右边偏移</span></span><br><span class="line"><span class="keyword">self</span>.customView.layer.shadowOffset=<span class="built_in">CGSizeMake</span>(<span class="number">15</span>, <span class="number">5</span>);</span><br><span class="line"><span class="comment">//设置阴影的透明度(0~1之间，0表示完全透明)</span></span><br><span class="line"><span class="keyword">self</span>.customView.layer.shadowOpacity=<span class="number">0.6</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//通过uiview设置（2D效果）</span></span><br><span class="line"><span class="keyword">self</span>.customView.transform=<span class="built_in">CGAffineTransformMakeTranslation</span>(<span class="number">0</span>, <span class="number">-100</span>);</span><br><span class="line"><span class="comment">//通过layer来设置（3D效果,x，y，z三个方向）</span></span><br><span class="line"><span class="keyword">self</span>.iconView.layer.transform=<span class="built_in">CATransform3DMakeTranslation</span>(<span class="number">100</span>, <span class="number">20</span>, <span class="number">0</span>);</span><br><span class="line"><span class="comment">//旋转</span></span><br><span class="line"><span class="keyword">self</span>.iconView.layer.transform=<span class="built_in">CATransform3DMakeRotation</span>(M_PI_4, <span class="number">1</span>, <span class="number">1</span>, <span class="number">0.5</span>);</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p>注意，这里的颜色不是 UIColor 类型，而是 CGColor 类型。需要使用 [UIColor redColor].CGColor 的方式获取，而不是使用强制转型把 UIColor 转为 CGColor。</p>
+</blockquote>
+<h3 id="position，anchorPoint，bounds-以及-frame-的概念"><a href="#position，anchorPoint，bounds-以及-frame-的概念" class="headerlink" title="position，anchorPoint，bounds 以及 frame 的概念"></a>position，anchorPoint，bounds 以及 frame 的概念</h3><ul>
+<li>frame: 用来描述自己在父视图的位置，即 x y 是相对于父视图的起点的。 </li>
+<li>bounds: 描述当前视图的左上角的相对子视图的坐标，以及视图大小的。一般 <code>bounds.origin</code> 为 (0, 0) ，如果把它改为 (-50, 0)，就表示左上角的坐标为  (-50, 0)，现在子视图相对的原点坐标就在左上角右边 50 的地方。所以相当于把所有子视图向右移动 50.</li>
+<li>position:设置CALayer在父层中的位置，这个位置会和锚点重合。</li>
+<li>anchorPoint:决定着CALayer身上的哪个点会在position属性所指的位置。以自己的左上角为原点(0, 0)，它的x、y取值范围都是0~1，<strong>默认值为（0.5, 0.5）</strong>。<strong>layer 的缩放和旋转，都是以 anchorPoint 为原点的</strong>。</li>
+</ul>
+<p>position，anchorpoint 和 bounds 共同决定了视图的 frame。一般情况下，frame 的大小等于 bounds 的大小，但是如果视图旋转了，frame 会变为旋转视图的外界矩形的大小。</p>
+<blockquote>
+<p>如果我们想移动一个视图的所有子视图，可以修改 <code>bonuds.orgin</code>。不过我们也可以在视图上添加一个 <code>contentView</code>，然后移动它的 frame。</p>
+</blockquote>
+<h3 id="隐式动画"><a href="#隐式动画" class="headerlink" title="隐式动画"></a>隐式动画</h3><p>每个View内部都关联着一个Root Layer。所有非rootlayer都存在着隐式动画。隐式动画就是对于layer的部分属性进行修改时，默认会产生的一些动画。</p>
+<p>常见的动画属性：</p>
+<ul>
+<li>bounds：用于设置CALayer的宽度和高度。修改这个属性会产生缩放动画</li>
+<li>backgroundColor：用于设置CALayer的背景色。修改这个属性会产生背景色的渐变动画</li>
+<li>position：用于设置CALayer的位置。修改这个属性会产生平移动画</li>
+</ul>
+<h3 id="创建图层"><a href="#创建图层" class="headerlink" title="创建图层"></a>创建图层</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)viewDidLoad</span><br><span class="line">&#123;</span><br><span class="line">    [<span class="keyword">super</span> viewDidLoad];</span><br><span class="line">    <span class="comment">//创建一个layer</span></span><br><span class="line">    <span class="built_in">CALayer</span> *Mylayer=[<span class="built_in">CALayer</span> layer];</span><br><span class="line">    <span class="comment">//设置layer的属性</span></span><br><span class="line">    Mylayer.bounds=<span class="built_in">CGRectMake</span>(<span class="number">100</span>, <span class="number">100</span>, <span class="number">100</span>, <span class="number">100</span>);</span><br><span class="line">    Mylayer.position=<span class="built_in">CGPointMake</span>(<span class="number">100</span>, <span class="number">100</span>);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//设置需要显示的图片</span></span><br><span class="line">    Mylayer.contents=(<span class="keyword">id</span>)[<span class="built_in">UIImage</span> imageNamed:<span class="string">@"me"</span>].CGImage;</span><br><span class="line">    <span class="comment">//设置圆角半径为10</span></span><br><span class="line">    Mylayer.cornerRadius=<span class="number">10</span>;</span><br><span class="line">    <span class="comment">//如果设置了图片，那么需要设置这个属性为YES才能显示圆角效果</span></span><br><span class="line">    Mylayer.masksToBounds=<span class="literal">YES</span>;</span><br><span class="line">    <span class="comment">//设置边框</span></span><br><span class="line">    Mylayer.borderWidth=<span class="number">3</span>;</span><br><span class="line">    Mylayer.borderColor=[<span class="built_in">UIColor</span> brownColor].CGColor;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//把layer添加到界面上</span></span><br><span class="line">    [<span class="keyword">self</span>.view.layer addSublayer:Mylayer];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>对比CALayer，UIView多了一个事件处理的功能。也就是说，CALayer不能处理用户的触摸事件，而UIView可以。<br>如果显示出来的东西需要跟用户进行交互的话，用UIView；如果不需要跟用户进行交互，用UIView或者CALayer都可以</p>
+<h2 id="UIView的transform属性"><a href="#UIView的transform属性" class="headerlink" title="UIView的transform属性"></a>UIView的transform属性</h2><p>transform是view的一个重要属性,它在矩阵层面上改变view的显⽰状态,能实现view的缩放、旋转、平移等功能。transform是<code>CGAffineTransform</code>类型的。</p>
+<h3 id="transform结构"><a href="#transform结构" class="headerlink" title="transform结构"></a>transform结构</h3><p>transform是一个<code>CGAffineTransform</code>类型，结构如下：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="built_in">CGAffineTransform</span> &#123;</span><br><span class="line">  <span class="built_in">CGFloat</span> a, b, c, d;</span><br><span class="line">  <span class="built_in">CGFloat</span> tx, ty;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>CGAffineTransform实际上是一个矩阵</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">| a,  b,  <span class="number">0</span> |</span><br><span class="line">| c,  d,  <span class="number">0</span> |</span><br><span class="line">| tx, ty, <span class="number">1</span> |</span><br></pre></td></tr></table></figure>
+<p>由于transform只有两维，需要一个3阶矩阵来表示其缩放以及平移的变化。</p>
+<p>坐标变换过程：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">                    | a,  b,  <span class="number">0</span> |</span><br><span class="line">&#123;x',y',1&#125;=&#123;x,y,1&#125; x | c,  d,  0 |</span><br><span class="line">                    | tx, ty, <span class="number">1</span> |</span><br><span class="line">                    </span><br><span class="line">==&gt;</span><br><span class="line"></span><br><span class="line">xn=ax+cy+tx;</span><br><span class="line">yn=bx+dy+ty;</span><br></pre></td></tr></table></figure>
+<p>这个矩阵的第三列是固定的，所以每次变换时，只需传入前两列的六个参数[a,b,c,d,tx,ty]即可。</p>
+<h3 id="transform方法"><a href="#transform方法" class="headerlink" title="transform方法"></a>transform方法</h3><p>在<code>CGAffineTransform</code>的生成函数中，大多是两两对应的，一个带<br>make字样，一个不带。带make字样的是直接生成一个新的<code>CGAffineTransform</code>，不带make字样的则是在一个<code>CGAffineTransform</code>的基础上生成新的。函数返回值均是<code>CGAffineTransform</code>类型。</p>
+<p>多个<code>CGAffineTransform</code>对象赋给view，最终只执行最后一个动画，多个动画需要组合在一起。</p>
+<h4 id="scale"><a href="#scale" class="headerlink" title="scale"></a>scale</h4><p>实现的是放大和缩小:</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">CGAffineTransformScale</span>(<span class="built_in">CGAffineTransform</span> t,</span><br><span class="line">  <span class="built_in">CGFloat</span> sx, <span class="built_in">CGFloat</span> sy)；</span><br><span class="line"><span class="built_in">CGAffineTransformMakeScale</span>(<span class="built_in">CGFloat</span> sx, <span class="built_in">CGFloat</span> sy)；</span><br></pre></td></tr></table></figure>
+<p>生成新的transform相当于将<code>t&#39; = [sx ，0 ，0，sy ，0， 0]</code>这六个参数代入矩阵中,即改变a和d。</p>
+<h4 id="rotate"><a href="#rotate" class="headerlink" title="rotate"></a>rotate</h4><p>实现的是旋转：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">CGAffineTransformRotate</span>(<span class="built_in">CGAffineTransform</span> t,</span><br><span class="line">  <span class="built_in">CGFloat</span> angle)</span><br><span class="line"><span class="built_in">CGAffineTransformMakeRotation</span>(<span class="built_in">CGFloat</span> angle)；</span><br></pre></td></tr></table></figure>
+<p>angle为角度，angle=π则旋转180度。矩阵的六个参数为<code>t&#39; =  [ cos(angle)，sin(angle)，-sin(angle)，cos(angle) 0，0]；</code></p>
+<h4 id="translate"><a href="#translate" class="headerlink" title="translate"></a>translate</h4><p>实现的是平移：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">CGAffineTransformTranslate</span>(<span class="built_in">CGAffineTransform</span> t,</span><br><span class="line">  <span class="built_in">CGFloat</span> tx, <span class="built_in">CGFloat</span> ty)；</span><br><span class="line"><span class="built_in">CGAffineTransformMakeTranslation</span>(<span class="built_in">CGFloat</span> tx,</span><br><span class="line">  <span class="built_in">CGFloat</span> ty)；</span><br></pre></td></tr></table></figure>
+<p>矩阵的六个参数为<code>t&#39; = [1，0，0，1，tx，ty] ；</code>代入公式，<code>xn=x+tx,yn=y+ty</code></p>
+<h4 id="复原"><a href="#复原" class="headerlink" title="复原"></a>复原</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">view.transform＝<span class="built_in">CGAffineTransformIdentity</span>;</span><br></pre></td></tr></table></figure>
+<p>上述的各种动画的变化都是以原始图像为基准的，而不是在变化后继续变化。<code>CGAffineTransformIdentity</code>将view从当前状态复原回view最初始的状态。</p>
+<blockquote>
+<p>一个技巧。如果使用 AutoLayout 的视图要添加动画，一般我们会把约束拖到代码中，然后在动画前修改约束，在动画的 block 中调用其父控件的 <code>layoutIfNeeded</code>。</p>
+<p>还有一种更好的办法，在动画的 block 中直接用 view 的 transform 属性。</p>
+</blockquote>
+<h3 id="设置-transform-进行动画和-设置-frame-动画的区别"><a href="#设置-transform-进行动画和-设置-frame-动画的区别" class="headerlink" title="设置 transform 进行动画和 设置 frame 动画的区别"></a>设置 transform 进行动画和 设置 frame 动画的区别</h3><p>视图的 frame 其实是由视图的 bounds，position，anchorpoint 以及 transform 共同决定的。修改 frame 其实就是修改 bounds 和 position 的值。</p>
+<p>一般而言，最好使用 transform 进行动画，因为有一种情况是，如果该视图具有子视图，并且要进行缩放动画。那么执行动画的时候，动画虽然有一个过程，但其实从动画一开始，frame就已经修改了。如果直接设置frame，那么开始的时候，子视图就会按变化后的frame来重新布局，而不是跟随父视图一起慢慢变化。</p>
+<p>而 transform 动画的话，不会调用控件的 <code>layoutsubview</code> 方法，整个过程更像是把整个视图按比例缩放，子视图会跟着父视图一起缩放。</p>
+<h2 id="CALayer的transform属性"><a href="#CALayer的transform属性" class="headerlink" title="CALayer的transform属性"></a>CALayer的transform属性</h2><h3 id="transform结构-1"><a href="#transform结构-1" class="headerlink" title="transform结构"></a>transform结构</h3><p>CALayer的transform是一个<code>CATransform3D</code>结构：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="built_in">CATransform3D</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="built_in">CGFloat</span> m11, m12, m13, m14;</span><br><span class="line">  <span class="built_in">CGFloat</span> m21, m22, m23, m24;</span><br><span class="line">  <span class="built_in">CGFloat</span> m31, m32, m33, m34;</span><br><span class="line">  <span class="built_in">CGFloat</span> m41, m42, m43, m44;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>有别于<code>CGAffineTransform</code>,<code>CATransform3D</code>是一个三维变化，需要一个4阶矩阵表示。其他类似，再次不表。</p>
+<h3 id="transform方法-1"><a href="#transform方法-1" class="headerlink" title="transform方法"></a>transform方法</h3><p>CALayer的transform方法和View的transform基本一致。举几点不同：</p>
+<ul>
+<li>CALayer由于有z轴，因此对不同图层使用<code>CATransform3DMakeTranslation (CGFloat tx, CGFloat ty, CGFloat tz)</code>方法的时候可以通过改变tz的值，来实现图层的覆盖。对于tz来说，值越大，那么图层就越往外（接近屏幕），值越小，图层越往里（屏幕里）。</li>
+<li>由于图像是从正面投影，直接绕着x或y轴旋转达不到透视的效果，如果要达到透视效果，需要改变<code>m34</code>(其实改变m14，m24也能达到效果，可以自行通过行列式推导。)，再对图层进行旋转。<code>m34</code>的值可以根据需要实现的效果推导得到，不直接的方法还是直接试。</li>
+<li>如果想要直接改变矩阵里的值，可以先使用<code>CATransform3DIdentity</code>的方式，初始化一个<code>CATransform3D</code>实例，然后再赋值。</li>
+</ul>
+<h2 id="CAShapeLayer"><a href="#CAShapeLayer" class="headerlink" title="CAShapeLayer"></a>CAShapeLayer</h2><p><code>CAShapeLayer</code>继承自CALayer。<code>CAShapeLayer</code>是在坐标系内绘制贝塞尔曲线的，通过绘制贝塞尔曲线，设置shape(形状)的path(路径)，从而绘制各种各样的图形以及不规则图形。因此，使用<code>CAShapeLayer</code>需要与<code>UIBezierPath</code>一起使用。</p>
+<h3 id="创建"><a href="#创建" class="headerlink" title="创建"></a>创建</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">CAShapeLayer</span> *layer = [<span class="built_in">CAShapeLayer</span> layer];</span><br></pre></td></tr></table></figure>
+<h3 id="属性"><a href="#属性" class="headerlink" title="属性"></a>属性</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 要呈现的路径</span></span><br><span class="line"><span class="keyword">@property</span>(<span class="keyword">nullable</span>) <span class="built_in">CGPathRef</span> path;</span><br><span class="line"><span class="comment">// 填充色</span></span><br><span class="line"><span class="keyword">@property</span>(<span class="keyword">nullable</span>) <span class="built_in">CGColorRef</span> fillColor;</span><br><span class="line"><span class="comment">// 填充规则。值有两种，非零和奇偶数，但默认是非零值。</span></span><br><span class="line"><span class="keyword">@property</span>(<span class="keyword">copy</span>) <span class="built_in">NSString</span> *fillRule;</span><br><span class="line"><span class="comment">// 设置描边色</span></span><br><span class="line"><span class="keyword">@property</span>(<span class="keyword">nullable</span>) <span class="built_in">CGColorRef</span> strokeColor;</span><br><span class="line"><span class="comment">// 绘制边线轮廓路径的子区域。该值必须在[0,1]范围，0代表路径的开始，1代表路径的结束。在0和1之间的值沿路径长度进行线性插值。strokestart默认为0，strokeend默认为1。</span></span><br><span class="line"><span class="keyword">@property</span> <span class="built_in">CGFloat</span> strokeStart;</span><br><span class="line"><span class="keyword">@property</span> <span class="built_in">CGFloat</span> strokeEnd;</span><br><span class="line"><span class="comment">// 线的宽度</span></span><br><span class="line"><span class="keyword">@property</span> <span class="built_in">CGFloat</span> lineWidth;</span><br><span class="line"><span class="comment">// 端点和交点的显示类型</span></span><br><span class="line"><span class="keyword">@property</span>(<span class="keyword">copy</span>) <span class="built_in">NSString</span> *lineCap;</span><br><span class="line"><span class="keyword">@property</span>(<span class="keyword">copy</span>) <span class="built_in">NSString</span> *lineJoin;</span><br></pre></td></tr></table></figure>
+<h3 id="创建贝塞尔曲线"><a href="#创建贝塞尔曲线" class="headerlink" title="创建贝塞尔曲线"></a>创建贝塞尔曲线</h3><p>这里只是给了几个图形的基本画法，还有更多图形的画法可以稍后查看</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//绘制矩形</span></span><br><span class="line"><span class="built_in">UIBezierPath</span> *path = [<span class="built_in">UIBezierPath</span> bezierPathWithRect:<span class="built_in">CGRectMake</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="number">100</span>, <span class="number">100</span>)];</span><br><span class="line"><span class="comment">//绘制圆形路径</span></span><br><span class="line"><span class="built_in">UIBezierPath</span> *path = [<span class="built_in">UIBezierPath</span> bezierPathWithOvalInRect:<span class="built_in">CGRectMake</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="number">100</span>, <span class="number">100</span>)];</span><br><span class="line"><span class="comment">//绘制自带圆角的路径</span></span><br><span class="line"><span class="built_in">UIBezierPath</span> *path = [<span class="built_in">UIBezierPath</span> bezierPathWithRoundedRect:<span class="built_in">CGRectMake</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="number">100</span>, <span class="number">100</span>) cornerRadius:<span class="number">30</span>];</span><br><span class="line"><span class="comment">//指定矩形某一个角加圆角（代码示例为左上角）</span></span><br><span class="line"><span class="built_in">UIBezierPath</span> *path = [<span class="built_in">UIBezierPath</span> bezierPathWithRoundedRect:<span class="built_in">CGRectMake</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="number">100</span>, <span class="number">100</span>) byRoundingCorners:<span class="built_in">UIRectCornerTopLeft</span> cornerRadii:<span class="built_in">CGSizeMake</span>(<span class="number">50</span>, <span class="number">50</span>)];</span><br><span class="line"></span><br><span class="line"><span class="keyword">self</span>.layer.path = path.CGPath;</span><br></pre></td></tr></table></figure>
+<h3 id="曲线动画"><a href="#曲线动画" class="headerlink" title="曲线动画"></a>曲线动画</h3><p>曲线动画的主要思想是对 layer 的 <code>strokeEnd</code> 属性做 <code>CABasicAnimation</code> 动画：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">UIBezierPath</span> *path = [<span class="built_in">UIBezierPath</span> bezierPath];</span><br><span class="line"><span class="comment">//起始点</span></span><br><span class="line">[path moveToPoint:<span class="built_in">CGPointMake</span>(<span class="number">50</span>, <span class="number">667</span>/<span class="number">2</span>)];</span><br><span class="line"><span class="comment">//结束点、两个控制点</span></span><br><span class="line">[path addCurveToPoint:<span class="built_in">CGPointMake</span>(<span class="number">330</span>, <span class="number">667</span>/<span class="number">2</span>) controlPoint1:<span class="built_in">CGPointMake</span>(<span class="number">125</span>, <span class="number">200</span>) controlPoint2:<span class="built_in">CGPointMake</span>(<span class="number">185</span>, <span class="number">450</span>)];</span><br><span class="line"></span><br><span class="line"><span class="built_in">CABasicAnimation</span> *animation = [<span class="built_in">CABasicAnimation</span> animationWithKeyPath:<span class="string">@"strokeEnd"</span>];</span><br><span class="line">animation.duration = <span class="number">5</span>;</span><br><span class="line">animation.fromValue = @(<span class="number">0</span>);</span><br><span class="line">animation.toValue = @(<span class="number">1</span>);</span><br><span class="line">animation.repeatCount = <span class="number">100</span>;</span><br><span class="line"></span><br><span class="line"><span class="built_in">CAShapeLayer</span> *layer = [<span class="keyword">self</span> createShapeLayerNoFrame:[<span class="built_in">UIColor</span> clearColor]];</span><br><span class="line">layer.path = path.CGPath;</span><br><span class="line">layer.lineWidth = <span class="number">2.0</span>;</span><br><span class="line">[layer addAnimation:animation forKey:<span class="string">@"strokeEndAnimation"</span>];</span><br></pre></td></tr></table></figure>
+<h2 id="Mask属性"><a href="#Mask属性" class="headerlink" title="Mask属性"></a>Mask属性</h2><h3 id="基本使用"><a href="#基本使用" class="headerlink" title="基本使用"></a>基本使用</h3><p>layer的大小和形状是受到mask遮罩层的影响的，可以通过赋给mask层一个新layer，来实现改变layer形状的效果。mask图层的 Color 属性是无关紧要的（<strong>mask不是透明的部分，layer能显示出原来的颜色</strong>），真正重要的是图层的轮廓。</p>
+<p>下面的例子中，为一个图片设置了圆形的蒙版。蒙版外的部分是透明的，该部分图片不予显示。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">CALayer</span> *)maskRadiusCorner:(<span class="built_in">UIImageView</span> *)imageView&#123;</span><br><span class="line">    <span class="comment">//CAShapeLayer 是 CALayer 的子类，通过UIBezierPath来绘制它的形状</span></span><br><span class="line">    <span class="built_in">CAShapeLayer</span> *masklayer = [<span class="built_in">CAShapeLayer</span> layer];</span><br><span class="line">    <span class="comment">//获取宽度</span></span><br><span class="line">    masklayer.frame = imageView.bounds;</span><br><span class="line">    <span class="comment">//注意bezierPathWithArcCenter的设置</span></span><br><span class="line">    masklayer.path = [<span class="built_in">UIBezierPath</span> bezierPathWithArcCenter:<span class="built_in">CGPointMake</span>(imageView.frame.size.width/<span class="number">2</span>, imageView.frame.size.height/<span class="number">2</span>) radius:imageView.frame.size.width/<span class="number">2</span> startAngle:<span class="number">0</span> endAngle:<span class="number">2</span>*M_PI clockwise:<span class="literal">YES</span>].CGPath;</span><br><span class="line">    <span class="keyword">return</span> masklayer;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>效果图如下：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/mask_sample.jpeg?raw=true" alt="sample"></p>
+<p>再举一个例子，观察下图的实现方式：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/mask_sample2.gif?raw=true" alt="sample"></p>
+<p>原理是将彩色的图片添加在灰色的图片上，对彩色的图片添加一个圆形的蒙版。圆形蒙版外的部分由于是透明的所以就不予显示，也就是下面的灰色图片。圆形蒙版内的部分由于设置了颜色，就能够显示彩色图片。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> 添加一个圆形蒙版</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">- (<span class="keyword">void</span>)addMaskLayer&#123;</span><br><span class="line">    <span class="comment">//创建蒙版的layer</span></span><br><span class="line">    <span class="keyword">self</span>.maskLayer = [<span class="built_in">CALayer</span> layer];</span><br><span class="line">    <span class="comment">//蒙版大小</span></span><br><span class="line">    <span class="keyword">self</span>.maskLayer.frame = <span class="built_in">CGRectMake</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="number">100</span>, <span class="number">100</span>);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//随便取个颜色，只要不是透明的就行</span></span><br><span class="line">    <span class="keyword">self</span>.maskLayer.backgroundColor = [<span class="built_in">UIColor</span> whiteColor].CGColor;</span><br><span class="line">    <span class="comment">//圆形蒙版</span></span><br><span class="line">    <span class="keyword">self</span>.maskLayer.cornerRadius = <span class="number">50</span>;</span><br><span class="line">    <span class="comment">//将蒙版赋给View</span></span><br><span class="line">    <span class="keyword">self</span>.colorImageView.layer.mask = <span class="keyword">self</span>.maskLayer;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)viewDidLoad&#123;</span><br><span class="line">    [<span class="keyword">super</span> viewDidLoad];</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//添加两个image</span></span><br><span class="line">    <span class="keyword">self</span>.colorImageView = [[<span class="built_in">UIImageView</span> alloc] initWithImage:[<span class="built_in">UIImage</span> imageNamed:<span class="string">@"pic"</span>]];</span><br><span class="line">    <span class="keyword">self</span>.grayImageView = [[<span class="built_in">UIImageView</span> alloc] initWithImage:[<span class="built_in">UIImage</span> imageNamed:<span class="string">@"gray"</span>]];</span><br><span class="line">    <span class="comment">//设置frame</span></span><br><span class="line">    <span class="keyword">self</span>.colorImageView.frame = <span class="built_in">CGRectMake</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="keyword">self</span>.view.frame.size.width, <span class="keyword">self</span>.view.frame.size.height);</span><br><span class="line">    <span class="keyword">self</span>.grayImageView.frame = <span class="built_in">CGRectMake</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="number">300</span>, <span class="number">300</span>);</span><br><span class="line">    </span><br><span class="line">    [<span class="keyword">self</span>.view addSubview:<span class="keyword">self</span>.colorImageView];</span><br><span class="line">    [<span class="keyword">self</span>.view addSubview:<span class="keyword">self</span>.grayImageView];</span><br><span class="line">    </span><br><span class="line">    [<span class="keyword">self</span> addMaskLayer];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="绘制只有两个圆角的视图"><a href="#绘制只有两个圆角的视图" class="headerlink" title="绘制只有两个圆角的视图"></a>绘制只有两个圆角的视图</h3><p>有些情况下，一个 button 或者 label，只要右边的两个角圆角，或者只要一个圆角。该怎么办呢？</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">CGRect</span> rect = <span class="built_in">CGRectMake</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="number">100</span>, <span class="number">50</span>);</span><br><span class="line"><span class="built_in">CGSize</span> radio = <span class="built_in">CGSizeMake</span>(<span class="number">5</span>, <span class="number">5</span>); <span class="comment">// 圆角尺寸</span></span><br><span class="line"><span class="built_in">UIRectCorner</span> corner = <span class="built_in">UIRectCornerTopLeft</span> | <span class="built_in">UIRectCornerTopRight</span>; <span class="comment">// 这只圆角位置</span></span><br><span class="line"><span class="built_in">UIBezierPath</span> *path = [<span class="built_in">UIBezierPath</span> bezierPathWithRoundedRect:rect byRoundingCorners:corner cornerRadii:radio];</span><br><span class="line"><span class="built_in">CAShapeLayer</span> *masklayer = [[<span class="built_in">CAShapeLayer</span> alloc] init]; <span class="comment">// 创建shapelayer</span></span><br><span class="line">masklayer.frame = button.bounds;</span><br><span class="line">masklayer.path = path.CGPath; <span class="comment">// 设置路径</span></span><br><span class="line">button.layer.mask = masklayer;</span><br></pre></td></tr></table></figure>
+<h2 id="关于离屏渲染"><a href="#关于离屏渲染" class="headerlink" title="关于离屏渲染"></a>关于离屏渲染</h2><h3 id="渲染机制"><a href="#渲染机制" class="headerlink" title="渲染机制"></a>渲染机制</h3><p>CPU 计算内容交由 GPU 渲染，GPU 渲染完成后放入帧缓冲区。随后视频控制器会按照 VSync 信号逐行读取帧缓冲区的数据，经过可能的数模转换传递给显示器显示。</p>
+<h3 id="GPU-渲染方式"><a href="#GPU-渲染方式" class="headerlink" title="GPU 渲染方式"></a>GPU 渲染方式</h3><ul>
+<li>On-Screen Rendering：意为当前屏幕渲染。GPU的渲染操作是在当前用于显示的屏幕缓冲区中进行。</li>
+<li>Off-Screen Rendering：意为离屏渲染。GPU在当前屏幕缓冲区以外新开辟一个缓冲区进行渲染操作。</li>
+</ul>
+<p>其实非当前屏幕缓冲区的渲染都叫做离屏渲染，CPU 渲染得到 bitmap 然后交由 GPU 显示也是一种<strong>特殊的离屏渲染</strong>，此举会消耗一定的 CPU 资源。但是如果 GPU 资源紧张，同时 CPU 空闲，可以考虑如此优化，以消除 GPU 不能及时渲染导致的丢帧的影响。</p>
+<p>所以离屏渲染不一定就是影响性能的。只是渲染方式的一种。</p>
+<h3 id="离屏渲染的触发"><a href="#离屏渲染的触发" class="headerlink" title="离屏渲染的触发"></a>离屏渲染的触发</h3><ul>
+<li>shouldRasterize（光栅化）</li>
+<li>masks（遮罩）</li>
+<li>shadows（阴影）</li>
+<li>edge antialiasing（抗锯齿）</li>
+<li>group opacity（不透明）</li>
+</ul>
+<p>其中，光栅化是把GPU的操作转到CPU上，严格意义上是”软件渲染”，将图转化为一个个栅格组成的图象。并且缓存起来，减少渲染的频度。对于基本不会变化的视图，开启光栅化有助于性能优化，但是如果内容经常变化，那么就会造成性能浪费。</p>
+<h3 id="为什么会产生离屏渲染"><a href="#为什么会产生离屏渲染" class="headerlink" title="为什么会产生离屏渲染"></a>为什么会产生离屏渲染</h3><p>当使用圆角，阴影，遮罩的时候，图层属性的混合体被指定为在未预合成之前不能直接在屏幕中绘制。</p>
+<p><strong>这是因为 GPU 无法在某一层渲染完成之后，再回过头来擦除/改变其中的某个部分。因为在这一层之前的若干层layer像素数据，已经在渲染中被永久覆盖了。这就意味着，对于每一层layer，要么能找到一种通过单次遍历就能完成渲染的算法，要么就不得不另开一块内存，借助这个临时中转区域来完成一些更复杂的、多次的修改/剪裁操作。</strong></p>
+<h3 id="视图圆角"><a href="#视图圆角" class="headerlink" title="视图圆角"></a>视图圆角</h3><p>设置视图的 <code>cornerRadius</code>本身并不会触发离屏渲染，需要和 <code>maskToBounds</code> 一起设置才会产生。</p>
+<p>一般情况下，直接设置圆角即可。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">UIView</span> *view = [[<span class="built_in">UIView</span> alloc] init];</span><br><span class="line">view.backgroundColor = [<span class="built_in">UIColor</span> blackColor];</span><br><span class="line">view.layer.cornerRadius = <span class="number">3.</span>f;</span><br></pre></td></tr></table></figure>
+<p>但是 UILabel 例外，UILabel 如果有背景色需要设置 layer 的背景色：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">UILabel</span> *label = [[<span class="built_in">UILabel</span> alloc] init];</span><br><span class="line"><span class="comment">// 重点在此！！设置视图的图层背景色，千万不要直接设置 label.backgroundColor</span></span><br><span class="line">label.layer.backgroundColor = [<span class="built_in">UIColor</span> grayColor].CGColor;</span><br><span class="line">label.layer.cornerRadius = cornerRadius;</span><br></pre></td></tr></table></figure>
+<p>UIImageView 无法做到直接隐藏图片圆角。所以需要自己绘制出一个带圆角的图片：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">extension</span> <span class="title">UIImage</span> </span>&#123;  </span><br><span class="line">    <span class="function"><span class="keyword">func</span> <span class="title">kt_drawRectWithRoundedCorner</span><span class="params">(radius radius: CGFloat, <span class="number">_</span> sizetoFit: CGSize)</span></span> -&gt; <span class="type">UIImage</span> &#123;</span><br><span class="line">        <span class="keyword">let</span> rect = <span class="type">CGRect</span>(origin: <span class="type">CGPoint</span>(x: <span class="number">0</span>, y: <span class="number">0</span>), size: sizetoFit)</span><br><span class="line"></span><br><span class="line">        <span class="type">UIGraphicsBeginImageContextWithOptions</span>(rect.size, <span class="literal">false</span>, <span class="type">UIScreen</span>.mainScreen().scale)</span><br><span class="line">        <span class="type">CGContextAddPath</span>(<span class="type">UIGraphicsGetCurrentContext</span>(),</span><br><span class="line">            <span class="type">UIBezierPath</span>(roundedRect: rect, byRoundingCorners: <span class="type">UIRectCorner</span>.<span class="type">AllCorners</span>,</span><br><span class="line">                cornerRadii: <span class="type">CGSize</span>(width: radius, height: radius)).<span class="type">CGPath</span>)</span><br><span class="line">        <span class="type">CGContextClip</span>(<span class="type">UIGraphicsGetCurrentContext</span>())</span><br><span class="line"></span><br><span class="line">        <span class="keyword">self</span>.drawInRect(rect)</span><br><span class="line">        <span class="type">CGContextDrawPath</span>(<span class="type">UIGraphicsGetCurrentContext</span>(), .<span class="type">FillStroke</span>)</span><br><span class="line">        <span class="keyword">let</span> output = <span class="type">UIGraphicsGetImageFromCurrentImageContext</span>();</span><br><span class="line">        <span class="type">UIGraphicsEndImageContext</span>();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> output</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这种方式如果不做缓存，每次都会创建新的 UIImage，加重 CPU 的负担。</p>
+<p>另外，还有一种使用贝塞尔曲线，利用CALayer层绘制指定圆角样式的mask遮盖View 的方式达到圆角效果的。不过这种方式也是操作 mask，会产生离屏渲染，但是效果会比直接设置圆角要好很多。</p>
+<blockquote>
+<p>这样是把  GPU 的任务转给了 CPU 去完成。那么如果还是掉帧怎么办？</p>
+<ol>
+<li>直接让 UI 将图片切为圆角</li>
+<li>在原来的视图上添加一个四个角有颜色中间透明的图片,遮盖到原来图片上。这样是通过混合图层的方式实现。损耗的性能会好很多。</li>
+<li>将上面绘制圆角图片的过程放到子线程中去，绘制完成后回到主线程中。</li>
+</ol>
+</blockquote>
+<p>针对上面第二点：添加一个四个角有颜色中间透明的图片。相关代码如下：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">UIImage</span> (<span class="title">XWAddForRoundedCorner</span>)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**提供一个在一个指定的size中绘制图片的便捷方法*/</span></span><br><span class="line">+ (<span class="built_in">UIImage</span> *)xw_imageWithSize:(<span class="built_in">CGSize</span>)size drawBlock:(<span class="keyword">void</span> (^)(<span class="built_in">CGContextRef</span> context))drawBlock &#123;</span><br><span class="line">    <span class="keyword">if</span> (!drawBlock) <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">    <span class="built_in">UIGraphicsBeginImageContextWithOptions</span>(size, <span class="literal">NO</span>, <span class="number">0</span>);</span><br><span class="line">    <span class="built_in">CGContextRef</span> context = <span class="built_in">UIGraphicsGetCurrentContext</span>();</span><br><span class="line">    <span class="keyword">if</span> (!context) <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">    drawBlock(context);</span><br><span class="line">    <span class="built_in">UIImage</span> *image = <span class="built_in">UIGraphicsGetImageFromCurrentImageContext</span>();</span><br><span class="line">    <span class="built_in">UIGraphicsEndImageContext</span>();</span><br><span class="line">    <span class="keyword">return</span> image;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**绘制方法的具体逻辑，遮罩图片的逻辑是绘制一个矩形，然后在绘制一个相应的圆角矩形，然后填充矩形和圆角矩形的中间部分为父视图的背景色*/</span></span><br><span class="line">+ (<span class="built_in">UIImage</span> *)xw_maskRoundCornerRadiusImageWithColor:(<span class="built_in">UIColor</span> *)color cornerRadii:(<span class="built_in">CGSize</span>)cornerRadii size:(<span class="built_in">CGSize</span>)size corners:(<span class="built_in">UIRectCorner</span>)corners borderColor:(<span class="built_in">UIColor</span> *)borderColor borderWidth:(<span class="built_in">CGFloat</span>)borderWidth&#123;</span><br><span class="line">    <span class="keyword">return</span> [<span class="built_in">UIImage</span> xw_imageWithSize:size drawBlock:^(<span class="built_in">CGContextRef</span>  _Nonnull context) &#123;</span><br><span class="line">        <span class="built_in">CGContextSetLineWidth</span>(context, <span class="number">0</span>);</span><br><span class="line">        [color set];</span><br><span class="line">        <span class="built_in">CGRect</span> rect = <span class="built_in">CGRectMake</span>(<span class="number">0</span>, <span class="number">0</span>, size.width, size.height);</span><br><span class="line">        <span class="comment">//绘制一个矩形，这里发-0.3是为了防止边缘的锯齿，</span></span><br><span class="line">        <span class="built_in">UIBezierPath</span> *rectPath = [<span class="built_in">UIBezierPath</span> bezierPathWithRect:<span class="built_in">CGRectInset</span>(rect, <span class="number">-0.3</span>, <span class="number">-0.3</span>)];</span><br><span class="line">        <span class="comment">//绘制圆角矩形，这里的0.3是为了防止内边框的锯齿</span></span><br><span class="line">        <span class="built_in">UIBezierPath</span> *roundPath = [<span class="built_in">UIBezierPath</span> bezierPathWithRoundedRect:<span class="built_in">CGRectInset</span>(rect, <span class="number">0.3</span>, <span class="number">0.3</span>) byRoundingCorners:corners cornerRadii:cornerRadii];</span><br><span class="line">        [rectPath appendPath:roundPath];</span><br><span class="line">        <span class="built_in">CGContextAddPath</span>(context, rectPath.CGPath);</span><br><span class="line">        <span class="comment">//注意要用EOFill方式进行填充而非Fill方式</span></span><br><span class="line">        <span class="built_in">CGContextEOFillPath</span>(context);</span><br><span class="line">        <span class="comment">//如下是绘制边框，原理依旧是绘制一个外边框然后根据边框宽度绘制一个内边框同样采取EOFill的方式进行填充即可</span></span><br><span class="line">        <span class="keyword">if</span> (!borderColor || !borderWidth) <span class="keyword">return</span>;</span><br><span class="line">        [borderColor set];</span><br><span class="line">        <span class="built_in">UIBezierPath</span> *borderOutterPath = [<span class="built_in">UIBezierPath</span> bezierPathWithRoundedRect:rect byRoundingCorners:corners cornerRadii:cornerRadii];</span><br><span class="line">        <span class="built_in">UIBezierPath</span> *borderInnerPath = [<span class="built_in">UIBezierPath</span> bezierPathWithRoundedRect:<span class="built_in">CGRectInset</span>(rect, borderWidth, borderWidth) byRoundingCorners:corners cornerRadii:cornerRadii];</span><br><span class="line">        [borderOutterPath appendPath:borderInnerPath];</span><br><span class="line">        <span class="built_in">CGContextAddPath</span>(context, borderOutterPath.CGPath);</span><br><span class="line">        <span class="built_in">CGContextEOFillPath</span>(context);</span><br><span class="line">    &#125;];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="添加shadow的离屏渲染"><a href="#添加shadow的离屏渲染" class="headerlink" title="添加shadow的离屏渲染"></a>添加shadow的离屏渲染</h3><p>我们直接设置 shadow 相关属性会产生离屏渲染：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">let layer = view.layer</span><br><span class="line">layer.shadowColor = <span class="built_in">UIColor</span>.black.cgColor</span><br><span class="line">layer.shadowOpacity = <span class="number">0.3</span></span><br><span class="line">layer.shadowRadius = radius</span><br><span class="line">layer.shadowOffset = <span class="built_in">CGSize</span>(width: <span class="number">0</span>, height: <span class="number">-3</span>)</span><br></pre></td></tr></table></figure>
+<p>只要你提前告诉CoreAnimation你要渲染的View的形状Shape,就会减少离屏渲染计算。因此，我们需要加上设置 <code>shadowPath</code> 的一行：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">let layer = view.layer</span><br><span class="line">layer.shadowColor = <span class="built_in">UIColor</span>.black.cgColor</span><br><span class="line">layer.shadowOpacity = <span class="number">0.3</span></span><br><span class="line">layer.shadowRadius = radius</span><br><span class="line">layer.shadowOffset = <span class="built_in">CGSize</span>(width: <span class="number">0</span>, height: <span class="number">-3</span>)</span><br><span class="line">layer.shadowPath = [[<span class="built_in">UIBezierPathbezierPathWithRect</span>：myView.bounds] <span class="built_in">CGPath</span>];</span><br></pre></td></tr></table></figure>
+<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><p><a href="https://www.jianshu.com/p/ca51c9d3575b" target="_blank" rel="noopener">离屏渲染优化详解：实例示范+性能测试</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tag/Animation/" rel="tag"># Animation</a>
+          
+            <a href="/tag/UI/" rel="tag"># UI</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/08/02/GCD队列/" rel="next" title="GCD队列 学习与整理">
+                <i class="fa fa-chevron-left"></i> GCD队列 学习与整理
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/08/16/ios动画/" rel="prev" title="ios核心动画">
+                ios核心动画 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.png" alt="Zachary Zhang">
+            
+              <p class="site-author-name" itemprop="name">Zachary Zhang</p>
+              <p class="site-description motion-element" itemprop="description">Stay Hungry. Stay Foolish!</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">116</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/zhang759740844" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:zch759740844@126.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#CALayer简介"><span class="nav-number">1.</span> <span class="nav-text">CALayer简介</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#简介"><span class="nav-number">1.1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#基本属性"><span class="nav-number">1.2.</span> <span class="nav-text">基本属性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#position，anchorPoint，bounds-以及-frame-的概念"><span class="nav-number">1.3.</span> <span class="nav-text">position，anchorPoint，bounds 以及 frame 的概念</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#隐式动画"><span class="nav-number">1.4.</span> <span class="nav-text">隐式动画</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创建图层"><span class="nav-number">1.5.</span> <span class="nav-text">创建图层</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-number">1.6.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#UIView的transform属性"><span class="nav-number">2.</span> <span class="nav-text">UIView的transform属性</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#transform结构"><span class="nav-number">2.1.</span> <span class="nav-text">transform结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#transform方法"><span class="nav-number">2.2.</span> <span class="nav-text">transform方法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#scale"><span class="nav-number">2.2.1.</span> <span class="nav-text">scale</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#rotate"><span class="nav-number">2.2.2.</span> <span class="nav-text">rotate</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#translate"><span class="nav-number">2.2.3.</span> <span class="nav-text">translate</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#复原"><span class="nav-number">2.2.4.</span> <span class="nav-text">复原</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#设置-transform-进行动画和-设置-frame-动画的区别"><span class="nav-number">2.3.</span> <span class="nav-text">设置 transform 进行动画和 设置 frame 动画的区别</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CALayer的transform属性"><span class="nav-number">3.</span> <span class="nav-text">CALayer的transform属性</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#transform结构-1"><span class="nav-number">3.1.</span> <span class="nav-text">transform结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#transform方法-1"><span class="nav-number">3.2.</span> <span class="nav-text">transform方法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CAShapeLayer"><span class="nav-number">4.</span> <span class="nav-text">CAShapeLayer</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#创建"><span class="nav-number">4.1.</span> <span class="nav-text">创建</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#属性"><span class="nav-number">4.2.</span> <span class="nav-text">属性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创建贝塞尔曲线"><span class="nav-number">4.3.</span> <span class="nav-text">创建贝塞尔曲线</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#曲线动画"><span class="nav-number">4.4.</span> <span class="nav-text">曲线动画</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Mask属性"><span class="nav-number">5.</span> <span class="nav-text">Mask属性</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#基本使用"><span class="nav-number">5.1.</span> <span class="nav-text">基本使用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#绘制只有两个圆角的视图"><span class="nav-number">5.2.</span> <span class="nav-text">绘制只有两个圆角的视图</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#关于离屏渲染"><span class="nav-number">6.</span> <span class="nav-text">关于离屏渲染</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#渲染机制"><span class="nav-number">6.1.</span> <span class="nav-text">渲染机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#GPU-渲染方式"><span class="nav-number">6.2.</span> <span class="nav-text">GPU 渲染方式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#离屏渲染的触发"><span class="nav-number">6.3.</span> <span class="nav-text">离屏渲染的触发</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#为什么会产生离屏渲染"><span class="nav-number">6.4.</span> <span class="nav-text">为什么会产生离屏渲染</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#视图圆角"><span class="nav-number">6.5.</span> <span class="nav-text">视图圆角</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#添加shadow的离屏渲染"><span class="nav-number">6.6.</span> <span class="nav-text">添加shadow的离屏渲染</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文档"><span class="nav-number">7.</span> <span class="nav-text">参考文档</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zachary Zhang</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+
+
+
+
+  <meta name="keywords" content="源码解析,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="IQKeyboardManager 是一个优秀的零行代码解决键盘遮挡的第三方库。在没有看过源码的时候是我认为的最有魔力的第三方库。现在我们就要揭开它的面纱。">
+<meta name="keywords" content="源码解析">
+<meta property="og:type" content="article">
+<meta property="og:title" content="IQKeyboardManager 源码解析">
+<meta property="og:url" content="http://zhang759740844.github.io/2019/04/20/iqkeyboardmanager/index.html">
+<meta property="og:site_name" content="Zachary&#39;s blog">
+<meta property="og:description" content="IQKeyboardManager 是一个优秀的零行代码解决键盘遮挡的第三方库。在没有看过源码的时候是我认为的最有魔力的第三方库。现在我们就要揭开它的面纱。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2020-02-27T15:13:37.651Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="IQKeyboardManager 源码解析">
+<meta name="twitter:description" content="IQKeyboardManager 是一个优秀的零行代码解决键盘遮挡的第三方库。在没有看过源码的时候是我认为的最有魔力的第三方库。现在我们就要揭开它的面纱。">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://zhang759740844.github.io/2019/04/20/iqkeyboardmanager/">
+
+
+
+
+
+  <title>IQKeyboardManager 源码解析 | Zachary's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Zachary's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">记录成长</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://zhang759740844.github.io/2019/04/20/iqkeyboardmanager/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zachary Zhang">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Zachary's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">IQKeyboardManager 源码解析</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-04-20T14:07:12+08:00">
+                2019-04-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>IQKeyboardManager 是一个优秀的零行代码解决键盘遮挡的第三方库。在没有看过源码的时候是我认为的最有魔力的第三方库。现在我们就要揭开它的面纱。</p>
+<a id="more"></a>
+<h2 id="使用方式"><a href="#使用方式" class="headerlink" title="使用方式"></a>使用方式</h2><h3 id="IQTextView"><a href="#IQTextView" class="headerlink" title="IQTextView"></a>IQTextView</h3><p><code>IQTextView</code> 是一个提供了 placeholder 的 <code>UITextView</code>。可以设置它文字和颜色：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#import <span class="meta-string">"IQTextView.h"</span></span></span><br><span class="line"></span><br><span class="line">IQTextView *textView = [[IQTextView alloc] init];</span><br><span class="line">textView.placeholder = <span class="string">@"这是一个placeholder"</span>;</span><br><span class="line">textView.placeholderTextColor = [<span class="built_in">UIColor</span> redColor];</span><br></pre></td></tr></table></figure>
+<h3 id="IQKeyboardReturnKeyHandler"><a href="#IQKeyboardReturnKeyHandler" class="headerlink" title="IQKeyboardReturnKeyHandler"></a>IQKeyboardReturnKeyHandler</h3><p>这个文件可以帮助我们将键盘上的 return 键变为 next 键，点击进入下一个输入框。当到最后一个输入框的时候，变为 Done，点击收起键盘。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#import <span class="meta-string">"IQKeyboardReturnKeyHandler.h"</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>) IQKeyboardReturnKeyHandler *returnKeyHandler;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)viewDidLoad:(<span class="built_in">BOOL</span>)animated&#123;</span><br><span class="line">  [<span class="keyword">super</span> viewDidLoad:animated];</span><br><span class="line">  <span class="keyword">self</span>.returnKeyHander = [[IQKeyboardReturnKeyHandler alloc] initWithViewController:<span class="keyword">self</span>];</span><br><span class="line">  <span class="keyword">self</span>.returnKeyHander.delegate = <span class="keyword">self</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>使用非常简单。只要传入当前 textfield 所在的控制器即可。可以通过设置 <code>IQKeyboardReturnHandler</code> 的 delegate 设置所有 textfield 的 delegate。也可以自己设置每个 textfield 的 delegate。</p>
+<h3 id="IQKeyboardManager"><a href="#IQKeyboardManager" class="headerlink" title="IQKeyboardManager"></a>IQKeyboardManager</h3><h4 id="在某个页面禁用-IQKeyboardManager"><a href="#在某个页面禁用-IQKeyboardManager" class="headerlink" title="在某个页面禁用 IQKeyboardManager"></a>在某个页面禁用 IQKeyboardManager</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"> - (<span class="keyword">void</span>)viewWillAppear:(<span class="built_in">BOOL</span>)animated&#123;</span><br><span class="line">    [<span class="keyword">super</span> viewWillAppear:animated];</span><br><span class="line">    <span class="comment">//写入这个方法后,这个页面将没有这种效果</span></span><br><span class="line">    [IQKeyboardManager sharedManager].enable = <span class="literal">NO</span>;</span><br><span class="line">&#125;</span><br><span class="line">- (<span class="keyword">void</span>)viewWillDisappear:(<span class="built_in">BOOL</span>)animated&#123;</span><br><span class="line">    [<span class="keyword">super</span> viewWillDisappear:animated];</span><br><span class="line">    <span class="comment">//最后还设置回来,不要影响其他页面的效果</span></span><br><span class="line">    [IQKeyboardManager sharedManager].enable = <span class="literal">YES</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>除了上面的直接禁用和启用，IQKeyboardManager 也可以设置在禁用的时候在部分 ViewController 上启用，或者在启动的时候在部分 ViewController 上禁用：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 在整体禁用的时候可以启动 IQKeyboardManager 的类</span></span><br><span class="line">[[IQKeyboardManager sharedManager].enabledDistanceHandlingClasses addObject: yourViewControllerClass];</span><br><span class="line"><span class="comment">// 在整体启动的时候需要禁用 IQKeyboardManager 的类</span></span><br><span class="line">[[IQKeyboardManager sharedManager].disabledDistanceHandlingClasses addObject: yourViewControllerClass];</span><br></pre></td></tr></table></figure>
+<h4 id="点击空白处可以隐藏键盘"><a href="#点击空白处可以隐藏键盘" class="headerlink" title="点击空白处可以隐藏键盘"></a>点击空白处可以隐藏键盘</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[IQKeyboardManager sharedManager].shouldResignOnTouchOutside = <span class="literal">YES</span>;</span><br></pre></td></tr></table></figure>
+<h4 id="隐藏键盘上的-toolbar"><a href="#隐藏键盘上的-toolbar" class="headerlink" title="隐藏键盘上的 toolbar"></a>隐藏键盘上的 toolbar</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[IQKeyboardManager sharedManager].enableAutoToolbar = <span class="literal">NO</span>;</span><br></pre></td></tr></table></figure>
+<p>除了这种一刀切的隐藏或者显示 toolbar 之外，IQKeyboardManager 还提供了两个数组属性，用于标识特例 ViewController：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">@property</span>(<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>, <span class="keyword">nonnull</span>, <span class="keyword">readwrite</span>) <span class="built_in">NSMutableSet</span>&lt;Class&gt; *disabledToolbarClasses;</span><br><span class="line"><span class="keyword">@property</span>(<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>, <span class="keyword">nonnull</span>, <span class="keyword">readwrite</span>) <span class="built_in">NSMutableSet</span>&lt;Class&gt; *enabledToolbarClasses;</span><br></pre></td></tr></table></figure>
+<p>这两个属性分别可以设置在 <code>enableAutoToobar</code> 为 YES 的时候，不显示 toobar 的 ViewController；<code>enableAutoToobar</code> 为 NO 的时候，显示 toobar 的 ViewController。</p>
+<p><code>disableToolbarClasses</code> 默认为：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[<span class="built_in">UIAlertController</span>, _UIAlertControllerTextFieldViewController]</span><br></pre></td></tr></table></figure>
+<h2 id="源码解析"><a href="#源码解析" class="headerlink" title="源码解析"></a>源码解析</h2><h3 id="IQTextView-1"><a href="#IQTextView-1" class="headerlink" title="IQTextView"></a>IQTextView</h3><p><code>IQTextView</code> 主要就是在 <code>UITextView</code> 的基础上添加了一个 <code>UILabel</code>。实现起来也非常简单。</p>
+<p>placeholder 主要关注两件事，一是 placeholder 的位置，二是 placeholder 何时隐藏。</p>
+<p>首先看 placeholder 的位置，它通过 <code>sizeThatFits</code> 方法获取到占位符的大小：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 布局方法</span></span><br><span class="line">-(<span class="keyword">void</span>)layoutSubviews</span><br><span class="line">&#123;</span><br><span class="line">    [<span class="keyword">super</span> layoutSubviews];</span><br><span class="line">    <span class="keyword">self</span>.placeholderLabel.frame = [<span class="keyword">self</span> placeholderExpectedFrame];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// placeholder 的 inset</span></span><br><span class="line">-(<span class="built_in">UIEdgeInsets</span>)placeholderInsets</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">UIEdgeInsetsMake</span>(<span class="keyword">self</span>.textContainerInset.top, <span class="keyword">self</span>.textContainerInset.left + <span class="keyword">self</span>.textContainer.lineFragmentPadding, <span class="keyword">self</span>.textContainerInset.bottom, <span class="keyword">self</span>.textContainerInset.right + <span class="keyword">self</span>.textContainer.lineFragmentPadding);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">-(<span class="built_in">CGRect</span>)placeholderExpectedFrame</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">UIEdgeInsets</span> placeholderInsets = [<span class="keyword">self</span> placeholderInsets];</span><br><span class="line">    <span class="built_in">CGFloat</span> maxWidth = <span class="built_in">CGRectGetWidth</span>(<span class="keyword">self</span>.frame)-placeholderInsets.left-placeholderInsets.right;</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">CGSize</span> expectedSize = [<span class="keyword">self</span>.placeholderLabel sizeThatFits:<span class="built_in">CGSizeMake</span>(maxWidth, <span class="built_in">CGRectGetHeight</span>(<span class="keyword">self</span>.frame)-placeholderInsets.top-placeholderInsets.bottom)];</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">CGRectMake</span>(placeholderInsets.left, placeholderInsets.top, maxWidth, expectedSize.height);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>再看 placeholder 何时隐藏。何时隐藏？只要当前 textView 的 text 不为空就要隐藏。那么怎么知道不为空呢？注册监听 <code>UITextViewTextDidChangeNotification</code> 的通知</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">-(<span class="keyword">void</span>)initialize</span><br><span class="line">&#123;</span><br><span class="line">    [[<span class="built_in">NSNotificationCenter</span> defaultCenter] addObserver:<span class="keyword">self</span> selector:<span class="keyword">@selector</span>(refreshPlaceholder) name:<span class="built_in">UITextViewTextDidChangeNotification</span> object:<span class="keyword">self</span>];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">-(<span class="keyword">void</span>)refreshPlaceholder</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">/// 如果有 text 或者 attributedText 那么就显示否则隐藏</span></span><br><span class="line">    <span class="keyword">if</span>([[<span class="keyword">self</span> text] length] || [[<span class="keyword">self</span> attributedText] length])</span><br><span class="line">    &#123;</span><br><span class="line">        [_placeholderLabel setAlpha:<span class="number">0</span>];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        [_placeholderLabel setAlpha:<span class="number">1</span>];</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    [<span class="keyword">self</span> setNeedsLayout];</span><br><span class="line">    [<span class="keyword">self</span> layoutIfNeeded];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="分类文件"><a href="#分类文件" class="headerlink" title="分类文件"></a>分类文件</h3><h4 id="数组分类"><a href="#数组分类" class="headerlink" title="数组分类"></a>数组分类</h4><p>数组分类中包含该两个方法，通过 <code>tag</code> 大小或者通过位置对 UIView 排序：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">NSArray</span>&lt;<span class="built_in">UIView</span>*&gt;*)sortedArrayByTag</span><br><span class="line">- (<span class="built_in">NSArray</span>&lt;<span class="built_in">UIView</span>*&gt;*)sortedArrayByPosition</span><br></pre></td></tr></table></figure>
+<p>这个方法中我们可以学习一个排序的方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">NSArray</span>&lt;<span class="built_in">UIView</span>*&gt;*)sortedArrayByPosition</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">return</span> [<span class="keyword">self</span> sortedArrayUsingComparator:^<span class="built_in">NSComparisonResult</span>(<span class="built_in">UIView</span> *view1, <span class="built_in">UIView</span> *view2) &#123;</span><br><span class="line">        </span><br><span class="line">        <span class="built_in">CGFloat</span> x1 = <span class="built_in">CGRectGetMinX</span>(view1.frame);</span><br><span class="line">        <span class="built_in">CGFloat</span> y1 = <span class="built_in">CGRectGetMinY</span>(view1.frame);</span><br><span class="line">        <span class="built_in">CGFloat</span> x2 = <span class="built_in">CGRectGetMinX</span>(view2.frame);</span><br><span class="line">        <span class="built_in">CGFloat</span> y2 = <span class="built_in">CGRectGetMinY</span>(view2.frame);</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span> (y1 &lt; y2)  <span class="keyword">return</span> <span class="built_in">NSOrderedAscending</span>;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (y1 &gt; y2) <span class="keyword">return</span> <span class="built_in">NSOrderedDescending</span>;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">//Else both y are same so checking for x positions</span></span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (x1 &lt; x2)  <span class="keyword">return</span> <span class="built_in">NSOrderedAscending</span>;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (x1 &gt; x2) <span class="keyword">return</span> <span class="built_in">NSOrderedDescending</span>;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">else</span>    <span class="keyword">return</span> <span class="built_in">NSOrderedSame</span>;</span><br><span class="line">    &#125;];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>通过 <code>sortedArrayUsingComparator</code> 传入一个比较大小的 block。先根据 y 轴比较大小，y 轴相等的时候再比较 x 轴大小。这样得到的就是一个根据该方法排序的数组。</p>
+<h4 id="UIScrollView-分类"><a href="#UIScrollView-分类" class="headerlink" title="UIScrollView 分类"></a>UIScrollView 分类</h4><p>UIScrollView 分类中添加了两个分类属性：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 标识该 UIScrollView 是否可以调整 contentOffset 来达到调整 textfield 位置的目的。</span></span><br><span class="line"><span class="comment">// 默认是 NO，表示该 UIScrollView 可以被调整。</span></span><br><span class="line"><span class="comment">// 如果设置为 YES，表示当前视图不能移动，就会找上级视图移动</span></span><br><span class="line"><span class="keyword">@property</span>(<span class="keyword">nonatomic</span>, <span class="keyword">assign</span>) <span class="built_in">BOOL</span> shouldIgnoreScrollingAdjustment;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 是否保存调整位置前的 UIScrollView 的 contentOffset 的值。如果保存，那么恢复后 UIScrollView 将滚回原来的位置。默认是 NO，不保存</span></span><br><span class="line"><span class="keyword">@property</span>(<span class="keyword">nonatomic</span>, <span class="keyword">assign</span>) <span class="built_in">BOOL</span> shouldRestoreScrollViewContentOffset;</span><br></pre></td></tr></table></figure>
+<h4 id="UITextField-分类"><a href="#UITextField-分类" class="headerlink" title="UITextField 分类"></a>UITextField 分类</h4><p>其实是添加在 UIView 上的几个属性：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 设置键盘弹出后，textfield 到键盘的距离</span></span><br><span class="line"><span class="keyword">@property</span>(<span class="keyword">nonatomic</span>, <span class="keyword">assign</span>) <span class="built_in">CGFloat</span> keyboardDistanceFromTextField;</span><br><span class="line"><span class="comment">// 如果设置为 YES，那么上一个 textfield 点击 next 之后，就不会跳到这个 textfield 上</span></span><br><span class="line"><span class="keyword">@property</span>(<span class="keyword">nonatomic</span>, <span class="keyword">assign</span>) <span class="built_in">BOOL</span> ignoreSwitchingByNextPrevious;</span><br><span class="line"><span class="comment">// 焦点在这个 textfield 上时，是否可以点击外部取消焦点</span></span><br><span class="line"><span class="keyword">@property</span>(<span class="keyword">nonatomic</span>, <span class="keyword">assign</span>) IQEnableMode shouldResignOnTouchOutsideMode;</span><br></pre></td></tr></table></figure>
+<h4 id="UIView-分类"><a href="#UIView-分类" class="headerlink" title="UIView 分类"></a>UIView 分类</h4><p>UIView 的分类下的方法分为两类，一类是获取 UIView 所在的 UIViewController，一类是获取当前视图下的 UITextField：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 获得 UIView 的控制器,通过响应链获取</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nullable</span>, <span class="keyword">nonatomic</span>, <span class="keyword">readonly</span>, <span class="keyword">strong</span>) <span class="built_in">UIViewController</span> *viewContainingController;</span><br><span class="line"><span class="comment">// 获得最上层的视图控制器</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nullable</span>, <span class="keyword">nonatomic</span>, <span class="keyword">readonly</span>, <span class="keyword">strong</span>) <span class="built_in">UIViewController</span> *topMostController;</span><br><span class="line"><span class="comment">// 获取当前视图的所有兄弟 textfield</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonnull</span>, <span class="keyword">nonatomic</span>, <span class="keyword">readonly</span>, <span class="keyword">copy</span>) <span class="built_in">NSArray</span>&lt;__kindof <span class="built_in">UIView</span>*&gt; *responderSiblings;</span><br><span class="line"><span class="comment">// 把当前视图下的所有的 textfield 都收集起来，包含视图的子视图</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonnull</span>, <span class="keyword">nonatomic</span>, <span class="keyword">readonly</span>, <span class="keyword">copy</span>) <span class="built_in">NSArray</span>&lt;__kindof <span class="built_in">UIView</span>*&gt; *deepResponderViews;</span><br></pre></td></tr></table></figure>
+<h3 id="IQKeyboardReturnKeyHandler-1"><a href="#IQKeyboardReturnKeyHandler-1" class="headerlink" title="IQKeyboardReturnKeyHandler"></a>IQKeyboardReturnKeyHandler</h3><p>IQKeyboardReturnKeyHandler 主要用来解决多个 textfield 的时候点击 return 跳到下一个 textfield 的问题。没有看过源码的时候觉得是一个非常神奇的功能。其实实现方式简单点说就是获取当前 UIViewController 内的所有 textfield，然后对他们按照位置排序。点击 return 就让下一个 textfield 获取焦点。</p>
+<h4 id="初步处理"><a href="#初步处理" class="headerlink" title="初步处理"></a>初步处理</h4><p>初步处理的过程中，会把 UIViewController 中的所有 textfield 全都拿出来，保存基本信息。目的是当 <code>IQKeyboardReturnKeyHandler</code> 实例销毁的时候，将所有 textfield 恢复如初。</p>
+<p>首先看入口方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 把 controller 中的所有 textfield 添加到这个类中，所有代理由这个类托管。</span></span><br><span class="line">-(<span class="keyword">instancetype</span>)initWithViewController:(<span class="keyword">nullable</span> <span class="built_in">UIViewController</span>*)controller &#123;</span><br><span class="line">    <span class="keyword">self</span> = [<span class="keyword">super</span> init];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        textFieldInfoCache = [[<span class="built_in">NSMutableSet</span> alloc] init];</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (controller.view)</span><br><span class="line">        &#123;</span><br><span class="line">            [<span class="keyword">self</span> addResponderFromView:controller.view];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">self</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 获取当前视图的所有子视图中的 textfield 并添加到数组中</span></span><br><span class="line">-(<span class="keyword">void</span>)addResponderFromView:(<span class="built_in">UIView</span>*)view &#123;</span><br><span class="line">    <span class="built_in">NSArray</span>&lt;<span class="built_in">UIView</span>*&gt; *textFields = [view deepResponderViews];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="built_in">UIView</span> *textField <span class="keyword">in</span> textFields)  [<span class="keyword">self</span> addTextFieldView:textField];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到一个熟悉的方法 <code>deepResponderViews</code>，也就是说，初始化的时候，从 UIViewController 中找到了所有的 textfield，并且通过 <code>addTextFieldView</code> 方法把他们保存起来。<code>addTextFieldView</code> 方法把 textfield 的 <code>originalReturnKeyType</code> <code>delegate</code> 保存了起来，转为了一个 modal，并把它们的 delegate 设置为了自己。这样 textfield 的所有事件都会由 <code>IQKeyboardReturnKeyHandler</code> 实例接管。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 把 TextField 转为 Modal 添加到 cache 中</span></span><br><span class="line">-(<span class="keyword">void</span>)addTextFieldView:(<span class="built_in">UIView</span>*)view &#123;</span><br><span class="line">    IQTextFieldViewInfoModal *modal = [[IQTextFieldViewInfoModal alloc] initWithTextFieldView:view textFieldDelegate:<span class="literal">nil</span> textViewDelegate:<span class="literal">nil</span> originalReturnKey:<span class="built_in">UIReturnKeyDefault</span>];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> ([view isKindOfClass:[<span class="built_in">UITextField</span> <span class="keyword">class</span>]])</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">UITextField</span> *textField = (<span class="built_in">UITextField</span>*)view;</span><br><span class="line">        modal.originalReturnKeyType = textField.returnKeyType;</span><br><span class="line">        modal.textFieldDelegate = textField.delegate;</span><br><span class="line">        [textField setDelegate:<span class="keyword">self</span>];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> ([view isKindOfClass:[<span class="built_in">UITextView</span> <span class="keyword">class</span>]])</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">UITextView</span> *textView = (<span class="built_in">UITextView</span>*)view;</span><br><span class="line">        modal.originalReturnKeyType = textView.returnKeyType;</span><br><span class="line">        modal.textViewDelegate = textView.delegate;</span><br><span class="line">        [textView setDelegate:<span class="keyword">self</span>];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    [textFieldInfoCache addObject:modal];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="接管-textfield-的-textfieldDidBeginEditing-方法"><a href="#接管-textfield-的-textfieldDidBeginEditing-方法" class="headerlink" title="接管 textfield 的 textfieldDidBeginEditing 方法"></a>接管 textfield 的 textfieldDidBeginEditing 方法</h4><p>IQKeyboardReturnKeyHandler 实例接管了 textfield 的相关方法。在 <code>textfieldDidBeginEditing</code> 中。它会将除最后一个 textfield 之外的所有 textfield 的 returnkeytype 设置为 next，最后一个设置为 return。</p>
+<p>具体看代码：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)textFieldDidBeginEditing:(<span class="built_in">UITextField</span> *)textField</span><br><span class="line">&#123;</span><br><span class="line">    [<span class="keyword">self</span> updateReturnKeyTypeOnTextField:textField];</span><br><span class="line">		<span class="comment">// 省略了调用代理方法的代码	</span></span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">-(<span class="keyword">void</span>)updateReturnKeyTypeOnTextField:(<span class="built_in">UIView</span>*)textField &#123;</span><br><span class="line">  	<span class="comment">// 省略了关于 UITableView 相关的搜索逻辑</span></span><br><span class="line">  	...</span><br><span class="line">    textFields = [textField responderSiblings];</span><br><span class="line">    <span class="keyword">switch</span> ([[IQKeyboardManager sharedManager] toolbarManageBehaviour])</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">case</span> IQAutoToolbarByTag:</span><br><span class="line">            textFields = [textFields sortedArrayByTag];</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> IQAutoToolbarByPosition:</span><br><span class="line">            textFields = [textFields sortedArrayByPosition];</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">    [(<span class="built_in">UITextField</span>*)textField setReturnKeyType:(([textFields lastObject] == textField)    ?   <span class="keyword">self</span>.lastTextFieldReturnKeyType :   <span class="built_in">UIReturnKeyNext</span>)];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>updateReturnKeyTypeOnTextField</code> 方法中将被编辑的 textfield 的兄弟 textfield 全都拿到，然后按照所处位置排序，得到一个排序好的 <code>textFields</code> 兄弟数组，把他们最后一个设置为 Return 类型，其他的都设置为 Next 类型。</p>
+<p>其中省略了一部分关于 UITableView 的处理逻辑。设想一下，如果一个 textfield 处于 UITableView 的一个 cell 中，那么应该这个 UITableView 的其他 cell 也会有 textfield。这些 textfield 虽然不是在一个视图中，但应该也是同级的兄弟 textfield。因此，IQKeyboardManager 针对这种情况会对 UITableView 进行深搜，拿到所有的 textfield。</p>
+<p>这里省略 UITableView 相关逻辑是因为我们只需要知道设置 textfield 的 returnkeytype 的关键点在于在开始编辑的时候找到所有 textfield 的兄弟 textfield 即可。UITableView 相关逻辑只是对这个目的的补充。</p>
+<h4 id="接管-textfield-的-textFieldShouldReturn-方法"><a href="#接管-textfield-的-textFieldShouldReturn-方法" class="headerlink" title="接管 textfield 的 textFieldShouldReturn 方法"></a>接管 textfield 的 textFieldShouldReturn 方法</h4><p>和 <code>textfieldDidBeginEditing</code> 相对应的，当点击 next 键的时候，会将焦点置于下一个 textfield：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">-(<span class="built_in">BOOL</span>)textFieldShouldReturn:(<span class="built_in">UITextField</span> *)textField</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">id</span>&lt;<span class="built_in">UITextFieldDelegate</span>&gt; delegate = <span class="keyword">self</span>.delegate;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> ([delegate respondsToSelector:<span class="keyword">@selector</span>(textFieldShouldReturn:)])</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">BOOL</span> shouldReturn = [delegate textFieldShouldReturn:textField];</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (shouldReturn)</span><br><span class="line">        &#123;</span><br><span class="line">            shouldReturn = [<span class="keyword">self</span> goToNextResponderOrResign:textField];</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> shouldReturn;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> [<span class="keyword">self</span> goToNextResponderOrResign:textField];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">-(<span class="built_in">BOOL</span>)goToNextResponderOrResign:(<span class="built_in">UIView</span>*)textField &#123;</span><br><span class="line">  	<span class="comment">// 省略 UITableView 相关逻辑</span></span><br><span class="line">  	...</span><br><span class="line">      </span><br><span class="line">    textFields = [textField responderSiblings];</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">switch</span> ([[IQKeyboardManager sharedManager] toolbarManageBehaviour])</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">case</span> IQAutoToolbarByTag:</span><br><span class="line">            textFields = [textFields sortedArrayByTag];</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> IQAutoToolbarByPosition:</span><br><span class="line">            textFields = [textFields sortedArrayByPosition];</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">        </span><br><span class="line">    <span class="built_in">NSUInteger</span> index = [textFields indexOfObject:textField];</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (index != <span class="built_in">NSNotFound</span> &amp;&amp; index &lt; textFields.count<span class="number">-1</span>) &#123;</span><br><span class="line">        [textFields[index+<span class="number">1</span>] becomeFirstResponder];</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NO</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        [textField resignFirstResponder];</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">YES</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其实理解了设置 returnkeytype 的逻辑，这里设置下一个响应者的逻辑也就明了了。还是获得排序后的 textfield 数组，只要把下一个 textfield 设置为第一响应者就可以了。</p>
+<h3 id="IQKeyboardManager-1"><a href="#IQKeyboardManager-1" class="headerlink" title="IQKeyboardManager"></a>IQKeyboardManager</h3><h4 id="注册"><a href="#注册" class="headerlink" title="注册"></a>注册</h4><p>IQKeyboardManager 通过 <code>+(void)load</code> 方法自动创建自身：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">+(<span class="keyword">void</span>)load</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">//Enabling IQKeyboardManager. Loading asynchronous on main thread</span></span><br><span class="line">    [<span class="keyword">self</span> performSelectorOnMainThread:<span class="keyword">@selector</span>(sharedManager) withObject:<span class="literal">nil</span> waitUntilDone:<span class="literal">NO</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们常说不要在 load 方法中做太多耗时操作，会影响应用的启动速度。所以，我们可以把要做的初始化操作异步去执行。下面来看初始化方法</p>
+<h5 id="注册通知"><a href="#注册通知" class="headerlink" title="注册通知"></a>注册通知</h5><p>注册的通知主要包含两部分。一部分是键盘的弹出与隐藏，另一部分是 <code>UITextField</code> 和 <code>UITextView</code> 的编辑的回调。具体通知的处理方法后文解析。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">-(<span class="keyword">void</span>)registerAllNotifications</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">//  注册键盘相关通知</span></span><br><span class="line">    [[<span class="built_in">NSNotificationCenter</span> defaultCenter] addObserver:<span class="keyword">self</span> selector:<span class="keyword">@selector</span>(keyboardWillShow:) name:<span class="built_in">UIKeyboardWillShowNotification</span> object:<span class="literal">nil</span>];</span><br><span class="line">    [[<span class="built_in">NSNotificationCenter</span> defaultCenter] addObserver:<span class="keyword">self</span> selector:<span class="keyword">@selector</span>(keyboardDidShow:) name:<span class="built_in">UIKeyboardDidShowNotification</span> object:<span class="literal">nil</span>];</span><br><span class="line">    [[<span class="built_in">NSNotificationCenter</span> defaultCenter] addObserver:<span class="keyword">self</span> selector:<span class="keyword">@selector</span>(keyboardWillHide:) name:<span class="built_in">UIKeyboardWillHideNotification</span> object:<span class="literal">nil</span>];</span><br><span class="line">    [[<span class="built_in">NSNotificationCenter</span> defaultCenter] addObserver:<span class="keyword">self</span> selector:<span class="keyword">@selector</span>(keyboardDidHide:) name:<span class="built_in">UIKeyboardDidHideNotification</span> object:<span class="literal">nil</span>];</span><br><span class="line"></span><br><span class="line">    <span class="comment">//  注册 UITextField 的编辑通知</span></span><br><span class="line">    [<span class="keyword">self</span> registerTextFieldViewClass:[<span class="built_in">UITextField</span> <span class="keyword">class</span>]</span><br><span class="line">     didBeginEditingNotificationName:<span class="built_in">UITextFieldTextDidBeginEditingNotification</span></span><br><span class="line">       didEndEditingNotificationName:<span class="built_in">UITextFieldTextDidEndEditingNotification</span>];</span><br><span class="line"></span><br><span class="line">    <span class="comment">//  注册 UITextView 的编辑通知</span></span><br><span class="line">    [<span class="keyword">self</span> registerTextFieldViewClass:[<span class="built_in">UITextView</span> <span class="keyword">class</span>]</span><br><span class="line">     didBeginEditingNotificationName:<span class="built_in">UITextViewTextDidBeginEditingNotification</span></span><br><span class="line">       didEndEditingNotificationName:<span class="built_in">UITextViewTextDidEndEditingNotification</span>];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 注册开始编辑和结束编辑的通知</span></span><br><span class="line">-(<span class="keyword">void</span>)registerTextFieldViewClass:(<span class="keyword">nonnull</span> Class)aClass</span><br><span class="line">  didBeginEditingNotificationName:(<span class="keyword">nonnull</span> <span class="built_in">NSString</span> *)didBeginEditingNotificationName</span><br><span class="line">    didEndEditingNotificationName:(<span class="keyword">nonnull</span> <span class="built_in">NSString</span> *)didEndEditingNotificationName</span><br><span class="line">&#123;</span><br><span class="line">    [[<span class="built_in">NSNotificationCenter</span> defaultCenter] addObserver:<span class="keyword">self</span> selector:<span class="keyword">@selector</span>(textFieldViewDidBeginEditing:) name:didBeginEditingNotificationName object:<span class="literal">nil</span>];</span><br><span class="line">    [[<span class="built_in">NSNotificationCenter</span> defaultCenter] addObserver:<span class="keyword">self</span> selector:<span class="keyword">@selector</span>(textFieldViewDidEndEditing:) name:didEndEditingNotificationName object:<span class="literal">nil</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>注册之外的所有逻辑都在这些通知方法内</p>
+</blockquote>
+<h5 id="创建一个-UITapGestureRecognizer"><a href="#创建一个-UITapGestureRecognizer" class="headerlink" title="创建一个 UITapGestureRecognizer"></a>创建一个 <code>UITapGestureRecognizer</code></h5><p>这个手势用来在点击 <code>UITextField</code> 以外的区域的时候收起键盘</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 为点击屏幕取消第一响应者这个功能创建一个手势</span></span><br><span class="line">strongSelf.resignFirstResponderGesture = [[<span class="built_in">UITapGestureRecognizer</span> alloc] initWithTarget:<span class="keyword">self</span> action:<span class="keyword">@selector</span>(tapRecognized:)];</span><br><span class="line"><span class="comment">// 设置该手势不取消事件传递</span></span><br><span class="line">strongSelf.resignFirstResponderGesture.cancelsTouchesInView = <span class="literal">NO</span>;</span><br><span class="line"><span class="comment">// 设置手势代理为自身</span></span><br><span class="line">[strongSelf.resignFirstResponderGesture setDelegate:<span class="keyword">self</span>];</span><br><span class="line"><span class="comment">// 将手势默认设为不启用</span></span><br><span class="line">strongSelf.resignFirstResponderGesture.enabled = strongSelf.shouldResignOnTouchOutside;</span><br><span class="line"><span class="comment">// 点击外部区域是否取消第一响应者</span></span><br><span class="line">[<span class="keyword">self</span> setShouldResignOnTouchOutside:<span class="literal">NO</span>];</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)tapRecognized:(<span class="built_in">UITapGestureRecognizer</span>*)gesture  <span class="comment">// (Enhancement ID: #14)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span> (gesture.state == <span class="built_in">UIGestureRecognizerStateEnded</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">//Resigning currently responder textField.</span></span><br><span class="line">        [<span class="keyword">self</span> resignFirstResponder];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="配置键盘遮挡相关的一些类"><a href="#配置键盘遮挡相关的一些类" class="headerlink" title="配置键盘遮挡相关的一些类"></a>配置键盘遮挡相关的一些类</h5><p>下面的这些配置用于设置 Textfield 在哪些类中 IQKeyboardManager 能够启用，或者关闭。一般使用场景不多。见名思意。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">strongSelf.disabledDistanceHandlingClasses = [[<span class="built_in">NSMutableSet</span> alloc] initWithObjects:[<span class="built_in">UITableViewController</span> <span class="keyword">class</span>],[<span class="built_in">UIAlertController</span> <span class="keyword">class</span>], <span class="literal">nil</span>];</span><br><span class="line">strongSelf.enabledDistanceHandlingClasses = [[<span class="built_in">NSMutableSet</span> alloc] init];</span><br><span class="line"></span><br><span class="line">strongSelf.disabledToolbarClasses = [[<span class="built_in">NSMutableSet</span> alloc] initWithObjects:[<span class="built_in">UIAlertController</span> <span class="keyword">class</span>], <span class="literal">nil</span>];</span><br><span class="line">strongSelf.enabledToolbarClasses = [[<span class="built_in">NSMutableSet</span> alloc] init];</span><br><span class="line"></span><br><span class="line">strongSelf.toolbarPreviousNextAllowedClasses = [[<span class="built_in">NSMutableSet</span> alloc] initWithObjects:[<span class="built_in">UITableView</span> <span class="keyword">class</span>],[<span class="built_in">UICollectionView</span> <span class="keyword">class</span>],[IQPreviousNextView <span class="keyword">class</span>], <span class="literal">nil</span>];</span><br><span class="line"></span><br><span class="line">strongSelf.disabledTouchResignedClasses = [[<span class="built_in">NSMutableSet</span> alloc] initWithObjects:[<span class="built_in">UIAlertController</span> <span class="keyword">class</span>], <span class="literal">nil</span>];</span><br><span class="line">strongSelf.enabledTouchResignedClasses = [[<span class="built_in">NSMutableSet</span> alloc] init];</span><br><span class="line">strongSelf.touchResignedGestureIgnoreClasses = [[<span class="built_in">NSMutableSet</span> alloc] initWithObjects:[<span class="built_in">UIControl</span> <span class="keyword">class</span>],[<span class="built_in">UINavigationBar</span> <span class="keyword">class</span>], <span class="literal">nil</span>];</span><br></pre></td></tr></table></figure>
+<h4 id="textFieldViewDidBeginEditing"><a href="#textFieldViewDidBeginEditing" class="headerlink" title="textFieldViewDidBeginEditing"></a>textFieldViewDidBeginEditing</h4><p>在这个开始编辑的方法中，主要就是根据需要添加或移除 toolbar：</p>
+<h5 id="判断是否允许添加"><a href="#判断是否允许添加" class="headerlink" title="判断是否允许添加"></a>判断是否允许添加</h5><p>首先会调用 <code>privateIsEnableAutoToobar</code> 方法，判断是否需要显示 toobar。这个判断逻辑就是根据外部设置的 <code>enable</code> 变量的值，然后还有前面提到的当前 textfield 所在的 ViewController 是否是 <code>enable</code> 的特例。伪代码如下：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">- (Bool) privateIsEnableAutoToobar &#123;</span><br><span class="line">  <span class="keyword">if</span> (开启IQKeyboardManager) &#123;</span><br><span class="line">    <span class="keyword">if</span> (textfield 在禁止的 ViewController 中) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">NO</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (textfield 在允许的 ViewController 中，并且不是 <span class="built_in">UIAlertController</span> 和 TextFieldViewController ) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">YES</span>;</span><br><span class="line">    &#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="在-IQToolbar-上添加按钮"><a href="#在-IQToolbar-上添加按钮" class="headerlink" title="在 IQToolbar 上添加按钮"></a>在 IQToolbar 上添加按钮</h5><p>如果允许添加。那么就会调用 <code>addToolbarIfRequired</code> 方法。主要是在 toolbar 中添加各种 button。伪代码如下：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)addToolbarIfRequired &#123;</span><br><span class="line">  <span class="keyword">if</span> (textfield 能够添加 inputAccessoryView &amp;&amp; textfield 的 inputAccessoryView 为 <span class="literal">nil</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (有自定义的图片 toolbarDoneBarButtonItemImage) &#123;</span><br><span class="line">      用这个 toolbarDoneBarButtonItemImage 初始化一个 toolbar 右边的 done 按钮</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (有自定义的文字 toolbarDoneBarButtonItemText) &#123;</span><br><span class="line">      用这个 toolbarDoneBarButtonItemText 初始化一个 toobar 右边的 done 按钮</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      初始化默认的右边的 toolbar 的 done 按钮</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (当前 textfield 没有兄弟 textfield) &#123;</span><br><span class="line">      <span class="comment">// 只有一个就不用添加左边的前一个后一个的按钮了，就直接返回</span></span><br><span class="line">      <span class="keyword">return</span></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="keyword">if</span> (有自定义的图片) &#123;</span><br><span class="line">        初始化带图片的 prev 的按钮以及 next 按钮</span><br><span class="line">      &#125; <span class="keyword">else</span> <span class="keyword">if</span> (有自定义的文字) &#123;</span><br><span class="line">        初始化带文字的 prev 按钮以及 next 按钮</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        初始化默认的 prev 按钮以及 next 按钮</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (textfield 实现了 keyboardAppearance 方法) &#123;</span><br><span class="line">      根据 keyboard 的模式设置 toolbar 的样式</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (shouldShowToolbarPlaceholder 属性为 <span class="literal">YES</span>) &#123;</span><br><span class="line">      将 textfield 的 placeholder 的样式复制给 toolbar 的 titleBarButton</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      隐藏 toolbar 的 titleBarButton</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (当前 textfield 是第一个) &#123;</span><br><span class="line">      设置 prev 按钮 enabled 为 <span class="literal">NO</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (当前 textfield 是最后一个) &#123;</span><br><span class="line">      设置 next 按钮 enabled 为 <span class="literal">NO</span></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      设置 prev 和 next 按钮 enabled 为 <span class="literal">YES</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 最后通过设置好的 prev 和 next 和 placeholder 和 done 创建 IQToolbar。并将 toolbar 设置为 textfield 的 inputAccessview</span></span><br><span class="line">    [textfield setInputAccessView: toolbar];</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>代码很简单，就是很繁琐，伪代码都写了这么多。可以看到，IQKeyboardManager 很人性化的为 toobar 上左右的按钮都设置了自定义的图片和文字(虽然一般不会有人去改)</p>
+<h5 id="按钮点击事件"><a href="#按钮点击事件" class="headerlink" title="按钮点击事件"></a>按钮点击事件</h5><p>完成按钮的点击事件可以理解为就是取消 textfield 的第一响应者。prev 按钮和 next 按钮实现上稍微复杂一点，但是思想上是非常简单的。以 prev 按钮为例：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">-(<span class="keyword">void</span>)previousAction:(IQBarButtonItem*)barButton &#123;</span><br><span class="line">  <span class="keyword">if</span> ([<span class="keyword">self</span> canGoPrevious]) &#123;</span><br><span class="line">    [<span class="keyword">self</span> goPrevious];</span><br><span class="line">  &#125;</span><br><span class="line">  ....省略以一部分 firstResponder 转移成功后自定义的处理逻辑(一般不会使用就省略不看了)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>逻辑就是能跳到前面一个就跳到前面一个：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">-(<span class="built_in">BOOL</span>)canGoPrevious &#123;</span><br><span class="line">  <span class="comment">// 获取当前视图的所有兄弟 textfield </span></span><br><span class="line">  <span class="built_in">NSArray</span>&lt;<span class="built_in">UIView</span>*&gt; *textFields = [<span class="keyword">self</span> responderViews]</span><br><span class="line">  <span class="comment">// 获取当前 textfield 在这些 textfield 的 index</span></span><br><span class="line">  <span class="built_in">NSUInteger</span> index = [textFields indexOfObject:_textFieldView];</span><br><span class="line">  <span class="comment">// 如果 textfield 的 index 不是第一个</span></span><br><span class="line">  <span class="keyword">if</span> (index != <span class="built_in">NSNotFound</span> &amp;&amp; index &gt; <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">YES</span>;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NO</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">-(<span class="built_in">BOOL</span>)goPrevious &#123;</span><br><span class="line">  <span class="comment">// 获取当前视图的所有兄弟 textfield </span></span><br><span class="line">  <span class="built_in">NSArray</span>&lt;__kindof <span class="built_in">UIView</span>*&gt; *textFields = [<span class="keyword">self</span> responderViews];</span><br><span class="line">  <span class="comment">// 获取当前 textfield 在这些 textfield 的 index</span></span><br><span class="line">  <span class="built_in">NSUInteger</span> index = [textFields indexOfObject:_textFieldView];</span><br><span class="line">  <span class="comment">// 如果 textfield 的 index 不是第一个</span></span><br><span class="line">  <span class="keyword">if</span> (index != <span class="built_in">NSNotFound</span> &amp;&amp; index &gt; <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="built_in">UITextField</span> *nextTextField = textFields[index<span class="number">-1</span>];</span><br><span class="line">    <span class="built_in">UIView</span> *textFieldRetain = _textFieldView;</span><br><span class="line">    <span class="comment">// 上一个 textfield 获取焦点</span></span><br><span class="line">    <span class="built_in">BOOL</span> isAcceptAsFirstResponder = [nextTextField becomeFirstResponder];</span><br><span class="line">    <span class="keyword">if</span> (isAcceptAsFirstResponder == <span class="literal">NO</span>) &#123;</span><br><span class="line">      [textFieldRetain becomeFirstResponder];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> isAcceptAsFirstResponder;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NO</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>有没有很熟悉？和处理 return 键的逻辑类似。拿到所有兄弟 textfield，然后判断当前 textfield 是否是第一个。不是的话就让上一个获取焦点。</p>
+<h5 id="移除-IQToolbar"><a href="#移除-IQToolbar" class="headerlink" title="移除 IQToolbar"></a>移除 IQToolbar</h5><p>说完了添加 IQToolbar，现在再来快速看一下如果 <code>privateIsEnableAutoToolbar</code> 为 NO 情况下移除 toolbar</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">-(<span class="keyword">void</span>)removeToolbarIfRequired &#123;</span><br><span class="line">    <span class="built_in">NSArray</span>&lt;<span class="built_in">UIView</span>*&gt; *siblings = [<span class="keyword">self</span> responderViews];</span><br><span class="line">    <span class="keyword">for</span> (<span class="built_in">UITextField</span> *textField <span class="keyword">in</span> siblings) &#123;</span><br><span class="line">        <span class="built_in">UIView</span> *toolbar = [textField inputAccessoryView];</span><br><span class="line">        <span class="keyword">if</span> ([textField respondsToSelector:<span class="keyword">@selector</span>(setInputAccessoryView:)] &amp;&amp;</span><br><span class="line">            ([toolbar isKindOfClass:[IQToolbar <span class="keyword">class</span>]] &amp;&amp; (toolbar.tag == kIQDoneButtonToolbarTag || toolbar.tag == kIQPreviousNextButtonToolbarTag))) &#123;</span><br><span class="line">            textField.inputAccessoryView = <span class="literal">nil</span>;</span><br><span class="line">            [textField reloadInputViews];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>移除的方法更简单。直接找到所有兄弟 textfield，如果它们的 inputAccessoryView 是 IQToolbar 类型，那么就清空。</p>
+<h4 id="keyboardWillShow"><a href="#keyboardWillShow" class="headerlink" title="keyboardWillShow"></a>keyboardWillShow</h4><p>键盘弹出的通知中，就要调整视图偏移了。这个方法中保证了键盘弹出后，我们的键盘不会阻挡 UITextField</p>
+<h5 id="拿到键盘弹出的各种参数"><a href="#拿到键盘弹出的各种参数" class="headerlink" title="拿到键盘弹出的各种参数"></a>拿到键盘弹出的各种参数</h5><p>主要拿到键盘弹出的动画类型，动画时间以及键盘的大小</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">-(<span class="keyword">void</span>)keyboardWillShow:(<span class="built_in">NSNotification</span>*)aNotification</span><br><span class="line">&#123;</span><br><span class="line">    _kbShowNotification = aNotification;</span><br><span class="line">	</span><br><span class="line">    <span class="comment">//  Getting keyboard animation.</span></span><br><span class="line">    <span class="built_in">NSInteger</span> curve = [[aNotification userInfo][<span class="built_in">UIKeyboardAnimationCurveUserInfoKey</span>] integerValue];</span><br><span class="line">    _animationCurve = curve&lt;&lt;<span class="number">16</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//  Getting keyboard animation duration</span></span><br><span class="line">    <span class="built_in">CGFloat</span> duration = [[aNotification userInfo][<span class="built_in">UIKeyboardAnimationDurationUserInfoKey</span>] floatValue];</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//Saving animation duration</span></span><br><span class="line">    <span class="keyword">if</span> (duration != <span class="number">0.0</span>)    _animationDuration = duration;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//  Getting UIKeyboardSize.</span></span><br><span class="line">    _kbSize = [[aNotification userInfo][<span class="built_in">UIKeyboardFrameEndUserInfoKey</span>] <span class="built_in">CGRectValue</span>];</span><br><span class="line"></span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里我稍微修了下代码中的逻辑。因为原来的逻辑中针对多种情况以及 bug 增加了很多对我们了解主流程不必要的代码。</p>
+<h5 id="保存-frame-的位置"><a href="#保存-frame-的位置" class="headerlink" title="保存 frame 的位置"></a>保存 frame 的位置</h5><p>在键盘弹出调整位置前，把 frame 的原始位置保存起来，这样就可以在键盘收起后，将 frame 移回原来的位置：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">_topViewBeginOrigin = rootController.view.frame.origin;</span><br></pre></td></tr></table></figure>
+<h5 id="调整视图偏移"><a href="#调整视图偏移" class="headerlink" title="调整视图偏移"></a>调整视图偏移</h5><p>随后来到调整偏移的方法 <code>optimizedAdjustPosition</code> 中，它在主线程中调用。因为届时将会对 UI 进行调整：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">-(<span class="keyword">void</span>)optimizedAdjustPosition&#123;</span><br><span class="line">    __<span class="keyword">weak</span> <span class="keyword">typeof</span>(<span class="keyword">self</span>) weakSelf = <span class="keyword">self</span>;</span><br><span class="line">    <span class="comment">// 添加到主线程中z异步执行</span></span><br><span class="line">    [[<span class="built_in">NSOperationQueue</span> mainQueue] addOperationWithBlock:^&#123;</span><br><span class="line">        [<span class="keyword">self</span> adjustPosition];</span><br><span class="line">    &#125;];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>整个 <code>adjustPosition</code> 的方法非常长，还是以伪代码的方式了解一下过程：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)adjustPosition &#123;</span><br><span class="line">  <span class="comment">// 实际的键盘大小</span></span><br><span class="line">  <span class="built_in">CGSize</span> kbSize = keyboardWillShow 中拿到的键盘的大小 + textfield 距离键盘的高度</span><br><span class="line">  <span class="comment">// 移动的距离</span></span><br><span class="line">  <span class="built_in">CGFloat</span> move = MIN(textfield的y + textfield的高度 + 键盘的高度 + 底部因为tabbar或者 iphoneX 留下的间隙 - 屏幕的高度, textfield的y - 顶部navigationBar 的高度 - statusBar 的高度)</span><br><span class="line">    </span><br><span class="line">  <span class="comment">// 找到能直接滚动的 UIScrollView</span></span><br><span class="line">  <span class="built_in">UIScrollView</span> *superView = (<span class="built_in">UIScrollView</span>*)[textFieldView superviewOfClassType:[<span class="built_in">UIScrollView</span> <span class="keyword">class</span>]];</span><br><span class="line">  <span class="keyword">while</span> (superView) &#123;</span><br><span class="line">    superView 可滚动结束，不可滚动，继续往上找</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">	<span class="comment">// 省略 lastScrollView 相关内容，该内容用于修复相关 bug</span></span><br><span class="line">  ...</span><br><span class="line">  <span class="keyword">if</span> (textfield 存在可以滚动的 scrollView，并且能够滚动的距离超过需要滚动的距离) &#123;</span><br><span class="line">    动画方式设置 contentOffset</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">if</span> (textfield 不存在于 scrollView 上，或者不能滚动) &#123;</span><br><span class="line">    动画设置 rootViewController 的 origin.y 向上移动。即整个 rootViewController 向上移动</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>move 的计算有讲究，移动的范围要既不能被 keyboard 挡住，又不能被顶出屏幕显示的范围。所以要比较底下需要往上顶的高度，以及最高能往上多少，取其中较小的。</p>
+<p>关于设置 textfield 所在的 scrollView 的 contentOffset。如果你写过类似微信的聊天界面可能有出现过一个问题就是当输入弹出键盘的时候，navigationBar 也移动了上去。这是因为你要输入的瞬间，底部的输入框被 IQKeyboardManager 认为要向上移，但是底部的输入框没有可以滚动的 scrollView，因此就把 rootViewController 的 y 向上移动了，在我们看来就是整个界面都顶了上去。</p>
+<h4 id="keyboardWillHide"><a href="#keyboardWillHide" class="headerlink" title="keyboardWillHide"></a>keyboardWillHide</h4><p>在 keyboardWillHide 方法中进行扫尾工作，包括将 scrollView 滚回到原来的位置。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)keyboardWillHide:(<span class="built_in">NSNotification</span>*)aNotification &#123;</span><br><span class="line">  <span class="keyword">if</span> (存在滚动的 scrollView) &#123;</span><br><span class="line">    动画方式将 scrollView 滚回原处</span><br><span class="line">  &#125;</span><br><span class="line">  动画方式将 rootViewController 滚回原处</span><br><span class="line">    </span><br><span class="line">  将 show 时候设置的各种变量设置回原始值</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>实际上在结束输入的时候，还有其他的事件通知触发，同样也是进行一些扫尾工作，就不做更多的介绍了。</p>
+<h2 id="小技巧"><a href="#小技巧" class="headerlink" title="小技巧"></a>小技巧</h2><p>到最后了总结一下看 IQKeyboardManager 源码学到的一些技巧。</p>
+<h3 id="对一个数组排序："><a href="#对一个数组排序：" class="headerlink" title="对一个数组排序："></a>对一个数组排序：</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">[SomeViewArray sortedArrayUsingComparator:^<span class="built_in">NSComparisonResult</span>(<span class="built_in">UIView</span> *view1, <span class="built_in">UIView</span> *view2) &#123;</span><br><span class="line">        </span><br><span class="line">    <span class="built_in">CGFloat</span> x1 = <span class="built_in">CGRectGetMinX</span>(view1.frame);</span><br><span class="line">    <span class="built_in">CGFloat</span> y1 = <span class="built_in">CGRectGetMinY</span>(view1.frame);</span><br><span class="line">    <span class="built_in">CGFloat</span> x2 = <span class="built_in">CGRectGetMinX</span>(view2.frame);</span><br><span class="line">    <span class="built_in">CGFloat</span> y2 = <span class="built_in">CGRectGetMinY</span>(view2.frame);</span><br><span class="line">        </span><br><span class="line">    <span class="keyword">if</span> (y1 &lt; y2)  <span class="keyword">return</span> <span class="built_in">NSOrderedAscending</span>;</span><br><span class="line">        </span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (y1 &gt; y2) <span class="keyword">return</span> <span class="built_in">NSOrderedDescending</span>;</span><br><span class="line">        </span><br><span class="line">    <span class="comment">//Else both y are same so checking for x positions</span></span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (x1 &lt; x2)  <span class="keyword">return</span> <span class="built_in">NSOrderedAscending</span>;</span><br><span class="line">        </span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (x1 &gt; x2) <span class="keyword">return</span> <span class="built_in">NSOrderedDescending</span>;</span><br><span class="line">        </span><br><span class="line">    <span class="keyword">else</span>    <span class="keyword">return</span> <span class="built_in">NSOrderedSame</span>;</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
+<h3 id="通过响应链获得当前视图的-ViewController"><a href="#通过响应链获得当前视图的-ViewController" class="headerlink" title="通过响应链获得当前视图的 ViewController"></a>通过响应链获得当前视图的 ViewController</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">-(<span class="built_in">UIViewController</span>*)viewContainingController</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">UIResponder</span> *nextResponder =  <span class="keyword">self</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">do</span></span><br><span class="line">    &#123;</span><br><span class="line">        nextResponder = [nextResponder nextResponder];</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> ([nextResponder isKindOfClass:[<span class="built_in">UIViewController</span> <span class="keyword">class</span>]])</span><br><span class="line">            <span class="keyword">return</span> (<span class="built_in">UIViewController</span>*)nextResponder;</span><br><span class="line"></span><br><span class="line">    &#125; <span class="keyword">while</span> (nextResponder);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="在-load-方法中异步执行初始化操作"><a href="#在-load-方法中异步执行初始化操作" class="headerlink" title="在 load 方法中异步执行初始化操作"></a>在 load 方法中异步执行初始化操作</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">+(<span class="keyword">void</span>)load</span><br><span class="line">&#123;</span><br><span class="line">    [<span class="keyword">self</span> performSelectorOnMainThread:<span class="keyword">@selector</span>(sharedManager) withObject:<span class="literal">nil</span> waitUntilDone:<span class="literal">NO</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="计算方法的执行时间"><a href="#计算方法的执行时间" class="headerlink" title="计算方法的执行时间"></a>计算方法的执行时间</h3><p>方法的执行时间可以通过分别获取方法开始执行和执行完毕的时间，然后相减：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">CFTimeInterval</span> startTime = <span class="built_in">CACurrentMediaTime</span>();</span><br><span class="line"><span class="built_in">CFTimeInterval</span> elapsedTime = <span class="built_in">CACurrentMediaTime</span>() - startTime;</span><br></pre></td></tr></table></figure>
+<h3 id="iOS-发出输入键盘的声音"><a href="#iOS-发出输入键盘的声音" class="headerlink" title="iOS 发出输入键盘的声音"></a>iOS 发出输入键盘的声音</h3><p>iOS 提供了一个方法提供播放键盘声音：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[[<span class="built_in">UIDevice</span> currentDevice] playInputClick]</span><br></pre></td></tr></table></figure>
+<p>比如通讯录选择了首字母可以使用这个方法播放声音。</p>
+<h3 id="设置随键盘弹出的视图"><a href="#设置随键盘弹出的视图" class="headerlink" title="设置随键盘弹出的视图"></a>设置随键盘弹出的视图</h3><p>在没看代码前，你可能会认为 IQKeyboardManager 是通过动画的方式将 IQToolbar 展示在 keyboard 上的。其实 iOS 提供了相关的属性。可以直接将自定义视图设置为 textfield 的 inputAccessoryView 就可以实现效果：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[textfield setInputAccessView: yourView];</span><br></pre></td></tr></table></figure>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>看完了 IQKeyboardManager 源码，解决了我一直以来的疑惑。另外，IQKeyboardManager 不愧为一个经久不衰的第三方库。其中为了解决特定情况下的 bug，增加了很多解决 bug 的逻辑和变量，为阅读源码增加了许多难度。不过，这些针对 bug 的逻辑其实不是探寻原理的必要之路，没有必要把一整个工程的代码都理解透彻，跳过它们，可以更快速的定位到库的核心。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tag/源码解析/" rel="tag"># 源码解析</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/04/09/yymodel/" rel="next" title="YYModel 源码解析">
+                <i class="fa fa-chevron-left"></i> YYModel 源码解析
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/04/23/koa/" rel="prev" title="Koa的基本使用">
+                Koa的基本使用 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.png" alt="Zachary Zhang">
+            
+              <p class="site-author-name" itemprop="name">Zachary Zhang</p>
+              <p class="site-description motion-element" itemprop="description">Stay Hungry. Stay Foolish!</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">116</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/zhang759740844" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:zch759740844@126.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#使用方式"><span class="nav-number">1.</span> <span class="nav-text">使用方式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#IQTextView"><span class="nav-number">1.1.</span> <span class="nav-text">IQTextView</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#IQKeyboardReturnKeyHandler"><span class="nav-number">1.2.</span> <span class="nav-text">IQKeyboardReturnKeyHandler</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#IQKeyboardManager"><span class="nav-number">1.3.</span> <span class="nav-text">IQKeyboardManager</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#在某个页面禁用-IQKeyboardManager"><span class="nav-number">1.3.1.</span> <span class="nav-text">在某个页面禁用 IQKeyboardManager</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#点击空白处可以隐藏键盘"><span class="nav-number">1.3.2.</span> <span class="nav-text">点击空白处可以隐藏键盘</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#隐藏键盘上的-toolbar"><span class="nav-number">1.3.3.</span> <span class="nav-text">隐藏键盘上的 toolbar</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#源码解析"><span class="nav-number">2.</span> <span class="nav-text">源码解析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#IQTextView-1"><span class="nav-number">2.1.</span> <span class="nav-text">IQTextView</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#分类文件"><span class="nav-number">2.2.</span> <span class="nav-text">分类文件</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#数组分类"><span class="nav-number">2.2.1.</span> <span class="nav-text">数组分类</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#UIScrollView-分类"><span class="nav-number">2.2.2.</span> <span class="nav-text">UIScrollView 分类</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#UITextField-分类"><span class="nav-number">2.2.3.</span> <span class="nav-text">UITextField 分类</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#UIView-分类"><span class="nav-number">2.2.4.</span> <span class="nav-text">UIView 分类</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#IQKeyboardReturnKeyHandler-1"><span class="nav-number">2.3.</span> <span class="nav-text">IQKeyboardReturnKeyHandler</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#初步处理"><span class="nav-number">2.3.1.</span> <span class="nav-text">初步处理</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#接管-textfield-的-textfieldDidBeginEditing-方法"><span class="nav-number">2.3.2.</span> <span class="nav-text">接管 textfield 的 textfieldDidBeginEditing 方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#接管-textfield-的-textFieldShouldReturn-方法"><span class="nav-number">2.3.3.</span> <span class="nav-text">接管 textfield 的 textFieldShouldReturn 方法</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#IQKeyboardManager-1"><span class="nav-number">2.4.</span> <span class="nav-text">IQKeyboardManager</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#注册"><span class="nav-number">2.4.1.</span> <span class="nav-text">注册</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#注册通知"><span class="nav-number">2.4.1.1.</span> <span class="nav-text">注册通知</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#创建一个-UITapGestureRecognizer"><span class="nav-number">2.4.1.2.</span> <span class="nav-text">创建一个 UITapGestureRecognizer</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#配置键盘遮挡相关的一些类"><span class="nav-number">2.4.1.3.</span> <span class="nav-text">配置键盘遮挡相关的一些类</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#textFieldViewDidBeginEditing"><span class="nav-number">2.4.2.</span> <span class="nav-text">textFieldViewDidBeginEditing</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#判断是否允许添加"><span class="nav-number">2.4.2.1.</span> <span class="nav-text">判断是否允许添加</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#在-IQToolbar-上添加按钮"><span class="nav-number">2.4.2.2.</span> <span class="nav-text">在 IQToolbar 上添加按钮</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#按钮点击事件"><span class="nav-number">2.4.2.3.</span> <span class="nav-text">按钮点击事件</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#移除-IQToolbar"><span class="nav-number">2.4.2.4.</span> <span class="nav-text">移除 IQToolbar</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#keyboardWillShow"><span class="nav-number">2.4.3.</span> <span class="nav-text">keyboardWillShow</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#拿到键盘弹出的各种参数"><span class="nav-number">2.4.3.1.</span> <span class="nav-text">拿到键盘弹出的各种参数</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#保存-frame-的位置"><span class="nav-number">2.4.3.2.</span> <span class="nav-text">保存 frame 的位置</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#调整视图偏移"><span class="nav-number">2.4.3.3.</span> <span class="nav-text">调整视图偏移</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#keyboardWillHide"><span class="nav-number">2.4.4.</span> <span class="nav-text">keyboardWillHide</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#小技巧"><span class="nav-number">3.</span> <span class="nav-text">小技巧</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#对一个数组排序："><span class="nav-number">3.1.</span> <span class="nav-text">对一个数组排序：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#通过响应链获得当前视图的-ViewController"><span class="nav-number">3.2.</span> <span class="nav-text">通过响应链获得当前视图的 ViewController</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#在-load-方法中异步执行初始化操作"><span class="nav-number">3.3.</span> <span class="nav-text">在 load 方法中异步执行初始化操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#计算方法的执行时间"><span class="nav-number">3.4.</span> <span class="nav-text">计算方法的执行时间</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#iOS-发出输入键盘的声音"><span class="nav-number">3.5.</span> <span class="nav-text">iOS 发出输入键盘的声音</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#设置随键盘弹出的视图"><span class="nav-number">3.6.</span> <span class="nav-text">设置随键盘弹出的视图</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zachary Zhang</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

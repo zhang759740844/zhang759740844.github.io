@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+
+
+
+
+  <meta name="keywords" content="学习笔记,源码解析,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="KSCrash 是 iOS 上一个知名的 crash 收集框架。包括腾讯刚开源的 APM 框架 Matrix，其中 crash 收集部分也是直接使用的 KSCrash。那么 KSCrash 到底是如何进行 crash 收集的呢？">
+<meta name="keywords" content="学习笔记,源码解析">
+<meta property="og:type" content="article">
+<meta property="og:title" content="iOS Crash 收集框架 KSCrash 源码解析(上)">
+<meta property="og:url" content="http://zhang759740844.github.io/2019/10/25/kscrash/index.html">
+<meta property="og:site_name" content="Zachary&#39;s blog">
+<meta property="og:description" content="KSCrash 是 iOS 上一个知名的 crash 收集框架。包括腾讯刚开源的 APM 框架 Matrix，其中 crash 收集部分也是直接使用的 KSCrash。那么 KSCrash 到底是如何进行 crash 收集的呢？">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/kscrash_1.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/kscrash_2.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/kscrash_3.png?raw=true">
+<meta property="og:updated_time" content="2020-02-27T15:13:37.653Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="iOS Crash 收集框架 KSCrash 源码解析(上)">
+<meta name="twitter:description" content="KSCrash 是 iOS 上一个知名的 crash 收集框架。包括腾讯刚开源的 APM 框架 Matrix，其中 crash 收集部分也是直接使用的 KSCrash。那么 KSCrash 到底是如何进行 crash 收集的呢？">
+<meta name="twitter:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/kscrash_1.png?raw=true">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://zhang759740844.github.io/2019/10/25/kscrash/">
+
+
+
+
+
+  <title>iOS Crash 收集框架 KSCrash 源码解析(上) | Zachary's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Zachary's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">记录成长</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://zhang759740844.github.io/2019/10/25/kscrash/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zachary Zhang">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Zachary's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">iOS Crash 收集框架 KSCrash 源码解析(上)</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-10-25T14:07:12+08:00">
+                2019-10-25
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>KSCrash 是 iOS 上一个知名的 crash 收集框架。包括腾讯刚开源的 APM 框架 Matrix，其中 crash 收集部分也是直接使用的 KSCrash。那么 KSCrash 到底是如何进行 crash 收集的呢？</p>
+<a id="more"></a>
+<h2 id="总体结构"><a href="#总体结构" class="headerlink" title="总体结构"></a>总体结构</h2><p>总体结构如下图：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/kscrash_1.png?raw=true" alt></p>
+<p>可以看到总共分为三大部分：</p>
+<ul>
+<li>Crash Recording</li>
+<li>Crash Reporting</li>
+<li>Installation</li>
+</ul>
+<p>其中 Installation 用来启动 KSCrash，并且指定了 Crash 收集的方式。Crash 收集方式可以包括：邮件发送，向指定服务器发送，向专门的 Crash 收集服务器发送等方式。每种方式对应于一个实现类：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/kscrash_2.png?raw=true" alt></p>
+<p>Crash Reporting 包含了三个子文件夹，分别是 Filter，Sink 和 Tools，主要用来上报 Crash。本文不会对其做具体的研究。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/kscrash_3.png?raw=true" alt></p>
+<p>其中 Filter 包含了将存储在设备上的 Crash 信息的 NSData 转为 NSString，JSON，GZip 等几种方式的实现类。</p>
+<p>Sink 则是不同发送方式的真正的处理者，和 Installation 中的几种收集方式一一对应。</p>
+<p>Tools 是一些工具类，以及发送请求相关的类的合集。</p>
+<p>最最关键的还是要数 Crash Recording，它包含了捕捉各种类型 crash 的方式，将会在下文中做详细介绍。</p>
+<h2 id="基本使用"><a href="#基本使用" class="headerlink" title="基本使用"></a>基本使用</h2><p>以官方 Demo 中的 Simple-Example 为例：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">AppDelegate</span></span></span><br><span class="line"></span><br><span class="line">- (<span class="built_in">BOOL</span>) application:(__unused <span class="built_in">UIApplication</span> *) application</span><br><span class="line">didFinishLaunchingWithOptions:(__unused <span class="built_in">NSDictionary</span> *) launchOptions &#123;</span><br><span class="line">    [<span class="keyword">self</span> installCrashHandler];    </span><br><span class="line">    <span class="keyword">return</span> <span class="literal">YES</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>) installCrashHandler &#123;</span><br><span class="line">    <span class="comment">/// 👇是各种 crash 收集方式，选择一种使用</span></span><br><span class="line"><span class="comment">//    KSCrashInstallation* installation = [self makeStandardInstallation];</span></span><br><span class="line">    KSCrashInstallation* installation = [<span class="keyword">self</span> makeEmailInstallation];</span><br><span class="line"><span class="comment">//    KSCrashInstallation* installation = [self makeHockeyInstallation];</span></span><br><span class="line"><span class="comment">//    KSCrashInstallation* installation = [self makeQuincyInstallation];</span></span><br><span class="line"><span class="comment">//    KSCrashInstallation *installation = [self makeVictoryInstallation];</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/// 注册 crash handler</span></span><br><span class="line">    [installation install];</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// 发送所有的 crash 日志</span></span><br><span class="line">    [installation sendAllReportsWithCompletion:^(<span class="built_in">NSArray</span>* reports, <span class="built_in">BOOL</span> completed, <span class="built_in">NSError</span>* error) &#123;</span><br><span class="line">         <span class="keyword">if</span>(completed) &#123;</span><br><span class="line">             <span class="built_in">NSLog</span>(<span class="string">@"Sent %d reports"</span>, (<span class="keyword">int</span>)[reports count]);</span><br><span class="line">         &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">             <span class="built_in">NSLog</span>(<span class="string">@"Failed to send reports: %@"</span>, error);</span><br><span class="line">         &#125;</span><br><span class="line">     &#125;];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (KSCrashInstallation*) makeEmailInstallation &#123;</span><br><span class="line">    <span class="built_in">NSString</span>* emailAddress = <span class="string">@"your@email.here"</span>;</span><br><span class="line">    </span><br><span class="line">    KSCrashInstallationEmail* email = [KSCrashInstallationEmail sharedInstance];</span><br><span class="line">    email.recipients = @[emailAddress];</span><br><span class="line">    email.subject = <span class="string">@"Crash Report"</span></span><br><span class="line">    email.message = <span class="string">@"This is a crash report"</span>;</span><br><span class="line">    email.filenameFmt = <span class="string">@"crash-report-%d.txt.gz"</span>;</span><br><span class="line">    </span><br><span class="line">    [email addConditionalAlertWithTitle:<span class="string">@"Crash Detected"</span></span><br><span class="line">                                message:<span class="string">@"The app crashed last time it was launched. Send a crash report?"</span></span><br><span class="line">                              yesAnswer:<span class="string">@"Sure!"</span></span><br><span class="line">                               noAnswer:<span class="string">@"No thanks"</span>];</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// Uncomment to send Apple style reports instead of JSON.</span></span><br><span class="line">    [email setReportStyle:KSCrashEmailReportStyleApple useDefaultFilenameFormat:<span class="literal">YES</span>];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> email;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure>
+<p>如上面代码所示，在 AppDelegate 中注册 KSCrash。在注册 handler 期间，通过工厂模式选择一个上传方式的 installation 进行实例化。不同的 installation 会有不同的处理，比如上面的 email 上传方式，那就需要提供邮箱地址。</p>
+<p>不同的 installation 有不同的上床日志的方式，但是它们注册监听的方式都是一样的。它们都继承于基类 <code>KSCrashInstallation</code>，在基类中有统一的 <code>install</code> 方法。</p>
+<h2 id="开启-Crash-监控"><a href="#开启-Crash-监控" class="headerlink" title="开启 Crash 监控"></a>开启 Crash 监控</h2><p>在 <code>install</code> 的过程中，installation 创建了一个单例对象 <code>KSCrash</code>，并且调用它的 <code>install</code> </p>
+<p>方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// KSCrash.m</span></span><br><span class="line"><span class="comment">/// 开启监控</span></span><br><span class="line">- (<span class="built_in">BOOL</span>) install &#123;</span><br><span class="line">    _monitoring = kscrash_install(<span class="keyword">self</span>.bundleName.UTF8String,</span><br><span class="line">                                          <span class="keyword">self</span>.basePath.UTF8String);</span><br><span class="line">    <span class="keyword">if</span>(<span class="keyword">self</span>.monitoring == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>它又调用了 c 方法 <code>kscrash_install</code>，这个方法在 <code>KSCrashC.c</code> 中：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// 真正开始的方法, 创建一个 monitor</span></span><br><span class="line"><span class="function">KSCrashMonitorType <span class="title">kscrash_install</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* appName, <span class="keyword">const</span> <span class="keyword">char</span>* <span class="keyword">const</span> installPath)</span> </span>&#123;</span><br><span class="line">    <span class="comment">/// 省略了一些基本设置，包括路径名，文件名等</span></span><br><span class="line">    ...</span><br><span class="line">    <span class="comment">/// 设置状态为已启动</span></span><br><span class="line">    g_installed = <span class="number">1</span>;</span><br><span class="line">    <span class="comment">/// 给 monitor 设置回调</span></span><br><span class="line">    kscm_setEventCallback(onCrash);</span><br><span class="line">    <span class="comment">/// 设置 monitor</span></span><br><span class="line">    KSCrashMonitorType monitors = kscrash_setMonitoring(g_monitoring);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> monitors;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>设置回调函数 <code>onCrash</code> 的部分我们也后面再看。先来看设置 monitor 的部分：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// 设置 monitor</span></span><br><span class="line"><span class="function">KSCrashMonitorType <span class="title">kscrash_setMonitoring</span><span class="params">(KSCrashMonitorType monitors)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    g_monitoring = monitors;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span>(g_installed)</span><br><span class="line">    &#123;</span><br><span class="line">        kscm_setActiveMonitors(monitors);</span><br><span class="line">        <span class="keyword">return</span> kscm_getActiveMonitors();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// Return what we will be monitoring in future.</span></span><br><span class="line">    <span class="keyword">return</span> g_monitoring;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>由于前面设置了 <code>g_installed</code> ，因此，这里就会通过 <code>kscm_setActiveMonitors()</code> 这个方法激活 monitor。这是整个激活步骤的核心方法：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">kscm_setActiveMonitors</span><span class="params">(KSCrashMonitorType monitorTypes)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">/// 进程是否在调试中，调试中的应用只记录 Mach Signal C++ OC 的 crash</span></span><br><span class="line">    <span class="keyword">if</span>(ksdebug_isBeingTraced() &amp;&amp; (monitorTypes &amp; KSCrashMonitorTypeDebuggerUnsafe))</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">static</span> <span class="keyword">bool</span> hasWarned = <span class="literal">false</span>;</span><br><span class="line">        <span class="keyword">if</span>(!hasWarned)</span><br><span class="line">        &#123;</span><br><span class="line">            hasWarned = <span class="literal">true</span>;</span><br><span class="line">            KSLOGBASIC_WARN(<span class="string">"    ************************ Crash Handler Notice ************************"</span>);</span><br><span class="line">            KSLOGBASIC_WARN(<span class="string">"    *     App is running in a debugger. Masking out unsafe monitors.     *"</span>);</span><br><span class="line">            KSLOGBASIC_WARN(<span class="string">"    * This means that most crashes WILL NOT BE RECORDED while debugging! *"</span>);</span><br><span class="line">            KSLOGBASIC_WARN(<span class="string">"    **********************************************************************"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        monitorTypes &amp;= KSCrashMonitorTypeDebuggerSafe;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/// 是否需要线程安全，只有 Mach 和 Signal 异常是线程安全的</span></span><br><span class="line">    <span class="keyword">if</span>(g_requiresAsyncSafety &amp;&amp; (monitorTypes &amp; KSCrashMonitorTypeAsyncUnsafe))</span><br><span class="line">    &#123;</span><br><span class="line">        KSLOG_DEBUG(<span class="string">"Async-safe environment detected. Masking out unsafe monitors."</span>);</span><br><span class="line">        monitorTypes &amp;= KSCrashMonitorTypeAsyncSafe;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    KSLOG_DEBUG(<span class="string">"Changing active monitors from 0x%x tp 0x%x."</span>, g_activeMonitors, monitorTypes);</span><br><span class="line"></span><br><span class="line">    KSCrashMonitorType activeMonitors = KSCrashMonitorTypeNone;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; g_monitorsCount; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        Monitor* monitor = &amp;g_monitors[i];</span><br><span class="line">        <span class="keyword">bool</span> isEnabled = monitor-&gt;monitorType &amp; monitorTypes;</span><br><span class="line">        <span class="comment">/// 开启相应的 monitor</span></span><br><span class="line">        setMonitorEnabled(monitor, isEnabled);</span><br><span class="line">        <span class="keyword">if</span>(isMonitorEnabled(monitor))</span><br><span class="line">        &#123;</span><br><span class="line">            activeMonitors |= monitor-&gt;monitorType;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        &#123;</span><br><span class="line">            activeMonitors &amp;= ~monitor-&gt;monitorType;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    KSLOG_DEBUG(<span class="string">"Active monitors are now 0x%x."</span>, activeMonitors);</span><br><span class="line">    g_activeMonitors = activeMonitors;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>先来看入参，外部传入的 <code>g_monitoring</code> 默认值为 <code>KSCrashMonitorTypeProductionSafeMinimal</code>，它的定义如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> KSCrashMonitorTypeProductionSafe (KSCrashMonitorTypeAll &amp; (~KSCrashMonitorTypeExperimental))</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> KSCrashMonitorTypeProductionSafeMinimal (KSCrashMonitorTypeProductionSafe &amp; (~KSCrashMonitorTypeOptional))</span></span><br></pre></td></tr></table></figure>
+<p>再来看 <code>KSCrashMonitorTypeAll</code> 的定义：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="keyword">enum</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">/* Captures and reports Mach exceptions. */</span></span><br><span class="line">    KSCrashMonitorTypeMachException      = <span class="number">0x01</span>,</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/* Captures and reports POSIX signals. */</span></span><br><span class="line">    KSCrashMonitorTypeSignal             = <span class="number">0x02</span>,</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/* Captures and reports C++ exceptions.</span></span><br><span class="line"><span class="comment">     * Note: This will slightly slow down exception processing.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    KSCrashMonitorTypeCPPException       = <span class="number">0x04</span>,</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/* Captures and reports NSExceptions. */</span></span><br><span class="line">    KSCrashMonitorTypeNSException        = <span class="number">0x08</span>,</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/* Detects and reports a deadlock in the main thread. */</span></span><br><span class="line">    KSCrashMonitorTypeMainThreadDeadlock = <span class="number">0x10</span>,</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/* Accepts and reports user-generated exceptions. */</span></span><br><span class="line">    KSCrashMonitorTypeUserReported       = <span class="number">0x20</span>,</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/* Keeps track of and injects system information. */</span></span><br><span class="line">    KSCrashMonitorTypeSystem             = <span class="number">0x40</span>,</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/* Keeps track of and injects application state. */</span></span><br><span class="line">    KSCrashMonitorTypeApplicationState   = <span class="number">0x80</span>,</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/* Keeps track of zombies, and injects the last zombie NSException. */</span></span><br><span class="line">    KSCrashMonitorTypeZombie             = <span class="number">0x100</span>,</span><br><span class="line">&#125; KSCrashMonitorType;</span><br><span class="line"></span><br><span class="line"><span class="meta">#define KSCrashMonitorTypeAll              \</span></span><br><span class="line">(                                          \</span><br><span class="line">    KSCrashMonitorTypeMachException      | \</span><br><span class="line">    KSCrashMonitorTypeSignal             | \</span><br><span class="line">    KSCrashMonitorTypeCPPException       | \</span><br><span class="line">    KSCrashMonitorTypeNSException        | \</span><br><span class="line">    KSCrashMonitorTypeMainThreadDeadlock | \</span><br><span class="line">    KSCrashMonitorTypeUserReported       | \</span><br><span class="line">    KSCrashMonitorTypeSystem             | \</span><br><span class="line">    KSCrashMonitorTypeApplicationState   | \</span><br><span class="line">    KSCrashMonitorTypeZombie               \</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<p>可以看到，all 代表的就是所有异常方式：</p>
+<ol>
+<li>Mach 异常</li>
+<li>Signal 异常</li>
+<li>C++ 异常</li>
+<li>OC 异常</li>
+<li>死锁</li>
+<li>用户抛出的异常</li>
+</ol>
+<p>设置 monitor 的时候，会判断是否在被调试，这是通过 <code>sysctl</code> 获取进程的信息的方式来进行判断的：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// 是否在被调试</span></span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">ksdebug_isBeingTraced</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">/// 查询进程信息结果的结构体</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">kinfo_proc</span> <span class="title">procInfo</span>;</span></span><br><span class="line">    <span class="keyword">size_t</span> structSize = <span class="keyword">sizeof</span>(procInfo);</span><br><span class="line">    <span class="keyword">int</span> mib[] = &#123;CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid()&#125;;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/// 通过 sysctl 获取进程信息</span></span><br><span class="line">    <span class="keyword">if</span>(sysctl(mib, <span class="keyword">sizeof</span>(mib)/<span class="keyword">sizeof</span>(*mib), &amp;procInfo, &amp;structSize, <span class="literal">NULL</span>, <span class="number">0</span>) != <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        KSLOG_ERROR(<span class="string">"sysctl: %s"</span>, strerror(errno));</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/// 通过进程信息判断是否被调试</span></span><br><span class="line">    <span class="keyword">return</span> (procInfo.kp_proc.p_flag &amp; P_TRACED) != <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最终通过 for 循环，遍历启动每一个 monitor。启动某个 monitor 的方法如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// 启动某个 monitor</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keyword">void</span> <span class="title">setMonitorEnabled</span><span class="params">(Monitor* monitor, <span class="keyword">bool</span> isEnabled)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    KSCrashMonitorAPI* api = getAPI(monitor);</span><br><span class="line">    <span class="comment">/// 调用各个 monitor 的 enable 方法，启动 monitor</span></span><br><span class="line">    <span class="keyword">if</span>(api != <span class="literal">NULL</span> &amp;&amp; api-&gt;setEnabled != <span class="literal">NULL</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        api-&gt;setEnabled(isEnabled);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>Monitor</code> 是一个结构体，它保存了 Monitor 的类型以及启动 monitor 的方法：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// monitor 的数据结构</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    KSCrashMonitorType monitorType;</span><br><span class="line">    KSCrashMonitorAPI* (*getAPI)(<span class="keyword">void</span>);</span><br><span class="line">&#125; Monitor;</span><br></pre></td></tr></table></figure>
+<p>也就是说，每一种异常都会有一个自己的 <code>setEnabled()</code> 方法，用于启动自身。</p>
+<h3 id="Mach-异常"><a href="#Mach-异常" class="headerlink" title="Mach 异常"></a>Mach 异常</h3><h4 id="开启捕获"><a href="#开启捕获" class="headerlink" title="开启捕获"></a>开启捕获</h4><p>Mach 异常在 <code>KSCrashMonitor_MachException.c</code> 中被处理外部调用 <code>setEnabled()</code> 开启 Mach 异常的监听：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">setEnabled</span><span class="params">(<span class="keyword">bool</span> isEnabled)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(isEnabled != g_isEnabled)</span><br><span class="line">    &#123;</span><br><span class="line">        g_isEnabled = isEnabled;</span><br><span class="line">        <span class="keyword">if</span>(isEnabled)</span><br><span class="line">        &#123;</span><br><span class="line">            ksid_generate(g_primaryEventID);</span><br><span class="line">            ksid_generate(g_secondaryEventID);</span><br><span class="line">            <span class="keyword">if</span>(!installExceptionHandler())</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">return</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        &#123;</span><br><span class="line">            uninstallExceptionHandler();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其中包含两个 c 函数，<code>installExceptionHandler()</code> 和 <code>uninstallExceptionHandler()</code> 分别用于开启和关闭监听。</p>
+<blockquote>
+<p>在说如何捕捉 Mach 异常前，先说一下什么是 Mach。Mach:[mʌk]，是一种操作系统微内核，是许多新操作系统的设计基础。</p>
+<p> Mach微内核中有几个基础概念：</p>
+<ul>
+<li>Tasks，拥有一组系统资源的对象，允许”thread”在其中执行。<strong>每一个BSD 进程都在底层关联了一个Mach 任务对象</strong>(BSD 层在 Mach 之上，提供了更高层次的功能，比如 UNIX 进程模型，POSIX 线程模型等)</li>
+<li>Threads，执行的基本单位，拥有task的上下文，并共享其资源。</li>
+<li>Ports，task之间通讯的一组受保护的消息队列；task可对任何port发送/接收数据。</li>
+<li>Message，有类型的数据对象集合，只可以发送到port。</li>
+</ul>
+<p>关于什么是微内核？微内核把系统服务，比如文件管理、虚拟内存、设备I/O，单独包装为一个个模块。微内核作为底层使用进程间通信收发消息。这一来大量的内核代码可以转移到用户空间，使内核变得更小。这种方式拓展性强，但是通信有效率损耗。宏内核正相反，把所有系统服务放在一起。</p>
+<p>UNIX 下，触发到内核态需要通过系统调用触发陷阱。Mach 可以通过申请 port，然后利用IPC机制向这个port发送消息。</p>
+<p>陷阱是软中断，是主动触发的，立刻同步处理。异常是当前指令执行出现问题，是被动的，立刻同步处理。中断是外部硬件触发的，是异步的。</p>
+</blockquote>
+<p>回到 Mach 异常的注册方法中，我们要知道，当异常发生时，内核会向当前 task 的某个专门处理异常的 port 发消息，该消息会依次被转为 signal，NSException 抛出。如果我们要在 Mach 层捕获异常，就需要注册自己的 port，来接收这个异常：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// 创建 mach 捕捉者</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">bool</span> <span class="title">installExceptionHandler</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    KSLOG_DEBUG(<span class="string">"Installing mach exception handler."</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">bool</span> attributes_created = <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">pthread_attr_t</span> attr;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">kern_return_t</span> kr;</span><br><span class="line">    <span class="keyword">int</span> error;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// 获取当前进程的 task</span></span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">task_t</span> thisTask = mach_task_self();</span><br><span class="line">    <span class="keyword">exception_mask_t</span> mask = EXC_MASK_BAD_ACCESS |</span><br><span class="line">    EXC_MASK_BAD_INSTRUCTION |</span><br><span class="line">    EXC_MASK_ARITHMETIC |</span><br><span class="line">    EXC_MASK_SOFTWARE |</span><br><span class="line">    EXC_MASK_BREAKPOINT;</span><br><span class="line"></span><br><span class="line">    KSLOG_DEBUG(<span class="string">"Backing up original exception ports."</span>);</span><br><span class="line">    <span class="comment">/// 保存之前的异常处理端口到 g_previousExceptionPorts 中</span></span><br><span class="line">    kr = task_get_exception_ports(thisTask,</span><br><span class="line">                                  mask,</span><br><span class="line">                                  g_previousExceptionPorts.masks,</span><br><span class="line">                                  &amp;g_previousExceptionPorts.count,</span><br><span class="line">                                  g_previousExceptionPorts.ports,</span><br><span class="line">                                  g_previousExceptionPorts.behaviors,</span><br><span class="line">                                  g_previousExceptionPorts.flavors);</span><br><span class="line">    <span class="keyword">if</span>(kr != KERN_SUCCESS)</span><br><span class="line">    &#123;</span><br><span class="line">        KSLOG_ERROR(<span class="string">"task_get_exception_ports: %s"</span>, mach_error_string(kr));</span><br><span class="line">        <span class="keyword">goto</span> failed;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// 如果自己的异常处理端口 g_exceptionPort 是空的，那么创建</span></span><br><span class="line">    <span class="keyword">if</span>(g_exceptionPort == MACH_PORT_NULL)</span><br><span class="line">    &#123;</span><br><span class="line">        KSLOG_DEBUG(<span class="string">"Allocating new port with receive rights."</span>);</span><br><span class="line">        <span class="comment">/// 创建新的异常处理端口</span></span><br><span class="line">        kr = mach_port_allocate(thisTask,</span><br><span class="line">                                MACH_PORT_RIGHT_RECEIVE,</span><br><span class="line">                                &amp;g_exceptionPort);</span><br><span class="line">        <span class="keyword">if</span>(kr != KERN_SUCCESS)</span><br><span class="line">        &#123;</span><br><span class="line">            KSLOG_ERROR(<span class="string">"mach_port_allocate: %s"</span>, mach_error_string(kr));</span><br><span class="line">            <span class="keyword">goto</span> failed;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        KSLOG_DEBUG(<span class="string">"Adding send rights to port."</span>);</span><br><span class="line">        <span class="comment">/// 申请端口权限</span></span><br><span class="line">        kr = mach_port_insert_right(thisTask,</span><br><span class="line">                                    g_exceptionPort,</span><br><span class="line">                                    g_exceptionPort,</span><br><span class="line">                                    MACH_MSG_TYPE_MAKE_SEND);</span><br><span class="line">        <span class="keyword">if</span>(kr != KERN_SUCCESS)</span><br><span class="line">        &#123;</span><br><span class="line">            KSLOG_ERROR(<span class="string">"mach_port_insert_right: %s"</span>, mach_error_string(kr));</span><br><span class="line">            <span class="keyword">goto</span> failed;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    KSLOG_DEBUG(<span class="string">"Installing port as exception handler."</span>);</span><br><span class="line">    <span class="comment">/// 把异常设置为自己的 port</span></span><br><span class="line">    kr = task_set_exception_ports(thisTask,</span><br><span class="line">                                  mask,</span><br><span class="line">                                  g_exceptionPort,</span><br><span class="line">                                  (<span class="keyword">int</span>)(EXCEPTION_DEFAULT | MACH_EXCEPTION_CODES),</span><br><span class="line">                                  THREAD_STATE_NONE);</span><br><span class="line">    <span class="keyword">if</span>(kr != KERN_SUCCESS)</span><br><span class="line">    &#123;</span><br><span class="line">        KSLOG_ERROR(<span class="string">"task_set_exception_ports: %s"</span>, mach_error_string(kr));</span><br><span class="line">        <span class="keyword">goto</span> failed;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    KSLOG_DEBUG(<span class="string">"Creating secondary exception thread (suspended)."</span>);</span><br><span class="line">    <span class="comment">/// 以下整个部分用来创建读取异常端口数据的线程,设置异常端口的处理函数</span></span><br><span class="line">    pthread_attr_init(&amp;attr);</span><br><span class="line">    attributes_created = <span class="literal">true</span>;</span><br><span class="line">    pthread_attr_setdetachstate(&amp;attr, PTHREAD_CREATE_DETACHED);</span><br><span class="line">    <span class="comment">/// 创建第二条处理crash的线程，以防主z处理crash的线程crash了</span></span><br><span class="line">    error = pthread_create(&amp;g_secondaryPThread,</span><br><span class="line">                           &amp;attr,</span><br><span class="line">                           &amp;handleExceptions,</span><br><span class="line">                           kThreadSecondary);</span><br><span class="line">    <span class="keyword">if</span>(error != <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        KSLOG_ERROR(<span class="string">"pthread_create_suspended_np: %s"</span>, strerror(error));</span><br><span class="line">        <span class="keyword">goto</span> failed;</span><br><span class="line">    &#125;</span><br><span class="line">    g_secondaryMachThread = pthread_mach_thread_np(g_secondaryPThread);</span><br><span class="line">    ksmc_addReservedThread(g_secondaryMachThread);</span><br><span class="line"></span><br><span class="line">    KSLOG_DEBUG(<span class="string">"Creating primary exception thread."</span>);</span><br><span class="line">    <span class="comment">/// 创建主处理crash的线程</span></span><br><span class="line">    error = pthread_create(&amp;g_primaryPThread,</span><br><span class="line">                           &amp;attr,</span><br><span class="line">                           &amp;handleExceptions,</span><br><span class="line">                           kThreadPrimary);</span><br><span class="line">    <span class="keyword">if</span>(error != <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        KSLOG_ERROR(<span class="string">"pthread_create: %s"</span>, strerror(error));</span><br><span class="line">        <span class="keyword">goto</span> failed;</span><br><span class="line">    &#125;</span><br><span class="line">    pthread_attr_destroy(&amp;attr);</span><br><span class="line">    g_primaryMachThread = pthread_mach_thread_np(g_primaryPThread);</span><br><span class="line">    ksmc_addReservedThread(g_primaryMachThread);</span><br><span class="line"></span><br><span class="line">    KSLOG_DEBUG(<span class="string">"Mach exception handler installed."</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">failed:</span><br><span class="line">    KSLOG_DEBUG(<span class="string">"Failed to install mach exception handler."</span>);</span><br><span class="line">    <span class="keyword">if</span>(attributes_created)</span><br><span class="line">    &#123;</span><br><span class="line">        pthread_attr_destroy(&amp;attr);</span><br><span class="line">    &#125;</span><br><span class="line">    uninstallExceptionHandler();</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>代码很长，关键地方做了注释：</p>
+<ol>
+<li>通过 <code>mach_task_self()</code> 获取当前进程对应的 task。</li>
+<li>通过 <code>task_get_exception_ports()</code> 获取原本处理异常的 port，并保存在 <code>g_previousExceptionPorts</code> 中。</li>
+<li>通过 <code>mach_port_allocate()</code> 创建新的异常处理端口。</li>
+<li>通过 <code>mach_port_insert_right()</code> 给这个新创建的端口申请权限</li>
+<li>通过 <code>task_set_exception_ports()</code> 把异常接收的 port 设置为自己新创建的 port</li>
+<li>创建好 port 之后，就可以创建自己的线程去一直读取 port 上的消息了。通过 <code>pthread_create()</code> 创建自己的线程，以及设置好执行的方法为 <code>handleExceptions</code>。</li>
+</ol>
+<h4 id="处理异常"><a href="#处理异常" class="headerlink" title="处理异常"></a>处理异常</h4><p>现在就是关键的处理方法 <code>handleExceptions()</code> 了。这也是一个非常长的方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// 处理 Exception</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">void</span>* handleExceptions(<span class="keyword">void</span>* <span class="keyword">const</span> userData)</span><br><span class="line">&#123;</span><br><span class="line">    MachExceptionMessage exceptionMessage = &#123;&#123;<span class="number">0</span>&#125;&#125;;</span><br><span class="line">    MachReplyMessage replyMessage = &#123;&#123;<span class="number">0</span>&#125;&#125;;</span><br><span class="line">    <span class="keyword">char</span>* eventID = g_primaryEventID;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span>* threadName = (<span class="keyword">const</span> <span class="keyword">char</span>*) userData;</span><br><span class="line">    pthread_setname_np(threadName);</span><br><span class="line">    <span class="keyword">if</span>(threadName == kThreadSecondary)</span><br><span class="line">    &#123;</span><br><span class="line">        KSLOG_DEBUG(<span class="string">"This is the secondary thread. Suspending."</span>);</span><br><span class="line">        thread_suspend((thread_t)ksthread_self());</span><br><span class="line">        eventID = g_secondaryEventID;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span>(;;)</span><br><span class="line">    &#123;</span><br><span class="line">        KSLOG_DEBUG(<span class="string">"Waiting for mach exception"</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Wait for a message.</span></span><br><span class="line">        <span class="comment">/// 不断调用 mach_msg 接收消息，从异常端口中读取信息到 exceptionMessage 中</span></span><br><span class="line">        kern_return_t kr = mach_msg(&amp;exceptionMessage.header,</span><br><span class="line">                                    MACH_RCV_MSG,</span><br><span class="line">                                    <span class="number">0</span>,</span><br><span class="line">                                    <span class="keyword">sizeof</span>(exceptionMessage),</span><br><span class="line">                                    g_exceptionPort,</span><br><span class="line">                                    MACH_MSG_TIMEOUT_NONE,</span><br><span class="line">                                    MACH_PORT_NULL);</span><br><span class="line">        <span class="comment">/// 上面一直循环读取，直到读取成功了，进入后面的处理函数中</span></span><br><span class="line">        <span class="keyword">if</span>(kr == KERN_SUCCESS)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Loop and try again on failure.</span></span><br><span class="line">        KSLOG_ERROR(<span class="string">"mach_msg: %s"</span>, mach_error_string(kr));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    KSLOG_DEBUG(<span class="string">"Trapped mach exception code 0x%llx, subcode 0x%llx"</span>,</span><br><span class="line">                exceptionMessage.code[<span class="number">0</span>], exceptionMessage.code[<span class="number">1</span>]);</span><br><span class="line">    <span class="keyword">if</span>(g_isEnabled)</span><br><span class="line">    &#123;</span><br><span class="line">        thread_act_array_t threads = <span class="literal">NULL</span>;</span><br><span class="line">        mach_msg_type_number_t numThreads = <span class="number">0</span>;</span><br><span class="line">        <span class="comment">/// 暂停所有非当前线程以及白名单线程的线程</span></span><br><span class="line">        ksmc_suspendEnvironment(&amp;threads, &amp;numThreads);</span><br><span class="line">        g_isHandlingCrash = <span class="literal">true</span>;</span><br><span class="line">        <span class="comment">/// 捕捉到异常之后清除所有的 monitor</span></span><br><span class="line">        kscm_notifyFatalExceptionCaptured(<span class="literal">true</span>);</span><br><span class="line"></span><br><span class="line">        KSLOG_DEBUG(<span class="string">"Exception handler is installed. Continuing exception handling."</span>);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        <span class="comment">// Switch to the secondary thread if necessary, or uninstall the handler</span></span><br><span class="line">        <span class="comment">// to avoid a death loop.</span></span><br><span class="line">        <span class="comment">/// 捕捉到 exception 后，恢复原来的 port</span></span><br><span class="line">        <span class="keyword">if</span>(ksthread_self() == g_primaryMachThread)</span><br><span class="line">        &#123;</span><br><span class="line">            KSLOG_DEBUG(<span class="string">"This is the primary exception thread. Activating secondary thread."</span>);</span><br><span class="line"><span class="comment">// <span class="doctag">TODO:</span> This was put here to avoid a freeze. Does secondary thread ever fire?</span></span><br><span class="line">            restoreExceptionPorts();</span><br><span class="line">            <span class="keyword">if</span>(thread_resume(g_secondaryMachThread) != KERN_SUCCESS)</span><br><span class="line">            &#123;</span><br><span class="line">                KSLOG_DEBUG(<span class="string">"Could not activate secondary thread. Restoring original exception ports."</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        &#123;</span><br><span class="line">            KSLOG_DEBUG(<span class="string">"This is the secondary exception thread."</span>);<span class="comment">// Restoring original exception ports.");</span></span><br><span class="line"><span class="comment">//            restoreExceptionPorts();</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Fill out crash information</span></span><br><span class="line">        <span class="comment">/// 设置 crash 信息的 context</span></span><br><span class="line">        KSLOG_DEBUG(<span class="string">"Fetching machine state."</span>);</span><br><span class="line">        <span class="comment">/// 创建一个 machineContext 用来保存异常信息</span></span><br><span class="line">        KSMC_NEW_CONTEXT(machineContext);</span><br><span class="line">        KSCrash_MonitorContext* crashContext = &amp;g_monitorContext;</span><br><span class="line">        crashContext-&gt;offendingMachineContext = machineContext;</span><br><span class="line">        <span class="comment">/// 创建一个遍历调用栈的 cursor</span></span><br><span class="line">        kssc_initCursor(&amp;g_stackCursor, <span class="literal">NULL</span>, <span class="literal">NULL</span>);</span><br><span class="line">        <span class="comment">/// 把线程信息附加到 machineContext 上</span></span><br><span class="line">        <span class="keyword">if</span>(ksmc_getContextForThread(exceptionMessage.thread.name, machineContext, <span class="literal">true</span>))</span><br><span class="line">        &#123;</span><br><span class="line">            kssc_initWithMachineContext(&amp;g_stackCursor, <span class="number">100</span>, machineContext);</span><br><span class="line">            KSLOG_TRACE(<span class="string">"Fault address %p, instruction address %p"</span>,</span><br><span class="line">                        kscpu_faultAddress(machineContext), kscpu_instructionAddress(machineContext));</span><br><span class="line">            <span class="keyword">if</span>(exceptionMessage.exception == EXC_BAD_ACCESS)</span><br><span class="line">            &#123;</span><br><span class="line">                crashContext-&gt;faultAddress = kscpu_faultAddress(machineContext);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">            &#123;</span><br><span class="line">                crashContext-&gt;faultAddress = kscpu_instructionAddress(machineContext);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        KSLOG_DEBUG(<span class="string">"Filling out context."</span>);</span><br><span class="line">        crashContext-&gt;crashType = KSCrashMonitorTypeMachException;</span><br><span class="line">        crashContext-&gt;eventID = eventID;</span><br><span class="line">        crashContext-&gt;registersAreValid = <span class="literal">true</span>;</span><br><span class="line">        crashContext-&gt;mach.type = exceptionMessage.exception;</span><br><span class="line">        crashContext-&gt;mach.code = exceptionMessage.code[<span class="number">0</span>] &amp; (int64_t)MACH_ERROR_CODE_MASK;</span><br><span class="line">        crashContext-&gt;mach.subcode = exceptionMessage.code[<span class="number">1</span>] &amp; (int64_t)MACH_ERROR_CODE_MASK;</span><br><span class="line">        <span class="keyword">if</span>(crashContext-&gt;mach.code == KERN_PROTECTION_FAILURE &amp;&amp; crashContext-&gt;isStackOverflow)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="comment">// A stack overflow should return KERN_INVALID_ADDRESS, but</span></span><br><span class="line">            <span class="comment">// when a stack blasts through the guard pages at the top of the stack,</span></span><br><span class="line">            <span class="comment">// it generates KERN_PROTECTION_FAILURE. Correct for this.</span></span><br><span class="line">            crashContext-&gt;mach.code = KERN_INVALID_ADDRESS;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">/// 将 mach 异常转为对应的 signal</span></span><br><span class="line">        crashContext-&gt;signal.signum = signalForMachException(crashContext-&gt;mach.type, crashContext-&gt;mach.code);</span><br><span class="line">        crashContext-&gt;stackCursor = &amp;g_stackCursor;</span><br><span class="line"></span><br><span class="line">        <span class="comment">/// context 交给 kscrashmonitor 处理</span></span><br><span class="line">        kscm_handleException(crashContext);</span><br><span class="line"></span><br><span class="line">        KSLOG_DEBUG(<span class="string">"Crash handling complete. Restoring original handlers."</span>);</span><br><span class="line">        g_isHandlingCrash = <span class="literal">false</span>;</span><br><span class="line">        <span class="comment">/// 结束了捕获恢复所有线程</span></span><br><span class="line">        ksmc_resumeEnvironment(threads, numThreads);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    KSLOG_DEBUG(<span class="string">"Replying to mach exception message."</span>);</span><br><span class="line">    <span class="comment">// Send a reply saying "I didn't handle this exception".</span></span><br><span class="line">    replyMessage.header = exceptionMessage.header;</span><br><span class="line">    replyMessage.NDR = exceptionMessage.NDR;</span><br><span class="line">    replyMessage.returnCode = KERN_FAILURE;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// 发消息告知没有处理这个异常</span></span><br><span class="line">    mach_msg(&amp;replyMessage.header,</span><br><span class="line">             MACH_SEND_MSG,</span><br><span class="line">             <span class="keyword">sizeof</span>(replyMessage),</span><br><span class="line">             <span class="number">0</span>,</span><br><span class="line">             MACH_PORT_NULL,</span><br><span class="line">             MACH_MSG_TIMEOUT_NONE,</span><br><span class="line">             MACH_PORT_NULL);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>整体的处理方式如下：</p>
+<ol>
+<li>不停循环通过 <code>mach_msg()</code> 读取 port 中传来的消息。</li>
+<li>读取成功后挂起所有线程。</li>
+<li>清除所有的 monitor，恢复原来的 port</li>
+<li>抓取所有线程的信息保存到 <code>KSMachineContext</code> 结构体中</li>
+<li>将各种信息交给 <code>crashContext</code></li>
+<li>把 <code>crashContext</code> 抛出给外部处理方法</li>
+<li>恢复所有的线程</li>
+<li>通过 <code>mach_msg()</code> 再发出一个消息告知没有处理这个异常</li>
+</ol>
+<p>通过方法 <code>task_threads()</code> 获取当前 task 的所有线程，通过 <code>thread_suspend()</code> 方法挂起某个线程：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// suspend 当前 task 内非处理 crash 或者白名单内的线程。</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">ksmc_suspendEnvironment</span><span class="params">(<span class="keyword">thread_act_array_t</span> *suspendedThreads, <span class="keyword">mach_msg_type_number_t</span> *numSuspendedThreads)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> KSCRASH_HAS_THREADS_API</span></span><br><span class="line">    KSLOG_DEBUG(<span class="string">"Suspending environment."</span>);</span><br><span class="line">    <span class="keyword">kern_return_t</span> kr;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">task_t</span> thisTask = mach_task_self();</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">thread_t</span> thisThread = (<span class="keyword">thread_t</span>)ksthread_self();</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/// 获取当前task的所有thread</span></span><br><span class="line">    <span class="keyword">if</span>((kr = task_threads(thisTask, suspendedThreads, numSuspendedThreads)) != KERN_SUCCESS)</span><br><span class="line">    &#123;</span><br><span class="line">        KSLOG_ERROR(<span class="string">"task_threads: %s"</span>, mach_error_string(kr));</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/// 遍历所有 thread，如果不是当前处理 crash 的 thread，以及要保留的 thread 就直接 suspend 它们</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">mach_msg_type_number_t</span> i = <span class="number">0</span>; i &lt; *numSuspendedThreads; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">thread_t</span> thread = (*suspendedThreads)[i];</span><br><span class="line">        <span class="keyword">if</span>(thread != thisThread &amp;&amp; !isThreadInList(thread, g_reservedThreads, g_reservedThreadsCount))</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span>((kr = thread_suspend(thread)) != KERN_SUCCESS)</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="comment">// Record the error and keep going.</span></span><br><span class="line">                KSLOG_ERROR(<span class="string">"thread_suspend (%08x): %s"</span>, thread, mach_error_string(kr));</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    KSLOG_DEBUG(<span class="string">"Suspend complete."</span>);</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>通过 <code>task_threads()</code> 方法获取所有的 thread：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// 获取当前 task 所有的 thread，把它保存到 context 中</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keyword">bool</span> <span class="title">getThreadList</span><span class="params">(KSMachineContext* context)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">task_t</span> thisTask = mach_task_self();</span><br><span class="line">    KSLOG_DEBUG(<span class="string">"Getting thread list"</span>);</span><br><span class="line">    <span class="keyword">kern_return_t</span> kr;</span><br><span class="line">    <span class="keyword">thread_act_array_t</span> threads;</span><br><span class="line">    <span class="keyword">mach_msg_type_number_t</span> actualThreadCount;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// task_thread 获取所有的 thread</span></span><br><span class="line">    <span class="keyword">if</span>((kr = task_threads(thisTask, &amp;threads, &amp;actualThreadCount)) != KERN_SUCCESS)</span><br><span class="line">    &#123;</span><br><span class="line">        KSLOG_ERROR(<span class="string">"task_threads: %s"</span>, mach_error_string(kr));</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    KSLOG_TRACE(<span class="string">"Got %d threads"</span>, context-&gt;threadCount);</span><br><span class="line">    <span class="keyword">int</span> threadCount = (<span class="keyword">int</span>)actualThreadCount;</span><br><span class="line">    <span class="keyword">int</span> maxThreadCount = <span class="keyword">sizeof</span>(context-&gt;allThreads) / <span class="keyword">sizeof</span>(context-&gt;allThreads[<span class="number">0</span>]);</span><br><span class="line">    <span class="keyword">if</span>(threadCount &gt; maxThreadCount)</span><br><span class="line">    &#123;</span><br><span class="line">        KSLOG_ERROR(<span class="string">"Thread count %d is higher than maximum of %d"</span>, threadCount, maxThreadCount);</span><br><span class="line">        threadCount = maxThreadCount;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; threadCount; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">/// 把 thread 保存到 context 中</span></span><br><span class="line">        context-&gt;allThreads[i] = threads[i];</span><br><span class="line">    &#125;</span><br><span class="line">    context-&gt;threadCount = threadCount;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">mach_msg_type_number_t</span> i = <span class="number">0</span>; i &lt; actualThreadCount; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        mach_port_deallocate(thisTask, context-&gt;allThreads[i]);</span><br><span class="line">    &#125;</span><br><span class="line">    vm_deallocate(thisTask, (<span class="keyword">vm_address_t</span>)threads, <span class="keyword">sizeof</span>(<span class="keyword">thread_t</span>) * actualThreadCount);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>恢复线程的时候，使用相应的 <code>thread_resume()</code> 方法即可：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// 恢复所有线程</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">ksmc_resumeEnvironment</span><span class="params">(<span class="keyword">thread_act_array_t</span> threads, <span class="keyword">mach_msg_type_number_t</span> numThreads)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> KSCRASH_HAS_THREADS_API</span></span><br><span class="line">    KSLOG_DEBUG(<span class="string">"Resuming environment."</span>);</span><br><span class="line">    <span class="keyword">kern_return_t</span> kr;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">task_t</span> thisTask = mach_task_self();</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">thread_t</span> thisThread = (<span class="keyword">thread_t</span>)ksthread_self();</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span>(threads == <span class="literal">NULL</span> || numThreads == <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        KSLOG_ERROR(<span class="string">"we should call ksmc_suspendEnvironment() first"</span>);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">mach_msg_type_number_t</span> i = <span class="number">0</span>; i &lt; numThreads; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">thread_t</span> thread = threads[i];</span><br><span class="line">        <span class="keyword">if</span>(thread != thisThread &amp;&amp; !isThreadInList(thread, g_reservedThreads, g_reservedThreadsCount))</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span>((kr = thread_resume(thread)) != KERN_SUCCESS)</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="comment">// Record the error and keep going.</span></span><br><span class="line">                KSLOG_ERROR(<span class="string">"thread_resume (%08x): %s"</span>, thread, mach_error_string(kr));</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">mach_msg_type_number_t</span> i = <span class="number">0</span>; i &lt; numThreads; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        mach_port_deallocate(thisTask, threads[i]);</span><br><span class="line">    &#125;</span><br><span class="line">    vm_deallocate(thisTask, (<span class="keyword">vm_address_t</span>)threads, <span class="keyword">sizeof</span>(<span class="keyword">thread_t</span>) * numThreads);</span><br><span class="line">    </span><br><span class="line">    KSLOG_DEBUG(<span class="string">"Resume complete."</span>);</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>所有 Mach 异常都在 BSD 层被 <code>ux_exception</code> 转换为相应的 Unix 信号，并通过 <code>threadsignal</code> 将信号投递到出错的线程。在 Mach 层，我们可以直接通过 Mach 异常推测出 Signal 类型：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 将 mach 转为 signal</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">signalForMachException</span><span class="params">(<span class="keyword">exception_type_t</span> exception, <span class="keyword">mach_exception_code_t</span> code)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">switch</span>(exception)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">case</span> EXC_ARITHMETIC:</span><br><span class="line">            <span class="keyword">return</span> SIGFPE;</span><br><span class="line">        <span class="keyword">case</span> EXC_BAD_ACCESS:</span><br><span class="line">            <span class="keyword">return</span> code == KERN_INVALID_ADDRESS ? SIGSEGV : SIGBUS;</span><br><span class="line">        <span class="keyword">case</span> EXC_BAD_INSTRUCTION:</span><br><span class="line">            <span class="keyword">return</span> SIGILL;</span><br><span class="line">        <span class="keyword">case</span> EXC_BREAKPOINT:</span><br><span class="line">            <span class="keyword">return</span> SIGTRAP;</span><br><span class="line">        <span class="keyword">case</span> EXC_EMULATION:</span><br><span class="line">            <span class="keyword">return</span> SIGEMT;</span><br><span class="line">        <span class="keyword">case</span> EXC_SOFTWARE:</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">switch</span> (code)</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">case</span> EXC_UNIX_BAD_SYSCALL:</span><br><span class="line">                    <span class="keyword">return</span> SIGSYS;</span><br><span class="line">                <span class="keyword">case</span> EXC_UNIX_BAD_PIPE:</span><br><span class="line">                    <span class="keyword">return</span> SIGPIPE;</span><br><span class="line">                <span class="keyword">case</span> EXC_UNIX_ABORT:</span><br><span class="line">                    <span class="keyword">return</span> SIGABRT;</span><br><span class="line">                <span class="keyword">case</span> EXC_SOFT_SIGNAL:</span><br><span class="line">                    <span class="keyword">return</span> SIGKILL;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="取消监听"><a href="#取消监听" class="headerlink" title="取消监听"></a>取消监听</h4><p>在捕获到异常后就要取消原本的监听，主要分为两步：</p>
+<ol>
+<li>将原本用作监听异常的 port 恢复</li>
+<li>结束自己创建的用于处理异常的线程</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">uninstallExceptionHandler</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    KSLOG_DEBUG(<span class="string">"Uninstalling mach exception handler."</span>);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// <span class="doctag">NOTE:</span> Do not deallocate the exception port. If a secondary crash occurs</span></span><br><span class="line">    <span class="comment">// it will hang the process.</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">/// 恢复原本的mach处理端口</span></span><br><span class="line">    restoreExceptionPorts();</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">thread_t</span> thread_self = (<span class="keyword">thread_t</span>)ksthread_self();</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/// 当前不是 primary 处理 crash 的线程，那么终止线程</span></span><br><span class="line">    <span class="keyword">if</span>(g_primaryPThread != <span class="number">0</span> &amp;&amp; g_primaryMachThread != thread_self)</span><br><span class="line">    &#123;</span><br><span class="line">        KSLOG_DEBUG(<span class="string">"Canceling primary exception thread."</span>);</span><br><span class="line">        <span class="keyword">if</span>(g_isHandlingCrash)</span><br><span class="line">        &#123;</span><br><span class="line">            thread_terminate(g_primaryMachThread);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        &#123;</span><br><span class="line">            pthread_cancel(g_primaryPThread);</span><br><span class="line">        &#125;</span><br><span class="line">        g_primaryMachThread = <span class="number">0</span>;</span><br><span class="line">        g_primaryPThread = <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/// 当前不是备用处理 crash 的线程，那么终止线程</span></span><br><span class="line">    <span class="keyword">if</span>(g_secondaryPThread != <span class="number">0</span> &amp;&amp; g_secondaryMachThread != thread_self)</span><br><span class="line">    &#123;</span><br><span class="line">        KSLOG_DEBUG(<span class="string">"Canceling secondary exception thread."</span>);</span><br><span class="line">        <span class="keyword">if</span>(g_isHandlingCrash)</span><br><span class="line">        &#123;</span><br><span class="line">            thread_terminate(g_secondaryMachThread);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        &#123;</span><br><span class="line">            pthread_cancel(g_secondaryPThread);</span><br><span class="line">        &#125;</span><br><span class="line">        g_secondaryMachThread = <span class="number">0</span>;</span><br><span class="line">        g_secondaryPThread = <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    g_exceptionPort = MACH_PORT_NULL;</span><br><span class="line">    KSLOG_DEBUG(<span class="string">"Mach exception handlers uninstalled."</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// 恢复原本的 mach 处理端口</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">restoreExceptionPorts</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    KSLOG_DEBUG(<span class="string">"Restoring original exception ports."</span>);</span><br><span class="line">    <span class="keyword">if</span>(g_previousExceptionPorts.count == <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        KSLOG_DEBUG(<span class="string">"Original exception ports were already restored."</span>);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">task_t</span> thisTask = mach_task_self();</span><br><span class="line">    <span class="keyword">kern_return_t</span> kr;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Reinstall old exception ports.</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">mach_msg_type_number_t</span> i = <span class="number">0</span>; i &lt; g_previousExceptionPorts.count; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        KSLOG_TRACE(<span class="string">"Restoring port index %d"</span>, i);</span><br><span class="line">        <span class="comment">/// 将 port 设置为原来的</span></span><br><span class="line">        kr = task_set_exception_ports(thisTask,</span><br><span class="line">                                      g_previousExceptionPorts.masks[i],</span><br><span class="line">                                      g_previousExceptionPorts.ports[i],</span><br><span class="line">                                      g_previousExceptionPorts.behaviors[i],</span><br><span class="line">                                      g_previousExceptionPorts.flavors[i]);</span><br><span class="line">        <span class="keyword">if</span>(kr != KERN_SUCCESS)</span><br><span class="line">        &#123;</span><br><span class="line">            KSLOG_ERROR(<span class="string">"task_set_exception_ports: %s"</span>,</span><br><span class="line">                        mach_error_string(kr));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    KSLOG_DEBUG(<span class="string">"Exception ports restored."</span>);</span><br><span class="line">    g_previousExceptionPorts.count = <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Signal-异常"><a href="#Signal-异常" class="headerlink" title="Signal 异常"></a>Signal 异常</h3><p>前面说过，Mach 异常会在 BSD 层转化为相应的 UNIX 信号，投递到相应的线程中。我们同样可以捕捉相应的 Signal。</p>
+<h4 id="开启捕获-1"><a href="#开启捕获-1" class="headerlink" title="开启捕获"></a>开启捕获</h4><p>同样是调用 <code>setEnabled()</code> 方法，它会执行到 <code>installSignalHandler()</code> 方法中。相关的参数设置比较多，坦白来说确实不太好理解它们的作用，不过其实粗略的看下来也不影响对于主流程的理解。总的来说就是通过 <code>sigaction()</code> 方法记录下某个 siganl 对应的处理方法，并且保存先前的处理方法：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// 创建 signal 的捕捉者</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">bool</span> <span class="title">installSignalHandler</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    KSLOG_DEBUG(<span class="string">"Installing signal handler."</span>);</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> KSCRASH_HAS_SIGNAL_STACK</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span>(g_signalStack.ss_size == <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        KSLOG_DEBUG(<span class="string">"Allocating signal stack area."</span>);</span><br><span class="line">        g_signalStack.ss_size = SIGSTKSZ;</span><br><span class="line">        g_signalStack.ss_sp = <span class="built_in">malloc</span>(g_signalStack.ss_size);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    KSLOG_DEBUG(<span class="string">"Setting signal stack area."</span>);</span><br><span class="line">    <span class="keyword">if</span>(sigaltstack(&amp;g_signalStack, <span class="literal">NULL</span>) != <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        KSLOG_ERROR(<span class="string">"signalstack: %s"</span>, strerror(errno));</span><br><span class="line">        <span class="keyword">goto</span> failed;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/// 需要监听的 signal 数组</span></span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">int</span>* fatalSignals = kssignal_fatalSignals();</span><br><span class="line">    <span class="comment">/// 需要监听的 signal 数组大小</span></span><br><span class="line">    <span class="keyword">int</span> fatalSignalsCount = kssignal_numFatalSignals();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span>(g_previousSignalHandlers == <span class="literal">NULL</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        KSLOG_DEBUG(<span class="string">"Allocating memory to store previous signal handlers."</span>);</span><br><span class="line">        g_previousSignalHandlers = <span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(*g_previousSignalHandlers)</span><br><span class="line">                                          * (<span class="keyword">unsigned</span>)fatalSignalsCount);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sigaction</span> <span class="title">action</span> = &#123;</span>&#123;<span class="number">0</span>&#125;&#125;;</span><br><span class="line">    action.sa_flags = SA_SIGINFO | SA_ONSTACK;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> KSCRASH_HOST_APPLE &amp;&amp; defined(__LP64__)</span></span><br><span class="line">    action.sa_flags |= SA_64REGSET;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">    sigemptyset(&amp;action.sa_mask);</span><br><span class="line">    action.sa_sigaction = &amp;handleSignal;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; fatalSignalsCount; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        KSLOG_DEBUG(<span class="string">"Assigning handler for signal %d"</span>, fatalSignals[i]);</span><br><span class="line">        <span class="comment">/// 设置该 signal 对应的处理方法，并且保存原始的处理方法</span></span><br><span class="line">        <span class="keyword">if</span>(sigaction(fatalSignals[i], &amp;action, &amp;g_previousSignalHandlers[i]) != <span class="number">0</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="comment">/// 设置失败的时候走下面的方法</span></span><br><span class="line">            <span class="keyword">char</span> sigNameBuff[<span class="number">30</span>];</span><br><span class="line">            <span class="keyword">const</span> <span class="keyword">char</span>* sigName = kssignal_signalName(fatalSignals[i]);</span><br><span class="line">            <span class="keyword">if</span>(sigName == <span class="literal">NULL</span>)</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="built_in">snprintf</span>(sigNameBuff, <span class="keyword">sizeof</span>(sigNameBuff), <span class="string">"%d"</span>, fatalSignals[i]);</span><br><span class="line">                sigName = sigNameBuff;</span><br><span class="line">            &#125;</span><br><span class="line">            KSLOG_ERROR(<span class="string">"sigaction (%s): %s"</span>, sigName, strerror(errno));</span><br><span class="line">            <span class="comment">// Try to reverse the damage</span></span><br><span class="line">            <span class="keyword">for</span>(i--;i &gt;= <span class="number">0</span>; i--)</span><br><span class="line">            &#123;</span><br><span class="line">                sigaction(fatalSignals[i], &amp;g_previousSignalHandlers[i], <span class="literal">NULL</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">goto</span> failed;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    KSLOG_DEBUG(<span class="string">"Signal handlers installed."</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line"></span><br><span class="line">failed:</span><br><span class="line">    KSLOG_DEBUG(<span class="string">"Failed to install signal handlers."</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>fatal_signal 包括如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">const</span> <span class="keyword">int</span> g_fatalSignals[] =</span><br><span class="line">&#123;</span><br><span class="line">    SIGABRT,</span><br><span class="line">    SIGBUS,</span><br><span class="line">    SIGFPE,</span><br><span class="line">    SIGILL,</span><br><span class="line">    SIGPIPE,</span><br><span class="line">    SIGSEGV,</span><br><span class="line">    SIGSYS,</span><br><span class="line">    SIGTRAP,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h4 id="处理异常-1"><a href="#处理异常-1" class="headerlink" title="处理异常"></a>处理异常</h4><p>处理异常的回调方法中会返回 signal 信息，以及一个 context：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">handleSignal</span><span class="params">(<span class="keyword">int</span> sigNum, <span class="keyword">siginfo_t</span>* signalInfo, <span class="keyword">void</span>* userContext)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    KSLOG_DEBUG(<span class="string">"Trapped signal %d"</span>, sigNum);</span><br><span class="line">    <span class="keyword">if</span>(g_isEnabled)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">thread_act_array_t</span> threads = <span class="literal">NULL</span>;</span><br><span class="line">        <span class="keyword">mach_msg_type_number_t</span> numThreads = <span class="number">0</span>;</span><br><span class="line">        <span class="comment">/// 暂停线程</span></span><br><span class="line">        ksmc_suspendEnvironment(&amp;threads, &amp;numThreads);</span><br><span class="line">        <span class="comment">/// 通知已经捕获到异常了</span></span><br><span class="line">        kscm_notifyFatalExceptionCaptured(<span class="literal">false</span>);</span><br><span class="line"></span><br><span class="line">        KSLOG_DEBUG(<span class="string">"Filling out context."</span>);</span><br><span class="line">        KSMC_NEW_CONTEXT(machineContext);</span><br><span class="line">        <span class="comment">/// 保存 context 到 machineContext 中，并且获取 thread 信息</span></span><br><span class="line">        ksmc_getContextForSignal(userContext, machineContext);</span><br><span class="line">        <span class="comment">/// 把 machineContext 放到  g_stackCursor 中</span></span><br><span class="line">        kssc_initWithMachineContext(&amp;g_stackCursor, <span class="number">100</span>, machineContext);</span><br><span class="line"></span><br><span class="line">        <span class="comment">/// 生成真正的 context</span></span><br><span class="line">        KSCrash_MonitorContext* crashContext = &amp;g_monitorContext;</span><br><span class="line">        <span class="built_in">memset</span>(crashContext, <span class="number">0</span>, <span class="keyword">sizeof</span>(*crashContext));</span><br><span class="line">        crashContext-&gt;crashType = KSCrashMonitorTypeSignal;</span><br><span class="line">        crashContext-&gt;eventID = g_eventID;</span><br><span class="line">        crashContext-&gt;offendingMachineContext = machineContext;</span><br><span class="line">        crashContext-&gt;registersAreValid = <span class="literal">true</span>;</span><br><span class="line">        crashContext-&gt;faultAddress = (<span class="keyword">uintptr_t</span>)signalInfo-&gt;si_addr;</span><br><span class="line">        crashContext-&gt;signal.userContext = userContext;</span><br><span class="line">        crashContext-&gt;signal.signum = signalInfo-&gt;si_signo;</span><br><span class="line">        crashContext-&gt;signal.sigcode = signalInfo-&gt;si_code;</span><br><span class="line">        crashContext-&gt;stackCursor = &amp;g_stackCursor;</span><br><span class="line"></span><br><span class="line">        <span class="comment">/// 把 context 传给外部处理函数</span></span><br><span class="line">        kscm_handleException(crashContext);</span><br><span class="line">        <span class="comment">/// 恢复原来的环境</span></span><br><span class="line">        ksmc_resumeEnvironment(threads, numThreads);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    KSLOG_DEBUG(<span class="string">"Re-raising signal for regular handlers to catch."</span>);</span><br><span class="line">    <span class="comment">// This is technically not allowed, but it works in OSX and iOS.</span></span><br><span class="line">    <span class="comment">/// 重新抛出 signal</span></span><br><span class="line">    raise(sigNum);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>整个流程和 Mach 异常还是非常类似的，先暂停线程，然后读取线程信息，再把 signal 信息线程信息保存到 context 中，传递给外部的处理函数。最后恢复原来的环境。</p>
+<h4 id="取消监听-1"><a href="#取消监听-1" class="headerlink" title="取消监听"></a>取消监听</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// 取消捕捉 signal</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">uninstallSignalHandler</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    KSLOG_DEBUG(<span class="string">"Uninstalling signal handlers."</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">int</span>* fatalSignals = kssignal_fatalSignals();</span><br><span class="line">    <span class="keyword">int</span> fatalSignalsCount = kssignal_numFatalSignals();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; fatalSignalsCount; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        KSLOG_DEBUG(<span class="string">"Restoring original handler for signal %d"</span>, fatalSignals[i]);</span><br><span class="line">        sigaction(fatalSignals[i], &amp;g_previousSignalHandlers[i], <span class="literal">NULL</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> KSCRASH_HAS_SIGNAL_STACK</span></span><br><span class="line">    g_signalStack = (<span class="keyword">stack_t</span>)&#123;<span class="number">0</span>&#125;;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">    KSLOG_DEBUG(<span class="string">"Signal handlers uninstalled."</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>取消捕捉的方式和启动捕捉类似，都是通过 <code>sigaction()</code> 方法，不同的是，现在将原本的处理方法传回。</p>
+<h3 id="C-异常"><a href="#C-异常" class="headerlink" title="C++ 异常"></a>C++ 异常</h3><h4 id="开启捕获-2"><a href="#开启捕获-2" class="headerlink" title="开启捕获"></a>开启捕获</h4><p>通过 <code>set_terminate()</code> 方法设置自己的捕获函数：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">setEnabled</span><span class="params">(<span class="keyword">bool</span> isEnabled)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(isEnabled != g_isEnabled)</span><br><span class="line">    &#123;</span><br><span class="line">        g_isEnabled = isEnabled;</span><br><span class="line">        <span class="keyword">if</span>(isEnabled)</span><br><span class="line">        &#123;</span><br><span class="line">            initialize();</span><br><span class="line"></span><br><span class="line">            ksid_generate(g_eventID);</span><br><span class="line">            <span class="comment">/// 保存原始的 c++ 处理 handler，设置自己的处理 handler</span></span><br><span class="line">            g_originalTerminateHandler = <span class="built_in">std</span>::set_terminate(CPPExceptionTerminate);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        &#123;</span><br><span class="line">            <span class="comment">/// 恢复原始的 c++ 处理 handler</span></span><br><span class="line">            <span class="built_in">std</span>::set_terminate(g_originalTerminateHandler);</span><br><span class="line">        &#125;</span><br><span class="line">        g_captureNextStackTrace = isEnabled;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="处理异常-2"><a href="#处理异常-2" class="headerlink" title="处理异常"></a>处理异常</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// c++ 处理函数</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">CPPExceptionTerminate</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">thread_act_array_t</span> threads = <span class="literal">NULL</span>;</span><br><span class="line">    <span class="keyword">mach_msg_type_number_t</span> numThreads = <span class="number">0</span>;</span><br><span class="line">    <span class="comment">/// 挂起非处理现场和白名单线程的其他所有线程</span></span><br><span class="line">    ksmc_suspendEnvironment(&amp;threads, &amp;numThreads);</span><br><span class="line">    KSLOG_DEBUG(<span class="string">"Trapped c++ exception"</span>);</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span>* name = <span class="literal">NULL</span>;</span><br><span class="line">    <span class="built_in">std</span>::type_info* tinfo = __cxxabiv1::__cxa_current_exception_type();</span><br><span class="line">    <span class="keyword">if</span>(tinfo != <span class="literal">NULL</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        name = tinfo-&gt;name();</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span>(name == <span class="literal">NULL</span> || <span class="built_in">strcmp</span>(name, <span class="string">"NSException"</span>) != <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">/// 捕捉到 crash 后，清空 KSCrash 的所有 monitor</span></span><br><span class="line">        kscm_notifyFatalExceptionCaptured(<span class="literal">false</span>);</span><br><span class="line">        KSCrash_MonitorContext* crashContext = &amp;g_monitorContext;</span><br><span class="line">        <span class="built_in">memset</span>(crashContext, <span class="number">0</span>, <span class="keyword">sizeof</span>(*crashContext));</span><br><span class="line"></span><br><span class="line">        <span class="keyword">char</span> descriptionBuff[DESCRIPTION_BUFFER_LENGTH];</span><br><span class="line">        <span class="keyword">const</span> <span class="keyword">char</span>* description = descriptionBuff;</span><br><span class="line">        descriptionBuff[<span class="number">0</span>] = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">        KSLOG_DEBUG(<span class="string">"Discovering what kind of exception was thrown."</span>);</span><br><span class="line">        g_captureNextStackTrace = <span class="literal">false</span>;</span><br><span class="line">        <span class="keyword">try</span></span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">throw</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">catch</span>(<span class="built_in">std</span>::exception&amp; exc)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="built_in">strncpy</span>(descriptionBuff, exc.what(), <span class="keyword">sizeof</span>(descriptionBuff));</span><br><span class="line">        &#125;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> CATCH_VALUE(TYPE, PRINTFTYPE) \</span></span><br><span class="line"><span class="keyword">catch</span>(TYPE value)\</span><br><span class="line">&#123; \</span><br><span class="line">    <span class="built_in">snprintf</span>(descriptionBuff, <span class="keyword">sizeof</span>(descriptionBuff), <span class="string">"%"</span> #PRINTFTYPE, value); \</span><br><span class="line">&#125;</span><br><span class="line">        CATCH_VALUE(<span class="keyword">char</span>,                 d)</span><br><span class="line">        CATCH_VALUE(<span class="keyword">short</span>,                d)</span><br><span class="line">        CATCH_VALUE(<span class="keyword">int</span>,                  d)</span><br><span class="line">        CATCH_VALUE(<span class="keyword">long</span>,                ld)</span><br><span class="line">        CATCH_VALUE(<span class="keyword">long</span> <span class="keyword">long</span>,          lld)</span><br><span class="line">        CATCH_VALUE(<span class="keyword">unsigned</span> <span class="keyword">char</span>,        u)</span><br><span class="line">        CATCH_VALUE(<span class="keyword">unsigned</span> <span class="keyword">short</span>,       u)</span><br><span class="line">        CATCH_VALUE(<span class="keyword">unsigned</span> <span class="keyword">int</span>,         u)</span><br><span class="line">        CATCH_VALUE(<span class="keyword">unsigned</span> <span class="keyword">long</span>,       lu)</span><br><span class="line">        CATCH_VALUE(<span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span>, llu)</span><br><span class="line">        CATCH_VALUE(<span class="keyword">float</span>,                f)</span><br><span class="line">        CATCH_VALUE(<span class="keyword">double</span>,               f)</span><br><span class="line">        CATCH_VALUE(<span class="keyword">long</span> <span class="keyword">double</span>,         Lf)</span><br><span class="line">        CATCH_VALUE(<span class="keyword">char</span>*,                s)</span><br><span class="line">        <span class="keyword">catch</span>(...)</span><br><span class="line">        &#123;</span><br><span class="line">            description = <span class="literal">NULL</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        g_captureNextStackTrace = g_isEnabled;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// <span class="doctag">TODO:</span> Should this be done here? Maybe better in the exception handler?</span></span><br><span class="line">        KSMC_NEW_CONTEXT(machineContext);</span><br><span class="line">        ksmc_getContextForThread(ksthread_self(), machineContext, <span class="literal">true</span>);</span><br><span class="line"></span><br><span class="line">        KSLOG_DEBUG(<span class="string">"Filling out context."</span>);</span><br><span class="line">        crashContext-&gt;crashType = KSCrashMonitorTypeCPPException;</span><br><span class="line">        crashContext-&gt;eventID = g_eventID;</span><br><span class="line">        crashContext-&gt;registersAreValid = <span class="literal">false</span>;</span><br><span class="line">        crashContext-&gt;stackCursor = &amp;g_stackCursor;</span><br><span class="line">        crashContext-&gt;CPPException.name = name;</span><br><span class="line">        crashContext-&gt;exceptionName = name;</span><br><span class="line">        crashContext-&gt;crashReason = description;</span><br><span class="line">        crashContext-&gt;offendingMachineContext = machineContext;</span><br><span class="line"></span><br><span class="line">        <span class="comment">/// 处理异常</span></span><br><span class="line">        kscm_handleException(crashContext);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        KSLOG_DEBUG(<span class="string">"Detected NSException. Letting the current NSException handler deal with it."</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/// 恢复线程</span></span><br><span class="line">    ksmc_resumeEnvironment(threads, numThreads);</span><br><span class="line"></span><br><span class="line">    KSLOG_DEBUG(<span class="string">"Calling original terminate handler."</span>);</span><br><span class="line">    <span class="comment">/// 触发原本的  handler</span></span><br><span class="line">    g_originalTerminateHandler();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="NSException-异常"><a href="#NSException-异常" class="headerlink" title="NSException 异常"></a>NSException 异常</h3><h4 id="开启捕获-3"><a href="#开启捕获-3" class="headerlink" title="开启捕获"></a>开启捕获</h4><p>到了 NSException 部分，很多文章中也都有提到，先通过 <code>NSGetUncaughtExceptionHandler()</code> 获取原先的异常处理函数，然后再通过  <code>NSSetUncaughtExceptionHandler()</code> 方法设置自己的处理函数。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">setEnabled</span><span class="params">(<span class="keyword">bool</span> isEnabled)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(isEnabled != g_isEnabled)</span><br><span class="line">    &#123;</span><br><span class="line">        g_isEnabled = isEnabled;</span><br><span class="line">        <span class="keyword">if</span>(isEnabled)</span><br><span class="line">        &#123;</span><br><span class="line">            KSLOG_DEBUG(@<span class="string">"Backing up original handler."</span>);</span><br><span class="line">            <span class="comment">/// 拿到原来的 handler</span></span><br><span class="line">            g_previousUncaughtExceptionHandler = NSGetUncaughtExceptionHandler();</span><br><span class="line">            </span><br><span class="line">            KSLOG_DEBUG(@<span class="string">"Setting new handler."</span>);</span><br><span class="line">            <span class="comment">/// 设置新的 handler</span></span><br><span class="line">            NSSetUncaughtExceptionHandler(&amp;handleUncaughtException);</span><br><span class="line">            KSCrash.sharedInstance.uncaughtExceptionHandler = &amp;handleUncaughtException;</span><br><span class="line">            KSCrash.sharedInstance.currentSnapshotUserReportedExceptionHandler = &amp;handleCurrentSnapshotUserReportedException;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        &#123;</span><br><span class="line">            KSLOG_DEBUG(@<span class="string">"Restoring original handler."</span>);</span><br><span class="line">            <span class="comment">/// 设置回原来的 handler</span></span><br><span class="line">            NSSetUncaughtExceptionHandler(g_previousUncaughtExceptionHandler);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="处理异常-3"><a href="#处理异常-3" class="headerlink" title="处理异常"></a>处理异常</h4><p>关于调用堆栈的获取都不需要通过 task 了，直接从 NSException 就可以获取到：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// 处理方法</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">handleException</span><span class="params">(NSException* exception, BOOL currentSnapshotUserReported)</span> </span>&#123;</span><br><span class="line">    KSLOG_DEBUG(@<span class="string">"Trapped exception %@"</span>, exception);</span><br><span class="line">    <span class="keyword">if</span>(g_isEnabled)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">thread_act_array_t</span> threads = <span class="literal">NULL</span>;</span><br><span class="line">        <span class="keyword">mach_msg_type_number_t</span> numThreads = <span class="number">0</span>;</span><br><span class="line">        ksmc_suspendEnvironment(&amp;threads, &amp;numThreads);</span><br><span class="line">        kscm_notifyFatalExceptionCaptured(<span class="literal">false</span>);</span><br><span class="line"></span><br><span class="line">        KSLOG_DEBUG(@<span class="string">"Filling out context."</span>);</span><br><span class="line">        <span class="comment">/// 调用堆栈的地址</span></span><br><span class="line">        NSArray* addresses = [exception callStackReturnAddresses];</span><br><span class="line">        NSUInteger numFrames = addresses.count;</span><br><span class="line">        <span class="keyword">uintptr_t</span>* callstack = <span class="built_in">malloc</span>(numFrames * <span class="keyword">sizeof</span>(*callstack));</span><br><span class="line">        <span class="comment">/// 转为堆栈</span></span><br><span class="line">        <span class="keyword">for</span>(NSUInteger i = <span class="number">0</span>; i &lt; numFrames; i++)</span><br><span class="line">        &#123;</span><br><span class="line">            callstack[i] = (<span class="keyword">uintptr_t</span>)[addresses[i] unsignedLongLongValue];</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">char</span> eventID[<span class="number">37</span>];</span><br><span class="line">        ksid_generate(eventID);</span><br><span class="line">        KSMC_NEW_CONTEXT(machineContext);</span><br><span class="line">        ksmc_getContextForThread(ksthread_self(), machineContext, <span class="literal">true</span>);</span><br><span class="line">        KSStackCursor cursor;</span><br><span class="line">        kssc_initWithBacktrace(&amp;cursor, callstack, (<span class="keyword">int</span>)numFrames, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">        KSCrash_MonitorContext* crashContext = &amp;g_monitorContext;</span><br><span class="line">        <span class="built_in">memset</span>(crashContext, <span class="number">0</span>, <span class="keyword">sizeof</span>(*crashContext));</span><br><span class="line">        crashContext-&gt;crashType = KSCrashMonitorTypeNSException;</span><br><span class="line">        crashContext-&gt;eventID = eventID;</span><br><span class="line">        crashContext-&gt;offendingMachineContext = machineContext;</span><br><span class="line">        crashContext-&gt;registersAreValid = <span class="literal">false</span>;</span><br><span class="line">        crashContext-&gt;NSException.name = [[exception name] UTF8String];</span><br><span class="line">        crashContext-&gt;NSException.userInfo = [[NSString stringWithFormat:@<span class="string">"%@"</span>, exception.userInfo] UTF8String];</span><br><span class="line">        crashContext-&gt;exceptionName = crashContext-&gt;NSException.name;</span><br><span class="line">        crashContext-&gt;crashReason = [[exception reason] UTF8String];</span><br><span class="line">        crashContext-&gt;stackCursor = &amp;cursor;</span><br><span class="line">        crashContext-&gt;currentSnapshotUserReported = currentSnapshotUserReported;</span><br><span class="line"></span><br><span class="line">        KSLOG_DEBUG(@<span class="string">"Calling main crash handler."</span>);</span><br><span class="line">        kscm_handleException(crashContext);</span><br><span class="line"></span><br><span class="line">        <span class="built_in">free</span>(callstack);</span><br><span class="line">        <span class="keyword">if</span> (currentSnapshotUserReported) &#123;</span><br><span class="line">            ksmc_resumeEnvironment(threads, numThreads);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (g_previousUncaughtExceptionHandler != <span class="literal">NULL</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            KSLOG_DEBUG(@<span class="string">"Calling original exception handler."</span>);</span><br><span class="line">            g_previousUncaughtExceptionHandler(exception);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="DeadLock"><a href="#DeadLock" class="headerlink" title="DeadLock"></a>DeadLock</h3><p>死锁部分我就不细说了，原理和在前一篇 “iOS开发高手课” 笔记中有说明，BeeHive 中也有类似的的实现。主要是通过子线程循环往复的判断一个标志位是否在主线程中被修改过。来达到监听的效果。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>至此，捕获异常相关的几个方法都已经分析完了。其实过程还是非常类似的：替换原来的捕获处理，捕获到异常后保存 context 信息，暂停所有线程获取所有线程信息，恢复原本的捕获处理方法，调用统一的异常处理函数。</p>
+<p>下一篇将介绍异常捕获后，如何分析 context 以及线程信息。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tag/学习笔记/" rel="tag"># 学习笔记</a>
+          
+            <a href="/tag/源码解析/" rel="tag"># 源码解析</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/09/09/iOS开发高手课/" rel="next" title="《iOS开发高手课阅读笔记》">
+                <i class="fa fa-chevron-left"></i> 《iOS开发高手课阅读笔记》
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/11/01/kscrash2/" rel="prev" title="iOS Crash 收集框架 KSCrash 源码解析(中)">
+                iOS Crash 收集框架 KSCrash 源码解析(中) <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.png" alt="Zachary Zhang">
+            
+              <p class="site-author-name" itemprop="name">Zachary Zhang</p>
+              <p class="site-description motion-element" itemprop="description">Stay Hungry. Stay Foolish!</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">116</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/zhang759740844" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:zch759740844@126.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#总体结构"><span class="nav-number">1.</span> <span class="nav-text">总体结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#基本使用"><span class="nav-number">2.</span> <span class="nav-text">基本使用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#开启-Crash-监控"><span class="nav-number">3.</span> <span class="nav-text">开启 Crash 监控</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Mach-异常"><span class="nav-number">3.1.</span> <span class="nav-text">Mach 异常</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#开启捕获"><span class="nav-number">3.1.1.</span> <span class="nav-text">开启捕获</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#处理异常"><span class="nav-number">3.1.2.</span> <span class="nav-text">处理异常</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#取消监听"><span class="nav-number">3.1.3.</span> <span class="nav-text">取消监听</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Signal-异常"><span class="nav-number">3.2.</span> <span class="nav-text">Signal 异常</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#开启捕获-1"><span class="nav-number">3.2.1.</span> <span class="nav-text">开启捕获</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#处理异常-1"><span class="nav-number">3.2.2.</span> <span class="nav-text">处理异常</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#取消监听-1"><span class="nav-number">3.2.3.</span> <span class="nav-text">取消监听</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#C-异常"><span class="nav-number">3.3.</span> <span class="nav-text">C++ 异常</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#开启捕获-2"><span class="nav-number">3.3.1.</span> <span class="nav-text">开启捕获</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#处理异常-2"><span class="nav-number">3.3.2.</span> <span class="nav-text">处理异常</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#NSException-异常"><span class="nav-number">3.4.</span> <span class="nav-text">NSException 异常</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#开启捕获-3"><span class="nav-number">3.4.1.</span> <span class="nav-text">开启捕获</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#处理异常-3"><span class="nav-number">3.4.2.</span> <span class="nav-text">处理异常</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DeadLock"><span class="nav-number">3.5.</span> <span class="nav-text">DeadLock</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zachary Zhang</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

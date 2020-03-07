@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+
+
+
+
+  <meta name="keywords" content="学习笔记,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="本文是对《图解TCP-IP》一书学习后摘录的笔记。都是网络中最基础的知识。虽然是图解，但是传图太麻烦。就不截图了。˙">
+<meta name="keywords" content="学习笔记">
+<meta property="og:type" content="article">
+<meta property="og:title" content="图解TCP-IP学习笔记">
+<meta property="og:url" content="http://zhang759740844.github.io/2016/07/31/图解TCP_IP/index.html">
+<meta property="og:site_name" content="Zachary&#39;s blog">
+<meta property="og:description" content="本文是对《图解TCP-IP》一书学习后摘录的笔记。都是网络中最基础的知识。虽然是图解，但是传图太麻烦。就不截图了。˙">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/tcp_4.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/tcp_1.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/tcp_2.png?raw=true">
+<meta property="og:updated_time" content="2020-02-27T15:13:37.662Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="图解TCP-IP学习笔记">
+<meta name="twitter:description" content="本文是对《图解TCP-IP》一书学习后摘录的笔记。都是网络中最基础的知识。虽然是图解，但是传图太麻烦。就不截图了。˙">
+<meta name="twitter:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/tcp_4.png?raw=true">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://zhang759740844.github.io/2016/07/31/图解TCP_IP/">
+
+
+
+
+
+  <title>图解TCP-IP学习笔记 | Zachary's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Zachary's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">记录成长</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://zhang759740844.github.io/2016/07/31/图解TCP_IP/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zachary Zhang">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Zachary's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">图解TCP-IP学习笔记</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-07-31T16:07:12+08:00">
+                2016-07-31
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/计算机/" itemprop="url" rel="index">
+                    <span itemprop="name">计算机</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本文是对《图解TCP-IP》一书学习后摘录的笔记。都是网络中最基础的知识。虽然是图解，但是传图太麻烦。就不截图了。˙<br><a id="more"></a></p>
+<h2 id="TCP-IP基础知识"><a href="#TCP-IP基础知识" class="headerlink" title="TCP/IP基础知识"></a>TCP/IP基础知识</h2><h3 id="TCP-IP模型"><a href="#TCP-IP模型" class="headerlink" title="TCP/IP模型"></a>TCP/IP模型</h3><ul>
+<li><strong>硬件(物理层)</strong></li>
+<li><strong>网络接口层(数据链路层)</strong></li>
+<li><strong>互联网层(网络层)</strong><ul>
+<li>IP：跨越网络发送数据包，使整个互联网都能收到数据的协议。</li>
+<li>ICMP：IP数据包发送途中出现异常无法发送到目标地址时，给发送端一个异常通知。ICMP就是为这一功能定制的</li>
+<li>ARP：从分组数据包解析出物理地址(MAC地址)的一种协议。</li>
+</ul>
+</li>
+<li><strong>传输层</strong><ul>
+<li>TCP：面向连接的传输层协议。可以保证两端通信主机间的通信可达。</li>
+<li>UDP：面向无连接的传输层协议。</li>
+</ul>
+</li>
+<li><strong>应用层(会话层以上的分层)</strong><ul>
+<li>WWW</li>
+<li>电子邮件(E-Mail)</li>
+<li>文件传输(FTP)</li>
+<li>远程登录(TELNET,SSH)</li>
+<li>网络管理(SNMP)</li>
+</ul>
+</li>
+</ul>
+<h4 id="物理层协议"><a href="#物理层协议" class="headerlink" title="物理层协议"></a>物理层协议</h4><p>物理层是五层模型中的最底层，物理层为计算机之间的数据通信提供了传输媒体和互连设备，为数据传输提供了可靠的环境，媒体包括电缆、光纤、无线信道等，互连设备指是计算机和调制解调器之间的互连设备，如各种插头、插座等。<strong>该层的作用是透明的传输比特流（即二进制流），为数据链路层提供一个传输原始比特流的物理连接</strong></p>
+<h4 id="数据链路层"><a href="#数据链路层" class="headerlink" title="数据链路层"></a>数据链路层</h4><p>数据链路层是模型中的第2层，该层对接受到物理层传输过来的比特流进行分组，一组电信号构成的数据包，就叫做”帧”，<strong>数据链链路层就是来传输以”帧”(frame)为单位的数据包，把数据传递给上一层（网络层）</strong>，帧数据由两部分组成：帧头和帧数据，帧头包括接受方<strong>物理地址（</strong>就是下一级的网卡地址<strong>）</strong>和其他的网络信息，帧数据就是要传输的数据体。数据帧的最长为1500字节，如果数据很长，就必须分割成多个帧进行发送。</p>
+<h4 id="网络层"><a href="#网络层" class="headerlink" title="网络层"></a>网络层</h4><p><strong>该层通过寻址（寻址地址）来建立两个节点之间的连接</strong>，大家都知道我们的电脑连接上网络后都有一个IP地址，我们可以通过IP地址来确定不同的计算机是否在同一个子网路。如果我们的电脑连接上网络后就有两种地址：物理地址和网络地址（IP地址），网络上的计算机要通信，必须要知道通信的计算机“在哪里”， 首先通过网络地址来判断是否处于同一个子网络，然后再对物理地址（MAC）地址进行处理，从而准确确定要通信计算机的位置。</p>
+<p>在网络层中有我们熟悉的IP协议（即规定网络地址的协议），目前广泛采用的是IPv4,这个版本规定，网络地址由32位二进制位组成。我们可以自己配置IP地址也可以自动获得的方式得到IP地址，IP地址分成两部分，前24位代表网络，后8位代表主机号， 如192.168.254.1和192.168.254.2就处于同一个子网络里，因为这两个IP地址的前24位相同。</p>
+<p><strong>帧数据区含有一个数据体。为确保计算机能够解释数据帧中的数据，这两台计算机使用一种公用的通讯协议。互联网使用的通讯协议简称IP，即互联网协议</strong>。IP数据包也包括两部分：头（Head）和数据(Data)，<strong>IP数据包(Packet)放进数据帧中的数据部分进行传输</strong>。</p>
+<blockquote>
+<p>Mac地址在帧头中，IP地址在帧数据中的IP数据包头中，这样交换机可以快速读取Mac地址进行转发，而不需要像路由器一样需要解包将IP地址取出，才能进行转发，影响效率。</p>
+</blockquote>
+<h4 id="传输层"><a href="#传输层" class="headerlink" title="传输层"></a>传输层</h4><p>通过MAC和IP地址，我们可以找到互联网上任意两台主机来建立通信。然而这里有一个问题，找到主机后，主机上有很多程序都需要用到网络，比如说你在一边听歌和好用QQ聊天， 当网络上发送来一个数据包时， 是怎么知道它是表示聊天的内容还是歌曲的内容的， 这时候就需要一个参数来表示这个数据包是发送给那个程序（进程）来使用的，这个参数我们就叫做端口号，主机上用端口号来标识不同的程序（进程），端口是0到65535之间的一个整数，0到1023的端口被系统占用，用户只能选择大于1023的端口。</p>
+<p><strong>传输层的功能就是建立端口到端口的通信</strong>，<strong>网络层就是建立主机与主机的通信</strong>，这样如果我们确定了主机和端口，这样就可以实现程序之间的通信了。我们所说的Socket编程就是通过代码来实现传输层之间的通信。因为初始化Socket类对象要指定IP地址和端口号。</p>
+<p>在传输层有两个非常重要的协议：UDP 协议和TCP协议</p>
+<p>采用UDP协议话传输的就是UDP数据段，同样UDP数据段也由头和数据两部分组成，头部分主要标识了发送端口和接受端口，数据部分就是具体的内容信息。同样<strong>UDP数据段(segment)是放入IP数据包中的”数据”部分，IP数据包再放入数据帧中在网络上传输。</strong></p>
+<p>由于UDP协议的可靠性差（数据发送后无法确定对方是否收到），所以又定义了一个可靠性高的协议——TCP协议，TCP协议采取了握手的方式要确保对方收到了数据。</p>
+<p><strong>TCP 协议的三次握手主要的目的是为了确定客户端要和服务器建立链接，以防服务器一直等待造成的性能损失。</strong>客户端先发一个同步信息告诉服务器要建立链接，服务器返回一个确认信息，客户端接收到之后再返回一个确认信息。如果不这样做，可能因为网络延迟，客户端的信息再一段时候后才被服务器接收，服务器等待客户端数据，但是由于过了一段时间，客户端可能已经停止了请求操作，这就导致了服务器性能的浪费。</p>
+<h4 id="应用层"><a href="#应用层" class="headerlink" title="应用层"></a>应用层</h4><p>应用层是模型中的最顶层，<strong>是用户与网络的接口</strong>，该层通过应用程序来完成网络用户的应用需求。该层的数据放在TCP数据包的数据部分，该层定义了一个很重要的协议——Http协议，我们一般的Web开发都是基于应用层的开发。</p>
+<h3 id="数据包如何在网络中传输"><a href="#数据包如何在网络中传输" class="headerlink" title="数据包如何在网络中传输"></a>数据包如何在网络中传输</h3><p>当我们向目标站点发送数据包时(比如 ping 一个地址)，就生成了一个包含 ICMP 协议域的数据包，我们暂且称之为“小德”。</p>
+<p>“小德”已经将ICMP协议打包到数据段里了，可是还不能发送，因为一个数据要想向外面传送，还得经过“有关部门”的批准——IP协议。IP要将你的“写信人地址”和“收信人地址”写到数据段上面，即：将数据的源IP地址和目的IP地址分别打包在“小德”的头部和尾部，这样一来，大家才知道你的数据是要送到哪里。</p>
+<p>准备工作还没有完。接下来还有部门要审核——ARP。ARP主要负责把IP地址对应到硬件地址。直接说吧，都怪<strong>二层交换机</strong>太“傻”，不能根据IP地址直接找到相应的计算机，只能根据硬件地址来找。于是，<strong>主机或者三层交换机(不是指交换机啊，ARP 是工作在网络层的，不是数据链路层啊)</strong>就经常保留一张IP地址与硬件地址的对应表以便其查找目的地。而ARP就是用来生成这张表的。比如：当“小德”被送到ARP手里之后，ARP就要在表里面查找，看看“小德”的IP地址与交换机的哪个端口对应，然后转发过去。如果没找到，则发一个广播给所有其他的交换机端口，问这是谁的IP地址，如果有人回答，就转发给它。如果没有，就准备由二层交换机转发到路由器（这之前都是在主机里查询 ARP 表），走出局域网了。（<strong>其实就是我们要发送信息，我们只知道要发给的主机的ip地址，但是不可能知道主机的MAC地址。但是交换机要通过MAC地址转发，所以就有了这么一个ARP表，放在主机或者三层交换机里</strong>）</p>
+<p>经过一番折腾，“小德”终于要走出这个倒霉的局域网了。可在此之前，它们还没忘给“小德”屁股后面盖个“戳”，说是什么CRC校验值，怕“小德”在旅行途中缺胳膊少腿，还得麻烦它们重新发送。。。。。我靠~~~~注：很多人弄不清FCS和CRC。所谓的CRC是一种校验方法，用来确保数据在传输过程中不会丢包，损坏等等，FCS是数据包（准确的说是frame）里的一个区域，用来存放CRC的计算结果的。到了目的地之后，目的计算机要检查FCS里的CRC值，如果与原来的相同，则说明数据在途中没有损坏。</p>
+<p>在走出去之前，那些家伙最后折磨了一次“小德”——把小德身上众多的0和1，弄成了什么“高电压”“低电压”，在双绞线上传送了出去。晕~~出趟门就这么麻烦吗？</p>
+<p>坐着双绞线旅游，爽！可当看到很多人坐着同轴电缆，还有坐光纤的时候，小德又感觉不是那么爽了。就在这时，来到了旅途的中转站——路由器。这地方可是高级场所，人家直接查看IP地址！剩下的一概不管，交给下面的人去做。够牛吧？路由器的内部也有一张表，叫做路由表，里面标识着哪一个网络的IP对应着路由器的哪一个端口。这个表也不是天生就有的，而是靠路由器之间互相“学习”之后生成的，当然也可以由管理员手工设定。这个“学习”的过程是依靠路由协议来完成的，比如RIP，EIGRP，OSPF等等。</p>
+<p>当路由器查看了“小德”的IP地址以后，根据路由表知道了小德要去的网络，接着就把小德转到了相应的端口了。至此，路由器的主要工作完成，下面又是打包，封装成frame，转换成电压信号等一系列“折腾”的活，就由数据链路层和物理层的模块去干吧。</p>
+<p>小德从路由器的出口出来，便来到了目的地—-电脑B—-所属的网络的默认网关。默认网关可以是路由器的一个端口，也可以是局域网里的各种服务器。不管怎样，下面的过程还是一样的：到<strong>三层交换机</strong>里的ARP表查询“小德”的IP地址，看看属于哪个局域网段或端口，然后就转发到B了。</p>
+<p>进了B的网卡之后，还要层层“剥皮”，基本上和从A出来的程序是一样的——电脑B先校验一下CRC值，看看数据是否完整；然后检查一下frame的封装，看到是IP协议之后，就把“小德”交给IP“部门”了；IP协议一看目的地址，正确，再看看应用协议，是ICMP。于是知道了该怎么做了——产生一个回应数据包，（可以命名为“回应小德”），并准备以同样的顺序向远端的A发送。。至于刚刚收到的那个数据包就丢弃了。</p>
+<blockquote>
+<p>一个出口多个入口的是交换机，每个入口都对应着一个终端，是网络传输开始的部分，通过 MAC 地址转发</p>
+<p>多个出口多个入口的是路由器，会解析 IP 头，找到适合的出口将数据传输出去。</p>
+<p>家用路由器=交换机+NAT。如果用交换机相当于每台家用设备需要一个 IP，但是如果使用家用路由器，那么通过 NAT 只需要给一个 IP 即可。</p>
+</blockquote>
+<h2 id="IP协议"><a href="#IP协议" class="headerlink" title="IP协议"></a>IP协议</h2><h3 id="IP网络协议"><a href="#IP网络协议" class="headerlink" title="IP网络协议"></a>IP网络协议</h3><p>网络层的下一层——数据链路层主要作用是在互连<strong>同一种数据链路节点</strong>之间进行包传递(局域网)。而一旦跨越多种数据链路，就需要借助网络层。网络层可以跨越不同数据链路，即使在不同数据链路上也能实现两端节点之间的数据包传输。</p>
+<p>配有IP的地址的设备称为主机。和路由器不同，路由器即配有IP地址，又具有路由控制能力。节点是主机和路由器的统称。</p>
+<p><strong>网络层与数据链路层关系</strong>：数据链路层提供直连两个设备的能力。与之相比，网络层的IP则负责在没有直连的两个网络之间进行通信传输。比如旅行，数据链路相当于各个中转的火车票，而IP相当于是个旅行表。没有车票，无法达到目的地，没有旅行表，则不知道做什么车。</p>
+<h3 id="IP基础知识"><a href="#IP基础知识" class="headerlink" title="IP基础知识"></a>IP基础知识</h3><p>IP大致分为三大模块，IP寻址，路由，IP分包和组包。</p>
+<p>为识别通信对端，必须有一个类似于地址的识别码进行标识。<strong>MAC地址正是用来标识同一个链路中不同计算机的一种识别码</strong>。<strong>IP也有这种地址信息，用于在连接到网络中的所有主机中识别出进行通信的目标地址</strong>。因此，TCP/IP中所有主机或路由必须设定自己的IP地址。</p>
+<p>路由控制将分组数据发送到最终目标地址。为了将数据发给目标主机，所有主机都维护着一张路由控制表。该表记录IP数据在下一步应该发给哪个路由器。IP包将根据这个路由表在各个数据链路上传输。</p>
+<h3 id="IP地址的基础知识"><a href="#IP地址的基础知识" class="headerlink" title="IP地址的基础知识"></a>IP地址的基础知识</h3><p>IP地址由网络标识和主机标识组成。网络标识必须保证相互连接的每个段的地址不重复。而相同段内相连的主机必须有相同的网络地址。IP地址的“主机标识”则不允许在同一个网段内重复出现。</p>
+<p><strong>广播地址</strong>用于在同一个链路中互相连接的主机间发送数据。将主机地址部分全部设置为1，就成了广播地址。</p>
+<p><strong>多播</strong>用于将包发送给特定组内的所有主机。凡是以1110开头的都是多播地址，剩下的28为是多播的组编号。</p>
+<p>网络标识相同的计算机必须属于同一链路，但如A类B类将产生大量浪费的地址，因为不可能有那么多主机连接在一个链路上。现在，可以通过一个叫做”<strong>子网掩码</strong>“的识别码通过子网网络地址细分出比ABC更小粒度的网络。<br>子网掩码也是32位，对应网络地址的部分为1，对应主机地址的部分对应为0。比如A类网络的子网掩码就是255.0.0.0(前8位全是1)，B类网络的子网掩码就是255.255.0.0(前16位全是1)。</p>
+<p>由于互联网的普及，IP地址不足问题严重。于是出现私有网络的IP地址。它的地址范围：A类，10.0.0.0-10.2555.255.255；B类，172.16.0.0-172.31.255.255；C类，192.168.0.0-192.168.255.255。包含在这个范围内的IP都属于<strong>私有IP</strong>，在此之外的IP称为<strong>全局IP</strong>。内部每个终端使用私有IP，而在路由器(宽带路由器)或必要服务器上设置全局IP。当配有私有IP的主机联网时，使用NAT进行通信。</p>
+<p>对于FTTH和ADSL服务，网络供应商直接给用户分配全局IP地址，并且每次用户重连，该IP地址都可能发生变化。这里的IP地址由供应商维护，不需要用户自己申请全局IP。</p>
+<h3 id="路由控制"><a href="#路由控制" class="headerlink" title="路由控制"></a>路由控制</h3><p>仅仅有IP地址不足以实现将数据包发送到对端目标地址，在数据发送过程中还需要指明路由器或主机的信息，以便真正发往目标地址。保存这种信息的就是<strong>路由控制表</strong>。</p>
+<p>路由控制表记录着网络地址和下一步应该发送至路由器的地址。发送IP包时，先确定IP包首部中的目标地址，再从路由控制表中找到与该地址具有相同网络地址的记录，根据该记录将IP包转发给相应的下一个路由器。</p>
+<h3 id="路由算法"><a href="#路由算法" class="headerlink" title="路由算法"></a>路由算法</h3><h4 id="距离向量算法"><a href="#距离向量算法" class="headerlink" title="距离向量算法"></a>距离向量算法</h4><p>采用<strong>Bellman-Ford算法</strong>，保存网络中的所有路由器及网络的拓扑图。比较费时费性能。</p>
+<h4 id="链路状态算法"><a href="#链路状态算法" class="headerlink" title="链路状态算法"></a>链路状态算法</h4><p>采用<strong>Dijkstra 算法</strong>。</p>
+<p>当一个路由器启动的时候，向邻居发送消息，邻居立刻回复，从而计算和邻居的距离。然后将自己和邻居的链路状态广播出去，发送到整个网络的所有路由器。因此，每一个路由器都可以在本地构建一个完整的图，然后使用 <strong>Dijkstra 算法</strong>，找到两点的最短路径。</p>
+<h2 id="IP协议相关"><a href="#IP协议相关" class="headerlink" title="IP协议相关"></a>IP协议相关</h2><h3 id="ICMP"><a href="#ICMP" class="headerlink" title="ICMP"></a>ICMP</h3><p>ICMP 主要用来确认 IP 包是否成功到达目标地址。使用 UDP 协议。一般所说的 ping 一个 IP 就是使用 ICMP 协议。</p>
+<h3 id="NAT"><a href="#NAT" class="headerlink" title="NAT"></a>NAT</h3><p>NAT 用于在本地网络中使用私有地址，在连接互联网时使用全局 IP 地址。NAT 主要解决的是 IPv4 IP 地址枯竭的问题。</p>
+<p>NAT 内部的机器通过 NAT 路由器将内部 IP 转化为外部 IP，与外部机器通信。</p>
+<p>NAT 内部维护了一个 NAT 转化表。将内部不同的机器映射为不同的端口号。比如内部 <code>10.0.0.10</code> 映射为外部IP <code>202.244.174.37:1025</code>，将 <code>10.0.0.11</code>映射为外部 IP <code>202.244.174.37:1026</code> </p>
+<blockquote>
+<p>其实就是虽然只有一个外网IP，但是可以通过端口号拓展很多的内部机器。</p>
+<p>对于第四层是TCP或UDP的数据包，NAT通过更改源端口号，来实现多对少的映射。</p>
+<p>对于ICMP包，NAT通过更改ICMP的ID，来实现多对少的映射。</p>
+<p>（NAT违反了基本的网络分层结构模型的设计原则。因为在传统的网络分层结构模型中，第N层是不能修改第N+1层的报头内容的。NAT破坏了这种各层独立的原则。）</p>
+</blockquote>
+<h3 id="DNS"><a href="#DNS" class="headerlink" title="DNS"></a>DNS</h3><p>DNS帮助用户在互联网上寻找路径。在互联网上的每一个计算机都拥有一个唯一的地址，称作“IP地址”（即互联网协议地址）。由于IP地址（为一串数字）不方便记忆，DNS允许用户使用一串常见的字母（即“域名”）取代。在每次 TCP/IP 通信前，都会先通过 <strong>UDP 协议</strong>，向 DNS 服务器请求 IP 地址。</p>
+<p>其实dns系统是一个典型的树状架构，<strong>我们设置的dns服务器其实应该叫dns缓存查询服务器</strong>，它是为了减轻互联网上dns查询的负载所设计的。如果你的请求没有命中缓存，那么这个缓存服务器就会自己进行一次标准查询，然后再把结果缓存起来，简单来说就是<strong>从根服务器开始一级一级的问</strong>。我们以前经常谈到根服务器的重要性其实就体现在这里了，它保留了对所有域名的起始解释权。</p>
+<p>上面讲到根服务器拥有一切域名的起始解释权，但是如果你去问根服务器它是不会直接告诉你最终答案的。因为如果它要存储所有的记录，那它也太累了，这个负载和开销是惊人的。那它会告诉你什么呢？它会告诉你应该去问谁，也就是它授权下一级服务器来解答你的问题。所以可见，dns系统本身是一个分布式的网络。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/tcp_4.png?raw=true" alt></p>
+<h4 id="DNS-劫持"><a href="#DNS-劫持" class="headerlink" title="DNS 劫持"></a>DNS 劫持</h4><p>　DNS劫持就是通过劫持了DNS服务器，通过某些手段取得某域名的解析记录控制权，进而修改此域名的解析结果，导致对该域名的访问由原IP地址转入到修改后的指定IP，其结果就是对特定的网址不能访问或访问的是假网址，从而实现窃取资料或者破坏原有正常服务的目的。DNS劫持通过篡改DNS服务器上的数据返回给用户一个错误的查询结果来实现的。</p>
+<p>对于DNS劫持，可以采用使用国外免费公用的DNS服务器解决。例如OpenDNS（208.67.222.222）或GoogleDNS（8.8.8.8）。</p>
+<h4 id="DNS-污染"><a href="#DNS-污染" class="headerlink" title="DNS 污染"></a>DNS 污染</h4><p>DNS污染是一种让一般用户由于得到虚假目标主机IP而不能与其通信的方法，是一种DNS缓存投毒攻击（DNS cache poisoning）。其工作方式是：由于通常的DNS查询没有任何认证机制，而且DNS查询通常基于的UDP是无连接不可靠的协议，因此DNS的查询非常容易被篡改，通过对UDP端口53上的DNS查询进行入侵检测，一经发现与关键词相匹配的请求则立即伪装成目标域名的解析服务器（NS，Name Server）给查询者返回虚假结果。</p>
+<p>对于DNS污染，可以说，个人用户很难单单靠设置解决，通常可以使用VPN或者域名远程解析的方法解决，但这大多需要购买付费的VPN或SSH等，也可以通过修改Hosts的方法，手动设置域名正确的IP地址。</p>
+<h4 id="HTTPDNS"><a href="#HTTPDNS" class="headerlink" title="HTTPDNS"></a>HTTPDNS</h4><p>HTTPNDS 其实就是，不走传统的 DNS 解析，而是自己搭建基于 HTTP 协议的 DNS 服务器集群，分布在多个地点和多个运营商。当客户端需要 DNS 解析的时候，直接通过 HTTP 协议进行请求这个服务器集群，得到就近的地址。</p>
+<p><strong>其实就是就近找 DNS</strong></p>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>DNS劫持就是指用户访问一个被标记的地址时，DNS服务器故意将此地址指向一个错误的IP地址的行为。</p>
+<p>DNS污染，指的是用户访问一个地址，国内的服务器(非DNS)监控到用户访问的已经被标记地址时，服务器伪装成DNS服务器向用户发回错误的地址的行为。</p>
+<h4 id="修改DNS"><a href="#修改DNS" class="headerlink" title="修改DNS"></a>修改DNS</h4><p>可以手动修改本机的 DNS，也可以不修改使用路由器的 DNS，路由器可以手动修改 DNS，也可以不修改使用运营商的 DNS。</p>
+<h4 id="附：-GFW-的实现"><a href="#附：-GFW-的实现" class="headerlink" title="附： GFW 的实现"></a>附： GFW 的实现</h4><p>GFW 就是所说的墙，有三种方式屏蔽网络上传播的内容：</p>
+<h5 id="内容审查"><a href="#内容审查" class="headerlink" title="内容审查"></a>内容审查</h5><p>GFW的内容审查针对HTTP传输协议的默认端口的80端口，HTTP传播的内容是明文的内容，没有经过加密，GFW是一个IDS[Intrusion detection system(入侵检测系统)]，GFW有一个敏感字名单，若在中国大陆访问境外的主机的HTTP的数据流里发现敏感字眼，就在两台主机间伪造一个”reset”信号，导致双方主机以为对方中止了请求。</p>
+<h5 id="DNS劫持和污染"><a href="#DNS劫持和污染" class="headerlink" title="DNS劫持和污染"></a>DNS劫持和污染</h5><p><strong>DNS劫持：</strong>通过网络服务提供商(Internet ServiceProvider/ISP)提供的DNS服务器进行DNS欺骗，当人们访问某个网站时，需要要把域名转换为一个IP地址，DNS服务器负责将域名转换为IP地址，中国大陆的ISP接受通信管理局的屏蔽网站的指令后在DNS服务器里加入某些特定域名的虚假A记录，当使用此DNS服务器的网络用户访问此特定网站时，DNS服务便给出假的IP地址，导致访问网站失败，甚至返回ISP运营商提供的出错页面和广告页面。</p>
+<p><strong>DNS污染：</strong>GFW在DNS查询使用的UDP53端口上根据黑名单进行过滤，遇到通往国外的使用UDP的53端口进行查询的DNS请求，就返回一个虚假的IP地址（即使用国外的服务器查询就会返回一个虚假的地址）。</p>
+<h5 id="屏蔽IP"><a href="#屏蔽IP" class="headerlink" title="屏蔽IP"></a>屏蔽IP</h5><p>有些人改了 hosts，直接将谷歌的域名映射到 ip，但是GFW可以通过路由器(router)来控制的，在通往国外的最后一个网关上加上一条伪造的路由规则，导致通往某些被屏蔽的网站的所有IP数据包无法到达。路由器的正常工作方式是学习别的路由器广播的路由规则，遇到符合已知的IP转发规则的数据包，则按已经规则发送，遇到未知规则IP的数据，则转发到上一级网关。GFW的路由器按黑名单(blacklist)来转发特定的IP数据包，则可屏蔽特定的网站的IP，此IP黑名单不是固定的，会更新。</p>
+<h2 id="TCP与UDP"><a href="#TCP与UDP" class="headerlink" title="TCP与UDP"></a>TCP与UDP</h2><h3 id="TCP"><a href="#TCP" class="headerlink" title="TCP"></a>TCP</h3><h4 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h4><p>tcp采取全双工(full-duplex)传输，也就是传输过程中，同一连接可以传输双向的数据流，发送方可以传给接收方，接收方也可以传给发送方。</p>
+<p>tcp是面向连接的协议。其实，<strong>网络上的传输是没有连接的，包括TCP也是一样的</strong>。而TCP所谓的“连接”，其实只不过是在通讯的双方维护一个“连接状态”，让它看上去好像有连接一样。所以，TCP的状态变换是非常重要的。</p>
+<h4 id="TCP-发送信息过程"><a href="#TCP-发送信息过程" class="headerlink" title="TCP 发送信息过程"></a>TCP 发送信息过程</h4><p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/tcp_1.png?raw=true" alt></p>
+<h5 id="连接过程"><a href="#连接过程" class="headerlink" title="连接过程"></a>连接过程</h5><ol>
+<li>client 发送一个同步消息 <code>SYN</code> ，同时发送随机 <code>seq</code> 为 x，告诉server 发送的包序号从 x 开始。</li>
+<li>server 收到同步消息后，也返回一个 <code>SYN</code> 信号，同时返回一个 <code>ACK</code> 信号为 x+1，表示知道了你的序号，还返回了 server 的随机 <code>seq</code> 为 y，告诉 client，server 端序号从 y 开始。</li>
+<li>client 收到后，返回一个 <code>ACK</code> 为 y+1，表示 client 知道 server 的开始序号了。</li>
+</ol>
+<h5 id="断开连接过程"><a href="#断开连接过程" class="headerlink" title="断开连接过程"></a>断开连接过程</h5><ol>
+<li>client 发送一个断连消息 <code>FIN</code> ，以及随机 <code>seq</code></li>
+<li>server 收到同步消息后，返回一个 <code>ACK</code> 信号</li>
+<li>之后，在 server 端决定的任意时刻，发起一个断连信号 <code>FIN</code>，以及随机 <code>seq</code></li>
+<li>client 收到后，返回一个 <code>ACK</code> </li>
+</ol>
+<p>最后要注意的是，客户端需要在收到服务端的 FIN 并且发送 ACK 之后要等两个时间窗再关。因为客户端发送的 ACK 可能没有到达服务端。服务端会不停的发送 FIN，所以要<strong>等待一段时间，确认服务端已经关闭了，客户端再关闭</strong>。</p>
+<h4 id="TCP-如何实现可靠传输"><a href="#TCP-如何实现可靠传输" class="headerlink" title="TCP 如何实现可靠传输"></a>TCP 如何实现可靠传输</h4><ol>
+<li>确认和重传</li>
+<li>数据校验</li>
+<li>数据合理分片与排序</li>
+<li>流量控制</li>
+<li>拥塞控制</li>
+</ol>
+<h4 id="TCP-确认与重传机制"><a href="#TCP-确认与重传机制" class="headerlink" title="TCP 确认与重传机制"></a>TCP 确认与重传机制</h4><p>一种方式是<strong>超时重传</strong>，就是对每一个没有 ACK 的包都设置一个定时器，超过一定时间后尝试重传。超时重传的周期不宜过短也不宜过长，过短别人可能真的没有接收到，过长又会阻塞信息传输。<strong>一般的策略是每当遇到一次超时重传的时候，都会将下一次超时时间间隔设为先前值的两倍。两次超时，就说明网络环境差，不宜频繁反复发送。</strong></p>
+<p>针对超时重传周期可能过长的问题，采取<strong>快速重传</strong>的机制。当接收方收到一个序号大于下一个所期望的报文段时，就检测到了数据流中的一个间格，接收方还是发送期望报文段之前的报文的 ACK。当客户端连续收到三个这样的 ACK 时，就在定时器过期之前，重传丢失的报文段。</p>
+<p>快速重传解决了重传周期长的问题，但是没解决重传一个还是重传多个的问题。因此还出现了<strong>选择确认</strong>机制，TCP 头里加一个 SACK 的东西，可以将缓存的地图发送给发送方。这样一下子就能知道丢失了什么。</p>
+<h4 id="TCP-流量控制"><a href="#TCP-流量控制" class="headerlink" title="TCP 流量控制"></a>TCP 流量控制</h4><p>本质上就是在发送方维持一个滑动窗，窗的大小由接收端控制。</p>
+<h4 id="TCP-拥塞控制"><a href="#TCP-拥塞控制" class="headerlink" title="TCP 拥塞控制"></a>TCP 拥塞控制</h4><p>滑动窗口 rwnd 是怕发送方把接收方缓存塞满，而拥塞窗口是怕把网络塞满。</p>
+<p>TCP 使用滑动窗的方式发送数据，收发主机之间不再以数据段为单位发送确认应答。这个时候可能产生拥堵。TCP 为了防止这样的问题，一般采用如下做法：</p>
+<p><strong>慢启动</strong>：主要做法就是试探，首先在一个单位时间里发送一个报文。如果收到了确认回执，那么翻倍发送，直到拥塞，数据丢失，这一阶段报文的数量是以指数级增长。</p>
+<p><strong>拥塞避免</strong>：慢启动的时候是指数增长的，但是增长是有个门限ssthresh的，到达门限后进入拥塞避免阶段。拥塞避免状态，每次增长一个报文。</p>
+<p><strong>快速恢复：</strong>当出现丢包，并且实施了快速重传的时候，就表明网路还是较为畅通的，此时此时就不会直接进入慢启动状态，而是将传输的报文数量减半，然后继续拥塞避免。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/tcp_2.png?raw=true" alt></p>
+<p>只有在快速重传的时候才会进入快速恢复。如果是超时重传，那么就要重新进行又一轮的慢启动。</p>
+<h4 id="三次握手"><a href="#三次握手" class="headerlink" title="三次握手"></a>三次握手</h4><h5 id="为什么要三次握手不是两次？"><a href="#为什么要三次握手不是两次？" class="headerlink" title="为什么要三次握手不是两次？"></a>为什么要三次握手不是两次？</h5><p>主要是为了节约 server 端的 socket 资源。如果两次握手，服务端在第二次握手后维护了一个连接。但是客户端没有收到服务端的ACK，这时候客户端以为服务端没有建立连接就会重新发送 SYN 请求建立连接。服务端前一个建立的连接就是死连接了。一个进程打开的socket是有限度的， 维护这些死连接非常耗费资源。</p>
+<h5 id="为什么是三次握手不是四次？"><a href="#为什么是三次握手不是四次？" class="headerlink" title="为什么是三次握手不是四次？"></a>为什么是三次握手不是四次？</h5><p>其实本身，client 发送同步信号 <code>SYN</code> 以及  <code>seq</code>，server 回复 <code>ACK</code>，随后 server 发送同步信号 <code>SYN</code> 以及  <code>seq</code>，client 回复 <code>ACK</code> 是四次。但是 server 发送 <code>seq</code> 和 <code>ACK</code> 可以合并为一次，因此就只需要三次了。</p>
+<h4 id="四次挥手"><a href="#四次挥手" class="headerlink" title="四次挥手"></a>四次挥手</h4><p>本质上和握手时client 通知，server 回复。server 通知，client 回复一样是四次。<strong>但是在客户端请求结束的时候，服务端可能在发数据，所以不能把 ACK 和 FIN 像握手的时候一起发送</strong>。所以一般情况下要四次。但是如果当时服务端没有再发送数据，那么也可以三次挥手。</p>
+<h5 id="四次挥手能否变成三次挥手？"><a href="#四次挥手能否变成三次挥手？" class="headerlink" title="四次挥手能否变成三次挥手？"></a>四次挥手能否变成三次挥手？</h5><p>可以，如果Server在收到Client的FIN包后，在也没数据需要发送给Client了，那么对Client的ACK包和Server自己的FIN包就可以合并成为一个包发送过去，这样四次挥手就可以变成三次了。</p>
+<h3 id="UDP"><a href="#UDP" class="headerlink" title="UDP"></a>UDP</h3><h4 id="UDP-如何保证可靠性"><a href="#UDP-如何保证可靠性" class="headerlink" title="UDP 如何保证可靠性"></a>UDP 如何保证可靠性</h4><p>为什么要在 UDP 之上做可靠保证，究其原因就是在保证通信的时延和质量的条件下尽量降低成本。</p>
+<p><strong>那么在 UDP 之上怎么实现可靠呢？答案就是重传。</strong></p>
+<p>就是把 TCP 的这几个可靠性机制能搬多少搬多少。</p>
+<h2 id="几张表"><a href="#几张表" class="headerlink" title="几张表"></a>几张表</h2><h3 id="MAC地址转发表"><a href="#MAC地址转发表" class="headerlink" title="MAC地址转发表"></a>MAC地址转发表</h3><p>说到MAC地址表，就不得不说一下交换机的工作原理了，因为交换机是根据MAC地址表转发数据帧的。在<strong>交换机</strong>中有一张记录着局域网主机MAC地址与交换机接口的对应关系的表，交换机就是根据这张表负责将数据帧传输到指定的主机上的。</p>
+<p>交换机在接收到数据帧以后，首先、会记录数据帧中的源MAC地址和对应的接口到MAC表中，接着、会检查自己的MAC表中是否有数据帧中目标MAC地址的信息，如果有则会根据MAC表中记录的对应接口将数据帧发送出去(也就是单播)，如果没有，则会将该数据帧从非接受接口发送出去(也就是广播)。</p>
+<blockquote>
+<p>上面说的交换机指的是二层交换机</p>
+<p>这张表存在于交换机中，记录的是 MAC地址 -&gt; 端口的映射</p>
+</blockquote>
+<h3 id="ARP缓存表"><a href="#ARP缓存表" class="headerlink" title="ARP缓存表"></a>ARP缓存表</h3><p>上面我们讲解了交换机的工作原理，知道交换机是通过MAC地址通信的，但是我们是如何获得目标主机的MAC地址呢？这时我们就需要使用ARP协议了，在<strong>每台主机</strong>中都有一张ARP表，它记录着主机的IP地址和MAC地址的对应关系。<strong>ARP协议是工作在网络层的协议</strong>，它负责将IP地址解析为MAC地址。</p>
+<p>知道下一跳的 IP，但是不知道下一跳的 MAC 地址是无法传输的。所以当知道 IP 但不知道 MAC 地址的时候，就要通过 ARP 发送一个广播包，问这个 IP 是谁的？MAC 地址是多少？</p>
+<p>上面指的是局域网中的数据传递。除了主机中，<strong>三层交换机或者路由中也是有 ARP 表的，数据最终转发依靠的都是ARP表</strong>，他是数据转发最基础的依据，<strong>ARP直接将硬件地址和网络地址相互映射</strong>。</p>
+<blockquote>
+<p>这张表记录的是 IP -&gt; MAC 地址的映射。</p>
+</blockquote>
+<h3 id="路由表"><a href="#路由表" class="headerlink" title="路由表"></a>路由表</h3><p>路由器负责不同网络之间的通信，它是当今网络中的重要设备，可以说没有路由器就没有当今的互联网。在路由器中也有一张表，这张表叫路由表，记录着到不同网段的信息。</p>
+<p>路由器是工作在网络层的，在网络层可以识别逻辑地址。当路由器的某个接口收到一个包时，路由器会读取包中相应的目标的逻辑地址的网络部分，然后在路由表中进行查找。如果在路由表中找到目标地址的路由条目，则指定下一跳 ip，然后把包转发到路由器的相应接口，如果在路由表中没有找到目标地址的路由条目，那么，如果路由配置默认路由，就按照默认路由的配置转发到路由器的相应接口；如果没有配置默认路由，则将该包丢弃，并返回不可到达的信息。这就是数据路由的过程。</p>
+<blockquote>
+<p>这张表记录的是 目标IP -&gt; 下一跳路由 IP 的映射</p>
+</blockquote>
+<p>三张表是有一个层次关系的。每次 IP 的跳转都要结合三张表，从目标 IP 到 目标 MAC 所在端口的转换。</p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><ul>
+<li>为什么不把MAC地址和IP地址统一成一个地址而用两个地址？</li>
+<li>什么是中继器/网桥/路由器/三层交换机/二层交换机/网关？</li>
+<li>TCP/IP 五层模型各指什么？各自的作用是什么？</li>
+<li>IP/ARP/TCP/UDP/HTTP/FTP 这些协议分别处于哪一层？作用是什么？</li>
+<li>什么是帧？IP 地址和 MAC 地址分别放在帧的哪一部分，这样有什么好处？</li>
+<li>为什么 TCP 协议要进行三次握手，四次挥手？</li>
+<li>简述数据包如何在网络中传输？</li>
+<li>ARP缓存表，MAC地址表，路由表的作用分别是什么？</li>
+<li>什么是DNS？基本原理是什么？为什么说它是分布式的网络？</li>
+<li>什么是DNS劫持？什么是DNS污染？</li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tag/学习笔记/" rel="tag"># 学习笔记</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/07/31/UI开发捷径/" rel="next" title="《iOS UI 开发捷径》读书笔记">
+                <i class="fa fa-chevron-left"></i> 《iOS UI 开发捷径》读书笔记
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/08/02/GCD队列/" rel="prev" title="GCD队列 学习与整理">
+                GCD队列 学习与整理 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.png" alt="Zachary Zhang">
+            
+              <p class="site-author-name" itemprop="name">Zachary Zhang</p>
+              <p class="site-description motion-element" itemprop="description">Stay Hungry. Stay Foolish!</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">116</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/zhang759740844" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:zch759740844@126.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#TCP-IP基础知识"><span class="nav-number">1.</span> <span class="nav-text">TCP/IP基础知识</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#TCP-IP模型"><span class="nav-number">1.1.</span> <span class="nav-text">TCP/IP模型</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#物理层协议"><span class="nav-number">1.1.1.</span> <span class="nav-text">物理层协议</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#数据链路层"><span class="nav-number">1.1.2.</span> <span class="nav-text">数据链路层</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#网络层"><span class="nav-number">1.1.3.</span> <span class="nav-text">网络层</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#传输层"><span class="nav-number">1.1.4.</span> <span class="nav-text">传输层</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#应用层"><span class="nav-number">1.1.5.</span> <span class="nav-text">应用层</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#数据包如何在网络中传输"><span class="nav-number">1.2.</span> <span class="nav-text">数据包如何在网络中传输</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#IP协议"><span class="nav-number">2.</span> <span class="nav-text">IP协议</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#IP网络协议"><span class="nav-number">2.1.</span> <span class="nav-text">IP网络协议</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#IP基础知识"><span class="nav-number">2.2.</span> <span class="nav-text">IP基础知识</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#IP地址的基础知识"><span class="nav-number">2.3.</span> <span class="nav-text">IP地址的基础知识</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#路由控制"><span class="nav-number">2.4.</span> <span class="nav-text">路由控制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#路由算法"><span class="nav-number">2.5.</span> <span class="nav-text">路由算法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#距离向量算法"><span class="nav-number">2.5.1.</span> <span class="nav-text">距离向量算法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#链路状态算法"><span class="nav-number">2.5.2.</span> <span class="nav-text">链路状态算法</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#IP协议相关"><span class="nav-number">3.</span> <span class="nav-text">IP协议相关</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#ICMP"><span class="nav-number">3.1.</span> <span class="nav-text">ICMP</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#NAT"><span class="nav-number">3.2.</span> <span class="nav-text">NAT</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DNS"><span class="nav-number">3.3.</span> <span class="nav-text">DNS</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#DNS-劫持"><span class="nav-number">3.3.1.</span> <span class="nav-text">DNS 劫持</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#DNS-污染"><span class="nav-number">3.3.2.</span> <span class="nav-text">DNS 污染</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#HTTPDNS"><span class="nav-number">3.3.3.</span> <span class="nav-text">HTTPDNS</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#总结"><span class="nav-number">3.3.4.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#修改DNS"><span class="nav-number">3.3.5.</span> <span class="nav-text">修改DNS</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#附：-GFW-的实现"><span class="nav-number">3.3.6.</span> <span class="nav-text">附： GFW 的实现</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#内容审查"><span class="nav-number">3.3.6.1.</span> <span class="nav-text">内容审查</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#DNS劫持和污染"><span class="nav-number">3.3.6.2.</span> <span class="nav-text">DNS劫持和污染</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#屏蔽IP"><span class="nav-number">3.3.6.3.</span> <span class="nav-text">屏蔽IP</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TCP与UDP"><span class="nav-number">4.</span> <span class="nav-text">TCP与UDP</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#TCP"><span class="nav-number">4.1.</span> <span class="nav-text">TCP</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#概述"><span class="nav-number">4.1.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#TCP-发送信息过程"><span class="nav-number">4.1.2.</span> <span class="nav-text">TCP 发送信息过程</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#连接过程"><span class="nav-number">4.1.2.1.</span> <span class="nav-text">连接过程</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#断开连接过程"><span class="nav-number">4.1.2.2.</span> <span class="nav-text">断开连接过程</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#TCP-如何实现可靠传输"><span class="nav-number">4.1.3.</span> <span class="nav-text">TCP 如何实现可靠传输</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#TCP-确认与重传机制"><span class="nav-number">4.1.4.</span> <span class="nav-text">TCP 确认与重传机制</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#TCP-流量控制"><span class="nav-number">4.1.5.</span> <span class="nav-text">TCP 流量控制</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#TCP-拥塞控制"><span class="nav-number">4.1.6.</span> <span class="nav-text">TCP 拥塞控制</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#三次握手"><span class="nav-number">4.1.7.</span> <span class="nav-text">三次握手</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#为什么要三次握手不是两次？"><span class="nav-number">4.1.7.1.</span> <span class="nav-text">为什么要三次握手不是两次？</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#为什么是三次握手不是四次？"><span class="nav-number">4.1.7.2.</span> <span class="nav-text">为什么是三次握手不是四次？</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#四次挥手"><span class="nav-number">4.1.8.</span> <span class="nav-text">四次挥手</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#四次挥手能否变成三次挥手？"><span class="nav-number">4.1.8.1.</span> <span class="nav-text">四次挥手能否变成三次挥手？</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#UDP"><span class="nav-number">4.2.</span> <span class="nav-text">UDP</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#UDP-如何保证可靠性"><span class="nav-number">4.2.1.</span> <span class="nav-text">UDP 如何保证可靠性</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#几张表"><span class="nav-number">5.</span> <span class="nav-text">几张表</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#MAC地址转发表"><span class="nav-number">5.1.</span> <span class="nav-text">MAC地址转发表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ARP缓存表"><span class="nav-number">5.2.</span> <span class="nav-text">ARP缓存表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#路由表"><span class="nav-number">5.3.</span> <span class="nav-text">路由表</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#问题"><span class="nav-number">6.</span> <span class="nav-text">问题</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zachary Zhang</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

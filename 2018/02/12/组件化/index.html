@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+
+
+
+
+  <meta name="keywords" content="学习笔记,源码解析,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="iOS 模块化组件化是前两年比较流行的话题。当时懒得写相关的东西。现在趁比较有空。对几种方式做一个最最简单的总结。">
+<meta name="keywords" content="学习笔记,源码解析">
+<meta property="og:type" content="article">
+<meta property="og:title" content="组件化的简短总结及 BeeHive 源码解析">
+<meta property="og:url" content="http://zhang759740844.github.io/2018/02/12/组件化/index.html">
+<meta property="og:site_name" content="Zachary&#39;s blog">
+<meta property="og:description" content="iOS 模块化组件化是前两年比较流行的话题。当时懒得写相关的东西。现在趁比较有空。对几种方式做一个最最简单的总结。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/beehive_1.png?raw=true">
+<meta property="og:updated_time" content="2020-02-27T15:13:37.663Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="组件化的简短总结及 BeeHive 源码解析">
+<meta name="twitter:description" content="iOS 模块化组件化是前两年比较流行的话题。当时懒得写相关的东西。现在趁比较有空。对几种方式做一个最最简单的总结。">
+<meta name="twitter:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/beehive_1.png?raw=true">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://zhang759740844.github.io/2018/02/12/组件化/">
+
+
+
+
+
+  <title>组件化的简短总结及 BeeHive 源码解析 | Zachary's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Zachary's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">记录成长</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://zhang759740844.github.io/2018/02/12/组件化/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zachary Zhang">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Zachary's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">组件化的简短总结及 BeeHive 源码解析</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-02-12T14:07:12+08:00">
+                2018-02-12
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>iOS 模块化组件化是前两年比较流行的话题。当时懒得写相关的东西。现在趁比较有空。对几种方式做一个最最简单的总结。</p>
+<a id="more"></a>
+<p>其实在谈及组件化之前应该先搞清楚一个概念。什么是组件？我认为组件应该可以即插即拔的同类功能集合。它可以在各个项目中使用，并且和业务是不相关或者若相关的。比如网络库、本地存储、基本控件，这些都可以叫做组件。相对的，和业务强相关的功能合集，较难在各个项目中复用的，我更愿意将其归类为模块。</p>
+<p>因此，对于我们一般所说的组件化，其实更应该叫模块化。</p>
+<h2 id="组件化方式"><a href="#组件化方式" class="headerlink" title="组件化方式"></a>组件化方式</h2><p>一般来说，组件化的方式有三种：</p>
+<ol>
+<li>key-block</li>
+<li>protocol-class</li>
+<li>target-action</li>
+</ol>
+<h3 id="key-block"><a href="#key-block" class="headerlink" title="key-block"></a>key-block</h3><p>key-block 是最简单最容易想到的组件化方式。在模块加载的时候以键值对的形式将 key 和 block 注册在一个全局的注册表中。其中 key 通常是一个 URL：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 注册</span></span><br><span class="line">+ (<span class="keyword">void</span>)load &#123;</span><br><span class="line">  [[Mediator sharedInstance] registerUrl:<span class="string">@"myapp://gotoregister"</span> withHandler:^(<span class="built_in">NSDictionary</span> *dic) &#123;</span><br><span class="line">    RegisterViewController *registerVC = [[RegisterViewController alloc] initWithSomeParam:dic[<span class="string">"someParam"</span>]];</span><br><span class="line">    [[<span class="built_in">UIApplication</span> sharedApplication].keyWindow.rootViewController.navigationController pushViewController:registerVC animated:<span class="literal">YES</span>];</span><br><span class="line">  &#125;];</span><br><span class="line">&#125;</span><br><span class="line">   </span><br><span class="line"><span class="comment">// 调用</span></span><br><span class="line">+ (<span class="keyword">void</span>)gotoRegister &#123;</span><br><span class="line">  [[Mediator sharedInstance] openUrl:<span class="string">@"myapp://gotoregister"</span> withparam:@&#123;<span class="string">@"someParam"</span>: <span class="number">123</span>&#125;];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>  主要存在三个问题：</p>
+<ol>
+<li>注册的 key 和调用的 key 需要输入多遍，可能出现输入错误或者修改错误，在编译的时候不易察觉。可以使用 define 定义字符串。不过这样虽然可以减少写错的风险，但还是会产生硬编码。</li>
+<li>每一个模块间调用的方法都会保存一个 block 实例。当模块很多，或者模块中提供的调用方法很多的时候，会保存大量 block 对象实例。</li>
+<li>调用注册方法的时候使用的是 NSDictionary，参数及其类型对于调用者来说是未知的。需要一套文档记录每个方法的参数和类型。</li>
+</ol>
+<h3 id="protocol-class"><a href="#protocol-class" class="headerlink" title="protocol-class"></a>protocol-class</h3><p>protocol-class 的方式可以说是上面 key-block 的改进，代表框架有阿里出品的 BeeHive。</p>
+<p>针对上面的问题1编译的时候无法校验 key 是否写错的问题，可以通过校验 protocol 是否存在，在编译期抛出问题；针对上面的问题2，保存大量 block 实例的问题，使用保存 class 的的形式代替，可以减少大量 block 实例的保存；针对上面的问题3，调用者不知道调用参数和类型的问题，可以在 protocol 中定义方法，让 class 实现，调用者知道 protocol 就可以获取模块间通信的方法，进而知道调用的参数和类型。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 协议</span></span><br><span class="line"><span class="class"><span class="keyword">@protocol</span> <span class="title">RegisterProtocol</span></span></span><br><span class="line">+ (<span class="keyword">void</span>)navigateToRegisterVCWithString:(<span class="built_in">NSString</span> *)str;</span><br><span class="line"><span class="keyword">@end</span></span><br><span class="line">  </span><br><span class="line"><span class="comment">// 实现类</span></span><br><span class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">RegisterViewController</span> : <span class="title">UIViewController</span>&lt;<span class="title">RegisterProtocl</span>&gt;</span></span><br><span class="line"><span class="keyword">@end</span></span><br><span class="line">  </span><br><span class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">RegisterViewController</span></span></span><br><span class="line">+ (<span class="keyword">void</span>)navigateToRegisterVC &#123;</span><br><span class="line">	...具体的实现  </span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">@end</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 注册</span></span><br><span class="line">+ (<span class="keyword">void</span>)load &#123;</span><br><span class="line">  [[Mediator sharedInstance] registerProtocol:<span class="class"><span class="keyword">@protocol</span>(<span class="title">RegisterProocol</span>) <span class="title">forInstance</span>:[[<span class="title">self</span> <span class="title">alloc</span>] <span class="title">init</span>]];</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 调用</span></span><br><span class="line"><span class="keyword">id</span>&lt;RegisterProtocol&gt; registerVC = [[Mediator sharedInstance] instanceForProtocol:<span class="class"><span class="keyword">@protocol</span>(<span class="title">RegisterProtocol</span>)];</span></span><br><span class="line">[registerVC navigateToRegisterVCWithString:<span class="string">@"someParam"</span>];</span><br></pre></td></tr></table></figure>
+<p>这在 key-block 的基础上已经做了很大的改进。但是仍有改进的空间：</p>
+<ol>
+<li>比如调用者直接通过 Mediator 拿到 Class 的实例，再通过实例调用方法。这样相当于调用者和被调用者直接接触，没有办法做统一处理，比如组件不存在时的统一处理。</li>
+<li>仍然需要提前注册</li>
+</ol>
+<p>针对问题1，可以尝试用一个 wrapper 把 class 再包裹一层做统一处理。不过这样就更麻烦了。没有太大必要。</p>
+<h3 id="target-action"><a href="#target-action" class="headerlink" title="target -action"></a>target -action</h3><p>target-action 通过 runtime 调用被调用的方法，这样可以免去提前注册的问题；同时，将调用的统一处理逻辑放在了 Mediator 中，这样可以解决没法统一处理的问题。</p>
+<p>但是所有的处理方法都写在 Mediator 中那 Mediator 就会显得太臃肿了。因此，可以将不同模块的方法写在 Mediator 不同的分类中。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Mediator</span></span><br><span class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">Mediator</span> (<span class="title">RegisterModule</span>)</span></span><br><span class="line">- (<span class="keyword">void</span>)navigateToRegisterVCWithId:(<span class="built_in">NSString</span> *)<span class="keyword">id</span> &#123;</span><br><span class="line">	Class cls = <span class="built_in">NSClassFromString</span>(<span class="string">@"RegisterViewController"</span>);</span><br><span class="line">  <span class="built_in">UIViewController</span> *registerVC = [cls performSelector:<span class="built_in">NSSelectorFromString</span>(<span class="string">@"createVCWithId:"</span>) withObject:@&#123;<span class="string">@"id"</span>:<span class="keyword">id</span>&#125;];</span><br><span class="line"> [<span class="keyword">self</span>.navigationController pushViewController:registerVC];</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure>
+<p>这样调用者只需要引入  <code>Mediator+RegisterModule.h</code> 并且执行 <code>[Mediator sharedInstance] navigateToRegisterVCWithId:@&quot;xxx&quot;]</code> 即可完成调用。对于调用者来说，引入了方法头文件后，同样不需要关注参数和类型，也不需要提前注册。同时还可以通过 Mediator 进行统一处理。</p>
+<p>但是它在调用被调用者的时候仍然会产生硬编码。不过由于该模块的 Mediator 分类是由被调用者维护的。因此，在被调用方法变化时，被调用者需要维护 Mediator 分类。</p>
+<h2 id="BeeHive-源码解析"><a href="#BeeHive-源码解析" class="headerlink" title="BeeHive 源码解析"></a>BeeHive 源码解析</h2><p>Beehive 是阿里开源的一款基于 protocol-class 方式的组件化方案。它具体的思想已经在上面说明了，这里我们可以对它进行简单的解析。</p>
+<p> BeeHive 分为两部分：</p>
+<ul>
+<li>Module：负责模块的注册以及事件分发</li>
+<li>Service：负责模块间的通信以及调用</li>
+</ul>
+<h3 id="模块注册"><a href="#模块注册" class="headerlink" title="模块注册"></a>模块注册</h3><p>Beehive 中的模块是一个实现了 <code>BHModuleProtocol</code> 协议的类，用于管理模块的各个生命周期事件处理。Beehive 中模块注册有三种方式：</p>
+<ol>
+<li>加载 plist 中配置静态注册</li>
+<li>+load 方法中动态注册</li>
+<li>使用注解动态注册</li>
+</ol>
+<h4 id="plist-静态注册"><a href="#plist-静态注册" class="headerlink" title="plist 静态注册"></a>plist 静态注册</h4><p>plist 注册在 AppDelegate 的 <code>application:didFinishLaunchingWithOptions:</code> 方法中进行。模块的注册通过 <code>BHModuleManager</code> 完成。</p>
+<p>plist 中 module 的形式如下，包含了 <code>ModuleClass</code>，<code>ModuleLevel</code>,<code>ModulePriority</code>：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/beehive_1.png?raw=true" alt></p>
+<p><code>BHModuleManager</code> 会将 plist 中的各个 ModuleClass 读取保存到 <code>ModuleInfos</code> 数组中，并在其中按照 level 和 priority 排序。随后实例化每一个 module，添加到 <code>BHModules</code> 模块示例数组中：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// 加载本地的 Modules 列表</span></span><br><span class="line">- (<span class="keyword">void</span>)loadLocalModules</span><br><span class="line">&#123;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">NSString</span> *plistPath = [[<span class="built_in">NSBundle</span> mainBundle] pathForResource:[BHContext shareInstance].moduleConfigName ofType:<span class="string">@"plist"</span>];</span><br><span class="line">    <span class="keyword">if</span> (![[<span class="built_in">NSFileManager</span> defaultManager] fileExistsAtPath:plistPath]) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">NSDictionary</span> *moduleList = [[<span class="built_in">NSDictionary</span> alloc] initWithContentsOfFile:plistPath];</span><br><span class="line"></span><br><span class="line">    <span class="built_in">NSArray</span>&lt;<span class="built_in">NSDictionary</span> *&gt; *modulesArray = [moduleList objectForKey:kModuleArrayKey];</span><br><span class="line">    <span class="built_in">NSMutableDictionary</span>&lt;<span class="built_in">NSString</span> *, <span class="built_in">NSNumber</span> *&gt; *moduleInfoByClass = @&#123;&#125;.mutableCopy;</span><br><span class="line">    [<span class="keyword">self</span>.BHModuleInfos enumerateObjectsUsingBlock:^(<span class="built_in">NSDictionary</span> * _Nonnull obj, <span class="built_in">NSUInteger</span> idx, <span class="built_in">BOOL</span> * _Nonnull stop) &#123;</span><br><span class="line">        [moduleInfoByClass setObject:@<span class="number">1</span> forKey:[obj objectForKey:kModuleInfoNameKey]];</span><br><span class="line">    &#125;];</span><br><span class="line">    [modulesArray enumerateObjectsUsingBlock:^(<span class="built_in">NSDictionary</span> * _Nonnull obj, <span class="built_in">NSUInteger</span> idx, <span class="built_in">BOOL</span> * _Nonnull stop) &#123;</span><br><span class="line">        <span class="keyword">if</span> (!moduleInfoByClass[[obj objectForKey:kModuleInfoNameKey]]) &#123;</span><br><span class="line">            [<span class="keyword">self</span>.BHModuleInfos addObject:obj];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 实例化模块并添加到 BHModules 数组中</span></span><br><span class="line">- (<span class="keyword">void</span>)registedAllModules</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">/// 按照优先级对模块列表中的模块排序</span></span><br><span class="line">    [<span class="keyword">self</span>.BHModuleInfos sortUsingComparator:^<span class="built_in">NSComparisonResult</span>(<span class="built_in">NSDictionary</span> *module1, <span class="built_in">NSDictionary</span> *module2) &#123;</span><br><span class="line">        <span class="built_in">NSNumber</span> *module1Level = (<span class="built_in">NSNumber</span> *)[module1 objectForKey:kModuleInfoLevelKey];</span><br><span class="line">        <span class="built_in">NSNumber</span> *module2Level =  (<span class="built_in">NSNumber</span> *)[module2 objectForKey:kModuleInfoLevelKey];</span><br><span class="line">        <span class="keyword">if</span> (module1Level.integerValue != module2Level.integerValue) &#123;</span><br><span class="line">            <span class="keyword">return</span> module1Level.integerValue &gt; module2Level.integerValue;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="built_in">NSNumber</span> *module1Priority = (<span class="built_in">NSNumber</span> *)[module1 objectForKey:kModuleInfoPriorityKey];</span><br><span class="line">            <span class="built_in">NSNumber</span> *module2Priority = (<span class="built_in">NSNumber</span> *)[module2 objectForKey:kModuleInfoPriorityKey];</span><br><span class="line">            <span class="keyword">return</span> module1Priority.integerValue &lt; module2Priority.integerValue;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;];</span><br><span class="line"></span><br><span class="line">    <span class="built_in">NSMutableArray</span> *tmpArray = [<span class="built_in">NSMutableArray</span> array];</span><br><span class="line"></span><br><span class="line">    <span class="comment">//module init</span></span><br><span class="line">    [<span class="keyword">self</span>.BHModuleInfos enumerateObjectsUsingBlock:^(<span class="built_in">NSDictionary</span> *module, <span class="built_in">NSUInteger</span> idx, <span class="built_in">BOOL</span> * _Nonnull stop) &#123;</span><br><span class="line"></span><br><span class="line">        <span class="built_in">NSString</span> *classStr = [module objectForKey:kModuleInfoNameKey];</span><br><span class="line"></span><br><span class="line">        Class moduleClass = <span class="built_in">NSClassFromString</span>(classStr);</span><br><span class="line">        <span class="built_in">BOOL</span> hasInstantiated = ((<span class="built_in">NSNumber</span> *)[module objectForKey:kModuleInfoHasInstantiatedKey]).boolValue;</span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">NSStringFromClass</span>(moduleClass) &amp;&amp; !hasInstantiated) &#123;</span><br><span class="line">            <span class="keyword">id</span>&lt;BHModuleProtocol&gt; moduleInstance = [[moduleClass alloc] init];</span><br><span class="line">            [tmpArray addObject:moduleInstance];</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;];</span><br><span class="line"></span><br><span class="line">    [<span class="keyword">self</span>.BHModules removeAllObjects];</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// 把class添加到 BHModules 中</span></span><br><span class="line">    [<span class="keyword">self</span>.BHModules addObjectsFromArray:tmpArray];</span><br><span class="line"></span><br><span class="line">    [<span class="keyword">self</span> registerAllSystemEvents];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="load-方法注册"><a href="#load-方法注册" class="headerlink" title="+load 方法注册"></a>+load 方法注册</h4><p>Beehive 为 +load 方法注册添加了一个宏定义。只需要把这个宏定义插入到实现文件中的任意位置即可：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#define BH_EXPORT_MODULE(isAsync) \</span></span><br><span class="line">+ (<span class="keyword">void</span>)load &#123; [BeeHive registerDynamicModule:[<span class="keyword">self</span> <span class="keyword">class</span>]]; &#125; \</span><br><span class="line">-(<span class="built_in">BOOL</span>)async &#123; <span class="keyword">return</span> [[<span class="built_in">NSString</span> stringWithUTF8String:<span class="meta">#isAsync] boolValue];&#125;</span></span><br></pre></td></tr></table></figure>
+<p>先不用管这个异步的定义方法。在 +load 方法中直接调用了 <code>registerDynamicModule:</code> 方法注册自己，兜兜转转来到了下面的方法。代码还是非常直接易懂的，和 plist 一样是一个实例化的过程，并且添加到 <code>BHModules</code> 数组中，再按照优先级和 level 排序：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)addModuleFromObject:(<span class="keyword">id</span>)object</span><br><span class="line">     shouldTriggerInitEvent:(<span class="built_in">BOOL</span>)shouldTriggerInitEvent</span><br><span class="line">&#123;</span><br><span class="line">    Class <span class="keyword">class</span>;</span><br><span class="line">    <span class="built_in">NSString</span> *moduleName = <span class="literal">nil</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (object) &#123;</span><br><span class="line">        <span class="keyword">class</span> = object;</span><br><span class="line">        moduleName = <span class="built_in">NSStringFromClass</span>(<span class="keyword">class</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> ;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    ...</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> ([<span class="keyword">class</span> conformsToProtocol:<span class="class"><span class="keyword">@protocol</span>(<span class="title">BHModuleProtocol</span>)]) </span>&#123;</span><br><span class="line">        <span class="built_in">NSMutableDictionary</span> *moduleInfo = [<span class="built_in">NSMutableDictionary</span> dictionary];</span><br><span class="line"></span><br><span class="line">        <span class="built_in">BOOL</span> responseBasicLevel = [<span class="keyword">class</span> instancesRespondToSelector:<span class="keyword">@selector</span>(basicModuleLevel)];</span><br><span class="line"></span><br><span class="line">        <span class="keyword">int</span> levelInt = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (responseBasicLevel) &#123;</span><br><span class="line">            levelInt = <span class="number">0</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        [moduleInfo setObject:@(levelInt) forKey:kModuleInfoLevelKey];</span><br><span class="line">        <span class="keyword">if</span> (moduleName) &#123;</span><br><span class="line">            [moduleInfo setObject:moduleName forKey:kModuleInfoNameKey];</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        [<span class="keyword">self</span>.BHModuleInfos addObject:moduleInfo];</span><br><span class="line"></span><br><span class="line">        <span class="keyword">id</span>&lt;BHModuleProtocol&gt; moduleInstance = [[<span class="keyword">class</span> alloc] init];</span><br><span class="line">        [<span class="keyword">self</span>.BHModules addObject:moduleInstance];</span><br><span class="line">        [moduleInfo setObject:@(<span class="literal">YES</span>) forKey:kModuleInfoHasInstantiatedKey];</span><br><span class="line">        [<span class="keyword">self</span>.BHModules sortUsingComparator:^<span class="built_in">NSComparisonResult</span>(<span class="keyword">id</span>&lt;BHModuleProtocol&gt; moduleInstance1, <span class="keyword">id</span>&lt;BHModuleProtocol&gt; moduleInstance2) &#123;</span><br><span class="line">            <span class="built_in">NSNumber</span> *module1Level = @(BHModuleNormal);</span><br><span class="line">            <span class="built_in">NSNumber</span> *module2Level = @(BHModuleNormal);</span><br><span class="line">            <span class="keyword">if</span> ([moduleInstance1 respondsToSelector:<span class="keyword">@selector</span>(basicModuleLevel)]) &#123;</span><br><span class="line">                module1Level = @(BHModuleBasic);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> ([moduleInstance2 respondsToSelector:<span class="keyword">@selector</span>(basicModuleLevel)]) &#123;</span><br><span class="line">                module2Level = @(BHModuleBasic);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (module1Level.integerValue != module2Level.integerValue) &#123;</span><br><span class="line">                <span class="keyword">return</span> module1Level.integerValue &gt; module2Level.integerValue;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="built_in">NSInteger</span> module1Priority = <span class="number">0</span>;</span><br><span class="line">                <span class="built_in">NSInteger</span> module2Priority = <span class="number">0</span>;</span><br><span class="line">                <span class="keyword">if</span> ([moduleInstance1 respondsToSelector:<span class="keyword">@selector</span>(modulePriority)]) &#123;</span><br><span class="line">                    module1Priority = [moduleInstance1 modulePriority];</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span> ([moduleInstance2 respondsToSelector:<span class="keyword">@selector</span>(modulePriority)]) &#123;</span><br><span class="line">                    module2Priority = [moduleInstance2 modulePriority];</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">return</span> module1Priority &lt; module2Priority;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;];</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="注解注册"><a href="#注解注册" class="headerlink" title="注解注册"></a>注解注册</h4><p>注解注册是一个比较新奇的东西。它的使用方式如下，在类拓展前通过 <code>@BeehiveMod()</code> 进行注册：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">@BeeHiveMod(ShopModule)</span><br><span class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">ShopModule</span>() &lt;<span class="title">BHModuleProtocol</span>&gt;</span></span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure>
+<p>那么它是如何进行的呢？看宏代码：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#define BeeHiveDATA(sectname) __attribute((used, section(<span class="meta-string">"__DATA,"</span>#sectname<span class="meta-string">" "</span>)))</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#define BeeHiveMod(name) \</span></span><br><span class="line"><span class="keyword">class</span> BeeHive; <span class="keyword">char</span> * k<span class="meta">##name##_mod BeeHiveDATA(BeehiveMods) = <span class="meta-string">""</span>#name<span class="meta-string">""</span>;</span></span><br></pre></td></tr></table></figure>
+<p>可以发现，上面的 <code>@BeeHiveMod(ShopModule)</code> 展开后就会变为：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@class</span> <span class="title">BeeHive</span>; <span class="title">char</span> * <span class="title">kShopModule_mod</span> <span class="title">__attribute</span>((<span class="title">used</span>, <span class="title">section</span>("<span class="title">__DATA</span>,"<span class="title">BeehiveMods</span>"))) = ""<span class="title">ShopModule</span>""</span></span><br></pre></td></tr></table></figure>
+<p>其中 <code>@class</code> 的提前声明 <code>BeeHive</code> 其实没什么用处，应该只是为了写起来更像注解才这么做的。宏的主要作用是声明了一个全局变量 <code>kShopModule_mod</code>，并且把这个全局变量存到了 Mach-o 的自己创建的 <code>BeehiveMods</code> 段中。</p>
+<p>为什么要存到特定的段呢？因为存到特定的段中就能在程序加载的时候找到这个段，然后自行加载注册。具体逻辑在 <code>BHAnnotation</code> 中：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// dyld 加载 lib 后的回调</span></span><br><span class="line">__attribute__((constructor))</span><br><span class="line"><span class="keyword">void</span> initProphet() &#123;</span><br><span class="line">    _dyld_register_func_for_add_image(dyld_callback);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面代码给 dyld 添加回调，在加载完镜像后会执行 <code>dyld_callback</code> 方法。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">void</span> dyld_callback(<span class="keyword">const</span> <span class="keyword">struct</span> mach_header *mhp, intptr_t vmaddr_slide)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">/// 拿到所有的 BeehiveMods 中的 module 名</span></span><br><span class="line">    <span class="built_in">NSArray</span> *mods = BHReadConfiguration(BeehiveModSectName, mhp);</span><br><span class="line">    <span class="comment">/// 将 module 名注册</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="built_in">NSString</span> *modName <span class="keyword">in</span> mods) &#123;</span><br><span class="line">        Class cls;</span><br><span class="line">        <span class="keyword">if</span> (modName) &#123;</span><br><span class="line">            cls = <span class="built_in">NSClassFromString</span>(modName);</span><br><span class="line">            </span><br><span class="line">            <span class="keyword">if</span> (cls) &#123;</span><br><span class="line">                [[BHModuleManager sharedManager] registerDynamicModule:cls];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"> 		...   </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">NSArray</span>&lt;<span class="built_in">NSString</span> *&gt;* BHReadConfiguration(<span class="keyword">char</span> *sectionName,<span class="keyword">const</span> <span class="keyword">struct</span> mach_header *mhp)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">NSMutableArray</span> *configs = [<span class="built_in">NSMutableArray</span> array];</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> size = <span class="number">0</span>;</span><br><span class="line"><span class="meta">#ifndef __LP64__</span></span><br><span class="line">    uintptr_t *memory = (uintptr_t*)getsectiondata(mhp, SEG_DATA, sectionName, &amp;size);</span><br><span class="line"><span class="meta">#else</span></span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">struct</span> mach_header_64 *mhp64 = (<span class="keyword">const</span> <span class="keyword">struct</span> mach_header_64 *)mhp;</span><br><span class="line">    uintptr_t *memory = (uintptr_t*)getsectiondata(mhp64, SEG_DATA, sectionName, &amp;size);</span><br><span class="line"><span class="meta">#endif</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> counter = size/<span class="keyword">sizeof</span>(<span class="keyword">void</span>*);</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> idx = <span class="number">0</span>; idx &lt; counter; ++idx)&#123;</span><br><span class="line">        <span class="keyword">char</span> *string = (<span class="keyword">char</span>*)memory[idx];</span><br><span class="line">        <span class="built_in">NSString</span> *str = [<span class="built_in">NSString</span> stringWithUTF8String:string];</span><br><span class="line">        <span class="keyword">if</span>(!str)<span class="keyword">continue</span>;</span><br><span class="line">        </span><br><span class="line">        BHLog(<span class="string">@"config = %@"</span>, str);</span><br><span class="line">        <span class="keyword">if</span>(str) [configs addObject:str];</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> configs;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>dyld 的回调会把段信息传入，就可以在回调函数中解析得到所有的模块信息，并且动态注册了。</p>
+<h3 id="注册事件"><a href="#注册事件" class="headerlink" title="注册事件"></a>注册事件</h3><p>对于 protocol-class 来说，最重要的是 protocol 和 class 的映射，也就是 Beehive 中 service 的部分。那么为什么还要专门弄出来一个 Module 类呢？为了让模块更抽象，可以监听到外部传来的事件做相应的处理。</p>
+<p>因此，在每个模块注册成功的时候还会为每个模块注册事件通知。它的实现方式其实就是一个观察者模式。预先设定了各种可能触发的 event。在注册模块的时候，会遍历所有的 event，在模块中找是否实现了该 event 的方法。对于有 module 实现的 sel，会把 sel 存到 <code>BHSelectorByEvent</code> 中去。再把 module 存到 <code>BHModuleByEvent</code>  字典中 sel 对应的数组中，并把 modules 按照优先级排序。</p>
+<p>这样，就可以在任意地方调用方法 <code>[[BHModuleManager sharedManager] triggerEvent:xxxEvent];</code>，触发 event。</p>
+<blockquote>
+<p>给每个模块注册事件，可以很好地减少 AppDelegate 中的代码量，AppDelegate 中的代码被分散到了各个模块中。</p>
+</blockquote>
+<blockquote>
+<p>为什么要有优先级呢？因为可能存在模块 A，B，A 依赖于 B，但是如果 A 先初始化，那么就会产生问题。</p>
+</blockquote>
+<h3 id="Service-注册与使用"><a href="#Service-注册与使用" class="headerlink" title="Service 注册与使用"></a>Service 注册与使用</h3><p>Service 负责模块之间的通信。Service 必须要满足 <code>BHServiceProtocol</code> 协议。一般我们会将 ViewController 注册为 Service，当然使用专门的一个 Service 类也是可以的。</p>
+<p>Service 的注册和 Module 的注册是类似的。都可以通过 plist 静态注册，动态注册，以及注解注册。这里就不详细说明了。</p>
+<p>使用方式如下：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">id</span>&lt;HomeServiceProtocol&gt; homeVc = [[BeeHive shareInstance] createService:<span class="class"><span class="keyword">@protocol</span>(<span class="title">HomeServiceProtocol</span>)];</span></span><br></pre></td></tr></table></figure>
+<p>通过 <code>createService:</code> 传入 protocol 就可以拿到 service 的实例。调用 <code>HomeServiceProtocol</code> 中声明的方法了。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tag/学习笔记/" rel="tag"># 学习笔记</a>
+          
+            <a href="/tag/源码解析/" rel="tag"># 源码解析</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/12/22/va_list/" rel="next" title="iOS 中 va_list 的使用">
+                <i class="fa fa-chevron-left"></i> iOS 中 va_list 的使用
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/03/01/sdwebimage1/" rel="prev" title="SDWebImage 源码解析--总览">
+                SDWebImage 源码解析--总览 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.png" alt="Zachary Zhang">
+            
+              <p class="site-author-name" itemprop="name">Zachary Zhang</p>
+              <p class="site-description motion-element" itemprop="description">Stay Hungry. Stay Foolish!</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">116</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/zhang759740844" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:zch759740844@126.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#组件化方式"><span class="nav-number">1.</span> <span class="nav-text">组件化方式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#key-block"><span class="nav-number">1.1.</span> <span class="nav-text">key-block</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#protocol-class"><span class="nav-number">1.2.</span> <span class="nav-text">protocol-class</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#target-action"><span class="nav-number">1.3.</span> <span class="nav-text">target -action</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#BeeHive-源码解析"><span class="nav-number">2.</span> <span class="nav-text">BeeHive 源码解析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#模块注册"><span class="nav-number">2.1.</span> <span class="nav-text">模块注册</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#plist-静态注册"><span class="nav-number">2.1.1.</span> <span class="nav-text">plist 静态注册</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#load-方法注册"><span class="nav-number">2.1.2.</span> <span class="nav-text">+load 方法注册</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#注解注册"><span class="nav-number">2.1.3.</span> <span class="nav-text">注解注册</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#注册事件"><span class="nav-number">2.2.</span> <span class="nav-text">注册事件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Service-注册与使用"><span class="nav-number">2.3.</span> <span class="nav-text">Service 注册与使用</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zachary Zhang</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

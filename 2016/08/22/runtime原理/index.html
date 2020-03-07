@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+
+
+
+
+  <meta name="keywords" content="Runtime,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="最近尝试往category中添加实例变量失败，但是可以添加方法。于是，研究了一下runtime的实现和使用。runtime的原理展开来分析的话还是挺复杂的。下载了最新的源码（objc4-680）,发现和现在网上的多数教程还是有出入的，跟进起来很困难。所以尝试自己整理了一下，加了一些自己的理解，具体细节可能有些小出入。参考文章：Objective-C Runtime">
+<meta name="keywords" content="Runtime">
+<meta property="og:type" content="article">
+<meta property="og:title" content="runtime原理笔记">
+<meta property="og:url" content="http://zhang759740844.github.io/2016/08/22/runtime原理/index.html">
+<meta property="og:site_name" content="Zachary&#39;s blog">
+<meta property="og:description" content="最近尝试往category中添加实例变量失败，但是可以添加方法。于是，研究了一下runtime的实现和使用。runtime的原理展开来分析的话还是挺复杂的。下载了最新的源码（objc4-680）,发现和现在网上的多数教程还是有出入的，跟进起来很困难。所以尝试自己整理了一下，加了一些自己的理解，具体细节可能有些小出入。参考文章：Objective-C Runtime">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/runtime_principle.jpg?raw=true">
+<meta property="og:updated_time" content="2020-02-27T15:13:37.655Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="runtime原理笔记">
+<meta name="twitter:description" content="最近尝试往category中添加实例变量失败，但是可以添加方法。于是，研究了一下runtime的实现和使用。runtime的原理展开来分析的话还是挺复杂的。下载了最新的源码（objc4-680）,发现和现在网上的多数教程还是有出入的，跟进起来很困难。所以尝试自己整理了一下，加了一些自己的理解，具体细节可能有些小出入。参考文章：Objective-C Runtime">
+<meta name="twitter:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/runtime_principle.jpg?raw=true">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://zhang759740844.github.io/2016/08/22/runtime原理/">
+
+
+
+
+
+  <title>runtime原理笔记 | Zachary's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Zachary's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">记录成长</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://zhang759740844.github.io/2016/08/22/runtime原理/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zachary Zhang">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Zachary's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">runtime原理笔记</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-08-22T14:07:12+08:00">
+                2016-08-22
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>最近尝试往category中添加实例变量失败，但是可以添加方法。于是，研究了一下runtime的实现和使用。runtime的原理展开来分析的话还是挺复杂的。下载了最新的源码（objc4-680）,发现和现在网上的多数教程还是有出入的，跟进起来很困难。<br>所以尝试自己整理了一下，加了一些自己的理解，具体细节可能有些小出入。参考文章：<a href="http://yulingtianxia.com/blog/2014/11/05/objective-c-runtime/" target="_blank" rel="noopener">Objective-C Runtime</a></p>
+<a id="more"></a>
+<h2 id="Runtime基础"><a href="#Runtime基础" class="headerlink" title="Runtime基础"></a>Runtime基础</h2><p>在Objective-C中，使用<code>[receiver message]</code>语法并不会马上执行<code>receiver</code>对象的<code>message</code>方法的代码，而是向<code>receiver</code>发送一条<code>message</code>消息。<br>其实<code>[receiver message]</code>被编译器转化为:</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">id</span> objc_msgSend ( <span class="keyword">id</span> <span class="keyword">self</span>, SEL op, ... );</span><br></pre></td></tr></table></figure>
+<p>现在可以看出<code>[receiver message]</code>真的不是一个简简单单的方法调用。因为这只是在编译阶段确定了要向接收者发送<code>message</code>这条消息，而<code>receive</code>将要如何响应这条消息，那就要看运行时发生的情况来决定了。如果消息的接收者能够找到对应的<code>selector</code>，那么就相当于直接执行了接收者这个对象的特定方法；否则，消息要么被转发，或是临时向接收者动态添加这个<code>selector</code>对应的实现内容，要么就干脆玩完崩溃掉。</p>
+<h3 id="id"><a href="#id" class="headerlink" title="id"></a>id</h3><p><code>objc_msgSend</code>第一个参数类型为<code>id</code>,它是一个指向<code>objc_object</code>结构体指针,它包含一个<code>Class isa</code>指针(完整的定义在<code>objc_private.h</code>中)：<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> objc_object *<span class="keyword">id</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> objc_object &#123;</span><br><span class="line">    Class isa  OBJC_ISA_AVAILABILITY;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p>所有对象都是继承于 <code>objc_object</code> 的，所以所有对象都有 <code>isa</code> 指针，即都有一个 <code>objc_class</code> 结构体的指针。（注意，这和 superclass 是不同的）</p>
+</blockquote>
+<h3 id="SEL"><a href="#SEL" class="headerlink" title="SEL"></a>SEL</h3><p><code>objc_msgSend</code>函数第二个参数类型为<code>SEL</code>，它是<code>selector</code>在Objc中的表示类型.<code>selector</code>是方法选择器，可以理解为区分方法的 ID，而这个 ID 的数据结构是<code>SEL</code>:<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> objc_selector *SEL;</span><br></pre></td></tr></table></figure></p>
+<h3 id="Class"><a href="#Class" class="headerlink" title="Class"></a>Class</h3><p>之所以说<code>isa</code>是指针是因为<code>Class</code>其实是一个指向<code>objc_class</code>结构体的指针：<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> objc_class *Class;</span><br></pre></td></tr></table></figure></p>
+<p>这个结构体在<code>runtime.h</code>中有定义:<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> objc_class &#123;</span><br><span class="line">    Class isa  OBJC_ISA_AVAILABILITY;</span><br><span class="line"><span class="meta">#if !__OBJC2__</span></span><br><span class="line">    Class super_class                                        OBJC2_UNAVAILABLE;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span> *name                                         OBJC2_UNAVAILABLE;</span><br><span class="line">    <span class="keyword">long</span> version                                             OBJC2_UNAVAILABLE;</span><br><span class="line">    <span class="keyword">long</span> info                                                OBJC2_UNAVAILABLE;</span><br><span class="line">    <span class="keyword">long</span> instance_size                                       OBJC2_UNAVAILABLE;</span><br><span class="line">    <span class="keyword">struct</span> objc_ivar_list *ivars                             OBJC2_UNAVAILABLE;</span><br><span class="line">    <span class="keyword">struct</span> objc_method_list **methodLists                    OBJC2_UNAVAILABLE;</span><br><span class="line">    <span class="keyword">struct</span> objc_cache *cache                                 OBJC2_UNAVAILABLE;</span><br><span class="line">    <span class="keyword">struct</span> objc_protocol_list *protocols                     OBJC2_UNAVAILABLE;</span><br><span class="line"><span class="meta">#endif</span></span><br><span class="line">&#125; OBJC2_UNAVAILABLE;</span><br></pre></td></tr></table></figure></p>
+<p>其中<code>OBJC2_UNAVAILABLE</code>表示：在objc2中这些属性已经不在此定义。</p>
+<p>在objc2中，<code>objc_class</code>的完整定义在<code>objc-runtime-new.h</code>中：<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> objc_object &#123;</span><br><span class="line">    Class isa  OBJC_ISA_AVAILABILITY;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> objc_class : objc_object &#123;</span><br><span class="line">    Class superclass;</span><br><span class="line">    cache_t cache;             <span class="comment">// formerly cache pointer and vtable</span></span><br><span class="line">    class_data_bits_t bits;    <span class="comment">// class_rw_t * plus custom rr/alloc flags</span></span><br><span class="line"></span><br><span class="line">    class_rw_t *data() &#123; </span><br><span class="line">        <span class="keyword">return</span> bits.data();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>和<code>runtime.h</code>中的定义对比，少了许多属性，多出一个<code>bits</code>属性。这些属性都包含在了<code>class_rw_t</code>的<code>data</code>对象中。</p>
+<p>注意到<code>objc_class</code>中也有一个<code>isa</code>对象(继承自<code>objc_object</code>)，这是因为一个ObjC类本身同时也是一个对象，为了处理类和对象的关系，runtime库创建了一种叫做 <strong>元类 (Meta Class)</strong>的东西，类对象所属类型就叫做元类，它用来表述类对象本身所具备的元数据。<strong>类方法就定义于此处</strong>，因为这些方法可以理解成类对象的实例方法。每个类仅有一个类对象，而每个类对象仅有一个与之相关的元类。<br>当你发出一个类似<code>[NSObject alloc]</code>的消息时，你事实上是把这个消息发给了一个<strong>类对象 (Class Object)</strong> ，这个类对象必须是一个元类的实例，而这个元类同时也是一个<strong>根元类 (root meta class)</strong>的实例。所有的元类最终都指向根元类为其超类。所有的元类的方法列表都有能够响应消息的类方法。所以当 <code>[NSObject alloc]</code>这条消息发给类对象的时候，<code>objc_msgSend()</code>会去它的元类里面去查找能够响应消息的方法，如果找到了，然后对这个类对象执行方法调用。<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/runtime_principle.jpg?raw=true" alt="Class isa and superclass relationship"></p>
+<blockquote>
+<p>看明白这个图上面就都明白了。</p>
+</blockquote>
+<h3 id="class-rw-t"><a href="#class-rw-t" class="headerlink" title="class_rw_t"></a>class_rw_t</h3><p><code>bits</code> 中包含了一个指向 <code>class_rw_t</code> 结构体的指针，它的定义如下:<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> class_rw_t &#123;</span><br><span class="line">    uint32_t flags;</span><br><span class="line">    uint32_t version;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> class_ro_t *ro;</span><br><span class="line"></span><br><span class="line">    method_array_t methods;</span><br><span class="line">    property_array_t properties;</span><br><span class="line">    protocol_array_t protocols;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>其中，<code>const class_ro_t *ro</code>包含了所有<strong>成员变量</strong>的一维数组以及<strong>各个基础的(base)属性、方法和协议</strong><br><code>method_array_t methods</code>、<code>property_array_t properties</code>、<code>protocol_array_t protocols</code>则包含了所有<strong>拓展的属性方法和协议</strong>。<strong>注意：这里的属性只是getset方法，不包含成员变量。</strong></p>
+<blockquote>
+<p>基础的属性和方法和拓展的方法没有存在一个对象中，所以不能在 category 中添加成员变量。但是完全用 runtime 创建的类是可以动态添加的。</p>
+</blockquote>
+<p>具体如何应用可看下一篇。</p>
+<h3 id="部分类的声明"><a href="#部分类的声明" class="headerlink" title="部分类的声明"></a>部分类的声明</h3><p>这部分将上面涉及的类的声明贴出以供参照，可以直接跳过。</p>
+<h4 id="class-ro-t"><a href="#class-ro-t" class="headerlink" title="class_ro_t:"></a>class_ro_t:</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> class_ro_t &#123;</span><br><span class="line">	...</span><br><span class="line">    method_list_t * baseMethodList;</span><br><span class="line">    protocol_list_t * baseProtocols;</span><br><span class="line">    <span class="keyword">const</span> ivar_list_t * ivars;</span><br><span class="line">    property_list_t *baseProperties;</span><br><span class="line">    ...</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h4 id="method-t"><a href="#method-t" class="headerlink" title="method_t"></a>method_t</h4><p><code>method_list_t</code>和<code>method_array_t</code>内都是<code>method_t</code>类型:</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> method_t &#123;</span><br><span class="line">    SEL name;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span> *types;</span><br><span class="line">    IMP imp;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>方法名类型为<code>SEL</code></li>
+<li>方法类型<code>types</code>是个<code>char</code>指针，其实存储着方法的参数类型和返回值类型。</li>
+<li><code>imp</code>指向了方法的实现，本质上是一个函数指针</li>
+</ul>
+<h4 id="ivar-t"><a href="#ivar-t" class="headerlink" title="ivar_t"></a>ivar_t</h4><p><code>ivar_list_t</code> 内是<code>ivar_t</code>类型:</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> ivar_t &#123;</span><br><span class="line">    int32_t *offset;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span> *name;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span> *type;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>访问私有变量可以通过 kvc 和 runtime 的 <code>class_getInstanceVariable</code>，两种方式获取。</p>
+</blockquote>
+<h4 id="property-t"><a href="#property-t" class="headerlink" title="property_t"></a>property_t</h4><p><code>property_list_t</code>和<code>property_array_t</code>内都是<code>property_t</code>类型:</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> property_t &#123;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span> *name;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span> *attributes;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h4 id="protocol-t"><a href="#protocol-t" class="headerlink" title="protocol_t"></a>protocol_t</h4><p><code>protocol_list_t</code>和<code>protocol_array_t</code>内都是<code>protocol_t</code>类型:<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> protocol_t : objc_object &#123;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span> *mangledName;</span><br><span class="line">    <span class="keyword">struct</span> protocol_list_t *protocols;</span><br><span class="line">    method_list_t *instanceMethods;</span><br><span class="line">    method_list_t *classMethods;</span><br><span class="line">    method_list_t *optionalInstanceMethods;</span><br><span class="line">    method_list_t *optionalClassMethods;</span><br><span class="line">    property_list_t *instanceProperties;</span><br><span class="line">    uint32_t size;   <span class="comment">// sizeof(protocol_t)</span></span><br><span class="line">    uint32_t flags;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<h4 id="Ivar-Method-Category-objc-property-t"><a href="#Ivar-Method-Category-objc-property-t" class="headerlink" title="Ivar,Method,Category,objc_property_t"></a>Ivar,Method,Category,objc_property_t</h4><p>外部可以通过一系列的方法获得类的信息，诸如：<code>class_copyIvarList</code>,<code>class_copyPropertyList</code>等方法，可以获得类的实例变量和属性，对应的类型是<code>Ivar</code>、<code>objc_property_t</code>，它们分别是<code>ivar_t</code>,<code>property_t</code>类型的指针。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> method_t *Method;</span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> ivar_t *Ivar;</span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> category_t *Category;</span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> property_t *objc_property_t;</span><br></pre></td></tr></table></figure>
+<h2 id="消息"><a href="#消息" class="headerlink" title="消息"></a>消息</h2><h3 id="几种函数派发方式"><a href="#几种函数派发方式" class="headerlink" title="几种函数派发方式"></a>几种函数派发方式</h3><p>函数的派发方式，常见的有三种：</p>
+<ol>
+<li>直接派发</li>
+<li>函数表派发</li>
+<li>消息派发</li>
+</ol>
+<p>直接派发速度最快，例如 c++ 中的函数调用，编译时直接拿到函数的地址。</p>
+<p>函数表派发回味每一个类维护一个函数表，大部分语言称之为<strong>虚函数表</strong>，里面记录着所有的函数，如果父类函数被 override 的话，表里面只保存被 override 之后的函数。运行时会根据这个表去决定要调用的函数。如 Java。</p>
+<p>c++ 中要在父类方法中用 <code>virtual</code> 修饰，才会将直接派发转为函数表派发，实现多态。Java 可以通过 final 修饰指定为直接派发。</p>
+<p>消息派发就是 OC 的实现方式。</p>
+<h3 id="objc-msgSend函数"><a href="#objc-msgSend函数" class="headerlink" title="objc_msgSend函数"></a>objc_msgSend函数</h3><p>看起来像是<code>objc_msgSend</code>返回了数据，其实<code>objc_msgSend</code>从不返回数据而是你的方法被调用后返回了数据。下面详细叙述下消息发送步骤：</p>
+<ol>
+<li>检测这个 <code>selector</code> 是不是要忽略的。比如有了垃圾回收就不理会 <code>retain</code>, <code>release</code> 这些函数了。</li>
+<li>检测这个 <code>target</code> 是不是 <code>nil</code> 对象。ObjC 的特性是允许对一个 <code>nil</code>对象执行任何一个方法不会 Crash，因为会被忽略掉。</li>
+<li>如果上面两个都过了，那就开始查找这个类的 <code>IMP</code>，先从 <code>cache</code> 里面找，完了找得到就跳到对应的函数去执行。</li>
+<li>如果 <code>cache</code> 找不到就找一下方法分发表。</li>
+<li>如果分发表找不到就到超类的分发表去找，一直找，直到找到<code>NSObject</code>类为止。</li>
+<li>如果还找不到就要开始进入动态方法解析了.</li>
+</ol>
+<p>编译器会根据情况在<code>objc_msgSend</code>, <code>objc_msgSend_stret</code>, <code>objc_msgSendSuper</code>, 或 <code>objc_msgSendSuper_stret</code>四个方法中选择一个来调用。如果消息是传递给超类，那么会调用名字带有<code>Super</code>的函数；如果消息返回值是数据结构而不是简单值时，那么会调用名字带有<code>stret</code>的函数。</p>
+<p>当我们调用<code>[super selector]</code> 时，Runtime 会调用 <code>objc_msgSendSuper</code>方法，<code>objc_msgSendSuper</code> 方法有两个参数，<code>super</code> 和 <code>op</code>，<code>Runtime</code> 会把 <code>selector</code> 方法选择器赋值给 <code>op</code>。而 <code>super</code> 是一个 <code>objc_super</code> 结构体指针，<code>objc_super</code> 结构体定义如下：<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> objc_super &#123; <span class="keyword">id</span> receiver; Class <span class="keyword">class</span>; &#125;;</span><br></pre></td></tr></table></figure></p>
+<p>需要注意的是：这里的<code>receiver</code>仍然是<code>self</code>本身。当我们想通过<code>[super class]</code>获取超类时，编译器只是将指向<code>self</code>的<code>id</code>指针和<code>class</code>的<code>SEL</code>传递给了<code>objc_msgSendSuper</code>函数，因为只有在<code>NSObject</code>类才能找到<code>class</code>方法，然后<code>class</code>方法调用<code>object_getClass()</code>，接着调用<code>objc_msgSend(objc_super-&gt;receiver, @selector(class))</code>，传入的第一个参数是指向<code>self</code>的<code>id</code>指针，与调用<code>[self class]</code>相同，所以我们得到的永远都是<code>self</code>的类型。</p>
+<p>举个栗子，问下面的代码输出什么：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">Son</span> : <span class="title">Father</span></span></span><br><span class="line">- (<span class="keyword">id</span>)init</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">self</span> = [<span class="keyword">super</span> init];</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">NSLog</span>(<span class="string">@"%@"</span>, <span class="built_in">NSStringFromClass</span>([<span class="keyword">self</span> <span class="keyword">class</span>]));</span><br><span class="line">        <span class="built_in">NSLog</span>(<span class="string">@"%@"</span>, <span class="built_in">NSStringFromClass</span>([<span class="keyword">super</span> <span class="keyword">class</span>]));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">self</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure>
+<p>答案是全部输出 <code>Son</code>.</p>
+<p>当调用 <code>[super class]</code> 时，会转换成 <code>objc_msgSendSuper</code> 函数：</p>
+<ol>
+<li>先构造 <code>objc_super</code> 结构体，结构体第一个成员就是 <code>self</code>。第二个成员是 <code>(id)class_getSuperclass(objc_getClass(“Son”))</code>.</li>
+<li>去 <code>Father</code> 这个类里去找 <code>- (Class)class</code>，没有，然后去 <code>NSObject</code> 类去找，找到了。最后内部是使用 <code>objc_msgSend(objc_super-&gt;receiver, @selector(class))</code> 去调用，此时已经和 <code>[self class]</code> 调用相同了，所以两个输出结果都是 <code>Son</code>。</li>
+</ol>
+<p>这里调用<code>class</code>只是举例，所有调用<code>super</code>的方法，最后都变成了<code>self</code>的调用。</p>
+<blockquote>
+<p>其实就是即使是 [super class] <strong>调用的是父类的 class 方法</strong>，但是<strong>接收对象永远还是 self</strong></p>
+<p><code>objc_super -&gt; receiver</code> 永远是子类</p>
+</blockquote>
+<h2 id="Category-的实现原理"><a href="#Category-的实现原理" class="headerlink" title="Category 的实现原理"></a>Category 的实现原理</h2><h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><p>runtime 依赖于 dyld 动态加载，在 objc-os.mm 文件中可以找到入口，它的调用栈简单整理如下:<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> _objc_init(<span class="keyword">void</span>)</span><br><span class="line">└──<span class="keyword">const</span> <span class="keyword">char</span> \*map_2_images(...)</span><br><span class="line">    └──<span class="keyword">const</span> <span class="keyword">char</span> \*map_images_nolock(...)</span><br><span class="line">        └──<span class="keyword">void</span> _read_images(header_info **hList, uint32_t hCount)</span><br><span class="line">        	└──<span class="keyword">static</span> <span class="keyword">void</span> remethodizeClass(Class cls)</span><br><span class="line">        		└──<span class="keyword">static</span> <span class="keyword">void</span> attachCategories(Class cls, category_list *cats, <span class="keyword">bool</span> flush_caches)</span><br></pre></td></tr></table></figure></p>
+<h3 id="Category-相关的数据结构"><a href="#Category-相关的数据结构" class="headerlink" title="Category 相关的数据结构"></a>Category 相关的数据结构</h3><p>首先来了解一下一个 Category 是如何存储的，在 objc-runtime-new.h 中可以看到如下定义：<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> category_t &#123;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span> *name;</span><br><span class="line">    classref_t cls;</span><br><span class="line">    <span class="keyword">struct</span> method_list_t *instanceMethods;</span><br><span class="line">    <span class="keyword">struct</span> method_list_t *classMethods;</span><br><span class="line">    <span class="keyword">struct</span> protocol_list_t *protocols;</span><br><span class="line">    <span class="keyword">struct</span> property_list_t *instanceProperties;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>从category的定义也可以看出category的可为（可以添加实例方法，类方法，甚至可以实现协议，添加属性）和不可为（无法添加实例变量）。</p>
+<h3 id="处理-Category"><a href="#处理-Category" class="headerlink" title="处理 Category"></a>处理 Category</h3><p>对 Category 中方法的解析并不复杂，首先来看一下 attachCategories 的简化版代码:<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">void</span> attachCategories(Class cls, category_list *cats, <span class="keyword">bool</span> flush_caches) &#123;</span><br><span class="line">    <span class="keyword">if</span> (!cats) <span class="keyword">return</span>;</span><br><span class="line">    <span class="keyword">bool</span> isMeta = cls-&gt;isMetaClass();</span><br><span class="line"></span><br><span class="line">    method_list_t **mlists = (method_list_t **)malloc(cats-&gt;count * <span class="keyword">sizeof</span>(*mlists));</span><br><span class="line">    <span class="comment">// Count backwards through cats to get newest categories first</span></span><br><span class="line">    <span class="keyword">int</span> mcount = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">int</span> i = cats-&gt;count;</span><br><span class="line">    <span class="keyword">while</span> (i--) &#123;</span><br><span class="line">        auto&amp; entry = cats-&gt;list[i];</span><br><span class="line"></span><br><span class="line">        method_list_t *mlist = entry.cat-&gt;methodsForMeta(isMeta);</span><br><span class="line">        <span class="keyword">if</span> (mlist) &#123;</span><br><span class="line">            mlists[mcount++] = mlist;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    auto rw = cls-&gt;data();</span><br><span class="line"></span><br><span class="line">    prepareMethodLists(cls, mlists, mcount, <span class="literal">NO</span>, fromBundle);</span><br><span class="line">    rw-&gt;methods.attachLists(mlists, mcount);</span><br><span class="line">    free(mlists);</span><br><span class="line">    <span class="keyword">if</span> (flush_caches  &amp;&amp;  mcount &gt; <span class="number">0</span>) flushCaches(cls);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>首先，通过 <code>while</code> 循环，我们遍历所有的 category，也就是参数 <code>cats</code> 中的 <code>list</code> 属性。对于每一个 category，得到它的方法列表 <code>mlist</code> 并存入 <code>mlists</code> 中。换句话说，我们将所有 category 中的方法拼接到了一个大的二维数组中，数组的每一个元素都是装有一个 category 所有方法的容器。</p>
+<blockquote>
+<p>编译好之后 ivar 的结构就已经固定了，可以通过偏移地址来直接获取成员变量。但是对于方法，它在 Macho-O 中只保存了 <code>class_ro_t</code> 的部分，在 runtime 初始化的时候，会通过 runtime 到 mach-o 中的 <code>__data,_objc_catlist</code> 中取出所有的分类信息，然后将分类中的方法属性和协议插到 <code>class_rw_t</code> 的数组中（<code>class_rw_t</code> 应该是保存在堆上的），它的各个属性是指向 data 段的。</p>
+<p>因为 <code>class_rw_t</code> 是堆上的，它的属性方法列表是一个二维数组，可以将 data 段中的各个方法数组添加到这个二维数组中，并且 <code>class_addMethod</code> 也可以用相同的方法添加到二维数组里，所以方法是可以动态添加的。</p>
+<p>但是成员变量是保存在 <code>class_ro_t</code> 中的，它是保存在 data 段中有固定的空间的，无法扩大。因此成员变量无法动态添加。</p>
+</blockquote>
+<blockquote>
+<p>另外需要注意一点，不是所有分类都是放到 <code>__data,_objc_catlist</code> 中的。如果是自己的类的分类，编译后直接就把方法和原始类的方法丢在一起了。如果是其他动态库的分类，比如给 UIViewController 创建一个分类，那么是会保存在 <code>__data,_objc_catlist</code> 段中，通过 runtime 动态添加给 UIViewController的。</p>
+</blockquote>
+<p>在 <code>while</code> 循环外，我们得到了拼接成的方法，此时需要与类原来的方法合并:<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">auto rw = cls-&gt;data();</span><br><span class="line">rw-&gt;methods.attachLists(mlists, mcount);</span><br></pre></td></tr></table></figure></p>
+<p><code>rw</code> 是一个 <code>class_rw_t</code>类型的结构体指针。根据 runtime 中的数据结构，它有一个 <code>methods</code> 结构体成员，并从父类继承了 <code>attachLists</code> 方法，用来合并 category 中的方法:<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> attachLists(List* <span class="keyword">const</span> * addedLists, uint32_t addedCount) &#123;</span><br><span class="line">    <span class="keyword">if</span> (addedCount == <span class="number">0</span>) <span class="keyword">return</span>;</span><br><span class="line">    uint32_t oldCount = array()-&gt;count;</span><br><span class="line">    uint32_t newCount = oldCount + addedCount;</span><br><span class="line">    setArray((array_t *)realloc(array(), array_t::byteSize(newCount)));</span><br><span class="line">    array()-&gt;count = newCount;</span><br><span class="line">    memmove(array()-&gt;lists + addedCount, array()-&gt;lists, oldCount * <span class="keyword">sizeof</span>(array()-&gt;lists[<span class="number">0</span>]));</span><br><span class="line">    memcpy(array()-&gt;lists, addedLists, addedCount * <span class="keyword">sizeof</span>(array()-&gt;lists[<span class="number">0</span>]));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>需要注意的是，无论执行哪种逻辑，参数列表中的方法都会被添加到二维数组的前面。因此 category 中定义的同名方法不会替换类中原有的方法，但是对原方法的调用实际上会调用 category 中的方法。</p>
+<h3 id="load-方法的执行"><a href="#load-方法的执行" class="headerlink" title="load 方法的执行"></a>load 方法的执行</h3><p>+load 方法在 Class 和 Category 中都会有一个数组保存。在 runtime load_image 的时候，会一次调用 Class 和 Category 的 load 方法。</p>
+<p>load 方法的调用顺序是先调用父类的再调用子类的，先调用 Class 的，再调用 Category 的。</p>
+<h4 id="和-initialize-方法的异同"><a href="#和-initialize-方法的异同" class="headerlink" title="和 +initialize 方法的异同"></a>和 <code>+initialize</code> 方法的异同</h4><ul>
+<li><p><code>+load</code> 方法会被特殊对待全部执行，而 <code>+initialize</code> 方法则只会像普通方法一样会被分类覆盖。</p>
+</li>
+<li><p><code>+initialize</code> 方法在类传递第一个消息之前执行。<code>+load</code> 在分类添加到 runtime 时执行。</p>
+</li>
+<li><p><code>+initialize</code> 方法先执行父类方法，再执行子类方法。<code>+load</code> 也是这样</p>
+</li>
+</ul>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><ul>
+<li>什么是消息机制？</li>
+<li>id 是个什么类型？</li>
+<li>isa 是个什么类型？</li>
+<li>objc_class 中的 isa 指向什么？有什么用？</li>
+<li>子类，父类，NSObject，之间 super class 与 isa 指向的关系图是怎样？</li>
+<li>objc_msgSend 的执行过程？</li>
+<li>为什么调用 <code>[super class]</code> 还是返回的还是 self 的类名？</li>
+<li>category 为什么只能存方法，不能存实例变量？</li>
+<li>category 会替换原来的方法吗？</li>
+<li>动态方法解析与消息转发的三步各是什么作用？</li>
+<li>转发和多继承有什么关系？</li>
+</ul>
+<p><a href="http://www.jianshu.com/p/9d649ce6d0b8" target="_blank" rel="noopener">runtime的一篇较好的参考资料</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tag/Runtime/" rel="tag"># Runtime</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/08/16/ios动画/" rel="next" title="ios核心动画">
+                <i class="fa fa-chevron-left"></i> ios核心动画
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/08/23/runtime应用/" rel="prev" title="runtime应用笔记">
+                runtime应用笔记 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.png" alt="Zachary Zhang">
+            
+              <p class="site-author-name" itemprop="name">Zachary Zhang</p>
+              <p class="site-description motion-element" itemprop="description">Stay Hungry. Stay Foolish!</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">116</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/zhang759740844" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:zch759740844@126.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Runtime基础"><span class="nav-number">1.</span> <span class="nav-text">Runtime基础</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#id"><span class="nav-number">1.1.</span> <span class="nav-text">id</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SEL"><span class="nav-number">1.2.</span> <span class="nav-text">SEL</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Class"><span class="nav-number">1.3.</span> <span class="nav-text">Class</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#class-rw-t"><span class="nav-number">1.4.</span> <span class="nav-text">class_rw_t</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#部分类的声明"><span class="nav-number">1.5.</span> <span class="nav-text">部分类的声明</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#class-ro-t"><span class="nav-number">1.5.1.</span> <span class="nav-text">class_ro_t:</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#method-t"><span class="nav-number">1.5.2.</span> <span class="nav-text">method_t</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#ivar-t"><span class="nav-number">1.5.3.</span> <span class="nav-text">ivar_t</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#property-t"><span class="nav-number">1.5.4.</span> <span class="nav-text">property_t</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#protocol-t"><span class="nav-number">1.5.5.</span> <span class="nav-text">protocol_t</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Ivar-Method-Category-objc-property-t"><span class="nav-number">1.5.6.</span> <span class="nav-text">Ivar,Method,Category,objc_property_t</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#消息"><span class="nav-number">2.</span> <span class="nav-text">消息</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#几种函数派发方式"><span class="nav-number">2.1.</span> <span class="nav-text">几种函数派发方式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#objc-msgSend函数"><span class="nav-number">2.2.</span> <span class="nav-text">objc_msgSend函数</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Category-的实现原理"><span class="nav-number">3.</span> <span class="nav-text">Category 的实现原理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#概述"><span class="nav-number">3.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Category-相关的数据结构"><span class="nav-number">3.2.</span> <span class="nav-text">Category 相关的数据结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#处理-Category"><span class="nav-number">3.3.</span> <span class="nav-text">处理 Category</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#load-方法的执行"><span class="nav-number">3.4.</span> <span class="nav-text">load 方法的执行</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#和-initialize-方法的异同"><span class="nav-number">3.4.1.</span> <span class="nav-text">和 +initialize 方法的异同</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#问题"><span class="nav-number">4.</span> <span class="nav-text">问题</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zachary Zhang</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

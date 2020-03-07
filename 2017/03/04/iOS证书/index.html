@@ -1,0 +1,1243 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+
+
+
+
+  <meta name="keywords" content="Xcode,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="关于苹果的证书问题搞得焦头烂额，代码没问题，跑不起来这是最气的。所以决定完整地了解一下。">
+<meta name="keywords" content="Xcode">
+<meta property="og:type" content="article">
+<meta property="og:title" content="iOS 证书相关">
+<meta property="og:url" content="http://zhang759740844.github.io/2017/03/04/iOS证书/index.html">
+<meta property="og:site_name" content="Zachary&#39;s blog">
+<meta property="og:description" content="关于苹果的证书问题搞得焦头烂额，代码没问题，跑不起来这是最气的。所以决定完整地了解一下。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/ios_certificate_appid.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/ios_certificate_bundleid.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/ios_certificate_pushnotification.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/ios_certificate_edit.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/ios_certificate_push.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/ios_certificate_csr.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/ios_certificate_info.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/ios_certificate_csrcomplete.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/ios_certificate_apply.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/certificate_push.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/certificate_csr.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/iOS_cer_1.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/xcode_account_1.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/ios_certificate_profile.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/ios_certificate_manual.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/verify-certificate.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/2step-verify-certificate.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/certificate-all.png?raw=true">
+<meta property="og:updated_time" content="2020-02-27T15:13:37.650Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="iOS 证书相关">
+<meta name="twitter:description" content="关于苹果的证书问题搞得焦头烂额，代码没问题，跑不起来这是最气的。所以决定完整地了解一下。">
+<meta name="twitter:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/ios_certificate_appid.png?raw=true">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://zhang759740844.github.io/2017/03/04/iOS证书/">
+
+
+
+
+
+  <title>iOS 证书相关 | Zachary's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Zachary's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">记录成长</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://zhang759740844.github.io/2017/03/04/iOS证书/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zachary Zhang">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Zachary's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">iOS 证书相关</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-03-04T16:07:12+08:00">
+                2017-03-04
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>关于苹果的证书问题搞得焦头烂额，代码没问题，跑不起来这是最气的。所以决定完整地了解一下。</p>
+<a id="more"></a>
+<h2 id="基础"><a href="#基础" class="headerlink" title="基础"></a>基础</h2><h3 id="密码基础"><a href="#密码基础" class="headerlink" title="密码基础"></a>密码基础</h3><p>加密方法可以分为两大类。一类是<strong>对称加密</strong>（private key cryptography），还有一类叫做<strong>非对称加密</strong>（public key cryptography）。前者的加密和解密过程都用同一套密码，后者的加密和解密过程用的是两套密码。</p>
+<p>对称加密情况下，密钥只有一把，加密解密都通过其完成。密钥的保存非常重要。</p>
+<p>非对称加密时，密钥有两把，一把给别人使用的公钥，一把只有自己知道的私钥。公钥和私钥一一对应，公钥能解开私钥加密的信息，私钥也能解开公钥加密的信息。同时生成公钥和私钥比较容易，但是从公钥推算出私钥是几乎不可能的。</p>
+<p>目前，通用的<strong>对称加密算法为AES</strong>（Advanced Encryption Standard），通用的<strong>非对称加密算法为RSA</strong>（ Rivest-Shamir-Adleman）。</p>
+<p>在非对称体系中，<strong>公钥用来加密信息（因为只有私钥才能打开），私钥用来数字签名（保证数据完整性的，但它不保证数据加密，不保证数据传输途中无人嗅探窃听）</strong>。</p>
+<p>因为任何人都可以生成自己的（公钥，私钥）对，所以为了防止有人散布伪造的公钥骗取信任，就需要一个可靠的第三方机构来生成经过认证的（公钥，私钥）对。</p>
+<h3 id="非对称加密原理"><a href="#非对称加密原理" class="headerlink" title="非对称加密原理"></a>非对称加密原理</h3><p>关于非对称加密，在之前写过的 “http原理” 一文中也有大概的梳理。这边再仔细说下。</p>
+<p>需要明确：公钥任何人都能有，私钥只能自己持有，如果别人拿到了你的私钥，那么别人也就成为了你。因此，用公钥加密，私钥解密的信息是绝密的；而用私钥加密，公钥解密的信息，并不能保证安全。所以用私钥加密的信息一般用来保证传输信息的完整性与未被修改。</p>
+<p>整个加密解密的流程大概是这样的：</p>
+<p>A 有公钥，B 有私钥。A 将用公钥加密的消息发送给 B，那么只有拥有私钥的 B 才能够解密，其他人无法解密出消息明文。</p>
+<p>B 要发消息给 A。由于公钥是公开的，那么 B 用私钥加密的消息对所有人其实都是公开的，所以一般不用 B 的私钥加密消息。而只是拿 B 的私钥产生一个“数字签名”。数字签名就是 将 B 即将给 A 发送的消息的 hash 值（通过 MD5、SHA等算法）进行加密。B 发送消息的时候，将消息原文和数字签名一并发出。A 接收到两者后，对原文取 hash，与公钥解密的数字签名中获得的 hash 值比对，如果相同表示消息没有经过别人的修改。</p>
+<p>上面保证了 A 的信息能安全的到 B。但是没有解决“如何才能使 B 给 A 发送的消息不被别人窥探？” 很容易想到，只要再来一套公钥私钥，即 B 同时也拥有 A 的公钥，发信息的时候用 A 的公钥加密即可，不过这样处理非常麻烦费时。https 是这样做的：客户端拥有服务端的公钥（即上面所说的 A，先不要管怎么拿到的服务端公钥的以及是如何确定就是服务端公钥而不是其他攻击者的公钥的这两点），服务端拥有其自己的私钥（即 B）。A 在本地生成一段随机字符，作为之后对称加密的密钥，将这个密钥通过公钥加密发给 B，这样 A B 就共同拥有了其他人都不知道的共同密钥，两者之间的通信就安全了。<strong>所以 https 的本质是对称加密，核心是客户端如何将密钥传给服务端，根本问题就是如何能够正确的拿到服务端的公钥，而不被中间人篡改。</strong></p>
+<p>上面说到如何拿到服务端的公钥，在客户端发起请求后，服务端会返回一个证书，这个<strong>证书中就包含着公钥</strong>。客户端如何相信这个证书就是想要请求的服务端的证书而不是攻击者的证书呢？这就需要一个权威的第三方的验证，即”证书中心”（certificate authority，简称CA），为公钥做认证。证书中心<strong>用自己的私钥为服务器的公钥，以及服务端的信息做加密</strong>，连同 CA 信息，保存在新生成的”数字证书”中。客户端最终获取到证书就是经过证书中心加密过的证书。拿到证书后，客户端先到自身根证书列表查看该证书中心是否是本机信任的证书中心（自己计算机的物理安全是前提，如果别人已经可以直接控制你的计算机，修改根证书列表，那什么证书安全也救不了你。）。然后就用根证书里的公钥去解析该证书，验证服务端信息以及公钥是否被修改。</p>
+<p>其实道理就是：<strong>你不是不相信发来的公钥的可靠性么。那么就你自己先保存一些信任的第三方的公钥，通过 CA 的公钥去解析获得服务端的公钥。攻击者是没有 CA 认证过 ，或者即使认证了，证书中的信息也是与真正要请求的服务端不同的。因此，这样就能保证其可信性了。</strong></p>
+<p>说完了 https，其实 SSH 也是类似的，服务端传输公钥给客户端给其加密使用，同样的也会遇到中间人攻击的问题。由于 SSH 没有 CA 认证，所以在第一次连接服务器时要慎重，会提示你是否接受这个远程主机的公钥：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Are you sure you want to continue connecting (yes/no)? yes</span><br></pre></td></tr></table></figure>
+<p>如果接受，那么该公钥就会保存在本机中。下次再连接这台主机，系统就会认出它的公钥已经保存在本地了。</p>
+<p>https 和 SSH 都接受用户名密码登录，即客户端通过服务器下发的公钥加密后传输给远程主机。SSH 还接受公钥登录，就是本机生成一对公钥和私钥（保存在根目录的 .ssh 文件夹下），将公钥保存在服务器上，有点<strong>类似于上面说的 A 和 B 各自保存自己的公钥和对方的私钥</strong>。登录的时候，远程主机会向用户发送一段随机字符串，用户用自己的私钥加密后，再发回来。远程主机用事先储存的公钥进行解密，如果成功，就证明用户是可信的，直接允许登录shell，不再要求密码。</p>
+<p><strong>在 Apple 开发网站上传包含公钥的 CSR 文件作为换取证书的凭证（Upload CSR file to generate your certificate）（即自己的公钥），有点类似为github账号添加SSH公钥到服务器上进行授权。</strong> </p>
+<h2 id="iOS-相关"><a href="#iOS-相关" class="headerlink" title="iOS 相关"></a>iOS 相关</h2><h3 id="App-IDs"><a href="#App-IDs" class="headerlink" title="App IDs"></a>App IDs</h3><p>app id 和 bundle identifier 是一致（Explicit）的或匹配（Wildcard）的。</p>
+<p>在 name 中输入 app id 显示的名字：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/ios_certificate_appid.png?raw=true" alt="app id name"></p>
+<p>可以选择 explicit app id 或者 wildcard app id。前者用于表示标识唯一的应用程序，后者为含有通配符的 app id，用于标识一组应用程序。一般推荐用前者。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/ios_certificate_bundleid.png?raw=true" alt="app id bundleid"></p>
+<p>最后勾选需要用到的 app service，比如 push notification:</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/ios_certificate_pushnotification.png?raw=true" alt="app id app service"></p>
+<p>继续点击 continue-&gt;submit-&gt;done，完成 app id 的创建。可以点击刚申请的 id，对其进行编辑：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/ios_certificate_edit.png?raw=true" alt="app id app edit"></p>
+<p>比如如果用到推送功能，就要为其添加推送证书：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/ios_certificate_push.png?raw=true" alt="app id app edit"></p>
+<p>总结：app id 主要设置了 bundle id 的 app 特有标识，另外为该 app 设置了所需的服务。</p>
+<h3 id="Certificates"><a href="#Certificates" class="headerlink" title="Certificates"></a>Certificates</h3><p>iOS证书是用来证明iOS App内容（executable code）的合法性和完整性的数字证书。对于想安装到真机或发布到AppStore的应用程序（App），只有经过签名验证（Signature Validated）才能确保来源可信，并且保证App内容是完整、未经篡改的。上面讲了许多关于证书的原理，这里主要讲讲 iOS 中证书的配置。</p>
+<h4 id="证书分类"><a href="#证书分类" class="headerlink" title="证书分类"></a>证书分类</h4><p>iOS证书按功能分为两种：<strong>开发证书（Development）</strong> 和<strong>生产证书（Production）</strong>。</p>
+<ul>
+<li>开发证书用于开发和调试应用程序，可用于联机调试。无论是 debug 还是 release 用的都是开发证书</li>
+<li>生产证书用来发布应用程序。</li>
+</ul>
+<p>iOS 证书按类型分为两种：<strong>个人证书（Personal）</strong> 和<strong>企业证书（enterprise）</strong></p>
+<ul>
+<li>个人证书仅会在安装的时候验证证书的有效性。因此，当你安装完 app 后，即使你删除 developer 账号中的开发证书或者生产证书都是没有关系的。</li>
+<li>企业证书在任何打开 app 的时候都会验证证书的有效性。因此，无论何时，一定不能删除 developer 账号中的开发证书或者生产证书。否则，用该证书签名的 app 将提示证书错误，将无法打开。</li>
+</ul>
+<h4 id="生成证书请求文件-（CSR）"><a href="#生成证书请求文件-（CSR）" class="headerlink" title="生成证书请求文件 （CSR）"></a>生成证书请求文件 （CSR）</h4><p>CSR 是 Cerificate Signing Request 的英文缩写，即证书请求文件，也就是<strong>证书申请者在申请数字证书时由 CSP (加密服务提供者)在生成私钥的同时也生成证书请求文件（私钥和 CSR 同时生成）（CSR 其实也就是公钥）</strong>，证书申请者只要把 CSR 文件提交给证书颁发机构后，证书颁发机构使用其根证书私钥签名就生成了证书公钥文件，也就是颁发给用户的证书。通过如下方式申请：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/ios_certificate_csr.png?raw=true" alt="app id app csr"></p>
+<p>选择 “从证书颁发机构请求证书” 后出现下面情况，填写开发账号右键和常用名称，CA 电子右键地址可不填，勾选 “存储到磁盘”，然后继续：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/ios_certificate_info.png?raw=true" alt="app id app info"></p>
+<p>最后得到一个 csr 文件</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/ios_certificate_csrcomplete.png?raw=true" alt="app id csr"></p>
+<h4 id="申请证书"><a href="#申请证书" class="headerlink" title="申请证书"></a>申请证书</h4><p>现在进入申请证书的流程：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/ios_certificate_apply.png?raw=true" alt="apply certificate"></p>
+<p>由于 apple 规定一个账号只能申请3个开发证书，2个发布证书，所以现在图片上的部分不能被勾选。除了开发证书和发布证书，还可以勾选 <code>Apple Push Notification service SSL (Sandbox)</code> 和 <code>Apple Push Notification service SSL (Sandbox &amp; Production)</code> 来制作开发和发布推送证书。</p>
+<p>如果是制作推送证书，需要绑定 App id：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/certificate_push.png?raw=true" alt="notification_certificate"></p>
+<p>如果不是推送证书跳过上一步，直接往下走，上传 CSR 文件：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/certificate_csr.png?raw=true" alt="csr_certificate"></p>
+<p>点击生成，就<strong>完成了苹果用私钥对你的公钥加密生成证书的过程</strong>。<strong>将生成的证书下载后双击导入钥匙串，自动和之前生成的私钥匹配。</strong>在钥匙串的我的证书中就能看到相应证书。</p>
+<h4 id="导出证书"><a href="#导出证书" class="headerlink" title="导出证书"></a>导出证书</h4><p>对于团队合作，别人需要你创建的证书，你就要将<strong>苹果下发的证书（用苹果私钥加密的你的公钥）以及相应私钥导出为 .p12 格式的文件</strong>，发给别人使用。注意，<strong>你导出 p12 的时候一定要将证书和私钥一起选中导出</strong></p>
+<h4 id="证书来自某人的-MacBook"><a href="#证书来自某人的-MacBook" class="headerlink" title="证书来自某人的 MacBook"></a>证书来自某人的 MacBook</h4><p>不知道你有没有注意过，当你登录到 developer 账号中查看证书的时候，经常会看见如下的情况：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/iOS_cer_1.png?raw=true" alt></p>
+<p>这种带括号某某人的 MacBook 的证书怎么产生的呢？这是因为我们在 Xcode 中登录了开发者账号，如下所示：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/xcode_account_1.png?raw=true" alt></p>
+<p>登录 AppleId 后，会显示你一个 User 的 Team 一个 Agent 的 Team 里。Xcode 自动帮你在签名的时候生成了一个私钥以及证书。</p>
+<h3 id="Devices"><a href="#Devices" class="headerlink" title="Devices"></a>Devices</h3><p>Device是指运行iOS系统用于开发调试App的设备（即苹果设备）。每台Apple设备使用UDID来唯一标识。</p>
+<p>设备的UDID可通过iTunes-&gt;Summary或者Xcode-&gt;Window-&gt;Devices获取。</p>
+<p>添加设备比较简单，就是输入设备的 UUID，并且给设备取一个别名即可。</p>
+<h3 id="Provisioning-Profiles"><a href="#Provisioning-Profiles" class="headerlink" title="Provisioning Profiles"></a>Provisioning Profiles</h3><p>Provisioning Profile 包含了上述的所有内容：证书，app id，设备。用来将证书和 app id 绑定。</p>
+<p>Provisioning Profile 也分为 Development 和 Distribution 两类，有效期同 Certificate 一样。<strong>Development 版本的 ProvisioningProfile 用于开发调试，包括 debug 和 release 版本</strong>，Distribution 版本的 ProvisioningProfile 只用于提交 App Store 审核，其不指定开发测试的 Devices。</p>
+<p>在 XcodeTarget-&gt;Build Settings-&gt;Code Signing-&gt;Provisioning Profile 可选择“Automatic”，xcode 会根据该 Target 的“Bundle identifier”选择默认的配置文件及证书：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/ios_certificate_profile.png?raw=true" alt="provision profile"></p>
+<p><strong>自动签名的情况下，不需要自己设置 Provisioning Profiles</strong>。不过你也可以选择手动设置签名：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/ios_certificate_manual.png?raw=true" alt="provision profile"></p>
+<p>debug 和 release 用的都是开发的配置文件。</p>
+<p>更多这方面的信息可以参考<a href="http://blog.csdn.net/smaller_coder/article/details/52755853" target="_blank" rel="noopener">iOS 各种证书/签名详解</a>文章写得很详细。</p>
+<h2 id="iOS-app-签名相关"><a href="#iOS-app-签名相关" class="headerlink" title="iOS app 签名相关"></a>iOS app 签名相关</h2><h3 id="目的"><a href="#目的" class="headerlink" title="目的"></a>目的</h3><p>对 APP 进行签名的目的很简单，就是<strong>为了验证，你下载的 app 是合法的经过苹果审核的</strong>。</p>
+<h3 id="简单的签名方式"><a href="#简单的签名方式" class="headerlink" title="简单的签名方式"></a>简单的签名方式</h3><p>下面图中有说明：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/verify-certificate.png?raw=true" alt="签名验证"></p>
+<p>这种简单的签名方式是苹果自己生成了私钥和公钥，公钥保存在每一个生产出来的 iOS 设备中。通过苹果的私钥和公钥直接对 app 进行签名和验证。</p>
+<h3 id="新的问题"><a href="#新的问题" class="headerlink" title="新的问题"></a>新的问题</h3><p> 这种方式面临的问题是所有的 app 都要经过苹果的 app store。但是，比如企业发布啊，开发时的直接调试啊，都不经过 app store。我们面临两个需求：</p>
+<ol>
+<li>安装包不需要传到苹果服务器，可以直接安装到手机上。如果你编译一个 APP 到手机前要先传到苹果服务器签名，这显然是不能接受的。<strong>即不能直接用苹果的私钥对 app 进行签名，因为这样必然要将 app 上传</strong></li>
+<li>苹果必须对这里的安装有控制权，包括经过苹果允许才可以这样安装，不能被滥用导致非开发app也能被安装。<strong>即要保证 app 经过了苹果的私钥和公钥的签名和验证过程</strong></li>
+</ol>
+<h3 id="两步签名"><a href="#两步签名" class="headerlink" title="两步签名"></a>两步签名</h3><p>明白了需求就容易找到思路了。<strong>既然不能将app的签名验证放在云端（苹果），那么就把验证放在本地</strong>。</p>
+<p>首先不能用苹果的私钥签名 app，那么很容易想到，我们可以自己创建一对钥匙，用我们自己的私钥对 app 签名，公钥对 app 验证。</p>
+<p>为了满足需求二，我们将我们自己创建的公钥上传到苹果的服务器让苹果用其自己的私钥签名（<strong>这就是所谓的开发者证书</strong>），这样就避免了传 app 进行签名的麻烦。当装到手机中后，会将苹果下发的证书以及我们的私钥对 app 的签名导报到设备中（<strong>我们的私钥没有放到设备中，只是将私钥对app 的签名放进去了</strong>）。通过设备中的苹果公钥就能解析出我们自己创建的公钥了。然后用公钥对私钥对app的签名进行解密，验证应用的完整性。<strong>这些操作都是在本地完成的，所以本地安装的时候就不需要联网请求任何东西进行验证了</strong>。</p>
+<p>具体流程如下图：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/2step-verify-certificate.png?raw=true" alt="两步签名"></p>
+<ol>
+<li><p>在你的 Mac 开发机器生成一对公私钥，这里称为<strong>公钥L</strong>，<strong>私钥L</strong>。L:Local</p>
+</li>
+<li><p>苹果自己有固定的一对公私钥，跟上面 AppStore 例子一样，私钥在苹果后台，公钥在每个 iOS 设备上。这里称为<strong>公钥A</strong>，<strong>私钥A</strong>。A:Apple</p>
+</li>
+<li><p>把公钥 L 传到苹果后台，用苹果后台里的私钥 A 去<strong>签名公钥 L</strong>。得到一份数据包含了公钥 L 以及其签名，把这份数据称为证书。</p>
+</li>
+<li><p>在开发时，编译完一个 APP 后，用本地的私钥 L <strong>对这个 APP 进行签名</strong>，同时把第三步得到的证书一起打包进 APP 里，安装到手机上。</p>
+</li>
+<li><p>在安装时，iOS 系统取得证书，通过系统内置的公钥 A，去验证证书的数字签名是否正确。</p>
+</li>
+<li><p>验证证书后<strong>确保了公钥 L 是苹果认证过的</strong>，再用公钥 L 去验证 APP 的签名，这里就间接验证了这个 APP 安装行为是否经过苹果官方允许。</p>
+<blockquote>
+<p>注意，使用苹果的私钥去签名开发者的公钥，开发者的私钥去签名 APP。</p>
+<p>想要确保什么的完整性，就用私钥去签名什么</p>
+</blockquote>
+</li>
+</ol>
+<h3 id="更多细节"><a href="#更多细节" class="headerlink" title="更多细节"></a>更多细节</h3><p>上面已经是基本的流程了。不过苹果再加了两个限制，一是限制在苹果后台注册过的设备才可以安装，二是限制签名只能针对某一个具体的 APP。除了 设备 ID / AppID，还有其他信息也需要在这里用苹果签名，像这个 APP 里 iCloud / push / 后台运行 等权限苹果都想控制，苹果把这些权限开关统一称为 Entitlements，它也需要通过签名去授权。于是苹果另外搞了个东西，叫 Provisioning Profile，一个 Provisioning Profile 里就包含了证书以及上述提到的所有额外信息，以及所有信息的签名。</p>
+<p>流程就变成了下面的样子：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/certificate-all.png?raw=true" alt="完整签名流程"></p>
+<h3 id="签名与证书的关系"><a href="#签名与证书的关系" class="headerlink" title="签名与证书的关系"></a>签名与证书的关系</h3><p>我们看到<strong>用私钥对 app 加密叫做签名</strong>，<strong>用私钥对别人的公钥进行加密叫做证书</strong>。</p>
+<h3 id="苹果的验证机制和-https-验证机制的异同"><a href="#苹果的验证机制和-https-验证机制的异同" class="headerlink" title="苹果的验证机制和 https 验证机制的异同"></a>苹果的验证机制和 https 验证机制的异同</h3><p>其实只要涉及到证书的都是为了拿到公钥。https 中服务器拿公钥向 CA 要取签名，苹果的验证中则开发者拿公钥向苹果要取签名。https 中浏览器中有 CA 机构的公钥，苹果的验证中 iOS 设备中有苹果的公钥。</p>
+<p>不同的是，https 中，浏览器拿到公钥，是为了加密数据；而 iOS 设备中拿到公钥，是为了验证签名。</p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>所以对于上面的各个概念应该有了更深的理解：</p>
+<ol>
+<li><strong>证书cer</strong>：内容是公钥或私钥，由其他机构对其签名组成的数据包。</li>
+<li><strong>Entitlements</strong>：包含了 App 权限开关列表。</li>
+<li><strong>CertificateSigningRequest</strong>：本地公钥。</li>
+<li><strong>p12</strong>：本地私钥或者证书或者私钥与证书的二级制形式，可以导入到其他电脑。</li>
+<li><strong>PEM：</strong>本地私钥或者证书或者私钥与证书的base64形式，与 p12 类似。</li>
+<li><strong>Provisioning Profile</strong>：包含了 证书 / Entitlements 等数据，并由苹果后台私钥签名的数据包。</li>
+</ol>
+<p>上面说的是开发时或者是企业的签名验证流程。AppStore 的签名验证方式有些不一样，前面我们说到最简单的签名方式，苹果在后台直接用私钥签名 App 就可以了，实际上苹果确实是这样做的，如果去下载一个 AppStore 的安装包，会发现它里面是没有 embedded.mobileprovision 文件的，也就是它安装和启动的流程是不依赖这个文件，验证流程也就跟上述几种类型不一样了。</p>
+<p>那为什么发布 AppStore 的包还是要跟开发版一样搞各种证书和 Provisioning Profile？猜测因为苹果想做统一管理，Provisioning Profile 里包含一些权限控制，AppID 的检验等，苹果不想在上传 AppStore 包时重新用另一种协议做一遍这些验证，就不如统一把这部分放在 Provisioning Profile 里，上传 AppStore 时只要用同样的流程验证这个 Provisioning Profile 是否合法就可以了。</p>
+<p>所以 App 上传到 AppStore 后，就跟你的 证书 / Provisioning Profile 都没有关系了，无论他们是否过期或被废除，都不会影响 AppStore 上的安装包。</p>
+<p>更多这方面的信息可以<a href="http://blog.cnbang.net/tech/3386/" target="_blank" rel="noopener">参考bang的文章</a> 文章写得很详细。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tag/Xcode/" rel="tag"># Xcode</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/02/22/swift语法7/" rel="next" title="Swift 3.1 语法学习（七）">
+                <i class="fa fa-chevron-left"></i> Swift 3.1 语法学习（七）
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/03/30/iOS 沙盒机制/" rel="prev" title="iOS 文件下载与处理相关">
+                iOS 文件下载与处理相关 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.png" alt="Zachary Zhang">
+            
+              <p class="site-author-name" itemprop="name">Zachary Zhang</p>
+              <p class="site-description motion-element" itemprop="description">Stay Hungry. Stay Foolish!</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">116</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/zhang759740844" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:zch759740844@126.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#基础"><span class="nav-number">1.</span> <span class="nav-text">基础</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#密码基础"><span class="nav-number">1.1.</span> <span class="nav-text">密码基础</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#非对称加密原理"><span class="nav-number">1.2.</span> <span class="nav-text">非对称加密原理</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#iOS-相关"><span class="nav-number">2.</span> <span class="nav-text">iOS 相关</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#App-IDs"><span class="nav-number">2.1.</span> <span class="nav-text">App IDs</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Certificates"><span class="nav-number">2.2.</span> <span class="nav-text">Certificates</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#证书分类"><span class="nav-number">2.2.1.</span> <span class="nav-text">证书分类</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#生成证书请求文件-（CSR）"><span class="nav-number">2.2.2.</span> <span class="nav-text">生成证书请求文件 （CSR）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#申请证书"><span class="nav-number">2.2.3.</span> <span class="nav-text">申请证书</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#导出证书"><span class="nav-number">2.2.4.</span> <span class="nav-text">导出证书</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#证书来自某人的-MacBook"><span class="nav-number">2.2.5.</span> <span class="nav-text">证书来自某人的 MacBook</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Devices"><span class="nav-number">2.3.</span> <span class="nav-text">Devices</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Provisioning-Profiles"><span class="nav-number">2.4.</span> <span class="nav-text">Provisioning Profiles</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#iOS-app-签名相关"><span class="nav-number">3.</span> <span class="nav-text">iOS app 签名相关</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#目的"><span class="nav-number">3.1.</span> <span class="nav-text">目的</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#简单的签名方式"><span class="nav-number">3.2.</span> <span class="nav-text">简单的签名方式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#新的问题"><span class="nav-number">3.3.</span> <span class="nav-text">新的问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#两步签名"><span class="nav-number">3.4.</span> <span class="nav-text">两步签名</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#更多细节"><span class="nav-number">3.5.</span> <span class="nav-text">更多细节</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#签名与证书的关系"><span class="nav-number">3.6.</span> <span class="nav-text">签名与证书的关系</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#苹果的验证机制和-https-验证机制的异同"><span class="nav-number">3.7.</span> <span class="nav-text">苹果的验证机制和 https 验证机制的异同</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-number">3.8.</span> <span class="nav-text">总结</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zachary Zhang</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

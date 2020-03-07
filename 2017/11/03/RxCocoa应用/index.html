@@ -1,0 +1,1223 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+
+
+
+
+  <meta name="keywords" content="Swift,RxSwift,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="继续 RxSwift 的学习。这章的难度明显大了许多，很多东西，你知道要这么用没有用，你得知道为什么要这么用，这就需要阅读源码了。本文还是按照书中的章节进行。知其所以然会在后面的文章中补全。">
+<meta name="keywords" content="Swift,RxSwift">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RxCocoa 的应用">
+<meta property="og:url" content="http://zhang759740844.github.io/2017/11/03/RxCocoa应用/index.html">
+<meta property="og:site_name" content="Zachary&#39;s blog">
+<meta property="og:description" content="继续 RxSwift 的学习。这章的难度明显大了许多，很多东西，你知道要这么用没有用，你得知道为什么要这么用，这就需要阅读源码了。本文还是按照书中的章节进行。知其所以然会在后面的文章中补全。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_1.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_42.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_43.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_41.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_44.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_45.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_45.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_47.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_48.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_49.png?raw=true">
+<meta property="og:updated_time" content="2020-02-27T15:13:37.635Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="RxCocoa 的应用">
+<meta name="twitter:description" content="继续 RxSwift 的学习。这章的难度明显大了许多，很多东西，你知道要这么用没有用，你得知道为什么要这么用，这就需要阅读源码了。本文还是按照书中的章节进行。知其所以然会在后面的文章中补全。">
+<meta name="twitter:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_1.png?raw=true">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://zhang759740844.github.io/2017/11/03/RxCocoa应用/">
+
+
+
+
+
+  <title>RxCocoa 的应用 | Zachary's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Zachary's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">记录成长</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://zhang759740844.github.io/2017/11/03/RxCocoa应用/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zachary Zhang">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Zachary's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">RxCocoa 的应用</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-11-03T10:07:12+08:00">
+                2017-11-03
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>继续 RxSwift 的学习。这章的难度明显大了许多，很多东西，你知道要这么用没有用，你得知道为什么要这么用，这就需要阅读源码了。本文还是按照书中的章节进行。知其所以然会在后面的文章中补全。</p>
+<a id="more"></a>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_1.png?raw=true" alt></p>
+<h2 id="使用-RxCocoa-的应用"><a href="#使用-RxCocoa-的应用" class="headerlink" title="使用 RxCocoa 的应用"></a>使用 RxCocoa 的应用</h2><h3 id="开始使用-RxCocoa"><a href="#开始使用-RxCocoa" class="headerlink" title="开始使用 RxCocoa"></a>开始使用 RxCocoa</h3><p>这一章节主要是一个例子。讲的是如何通过 Rx 将天气信息展示出来。</p>
+<h4 id="初印象"><a href="#初印象" class="headerlink" title="初印象"></a>初印象</h4><p>打开 <code>UITextField+Rx.swift</code>，其中只有一个类型为 <code>ControlProperty&lt;String?&gt;</code> 的 <code>text</code> 属性：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_42.png?raw=true" alt></p>
+<p><code>ControlProperty</code> 是一个特殊的 subject，前面也提到过了，和 UI 控件交互的属性都是 subject 类型的。更具体一点，Rxcocoa 中，和 UI 交互的属性都是 <code>ControlProperty</code> 类型。</p>
+<p>再打开 <code>UILabel+Rx.swift</code>，它的两个属性都是 <code>UIBindingObserver</code> 类型：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_43.png?raw=true" alt> </p>
+<p><code>UIBindingObserver</code> 是一个 Observer。它就是在 Subject 与 Observer 一节中提到的特殊的 Observer。它有一个 <code>binding</code> 属性，用来保存默认的事件处理方法，在初始化的时候设置。</p>
+<p>前面也提到过，这种 Observer，没有自定义的事件处理方法，所以只能做诸如设置 UILabel 的 text 等无须 UI 交互的事。</p>
+<h4 id="使用-RxCocoa-的-UIKit"><a href="#使用-RxCocoa-的-UIKit" class="headerlink" title="使用 RxCocoa 的 UIKit"></a>使用 RxCocoa 的 UIKit</h4><p><code>ApiController.swift</code> 用来提供数据，在其中定义了一个方法 <code>currentWeather(city:)</code>，用来提供默认的天气数据：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">currentWeather</span><span class="params">(city: String)</span></span> -&gt; <span class="type">Observable</span>&lt;<span class="type">Weather</span>&gt; &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="type">Observable</span>.just(</span><br><span class="line">    	<span class="type">Weather</span>(</span><br><span class="line">        	cityName: city,</span><br><span class="line">        	temperature: <span class="number">20</span>,</span><br><span class="line">        	humidity: <span class="number">90</span>)</span><br><span class="line">    )</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个方法接受一个参数：城市city，返回一个只有一个元素的 Observable，事件值类型为天气Weather类型。</p>
+<p>接下来就可以在 ViewController 中订阅了。在 <code>viewDidLoad</code> 中设置:</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">ApiController</span>.shared.currentWeather(city: <span class="string">"Shanghai"</span>)</span><br><span class="line">	.observeOn(<span class="type">MainScheduler</span>.instance)</span><br><span class="line">	.subscribe( onNext: &#123; data <span class="keyword">in</span></span><br><span class="line">		<span class="keyword">self</span>.tempLabel.text = <span class="string">"\(data.temperature)°C"</span></span><br><span class="line">		<span class="keyword">self</span>.cityNameLabel.text = data.cityName</span><br><span class="line">		<span class="keyword">self</span>.humidityLabel.text = <span class="string">"\(data.humidity)%"</span></span><br><span class="line">	&#125;).addDisposableTo(bag)</span><br></pre></td></tr></table></figure>
+<p>其中 <code>shared</code> 用来获取单例，<code>observeOn(MainScheduler.instance)</code> 用来将操作限制在主线程中，因为这是在操作 UI。</p>
+<p>那么如何获取到 city 的呢？我们可以有一个 textfield <code>searchCityName</code> 用来接受用户的输入。RxCocoa 通过协议拓展的方式为大多数 UIKit 的成员都添加了 <code>rx</code> 的相关属性。比如 textfield，我们可以输入 <code>searchCityName.rx.</code> 就可以查看到很多可以使用的 Rx 相关的属性和方法。这里我们要使用的是 textfield 的 <code>text</code> 属性：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> search = searchCityName.rx.text</span><br><span class="line">	.<span class="built_in">filter</span> &#123; ($<span class="number">0</span> ?? <span class="string">""</span>).characters.<span class="built_in">count</span> &gt; <span class="number">0</span>&#125;</span><br><span class="line">	.flatMapLatest &#123; text <span class="keyword">in</span></span><br><span class="line">		<span class="keyword">return</span> <span class="type">ApiController</span>.shared.currentWeather(city: text ?? <span class="string">"Error"</span>)</span><br><span class="line">                    .catchErrorJustReturn(<span class="type">ApiController</span>.<span class="type">Weather</span>.empty)</span><br><span class="line">	&#125;.observeOn(<span class="type">MainScheduler</span>.instance)</span><br><span class="line"><span class="comment">// 订阅</span></span><br><span class="line">search.subscribe(</span><br><span class="line">    	...</span><br><span class="line">    ).addDisposableTo(bag)</span><br></pre></td></tr></table></figure>
+<p>这段代码做了什么，这段代码将 textfield 的输入框和处理逻辑绑定了起来，输入框一有输入，那么就触发事件。先将空输入过滤掉，然后将 textfield 中输入的值通过 flatMapLatest 再转换为新的 Observable，即 city 转 Weather 的过程。其中如果 <code>currentWeather</code> 的转换产生了错误，就通过 <code>catchErrorJustReturn</code> 使用默认的事件值，空 Weather。</p>
+<p>通过这个例子，可以再复习一下 flatMapLatest 和 flatMap 的区别。这个例子中 flatMapLatest 和 flatMap 是一样的，因为 <code>currentWeather</code> 返回的 Observable 只有一个元素，所以只订阅最后的 Observable 和 订阅每一个 Observable 没有区别，因为 Observable 不会再有事件发生了。但是，如果这里 <code>currentWeather</code> 是一个异步的操作，比如去网上拉取数据，那就必须使用 flatMapLatest 了。试想一下，在上一个网络请求还没有完成的时候，输入变化，这样又触发了一次网络请求。使用 flatMap 就会在每一次网络请求结束时都做响应，但这个并不符合逻辑，应该只响应最后一次网络请求，否则会产生请求覆盖。所以一定要用 flatMapLatest。 </p>
+<p>以上的数据流程如图所示：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_41.png?raw=true" alt></p>
+<h4 id="绑定-Observable"><a href="#绑定-Observable" class="headerlink" title="绑定 Observable"></a>绑定 Observable</h4><p>绑定是一种单向的数据流。RxCocoa 中的绑定通过 <code>bindTo(_:)</code> 实现。被绑定的对象的类型必须是 <code>ObserverType</code>，也就是 Observer 对象。</p>
+<blockquote>
+<p>书上这个地方我认为是有问题的，书上的原话是：</p>
+<p>The fundamental function of binding is bindTo(_:). To bind an observable to another entity, the receiver must conform to ObserverType. This entity has been explained in previous chapters: it’s a Subject which can process values, but can also be written to manually.</p>
+<p>书上说 ObserverType 就是一种 Subject，这样说是没有道理的。Subject 的范围要比 ObserverType 大，Subject 可以被订阅，提供自定义事件处理方法，但是 <code>bindTo()</code> 并不需要，它只需要有一个默认的事件处理方法即可。所以我认为书上这么说至少是不严谨的。</p>
+</blockquote>
+<p><code>bindTo(_:)</code> 是一种特殊的 subscribe，也是在 Observable 触发事件的时候，调用 Observer 的事件处理方法。但是原本需要在 subscribe 的时候传入的事件处理方法现在要求被绑定的 Observer 自己提供。所以像 <code>UIBindingObserver</code> 这样有默认事件处理方法的 Observer 或者一个已经被订阅过的 Subject 都是可以作为绑定对象的。</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> search = searchCityName.rx.text</span><br><span class="line">	.<span class="built_in">filter</span> &#123; ($<span class="number">0</span> ?? <span class="string">""</span>).characters.<span class="built_in">count</span> &gt; <span class="number">0</span>&#125;</span><br><span class="line">	.flatMapLatest &#123; text <span class="keyword">in</span></span><br><span class="line">		<span class="keyword">return</span> <span class="type">ApiController</span>.shared.currentWeather(city: text ?? <span class="string">"Error"</span>)</span><br><span class="line">                    .catchErrorJustReturn(<span class="type">ApiController</span>.<span class="type">Weather</span>.empty)</span><br><span class="line">	&#125;.observeOn(<span class="type">MainScheduler</span>.instance)</span><br><span class="line"><span class="comment">// 绑定</span></span><br><span class="line">search.<span class="built_in">map</span> &#123;<span class="string">"\($0.temperature)°C"</span>&#125;</span><br><span class="line">	.bindTo(tempLabel.rx.text)</span><br><span class="line">	.addDisposableTo(bag)</span><br></pre></td></tr></table></figure>
+<p>看到上面的代码，通过一个 map 将整个 <code>Weather</code> 对象剥离出来，只要其中的 <code>temperature</code> 属性。然后将其绑定给 <code>tempLabel.rx.text</code> 这个 Observer（这种通过 map 取出部分属性再进行绑定是一个很好的方式）。这就是前面说到的 <code>UIBindingObserver</code> 类型，它提供了一个默认的事件处理方法，将外部传来的字符串，设置为自己的 text 属性。</p>
+<h4 id="使用-Units"><a href="#使用-Units" class="headerlink" title="使用 Units"></a>使用 Units</h4><p>Units 是一类专门用来使 UI 绑定更简单的 Observables。它不会产生异常，并且默认在主线程中。它有以下两大类：</p>
+<ol>
+<li><code>ControlProperty</code> 和 <code>ControlEvent</code></li>
+<li><code>Driver</code></li>
+</ol>
+<p><code>ControlProperty</code> 前面已经看到过了，是一种 Subject，用来将 UI 组件和数据绑定，例子中的 <code>searchCityName.rx.text</code> 就是一个  <code>ControlProperty</code>。<code>ControlEvent</code> 从命名上也能推测出，它用来监听 <code>UIControlEvents</code>。<code>Drivers</code>就是刚才说的不会产生异常，并且一定在主线程中的 Observable。如果不使用 Units，你可能会忘记调用 <code>.observeOn(MainScheduler.instance)</code>，最终在其他线程中更新 UI 导致崩溃。</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> search = searchCityName.rx.text</span><br><span class="line">	.<span class="built_in">filter</span> &#123; ($<span class="number">0</span> ?? <span class="string">""</span>).characters.<span class="built_in">count</span> &gt; <span class="number">0</span>&#125;</span><br><span class="line">	.flatMapLatest &#123; text <span class="keyword">in</span></span><br><span class="line">		<span class="keyword">return</span> <span class="type">ApiController</span>.shared.currentWeather(city: text ?? <span class="string">"Error"</span>)</span><br><span class="line">	&#125;.asDriver(onErrorJustReturn: <span class="type">ApiController</span>.<span class="type">Weather</span>.empty)</span><br><span class="line"></span><br><span class="line">search.<span class="built_in">map</span> &#123; <span class="string">"\($0/temerature)°C"</span> &#125;</span><br><span class="line">	.drive(tempLabel.rx.text)</span><br><span class="line">	.addDisposableTo(bag)</span><br></pre></td></tr></table></figure>
+<p>可以看到，使用 <code>asDriver(onErrorJustReturn:)</code> 代替了 <code>observeOn(MainSchedule.instance)</code>。另外，用 <code>drive</code> 代替了 <code>bindTo</code>。</p>
+<p>我们现在绑定了一个 textfield，在每次其输入的时候都做了响应，这样其实是没有必要的。一般可以使用 <code>throttle</code> 操作符，这个是用来控制每隔多久发送一次事件的。还有更好的方法是监听用户点击返回按钮，当点击的时候获取搜索框中的输入。需要对上面的代码做一些变化：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> search = searchCityName.rx.controlEvent(.editingDidEndOnExit).asObservable()</span><br><span class="line">	.<span class="built_in">map</span> &#123; <span class="keyword">self</span>.searchCityName.text &#125;</span><br><span class="line">	.<span class="built_in">filter</span> &#123; ($<span class="number">0</span> ?? <span class="string">""</span>).characters.<span class="built_in">count</span> &gt; <span class="number">0</span>&#125;</span><br><span class="line">	.flatMapLatest &#123; text <span class="keyword">in</span></span><br><span class="line">		<span class="keyword">return</span> <span class="type">ApiController</span>.shared.currentWeather(city: text ?? <span class="string">"Error"</span>)</span><br><span class="line">	&#125;.asDriver(onErrorJustReturn: <span class="type">ApiController</span>.<span class="type">Weather</span>.empty)</span><br></pre></td></tr></table></figure>
+<p>所以现在的数据流图变成了：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_44.png?raw=true" alt></p>
+<h3 id="进一步拓展"><a href="#进一步拓展" class="headerlink" title="进一步拓展"></a>进一步拓展</h3><p>上一章中，完成了一个输入城市，然后显示城市天气的功能。这一章将对其进行拓展。</p>
+<h4 id="加载等待状态"><a href="#加载等待状态" class="headerlink" title="加载等待状态"></a>加载等待状态</h4><p>首先是给加载天气这个过程中加载一个等待的菊花图。这个菊花图的展示与否有两个条件：用户点击搜索时加载，获取到搜索结果后隐藏。点击搜索和获取搜索结果的 Observable 分别定义为如下：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> searchInput = </span><br><span class="line">searchCityName.rx.controlEvent(.editingDidEndOnExit).asObservable()</span><br><span class="line">	.<span class="built_in">map</span> &#123; <span class="keyword">self</span>.searchCityName.text &#125;</span><br><span class="line">	.<span class="built_in">filter</span> &#123; ($<span class="number">0</span> ?? <span class="string">""</span>).characters.<span class="built_in">count</span> &gt; <span class="number">0</span>&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> search = searchInput.flatMapLatest &#123; text <span class="keyword">in</span></span><br><span class="line">	<span class="keyword">return</span> <span class="type">ApiController</span>.shared.currentWeather(city: text ?? <span class="string">"Error"</span>)</span><br><span class="line">		.catchErrorJustReturn(<span class="type">ApiController</span>.<span class="type">Weather</span>.dummy)</span><br><span class="line">&#125;.asDriver(onErrorJustReturn: <span class="type">ApiController</span>.<span class="type">Weather</span>.dummy)</span><br></pre></td></tr></table></figure>
+<p>什么时候满足这两个条件？当 <code>searchInput</code> 事件发生的时候显示，当 <code>search</code> 事件发生的时候隐藏。所以我们的等待状态需要分别订阅这两个 Observable。但是这样的做法并不优雅，上一篇我们学过如何合并两个 Observable 的事件了，就是用 <code>merge</code>:</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_45.png?raw=true" alt></p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> running = <span class="type">Observable</span>.from([</span><br><span class="line">  searchInput.<span class="built_in">map</span> &#123; <span class="number">_</span> <span class="keyword">in</span> <span class="literal">true</span>&#125;.asObservable(), </span><br><span class="line">  search.<span class="built_in">map</span> &#123; <span class="number">_</span> <span class="keyword">in</span> <span class="literal">false</span>&#125;.asObservable()</span><br><span class="line">]).merge()</span><br><span class="line">.startWith(<span class="literal">true</span>)</span><br><span class="line">.asDriver(onErrorJustReturn: <span class="literal">false</span>)</span><br><span class="line"></span><br><span class="line">running.skip(<span class="number">1</span>)</span><br><span class="line">	.drive(activityIndicator.rx.isAnimating)</span><br><span class="line">	.addDisposableTo(bag)</span><br><span class="line"></span><br><span class="line">running.drive(tempLabel.rx.isHidden)</span><br><span class="line">	.addDisposableTo(bag)</span><br></pre></td></tr></table></figure>
+<p>上面的代码可以看到，每当 <code>searchInput</code> 触发的时候，发出一个事件值为 true 的事件，当 <code>search</code> 触发的时候，发出一个事件值为 false 的事件。但是为什么要设置第一个事件为 true，又略过第一个事件呢？因为展示的 label 的 <code>isHidden</code> 属性和等待状态的 <code>isAnumating</code> 是相反的，即展示 label 的时候隐藏等待状态，展示等待状态的时候隐藏 label。但是最开始的时候既要 label 隐藏，又要等待状态隐藏，所以要略过第一个事件值。</p>
+<h4 id="获取当前位置"><a href="#获取当前位置" class="headerlink" title="获取当前位置"></a>获取当前位置</h4><p>这一章主要讲的是如何用 RxSwift 实现一个代理方法，要理解起来挺有难度的，这里先只是讲步骤，后面会转门写一篇代理转发的源码解析。</p>
+<p>获取位置使用的是 <code>CCLocationManager</code> 类，这个类有一个代理 <code>CLLocationManagerDelegate</code>。我们需要做的就是在 <code>CCLocationManager</code> 回调代理方法的时候触发事件，将回调的参数作为事件值。</p>
+<p>怎么做到的呢？这里不做详细展开，只介绍一下大概思路。简单来说，就是首先将我们创建的基于 Rx 的代理设置为 <code>CCLocationManager</code> 的 delegate。其次，由于我们不是没有写真实的响应方法嘛，当 <code>CCLocationManager</code> 要调用代理方法的时候一般是会产生异常的。但是我们可以通过消息转发，将所有调用代理方法的行为转化为发出特定事件。我们只需要通过方法名获取到相应的 Observable 并且订阅，即可达到响应式的效果。</p>
+<p>因此，我们创建一个基于 rx 的代理类 <code>RxCLLocationManagerDelegateProxy</code>。这个 Delegate 要继承于 <code>DelegateProxy</code>，并且实现 <code>CLLocationManagerDelegate</code> 和 <code>DelegateProxyType</code> 协议。实现 <code>CLLocationManagerDelegate</code> 协议很好理解，因为我们要把自己设为 <code>CLLocationManager</code> 的代理。另外两个就是实现响应式的关键了：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">RxCLLocationManagerDelegateProxy</span>: <span class="title">DelegateProxy</span>, <span class="title">CLLocationManager</span>, <span class="title">DelegateProxyType</span> </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们要提供两个方法用来设置和获取当前 Delegate。这是 <code>DelegateProxyType</code>中要求的，有了它，订阅回调方法的时候，就可以由 Rx 自动把当前类设置为 Delegate 了，而不需要我们显示的设置：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">RxCLLocationManagerDelegateProxy</span>: <span class="title">DelegateProxy</span>, <span class="title">CLLocationManager</span>, <span class="title">DelegateProxyType</span> </span>&#123;</span><br><span class="line">	<span class="class"><span class="keyword">class</span> <span class="title">func</span> <span class="title">setCurrentDelegate</span>(_ <span class="title">delegate</span>: <span class="title">AnyObject</span>?, <span class="title">toObject</span> <span class="title">object</span>: <span class="title">AnyObject</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">let</span> locationManager: <span class="type">CLLocationManager</span> = object <span class="keyword">as</span>! <span class="type">CLLocationManager</span></span><br><span class="line">      	locationManager.delegate = delegate <span class="keyword">as</span>? <span class="type">CLLocationManagerDelegate</span></span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">  	<span class="class"><span class="keyword">class</span> <span class="title">func</span> <span class="title">currentDelegateFor</span>(_ <span class="title">object</span>: <span class="title">AnyObject</span>) -&gt; <span class="title">AnyObject</span>? </span>&#123;</span><br><span class="line">        <span class="keyword">let</span> locationManager: <span class="type">CLLocationManager</span> = object <span class="keyword">as</span>! <span class="type">CLLocationManager</span></span><br><span class="line">      	<span class="keyword">return</span> locationManager.delegate</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>现在我们要 <code>CLLocationManager</code> 添加一个 rx 的 delegate 属性。关于 rx 的属性都是添加在 <code>Reactive</code> 类的拓展中，具体为什么会在以后的文章中解释。这是一个计算属性，每次都会调用 <code>proxyForObject</code> 方法。这个方法是在 <code>DelegateProxy</code> 中实现的，作用就是创建 <code>RxCLLocationManagerDelegateProxy</code> 实例，并且将其设置为 <code>CLLocationManager</code> 的代理</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">extension</span> <span class="title">Reactive</span> <span class="title">where</span> <span class="title">Base</span>: <span class="title">CLLocationManager</span> </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> delegate: <span class="type">DelegateProxy</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="type">RxCLLocationManagerDelegateProxy</span>.proxyForObject(base)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>现在设置到代理就可以添加监听代理方法调用的 Observable 了：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">extension</span> <span class="title">Reactive</span> <span class="title">where</span> <span class="title">Base</span>: <span class="title">CLLocationManager</span> </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> delegate: <span class="type">DelegateProxy</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="type">RxCLLocationManagerDelegateProxy</span>.proxyForObject(base)</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    <span class="keyword">var</span> didUpdateLocations: <span class="type">Observable</span>&lt;[<span class="type">CLLocation</span>]&gt; &#123;</span><br><span class="line">      <span class="keyword">return</span> delegate.methodInvoked(#selector(<span class="type">CLLocationManagerDelegate</span>.locationManager(<span class="number">_</span>:didUpdateLocations:)))</span><br><span class="line">    	.<span class="built_in">map</span> &#123; paramters <span class="keyword">in</span></span><br><span class="line">             <span class="keyword">return</span> parameters[<span class="number">1</span>] <span class="keyword">as</span>! [<span class="type">CLLocation</span>]</span><br><span class="line">        &#125;</span><br><span class="line">  	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>methodInvoked</code> 方法同样是 <code>DelegateProxy</code> 中实现的方法。它获取相应 selector 所对应的 Observable。这个 selector 和 Observable 的关系是以字典的方式保存在 <code>DelegateProxy</code> 中的。当调用代理方法的时候，就会变为触发相应 selector 的 Observable。Observable 的事件值就是代理方法的参数，上面的 <code>parameters[1]</code> 就表示 <code>didUpdateLocations:</code> 的参数。</p>
+<p>到此，rx 实现的代理方法就完成了。</p>
+<p>最后如何监听按钮开始定位我就不再赘述了。</p>
+<h2 id="中级-RxSwift-RxCocoa"><a href="#中级-RxSwift-RxCocoa" class="headerlink" title="中级 RxSwift/RxCocoa"></a>中级 RxSwift/RxCocoa</h2><h3 id="错误处理"><a href="#错误处理" class="headerlink" title="错误处理"></a>错误处理</h3><p>错误处理部分比较简单，一般有两种方式：捕获或者重试。</p>
+<h4 id="捕获"><a href="#捕获" class="headerlink" title="捕获"></a>捕获</h4><p>捕获有两种，一种是直接传递一个默认值，也就是前面常见的:</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">catchErrorJustReturn</span><span class="params">(<span class="number">_</span> element:)</span></span> -&gt; <span class="type">RxSwift</span>.<span class="type">Observable</span>&lt;<span class="type">Self</span>.<span class="type">E</span>&gt;</span><br></pre></td></tr></table></figure>
+<p>它会自动将这个默认值作为事件值发出一个新的事件。另外还有一种，接受一个闭包，然后返回一个新的 Observable：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">catchError</span><span class="params">(<span class="number">_</span> handler:)</span></span> -&gt; <span class="type">RxSwift</span>.<span class="type">Observable</span>&lt;<span class="type">Self</span>.<span class="type">E</span>&gt;</span><br></pre></td></tr></table></figure>
+<p>示例：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">.catchError &#123; error <span class="keyword">in</span></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">let</span> text = text, <span class="keyword">let</span> cachedData = <span class="keyword">self</span>.cache[text] &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="type">Observable</span>.just(cachedData)</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="type">Observable</span>.just(<span class="type">ApiController</span>.<span class="type">Weather</span>.empty)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="重试"><a href="#重试" class="headerlink" title="重试"></a>重试</h4><p>重试就是在 Observable 触发 error 的时候，重新尝试发出事件。使用方式很简单，在捕获错误前即可，参数为做大尝试次数：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">return</span> <span class="type">ApiController</span>.shared.currentWeather(city: text ?? <span class="string">"Error"</span>) </span><br><span class="line">	.<span class="keyword">do</span>(onNext: &#123; data <span class="keyword">in</span> </span><br><span class="line">		<span class="keyword">if</span> <span class="keyword">let</span> text = text &#123; </span><br><span class="line">          	<span class="keyword">self</span>.cache[text] = data </span><br><span class="line">        &#125; </span><br><span class="line">	&#125;).retry(<span class="number">3</span>) </span><br><span class="line">	.catchError &#123; error <span class="keyword">in</span> </span><br><span class="line">		<span class="keyword">if</span> <span class="keyword">let</span> text = text, <span class="keyword">let</span> cachedData = <span class="keyword">self</span>.cache[text] &#123; </span><br><span class="line">          	<span class="keyword">return</span> <span class="type">Observable</span>.just(cachedData) </span><br><span class="line">        &#125; <span class="keyword">else</span> &#123; </span><br><span class="line">          	<span class="keyword">return</span> <span class="type">Observable</span>.just(<span class="type">ApiController</span>.<span class="type">Weather</span>.empty) </span><br><span class="line">        &#125; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>还有一种 <code>retryWhen()</code> 方法：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">.retryWhen &#123; e <span class="keyword">in</span> </span><br><span class="line">	<span class="keyword">return</span> e.flatMapWithIndex &#123; (error, attempt) -&gt; <span class="type">Observable</span>&lt;<span class="type">Int</span>&gt; <span class="keyword">in</span> </span><br><span class="line">		<span class="keyword">if</span> attempt &gt;= maxAttempts - <span class="number">1</span> &#123; </span><br><span class="line">          	<span class="keyword">return</span> <span class="type">Observable</span>.error(error) </span><br><span class="line">        &#125; </span><br><span class="line">		<span class="keyword">return</span> <span class="type">Observable</span>&lt;<span class="type">Int</span>&gt;.timer(<span class="type">Double</span>(attempt + <span class="number">1</span>), scheduler: <span class="type">MainScheduler</span>.instance).take(<span class="number">1</span>) </span><br><span class="line">	&#125; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个方法中，在未达到最多尝试次数前都不报错。每隔一秒钟重试一次。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_45.png?raw=true" alt></p>
+<h3 id="单元测试"><a href="#单元测试" class="headerlink" title="单元测试"></a>单元测试</h3><p>RxSwift 的官方提供了 RxTest 和 RxBlocking 两个库帮助我们进行单元测试。下面来学习一下。</p>
+<h4 id="RxTest"><a href="#RxTest" class="headerlink" title="RxTest"></a>RxTest</h4><p>RxSwift 的单元测试的主要过程就是：自建一个 Observable，然后给定几个默认的值，以检测订阅方法的正确性。</p>
+<p>Observable 主要分为 Cold Observable 和 Hot Observable。Rx 认为，这两者都是 Observable，所以并不怎么做区分。但是单元测试的时候还是需要了解一下的。简单的说，通过 <code>create</code> 等创建的普通的 Observable 就是 Cold Observable，特点就是当订阅发生的时候立刻发出事件；各种 Subject 就是 Hot Observable，特点就是无论是否订阅都会发出事件，订阅之后才能收到事件。</p>
+<p>我们来看一个例子：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">override</span> <span class="function"><span class="keyword">func</span> <span class="title">setUp</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="keyword">super</span>.setUp()</span><br><span class="line">  	scheduler = <span class="type">TestScheduler</span>(initialClock: <span class="number">0</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">testFilter</span><span class="params">()</span></span> &#123;</span><br><span class="line">  	<span class="comment">// 1</span></span><br><span class="line">    <span class="keyword">let</span> observer = scheduler.createObserver(<span class="type">Int</span>.<span class="keyword">self</span>)</span><br><span class="line">  	</span><br><span class="line">  	<span class="comment">// 2</span></span><br><span class="line">  	<span class="keyword">let</span> observable = scheduler.createHotObservable([</span><br><span class="line">        next(<span class="number">100</span>, <span class="number">1</span>),</span><br><span class="line">      	next(<span class="number">200</span>, <span class="number">2</span>),</span><br><span class="line">      	next(<span class="number">300</span>, <span class="number">3</span>),</span><br><span class="line">      	next(<span class="number">400</span>, <span class="number">2</span>),</span><br><span class="line">      	next(<span class="number">500</span>, <span class="number">1</span>)</span><br><span class="line">    ])</span><br><span class="line">  </span><br><span class="line">  	<span class="comment">// 3</span></span><br><span class="line">  	<span class="keyword">let</span> filterObservable = observable.<span class="built_in">filter</span> &#123;</span><br><span class="line">        $<span class="number">0</span> &lt; <span class="number">3</span></span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">  	<span class="comment">// 4</span></span><br><span class="line">  	schedyler.scheduleAt(<span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">self</span>.subscription = filterObservable.subscribe(observer)</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">  	<span class="comment">// 5</span></span><br><span class="line">  	scheduler.start()</span><br><span class="line">  </span><br><span class="line">  	<span class="comment">// 6</span></span><br><span class="line">  	<span class="keyword">let</span> results = observer.events.<span class="built_in">map</span> &#123;</span><br><span class="line">        $<span class="number">0</span>.value.element@</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">  	<span class="comment">// 7</span></span><br><span class="line">    <span class="type">XCTAssertEqual</span>(results, [<span class="number">1</span>, <span class="number">2</span>, <span class="number">2</span>, <span class="number">3</span>])</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">override</span> <span class="function"><span class="keyword">func</span> <span class="title">tearDown</span><span class="params">()</span></span> &#123;</span><br><span class="line">    scheduler.scheduleAt(<span class="number">1000</span>) &#123;</span><br><span class="line">        <span class="keyword">self</span>.subsciprtion.dispose()</span><br><span class="line">    &#125;</span><br><span class="line">  	<span class="keyword">super</span>.tearDown()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>下面来解释一下这个例子。首先在 <code>setUp</code> 方法中，创建了 <code>TestScheduler</code> 实例。所有的订阅事件都会在这个 Scheduler 中进行。然后就是测试方法。测试方法分为七个步骤：</p>
+<ol>
+<li>用 Scheduler 创建 Observer，并且设置 Observable 事件值类型</li>
+<li>用 Scheduler 创建 Hot Observable，并且设置了延迟多久发出事件，以及发出的事件值</li>
+<li>这一步的过滤就是被测试的方法</li>
+<li>用 Scheduler 在某个时刻开始订阅上面创建的 Observable</li>
+<li>开启 Scheduler，不开启是不会有事件发生的哦</li>
+<li>用一个对象收集 Observer 获得的事件值</li>
+<li>断言判断 Observer 获得的事件值是否和预期的一样</li>
+</ol>
+<h4 id="RxBlocking"><a href="#RxBlocking" class="headerlink" title="RxBlocking"></a>RxBlocking</h4><p>上面的 RxTest 是一个同步测试。如果有网络请求之类的异步事件该如何呢？我们可以使用 XCTest 中提供的 expectation，不过这样就显得很啰嗦了。RxBlocking 可以简化这一过程。下面是一个使用实例：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">testRgbIs010</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="keyword">let</span> rgbObservable = viewModel.rgb.asObservable().subscribeOn(scheduler)</span><br><span class="line">  	viewModel.hexString.value = <span class="string">"#00ff00"</span></span><br><span class="line">  	<span class="keyword">let</span> result = <span class="keyword">try</span>! rgbObservable.toBlocking(timeout: <span class="number">1.0</span>).first()!</span><br><span class="line">  </span><br><span class="line">  	<span class="type">XCTAssertEqual</span>(<span class="number">0</span> * <span class="number">255</span>, result.<span class="number">0</span>)</span><br><span class="line">  	<span class="type">XCTAssertEqual</span>(<span class="number">1</span> * <span class="number">255</span>, result.<span class="number">1</span>)</span><br><span class="line">  	<span class="type">XCTAssertEqual</span>(<span class="number">0</span> * <span class="number">255</span>, result.<span class="number">2</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>看一下这个例子，这里 <code>rgb</code> 是一个 <code>Driver</code> 类型，我没有把它的定义写出来。<code>rgbObservable</code> 是一个异步事件的 Observable。如果不适用 <code>toBlocking()</code>，那么程序顺序执行，订阅完了也就结束了。但是这里通过对 Observable 使用 <code>toBlocking</code> 方法，就将 Observable 阻塞住了。它会等待事件的到来，直到定时结束。</p>
+<h3 id="Scheduler-的介绍"><a href="#Scheduler-的介绍" class="headerlink" title="Scheduler 的介绍"></a>Scheduler 的介绍</h3><p>对 Scheduler 的通常误解是认为 Scheduler 就是 thread。其实 Scheduler 应该类比 dispatch queue。一个 Schelduler 可能在多个线程中，多个 Scheduler 也可能在一个线程中：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_47.png?raw=true" alt></p>
+<h4 id="基本使用"><a href="#基本使用" class="headerlink" title="基本使用"></a>基本使用</h4><p>我们可以通过 <code>subscribeOn()</code> 以及 <code>observerOn()</code> 来将订阅和执行设置不同 scheduler：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> globalScheduler = <span class="type">ConcurrentDispatchQueueScheduler</span>(queue: <span class="type">DispatchQueue</span>.global())</span><br><span class="line"></span><br><span class="line">observable.subscribeOn(globalScheduler)</span><br><span class="line">	.subsribeOn(gloibalScheduler)</span><br><span class="line">	.<span class="built_in">dump</span>()</span><br><span class="line">	.observeOn(<span class="type">MainScheduler</span>.instance)</span><br><span class="line">	.dumpingSubscription()</span><br><span class="line">	.addDisposableTo(bag)</span><br></pre></td></tr></table></figure>
+<h4 id="冷热Observable-对-Schedulers-的影响"><a href="#冷热Observable-对-Schedulers-的影响" class="headerlink" title="冷热Observable 对 Schedulers 的影响"></a>冷热Observable 对 Schedulers 的影响</h4><p>这里主要介绍了一个注意点，就是对于 hot Observable，它订阅所在的线程就是其发出事件所在的线程，所以使用 <code>subscribeOn()</code> 方法控制是无效的。</p>
+<h3 id="自定义-Rx-拓展"><a href="#自定义-Rx-拓展" class="headerlink" title="自定义 Rx 拓展"></a>自定义 Rx 拓展</h3><p>这里是一个拓展 <code>URLSession</code>，使其通过 rx 获取数据以及处理数据的例子：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">extensiong <span class="type">Reactive</span> <span class="keyword">where</span> <span class="type">Base</span>: <span class="type">URLSession</span> &#123;</span><br><span class="line">    <span class="function"><span class="keyword">func</span> <span class="title">response</span><span class="params">(request: URLRequest)</span></span> -&gt; <span class="type">Observable</span>&lt;(<span class="type">HTTPURLResponse</span>, <span class="type">Data</span>)&gt; &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="type">Observable</span>.create &#123; observer <span class="keyword">in</span> </span><br><span class="line">			<span class="keyword">let</span> tast = <span class="keyword">self</span>.base.dataTask(with: request) &#123; (data, response, error) <span class="keyword">in</span></span><br><span class="line">				<span class="keyword">guard</span> <span class="keyword">let</span> response = response, <span class="keyword">let</span> data = data <span class="keyword">else</span> &#123;</span><br><span class="line">                    observer.on(.error(error ?? <span class="type">RxURLSessionError</span>.unKnown))</span><br><span class="line">                  	<span class="keyword">return</span></span><br><span class="line">                &#125;</span><br><span class="line">				<span class="keyword">guard</span> <span class="keyword">let</span> httpResponse = response <span class="keyword">as</span>? <span class="type">HTTPURLResponse</span> <span class="keyword">else</span> &#123;</span><br><span class="line">                    observer.on(.error(<span class="type">RxURLSessionError</span>.invalidResponse(response: response)))</span><br><span class="line">                  	<span class="keyword">return</span></span><br><span class="line">                &#125;</span><br><span class="line">				observer.on(.next(httpResponse, data))</span><br><span class="line">				observer.on(.completed)</span><br><span class="line">			&#125;</span><br><span class="line">			task.resume()</span><br><span class="line">			</span><br><span class="line">			<span class="keyword">return</span> <span class="type">Disponsables</span>.create(with: task.cancel)</span><br><span class="line">		&#125;</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">  	<span class="function"><span class="keyword">func</span> <span class="title">data</span><span class="params">(request: URLRequest)</span></span> -&gt; <span class="type">Observable</span>&lt;<span class="type">Data</span>&gt; &#123;</span><br><span class="line">        <span class="keyword">return</span> response(requset: request).<span class="built_in">map</span> &#123; (response, data) -&gt; <span class="type">Data</span> <span class="keyword">in</span></span><br><span class="line">			<span class="keyword">if</span> <span class="number">200</span> ..&lt; <span class="number">300</span> ~= response.statusCode &#123;</span><br><span class="line">                <span class="keyword">return</span> data</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="type">RxURLSessionError</span>.requestFailed(response: response, data: data)</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">  	<span class="function"><span class="keyword">func</span> <span class="title">image</span><span class="params">(request: URLResquest)</span></span> -&gt; <span class="type">Observable</span>&lt;<span class="type">UIImage</span>&gt; &#123;</span><br><span class="line">        <span class="keyword">return</span> data(request: request).<span class="built_in">map</span> &#123; d <span class="keyword">in</span></span><br><span class="line">        	<span class="keyword">return</span> <span class="type">UIImage</span>(data: d) ?? <span class="type">UIImage</span>()                                  </span><br><span class="line">		&#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>以上就是一个获取网络图片的的一个基本过程，先是一个 <code>response</code> 方法，因为是 rx 嘛，必须返回一个 Observable 以供订阅。在方法中通过 <code>.create()</code> 创建一个 Observable，然后在其中开始网络请求，也就是 <code>dataTask</code> 方法。在网络请求的回调中，将获取的数据作为事件值，发出一个事件，之后结束整个 Observable。另外的两个方法是在网络请求的基础上，通过 <code>map</code> 将事件值进行进一步处理。这个网络请求流程如图：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_48.png?raw=true" alt></p>
+<p>更进一步的，我们可以为这个网络请求设置一个缓存，即将获取的数据做一个接口层面的缓存。我们可以这样做：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 全局的或者某个单例,用来保存缓存</span></span><br><span class="line"><span class="keyword">fileprivate</span> <span class="keyword">var</span> internalCache = [<span class="type">String</span>: <span class="type">Data</span>]()</span><br><span class="line"></span><br><span class="line"><span class="comment">// 缓存方法</span></span><br><span class="line"><span class="class"><span class="keyword">extension</span> <span class="title">ObservableType</span> <span class="title">where</span> <span class="title">E</span> == (<span class="title">HTTPURLResponse</span>, <span class="title">Data</span>) </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">func</span> <span class="title">cache</span><span class="params">()</span></span> -&gt; <span class="type">Observable</span>&lt;<span class="type">E</span>&gt; &#123;</span><br><span class="line">      	<span class="keyword">return</span> <span class="keyword">self</span>.<span class="keyword">do</span>(onNext: &#123;(response, data) <span class="keyword">in</span> </span><br><span class="line">        	<span class="keyword">if</span> <span class="keyword">let</span> url = response.url?.absoluteString, <span class="number">200</span> ..&lt; <span class="number">300</span> ~= response.statusCode &#123;</span><br><span class="line">            	internalCache[url] = data</span><br><span class="line">        	&#125;</span><br><span class="line">		&#125;)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>先创建一个全局的保存缓存的地方，键是 url，值是数据。然后在 <code>ObservableType</code> 中添加一个针对网络请求的缓存方法，所有 Observable 都是 <code>ObservableType</code> 类型的。这个 <code>cache</code> 方法做了一件事就是通过 <code>.do</code>给 Observable 添加了一个 <code>onNext</code> 方法，每次触发事件的时候都会调用。使用上和 <code>map</code> 类似。现在将之前的 <code>data</code>，以及 <code>image</code> 方法修改一下即可：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">return</span> response(request: request).cache().<span class="built_in">map</span> &#123; (response, data) -&gt; <span class="type">Data</span> <span class="keyword">in</span></span><br><span class="line">	<span class="comment">//...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>由于有了缓存，所以需要在请求数据前加一步验证。如果有缓存，直接返回一个 Observable：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> <span class="keyword">let</span> url = request.url?.absoluteString, <span class="keyword">let</span> data = internalCache[url] &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="type">Observable</span>.just(data)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_49.png?raw=true" alt></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tag/Swift/" rel="tag"># Swift</a>
+          
+            <a href="/tag/RxSwift/" rel="tag"># RxSwift</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/10/26/RxSwift一些概念/" rel="next" title="RxSwift 的概念">
+                <i class="fa fa-chevron-left"></i> RxSwift 的概念
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/11/14/RxSwift原理/" rel="prev" title="RxSwift 的一些原理解析">
+                RxSwift 的一些原理解析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.png" alt="Zachary Zhang">
+            
+              <p class="site-author-name" itemprop="name">Zachary Zhang</p>
+              <p class="site-description motion-element" itemprop="description">Stay Hungry. Stay Foolish!</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">116</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/zhang759740844" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:zch759740844@126.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#使用-RxCocoa-的应用"><span class="nav-number">1.</span> <span class="nav-text">使用 RxCocoa 的应用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#开始使用-RxCocoa"><span class="nav-number">1.1.</span> <span class="nav-text">开始使用 RxCocoa</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#初印象"><span class="nav-number">1.1.1.</span> <span class="nav-text">初印象</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#使用-RxCocoa-的-UIKit"><span class="nav-number">1.1.2.</span> <span class="nav-text">使用 RxCocoa 的 UIKit</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#绑定-Observable"><span class="nav-number">1.1.3.</span> <span class="nav-text">绑定 Observable</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#使用-Units"><span class="nav-number">1.1.4.</span> <span class="nav-text">使用 Units</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#进一步拓展"><span class="nav-number">1.2.</span> <span class="nav-text">进一步拓展</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#加载等待状态"><span class="nav-number">1.2.1.</span> <span class="nav-text">加载等待状态</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#获取当前位置"><span class="nav-number">1.2.2.</span> <span class="nav-text">获取当前位置</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#中级-RxSwift-RxCocoa"><span class="nav-number">2.</span> <span class="nav-text">中级 RxSwift/RxCocoa</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#错误处理"><span class="nav-number">2.1.</span> <span class="nav-text">错误处理</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#捕获"><span class="nav-number">2.1.1.</span> <span class="nav-text">捕获</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#重试"><span class="nav-number">2.1.2.</span> <span class="nav-text">重试</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#单元测试"><span class="nav-number">2.2.</span> <span class="nav-text">单元测试</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#RxTest"><span class="nav-number">2.2.1.</span> <span class="nav-text">RxTest</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#RxBlocking"><span class="nav-number">2.2.2.</span> <span class="nav-text">RxBlocking</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Scheduler-的介绍"><span class="nav-number">2.3.</span> <span class="nav-text">Scheduler 的介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#基本使用"><span class="nav-number">2.3.1.</span> <span class="nav-text">基本使用</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#冷热Observable-对-Schedulers-的影响"><span class="nav-number">2.3.2.</span> <span class="nav-text">冷热Observable 对 Schedulers 的影响</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#自定义-Rx-拓展"><span class="nav-number">2.4.</span> <span class="nav-text">自定义 Rx 拓展</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zachary Zhang</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

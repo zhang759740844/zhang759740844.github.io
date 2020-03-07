@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+
+
+
+
+  <meta name="keywords" content="学习笔记,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="记录一下 WKWebView 相关使用">
+<meta name="keywords" content="学习笔记">
+<meta property="og:type" content="article">
+<meta property="og:title" content="WKWebView 使用（二）—— 常见问题">
+<meta property="og:url" content="http://zhang759740844.github.io/2018/08/31/WKWebView2/index.html">
+<meta property="og:site_name" content="Zachary&#39;s blog">
+<meta property="og:description" content="记录一下 WKWebView 相关使用">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2020-02-27T15:13:37.641Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="WKWebView 使用（二）—— 常见问题">
+<meta name="twitter:description" content="记录一下 WKWebView 相关使用">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://zhang759740844.github.io/2018/08/31/WKWebView2/">
+
+
+
+
+
+  <title>WKWebView 使用（二）—— 常见问题 | Zachary's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Zachary's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">记录成长</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://zhang759740844.github.io/2018/08/31/WKWebView2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zachary Zhang">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Zachary's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">WKWebView 使用（二）—— 常见问题</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-08-31T14:07:12+08:00">
+                2018-08-31
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>记录一下 WKWebView 相关使用</p>
+<a id="more"></a>
+<h2 id="Cookie-管理"><a href="#Cookie-管理" class="headerlink" title="Cookie 管理"></a>Cookie 管理</h2><h3 id="loadRequest-无-Cookie"><a href="#loadRequest-无-Cookie" class="headerlink" title="loadRequest 无 Cookie"></a>loadRequest 无 Cookie</h3><p>WKWebView 不会在请求的时候自动到 <code>NSHTTPCookieStorage</code> 中获取 cookie(UIWebView 可以)。所以需要我们在  <code>loadRequest</code> 前，手动从 <code>NSHTTPCookieStorage</code> 中拿到 Cookie，并将处理好的 Cookie String在 request header 中设置 Cookie, 解决<strong>首个请求</strong> Cookie 带不上的问题：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSMutableURLRequest</span> *request = [<span class="built_in">NSMutableURLRequest</span> requestWithURL:[<span class="built_in">NSURL</span> URLWithString:<span class="string">@"http://www.baidu.com"</span>]];</span><br><span class="line"><span class="comment">// 根据 Request 的 URL，获取相应的 cookie</span></span><br><span class="line"><span class="built_in">NSArray</span> *availableCookie = [[<span class="built_in">NSHTTPCookieStorage</span> sharedHTTPCookieStorage] cookiesForURL:request.URL];</span><br><span class="line"><span class="comment">// 重新创建一个可变数组</span></span><br><span class="line"><span class="built_in">NSMutableArray</span> *cookieMarr = [<span class="built_in">NSMutableArray</span> arrayWithArray:availableCookie];</span><br><span class="line"><span class="comment">//删除过期的cookie</span></span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; cookieMarr.count; i++) &#123;</span><br><span class="line">    <span class="built_in">NSHTTPCookie</span> *cookie = [cookieMarr objectAtIndex:i];</span><br><span class="line">    <span class="keyword">if</span> (!cookie.expiresDate) &#123;</span><br><span class="line">        <span class="keyword">continue</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/// cookie 有 expiresDate，超过的就 remove 掉</span></span><br><span class="line">    <span class="keyword">if</span> ([cookie.expiresDate compare:<span class="keyword">self</span>.currentTime]) &#123;</span><br><span class="line">        [cookieMarr removeObject:cookie];</span><br><span class="line">        i--;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 把 cookie 的 array 转为 string 类型</span></span><br><span class="line"><span class="keyword">for</span> (<span class="built_in">NSHTTPCookie</span> *cookie <span class="keyword">in</span> cookieArr) &#123;</span><br><span class="line">    <span class="keyword">if</span> ([cookie.name rangeOfString:<span class="string">@"'"</span>].location != <span class="built_in">NSNotFound</span>) &#123;</span><br><span class="line">        <span class="keyword">continue</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (![validDomain hasSuffix:cookie.domain] &amp;&amp; ![cookie.domain hasSuffix:validDomain]) &#123;</span><br><span class="line">        <span class="keyword">continue</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">NSString</span> *value = [<span class="built_in">NSString</span> stringWithFormat:<span class="string">@"%@=%@"</span>, cookie.name, cookie.value];</span><br><span class="line">    [marr addObject:value];</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">NSString</span> *cookie = [marr componentsJoinedByString:<span class="string">@";"</span>];</span><br><span class="line"></span><br><span class="line"><span class="comment">// 设置 request 的 cookie</span></span><br><span class="line">[request setValue:cookie forHTTPHeaderField:<span class="string">@"Cookie"</span>];</span><br><span class="line">[<span class="keyword">self</span>.webView loadRequest:request];</span><br></pre></td></tr></table></figure>
+<p>重定向相关：</p>
+<p>当服务器发生重定向的时候，此时第一次在 RequestHeader 中写入的 Cookie 会丢失，还需要重新对重定向的 NSURLRequest 进行 RequestHeader 的 Cookie 处理 ，简单的说就是在 <code>webView:decidePolicyForNavigationAction:decisionHandler:</code> 的时候，判断此时 Request 是否有你要的 Cookie 没有就Cancel掉，修改Request 重新发起。</p>
+<blockquote>
+<p>iOS 11 中包含 <code>WKHTTPCookieStore</code> 相关的 API，可以解决 WKWebView Cookie 的问题。</p>
+</blockquote>
+<h3 id="JS-在执行的时候使用-document-cookie-读取不到-cookie"><a href="#JS-在执行的时候使用-document-cookie-读取不到-cookie" class="headerlink" title="JS 在执行的时候使用 document.cookie 读取不到 cookie"></a>JS 在执行的时候使用 document.cookie 读取不到 cookie</h3><p>当生成 Request 后，页面加载之前，给 WKWebView 注入脚本，使js 端的 cookie 和 <code>NSHTTPCookieStorage</code> 同步：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">-(<span class="keyword">void</span>)syncClientCookieScripts:(<span class="built_in">NSMutableURLRequest</span> *)request&#123;</span><br><span class="line">    <span class="keyword">if</span> (!request.URL) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">NSArray</span> *availableCookie = [[<span class="built_in">NSHTTPCookieStorage</span> sharedHTTPCookieStorage] cookiesForURL:request.URL];</span><br><span class="line">    <span class="built_in">NSMutableArray</span> *filterCookie = [[<span class="built_in">NSMutableArray</span> alloc]init];</span><br><span class="line">   </span><br><span class="line">    <span class="keyword">for</span> (<span class="built_in">NSHTTPCookie</span> * cookie <span class="keyword">in</span> availableCookie) &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">self</span>.syncCookieMode) &#123;</span><br><span class="line">            <span class="comment">//httponly需求不得写入js cookie</span></span><br><span class="line">            <span class="keyword">if</span> (!cookie.HTTPOnly) &#123;</span><br><span class="line">                [filterCookie addObject:cookie];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 拼接 JS 代码 对 Client Side 注入Cookie</span></span><br><span class="line">    <span class="built_in">NSDictionary</span> *reqheader = [<span class="built_in">NSHTTPCookie</span> requestHeaderFieldsWithCookies:filterCookie];</span><br><span class="line">    <span class="built_in">NSString</span> *cookieStr = [reqheader objectForKey:<span class="string">@"Cookie"</span>];</span><br><span class="line">    <span class="keyword">if</span> (filterCookie.count &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="built_in">NSHTTPCookie</span> *cookie <span class="keyword">in</span> filterCookie) &#123;</span><br><span class="line">            <span class="built_in">NSTimeInterval</span> expiretime = [cookie.expiresDate timeIntervalSince1970];</span><br><span class="line">            <span class="built_in">NSString</span> *js = [<span class="built_in">NSString</span> stringWithFormat:<span class="string">@"document.cookie ='%@=%@;expires=%f';"</span>,cookie.name,cookie.value,expiretime];</span><br><span class="line">            <span class="built_in">WKUserScript</span> *jsscript = [[<span class="built_in">WKUserScript</span> alloc]initWithSource:js injectionTime:<span class="built_in">WKUserScriptInjectionTimeAtDocumentStart</span> forMainFrameOnly:<span class="literal">NO</span>];</span><br><span class="line">            [<span class="keyword">self</span>.userContentController addUserScript:jsscript];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="User-Agent"><a href="#User-Agent" class="headerlink" title="User-Agent"></a>User-Agent</h2><p>设置 UA 有两种方式，一种是全局的设置 UA，还有一种是设置局部的 UA。</p>
+<h3 id="全局-UA"><a href="#全局-UA" class="headerlink" title="全局 UA"></a>全局 UA</h3><p>设置全局 UA 是通过把包含 <code>UserAgent</code> 的字典存入 <code>NSUserDefaults</code> 中去：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"> <span class="built_in">NSDictionary</span> *dictionary = [[<span class="built_in">NSDictionary</span> alloc] initWithObjectsAndKeys:appUserAgent, <span class="string">@"UserAgent"</span>, <span class="literal">nil</span>];</span><br><span class="line">[[<span class="built_in">NSUserDefaults</span> standardUserDefaults] registerDefaults:dictionary];</span><br></pre></td></tr></table></figure>
+<h3 id="自定义-UA"><a href="#自定义-UA" class="headerlink" title="自定义 UA"></a>自定义 UA</h3><p>iOS 9 以上提供了自定义 UA 的方式，更加简单，直接成为了 WKWebView 的一个属性：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">self.webView.customUserAgent = @&quot;WebViewDemo/1.0.0&quot;;</span><br></pre></td></tr></table></figure>
+<h3 id="获取系统默认-UA"><a href="#获取系统默认-UA" class="headerlink" title="获取系统默认 UA"></a>获取系统默认 UA</h3><p>有时候，我们需要自定义 UA 的同时还想要有系统的 UA，即在系统 UA 后添加自己的 UA。这就需要获取到系统的 UA 了。可以通过 <code>UIWebView</code> 获取 UA 字符串：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">UIWebView</span> *webView = [[<span class="built_in">UIWebView</span> alloc] init];</span><br><span class="line"><span class="built_in">NSString</span> *originalUserAgent = [webView stringByEvaluatingJavaScriptFromString:<span class="string">@"navigator.userAgent"</span>];</span><br><span class="line"><span class="built_in">NSString</span> *appUserAgent = [<span class="built_in">NSString</span> stringWithFormat:<span class="string">@"%@-%@"</span>, originalUserAgent, customUserAgent];</span><br></pre></td></tr></table></figure>
+<p>获取到 UA，再通过上面两种方式设置全局或者自定义 UA 即可。</p>
+<h2 id="NSURLProtocol"><a href="#NSURLProtocol" class="headerlink" title="NSURLProtocol"></a>NSURLProtocol</h2><p>介绍一下 NSURLProtocol 的使用方式。</p>
+<h3 id="注册-NSURLProtocol"><a href="#注册-NSURLProtocol" class="headerlink" title="注册 NSURLProtocol"></a>注册 NSURLProtocol</h3><p>首先要创建一个 <code>NSURLProtocol</code> 的子类：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">MYProtocol</span> : <span class="title">NSURLProtocol</span></span></span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure>
+<p>然后在任意时候注册：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">BOOL</span>)application:(<span class="built_in">UIApplication</span> *)application didFinishLaunchingWithOptions:(<span class="built_in">NSDictionary</span> *)launchOptions &#123;</span><br><span class="line">    [<span class="built_in">NSURLProtocol</span> registerClass:[YXNSURLProtocol <span class="keyword">class</span>]];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="重写-NSURLProtocol-中的几个方法"><a href="#重写-NSURLProtocol-中的几个方法" class="headerlink" title="重写 NSURLProtocol 中的几个方法"></a>重写 NSURLProtocol 中的几个方法</h3><p>这里模拟一个真实的业务场景，就是 WKWebView 在首次通过 <code>loadRequest</code> 发起 post 的 body 丢失。具体原因见下面的<em>一些问题</em></p>
+<p>解决方案就是将请求的 scheme 设置为一个特殊的协议字段，如本例中的 <code>post</code>，然后通过 <code>NSURLProtocol</code> 拦截。</p>
+<h4 id="是否拦截-Request"><a href="#是否拦截-Request" class="headerlink" title="是否拦截 Request"></a>是否拦截 Request</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">+ (<span class="built_in">BOOL</span>)canInitWithRequest:(<span class="built_in">NSURLRequest</span> *)request&#123;</span><br><span class="line">    <span class="comment">/// 如果 scheme 是 post 那么拦截</span></span><br><span class="line">    <span class="keyword">if</span> ([request.URL.scheme isEqualToString:<span class="string">@"post"</span>]) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">YES</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/// 如果是已经拦截过的就放行</span></span><br><span class="line">    <span class="keyword">if</span> ([<span class="built_in">NSURLProtocol</span> propertyForKey:<span class="string">@"HasIntercepted"</span> inRequest:request]) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NO</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NO</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>未被拦截的 Request 直接放行，拦截的 Request 进入下一个方法</p>
+<h4 id="重设-NSURLRequest"><a href="#重设-NSURLRequest" class="headerlink" title="重设 NSURLRequest"></a>重设 NSURLRequest</h4><p>被拦截的 <code>post</code> 协议来到下面的方法中。这里从 <code>request.allHTTPHeaderFields</code>，即 request 的所有头信息中，拿到原本的 scheme 以及原本的 bodyParam。然后生成一个新的 Request，把 body 和 cookie 塞进去，返回这个 Request：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">+ (<span class="built_in">NSURLRequest</span> *)canonicalRequestForRequest:(<span class="built_in">NSURLRequest</span> *)request &#123;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/// 由于 WKWebView 通过 loadRequest 发起的 post 请求 body 会丢失，所以这里通过 NSURLProtocol 拦截，然后自己发出 request</span></span><br><span class="line">    <span class="keyword">if</span> ([request.URL.scheme isEqualToString:<span class="string">@"post"</span>]) &#123;</span><br><span class="line">        <span class="comment">//获取oldScheme</span></span><br><span class="line">        <span class="built_in">NSString</span> *originScheme = request.allHTTPHeaderFields[<span class="string">@"oldScheme"</span>];</span><br><span class="line">        </span><br><span class="line">        <span class="built_in">NSMutableString</span> *urlString = [<span class="built_in">NSMutableString</span> stringWithString:request.URL.absoluteString];</span><br><span class="line">        </span><br><span class="line">        <span class="built_in">NSRange</span> schemeRange = [urlString rangeOfString:request.URL.scheme];</span><br><span class="line">        </span><br><span class="line">        [urlString replaceCharactersInRange:schemeRange withString:originScheme];</span><br><span class="line">        </span><br><span class="line">        <span class="comment">//根据新的urlString生成新的request</span></span><br><span class="line">        <span class="built_in">NSMutableURLRequest</span> *newRequest = [<span class="built_in">NSMutableURLRequest</span> requestWithURL:[<span class="built_in">NSURL</span> URLWithString:urlString]];</span><br><span class="line">        </span><br><span class="line">        <span class="comment">//获取bodyParam</span></span><br><span class="line">        <span class="built_in">NSString</span> *bodyParam = request.allHTTPHeaderFields[<span class="string">@"bodyParam"</span>];</span><br><span class="line">        <span class="built_in">NSData</span> *bodyData =[bodyParam dataUsingEncoding:<span class="built_in">NSUTF8StringEncoding</span>];</span><br><span class="line">        newRequest.HTTPMethod = <span class="string">@"POST"</span>;</span><br><span class="line">        newRequest.HTTPBody = bodyData;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">//获取cookie</span></span><br><span class="line">        <span class="built_in">NSString</span> *cookie = request.allHTTPHeaderFields[<span class="string">@"Cookie"</span>];</span><br><span class="line">        [newRequest addValue:cookie forHTTPHeaderField:<span class="string">@"Cookie"</span>];</span><br><span class="line">        </span><br><span class="line">        [<span class="built_in">NSURLProtocol</span> setProperty:@YES forKey:<span class="string">@"HasIntercepted"</span> inRequest:newRequest];</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> newRequest;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> request;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里还要注意一点，我们将新生成的 Request 添加一个 <code>HasIntercepted</code> 的标记。这样再重新进入 <code>canInitWithRequest</code> 的时候就会被直接放行了，防止无限循环。</p>
+<h4 id="加载-Request"><a href="#加载-Request" class="headerlink" title="加载 Request"></a>加载 Request</h4><p>来到了最后一步，自行创建一个 <code>NSURLSession</code> 来实现网络请求：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)startLoading &#123;</span><br><span class="line">    <span class="built_in">NSURLSession</span> *session = [<span class="built_in">NSURLSession</span> sharedSession];</span><br><span class="line">    <span class="built_in">NSURLSessionDataTask</span> *task = [session dataTaskWithRequest:<span class="keyword">self</span>.request completionHandler:^(<span class="built_in">NSData</span> * _Nullable data, <span class="built_in">NSURLResponse</span> * _Nullable response, <span class="built_in">NSError</span> * _Nullable error) &#123;</span><br><span class="line">        <span class="keyword">if</span> (!error) &#123;</span><br><span class="line">            <span class="comment">// 请求成功了，把 response 和 data 都返回回去</span></span><br><span class="line">            [[<span class="keyword">self</span> client] URLProtocol:<span class="keyword">self</span> didReceiveResponse:response cacheStoragePolicy:<span class="built_in">NSURLCacheStorageAllowed</span>];</span><br><span class="line">            [<span class="keyword">self</span>.client URLProtocol:<span class="keyword">self</span> didLoadData:data];</span><br><span class="line">            [[<span class="keyword">self</span> client] URLProtocolDidFinishLoading:<span class="keyword">self</span>];</span><br><span class="line">        &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">            [<span class="keyword">self</span>.client URLProtocol:<span class="keyword">self</span> didFailWithError:error];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;];</span><br><span class="line">    [task resume];</span><br><span class="line">    <span class="keyword">self</span>.dataTask = task;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)stopLoading &#123;</span><br><span class="line">    [<span class="keyword">self</span>.dataTask cancel];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>self.client</code> 就是操作最后拦截结果的实例，<code>self.request</code> 就是上面创建的新的 Request。整个拦截过程就完成了。</p>
+<h3 id="拦截-WKWebView-的请求"><a href="#拦截-WKWebView-的请求" class="headerlink" title="拦截 WKWebView 的请求"></a>拦截 WKWebView 的请求</h3><p>WKWebView 默认是无法被 NSURLProtocol 拦截的，但是我们可以通过私有 Api 实现：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//注册</span></span><br><span class="line">[<span class="built_in">NSURLProtocol</span> registerClass:[MyCustomURLProtocol <span class="keyword">class</span>]];</span><br><span class="line"><span class="comment">//实现拦截功能</span></span><br><span class="line">Class cls = <span class="built_in">NSClassFromString</span>(<span class="string">@"WKBrowsingContextController"</span>);</span><br><span class="line">SEL sel = <span class="built_in">NSSelectorFromString</span>(<span class="string">@"registerSchemeForCustomProtocol:"</span>);</span><br><span class="line"><span class="keyword">if</span> ([(<span class="keyword">id</span>)cls respondsToSelector:sel]) &#123;</span><br><span class="line"><span class="meta">#pragma clang diagnostic push</span></span><br><span class="line"><span class="meta">#pragma clang diagnostic ignored <span class="meta-string">"-Warc-performSelector-leaks"</span></span></span><br><span class="line">    [(<span class="keyword">id</span>)cls performSelector:sel withObject:<span class="string">@"myapp"</span>];</span><br><span class="line"><span class="meta">#pragma clang diagnostic pop</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>上面是为 WKWebView 注册了一个 scheme 为 myapp 的 NSURLProtocol，对于要拦截 http 或者 https 请求，换成相应 scheme 就可以了。</p>
+</blockquote>
+<blockquote>
+<p>针对这个问题，iOS11 推出了新的 API <strong>WKURLSchemeHandler</strong>，能够提供拦截 WKWebView 的功能。</p>
+</blockquote>
+<h3 id="NSURLProtocol-的应用场景"><a href="#NSURLProtocol-的应用场景" class="headerlink" title="NSURLProtocol 的应用场景"></a>NSURLProtocol 的应用场景</h3><p>通过自定义的NSURLProtocol，我们拿到用户请求的request之后，我们可以做很多事情。比如：</p>
+<ol>
+<li>自定义请求和响应</li>
+<li>网络的缓存处理（H5离线包 和 网络图片缓存）</li>
+<li>重定向网络请求</li>
+<li>过滤掉一些非法请求</li>
+</ol>
+<p>等等…</p>
+<h2 id="一些问题"><a href="#一些问题" class="headerlink" title="一些问题"></a>一些问题</h2><h3 id="白屏问题"><a href="#白屏问题" class="headerlink" title="白屏问题"></a>白屏问题</h3><p>当WKWebView加载的网页占用内存过大时，会出现白屏现象。解决方案：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 当 WKWebView 总体内存占用过大，页面即将白屏的时候，系统会调用上面的回调函数</span></span><br><span class="line">- (<span class="keyword">void</span>)webViewWebContentProcessDidTerminate:(<span class="built_in">WKWebView</span> *)webView &#123;</span><br><span class="line">    [webView reload];   <span class="comment">//刷新就好了</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="WKWebView-上通过-loadRequest-发起的-post-请求-body-数据会丢失"><a href="#WKWebView-上通过-loadRequest-发起的-post-请求-body-数据会丢失" class="headerlink" title="WKWebView 上通过 loadRequest 发起的 post 请求 body 数据会丢失"></a>WKWebView 上通过 loadRequest 发起的 post 请求 body 数据会丢失</h3><p>这是因为 WKWebView 有自己单独的一条进程。<code>loadRequest</code> 其实是将请求信息从应用进程传递给 WKWebView 所在进程，使其展示的过程。然而，苹果出于进程间通信加快速度的考虑，丢弃了 post 请求的 body 信息。</p>
+<p>解决方案是通过 <code>NSURLProtocol</code> 拦截 Request，这样 WKWebView 又把 post 请求回传给了 native。发送请求前，把原本 body 中的信息放到 header 中。然后由 <code>NSURLProtocol</code> 拦截，生成新的请求，完成数据加载，最后将请求得到的数据返回。</p>
+<p>详见上面的 NSURLProtocol 使用介绍，有详细步骤讲解</p>
+<h3 id="WKWebView-NSURLProtocol-的-post-请求的-body-为空"><a href="#WKWebView-NSURLProtocol-的-post-请求的-body-为空" class="headerlink" title="WKWebView NSURLProtocol 的 post 请求的 body 为空"></a>WKWebView NSURLProtocol 的 post 请求的 body 为空</h3><p>上面 loadRequest 是从 app 将 post 请求传给 WKWebView，而此例是由于 NSURLProtocol 拦截，需要把 WKWebView 的 post 请求传递给 app 处理。因此，post 请求的 body 还是会丢失。</p>
+<p>所以，解决方式还是同上面 loadRequest 一样。</p>
+<h2 id="性能优化"><a href="#性能优化" class="headerlink" title="性能优化"></a>性能优化</h2><p>优化主要集中在优化 WebView 初始化和减少不必要的请求。</p>
+<h3 id="全局-WebView-与-WebViewPool"><a href="#全局-WebView-与-WebViewPool" class="headerlink" title="全局 WebView 与 WebViewPool"></a>全局 WebView 与 WebViewPool</h3><p>webview 从不存在到存在的过程，系统需要进行一系列初始化。所有后续过程在这段时间完全阻塞。</p>
+<p>可以创建一个 WebViewPool 的单例对象，在 load 方法中监听应用启动成功的通知： <code>UIApplicationDidFinishLaunchingNotification</code>，初始化 Pool 对象，并且初始化任意个供复用的 WebView 实例，之后的复用很像 TableView Cell 的复用。</p>
+<p>之后业务上的所有的 WebView 实例都从 WebViewPool 中拿。WebView 需要增加一个 holder 的弱引用属性指向当前 VC。每次要从 WebViewPool 中取新的 WebView 实例的时候，就要查看一遍哪些 WebView 的 holder 为 nil，表示 WebView 所在的 VC 已经被回收，此时就要把 WebView 状态清空，然后放入复用池中。</p>
+<p>当 WebView 需要放回复用池的时候需要做两件事，以达到和浏览器相同的效果</p>
+<ol>
+<li>添加一个空白的页面</li>
+<li>把该页面之前的浏览记录清空</li>
+</ol>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 继承于 WKWebView 的类中</span></span><br><span class="line"><span class="comment">//被回收</span></span><br><span class="line">- (<span class="keyword">void</span>)webViewEndReuse&#123;</span><br><span class="line">    <span class="comment">// 加载空白页面，空字符串会自动加一个空白页面</span></span><br><span class="line">    [<span class="keyword">self</span> loadRequest:[<span class="built_in">NSURLRequest</span> requestWithURL:[<span class="built_in">NSURL</span> URLWithString:<span class="string">@""</span>]]];</span><br><span class="line">  </span><br><span class="line">  	<span class="comment">// 使用的私有API，所以通过字符串拼接的方式获取方法名</span></span><br><span class="line">  	<span class="comment">// 这个方法会把除了最上面的页面都清空掉。因此，会清空除了刚添加的空白页面的之前所有的页面，使页面恢复到最开始打开时候的模样。</span></span><br><span class="line">    SEL sel = <span class="built_in">NSSelectorFromString</span>([<span class="built_in">NSString</span> stringWithFormat:<span class="string">@"%@%@%@%@"</span>, <span class="string">@"_re"</span>, <span class="string">@"moveA"</span>,<span class="string">@"llIte"</span>, <span class="string">@"ms"</span>]);</span><br><span class="line">    <span class="keyword">if</span>([<span class="keyword">self</span>.backForwardList respondsToSelector:sel])&#123;</span><br><span class="line"><span class="meta">#pragma clang diagnostic push</span></span><br><span class="line"><span class="meta">#pragma clang diagnostic ignored <span class="meta-string">"-Warc-performSelector-leaks"</span></span></span><br><span class="line">        [<span class="keyword">self</span>.backForwardList performSelector:sel];</span><br><span class="line"><span class="meta">#pragma clang diagnostic pop</span></span><br><span class="line">    &#125;</span><br><span class="line">  	</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="webView-数据预请求"><a href="#webView-数据预请求" class="headerlink" title="webView 数据预请求"></a>webView 数据预请求</h3><p>在客户端初始化WebView的同时，直接由native开始网络请求数据。当页面初始化完成后，向native获取其代理请求的数据。如果此时 native 还没有拿到数据，那么 js 端做一个短暂的轮询。</p>
+<h3 id="减少不必要的请求"><a href="#减少不必要的请求" class="headerlink" title="减少不必要的请求"></a>减少不必要的请求</h3><p>分为前端优化和客户端优化</p>
+<h4 id="前端优化"><a href="#前端优化" class="headerlink" title="前端优化"></a>前端优化</h4><ol>
+<li><strong>降低请求量</strong>：合并资源，减少 HTTP 请求数，使用 lazyLoad，使用 gzip 压缩，使用 webP 格式</li>
+<li><strong>加快请求速度</strong>：预解析 DNS，减少域名数，使用与 Native 一样的域名</li>
+<li><strong>缓存</strong>：使用 localStorage，询问是否更新</li>
+<li><strong>渲染</strong>：服务端渲染</li>
+</ol>
+<h4 id="客户端优化"><a href="#客户端优化" class="headerlink" title="客户端优化"></a>客户端优化</h4><p><strong>NSURLProtocol 拦截资源请求</strong></p>
+<p>对于一些图片资源文件，可以通过 NSURLProtocol 拦截请求，然后查找 native 是否存在缓存，有的话直接返回 NSData，没有的话，通过 native 发起一个请求，缓存并返回 NSData</p>
+<p><strong>基于 LocalWebServer 实现的离线资源加载</strong></p>
+<p>通过 NSURLProtocol 可以实现资源的本地拦截加载。还有一种通过本地起一个 localserver 的方式，直接加载本地的资源。</p>
+<p>可以选用如 <code>CocoaHttpServer</code> 这样的第三方库，在离线资源所在的目录启动本地服务。这样，网页中的资源，可以直接通过 <code>http://localhost:[端口号]/someResource.js</code> 的方式加载。</p>
+<p>但是这样会引起 ATS 相关问题，即在 <code>Safari</code> 及 <code>Apple WebKit</code> 中：在https页面内，不允许http请求存在，否则一概会被block。因此，需要自签名 localhost，使其支持 <code>https://localhost:[端口号]/someResource.js</code> ，具体使用可在需要的时候搜索到。</p>
+<p><strong>离线包</strong></p>
+<p>离线包可以预下载，native 根据配置，在某个 节点下载离线包。下载好的离线包后，就可以拦截网络请求，对于离线包已经有的文件，直接读取离线包数据返回，否则走 HTTP 协议缓存逻辑。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//下载离线包html+css</span></span><br><span class="line">- (<span class="keyword">void</span>)requestOfflinePkg &#123;</span><br><span class="line">    <span class="built_in">NSString</span> *zipName    = <span class="string">@"offline_pkg"</span>;</span><br><span class="line">    <span class="built_in">NSString</span> *zipUrl     = [<span class="built_in">NSString</span> stringWithFormat:<span class="string">@"http://localhost:9090/source/%@.zip"</span>, zipName];</span><br><span class="line">    <span class="built_in">NSURL</span>    *url        = [<span class="built_in">NSURL</span> URLWithString:zipUrl];</span><br><span class="line">    <span class="built_in">NSString</span> *md5        = [<span class="keyword">self</span> md5:zipUrl];</span><br><span class="line">    <span class="built_in">NSArray</span>  *pathes     = <span class="built_in">NSSearchPathForDirectoriesInDomains</span>(<span class="built_in">NSCachesDirectory</span>,<span class="built_in">NSUserDomainMask</span>,<span class="literal">YES</span>);</span><br><span class="line">    <span class="built_in">NSString</span> *path       = [pathes objectAtIndex:<span class="number">0</span>];</span><br><span class="line">    <span class="built_in">NSString</span> *zipPath    = [<span class="built_in">NSString</span> stringWithFormat:<span class="string">@"%@/zipDownload/%@"</span>,path,md5];</span><br><span class="line">    <span class="built_in">NSString</span> *unzipPath  = [<span class="built_in">NSString</span> stringWithFormat:<span class="string">@"%@/%@.zip"</span>,path,md5];</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="built_in">NSURLSession</span> *session = [<span class="built_in">NSURLSession</span> sharedSession];</span><br><span class="line"></span><br><span class="line">    <span class="built_in">NSURLSessionDataTask</span> *task = [session dataTaskWithURL:url completionHandler:^(<span class="built_in">NSData</span> * _Nullable data, <span class="built_in">NSURLResponse</span> * _Nullable response, <span class="built_in">NSError</span> * _Nullable error) &#123;</span><br><span class="line">        <span class="keyword">if</span>(!error) &#123;</span><br><span class="line">            [data writeToFile:unzipPath options:<span class="number">0</span> error:<span class="literal">nil</span>];</span><br><span class="line"></span><br><span class="line">            <span class="built_in">BOOL</span> result = [SSZipArchive unzipFileAtPath:unzipPath toDestination:zipPath];</span><br><span class="line"></span><br><span class="line">            <span class="comment">//解压缩成功</span></span><br><span class="line">            <span class="keyword">if</span> (result) &#123;</span><br><span class="line">                <span class="comment">//删除zip</span></span><br><span class="line">                <span class="built_in">NSFileManager</span> *fileManager = [<span class="built_in">NSFileManager</span> defaultManager];</span><br><span class="line">                [fileManager removeItemAtPath:unzipPath error:<span class="literal">nil</span>];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;];</span><br><span class="line"></span><br><span class="line">    [task resume];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a href="http://blog.cnbang.net/tech/3477/" target="_blank" rel="noopener">移动 H5 首屏秒开优化方案探讨</a></p>
+<p><a href="http://awhisper.github.io/2018/03/06/hybrid-webcontainer/" target="_blank" rel="noopener">从零收拾一个hybrid框架（二）– WebView容器基础功能设计思路</a></p>
+<p><a href="https://tech.meituan.com/2017/06/09/webviewperf.html" target="_blank" rel="noopener"><a href="https://tech.meituan.com/2017/06/09/webviewperf.html" target="_blank" rel="noopener">WebView性能、体验分析与优化</a></a></p>
+<p><a href="https://www.jianshu.com/p/a69e77bf680c" target="_blank" rel="noopener">基于 LocalWebServer 实现 WKWebView 离线资源加载</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tag/学习笔记/" rel="tag"># 学习笔记</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/08/13/创建私有npm/" rel="next" title="如何创建私有npm">
+                <i class="fa fa-chevron-left"></i> 如何创建私有npm
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/10/01/WKWebView3/" rel="prev" title="WKWebView 使用（三）—— WebViewJavaScriptBridge 源码解析">
+                WKWebView 使用（三）—— WebViewJavaScriptBridge 源码解析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.png" alt="Zachary Zhang">
+            
+              <p class="site-author-name" itemprop="name">Zachary Zhang</p>
+              <p class="site-description motion-element" itemprop="description">Stay Hungry. Stay Foolish!</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">116</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/zhang759740844" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:zch759740844@126.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Cookie-管理"><span class="nav-number">1.</span> <span class="nav-text">Cookie 管理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#loadRequest-无-Cookie"><span class="nav-number">1.1.</span> <span class="nav-text">loadRequest 无 Cookie</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#JS-在执行的时候使用-document-cookie-读取不到-cookie"><span class="nav-number">1.2.</span> <span class="nav-text">JS 在执行的时候使用 document.cookie 读取不到 cookie</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#User-Agent"><span class="nav-number">2.</span> <span class="nav-text">User-Agent</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#全局-UA"><span class="nav-number">2.1.</span> <span class="nav-text">全局 UA</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#自定义-UA"><span class="nav-number">2.2.</span> <span class="nav-text">自定义 UA</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#获取系统默认-UA"><span class="nav-number">2.3.</span> <span class="nav-text">获取系统默认 UA</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#NSURLProtocol"><span class="nav-number">3.</span> <span class="nav-text">NSURLProtocol</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#注册-NSURLProtocol"><span class="nav-number">3.1.</span> <span class="nav-text">注册 NSURLProtocol</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#重写-NSURLProtocol-中的几个方法"><span class="nav-number">3.2.</span> <span class="nav-text">重写 NSURLProtocol 中的几个方法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#是否拦截-Request"><span class="nav-number">3.2.1.</span> <span class="nav-text">是否拦截 Request</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#重设-NSURLRequest"><span class="nav-number">3.2.2.</span> <span class="nav-text">重设 NSURLRequest</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#加载-Request"><span class="nav-number">3.2.3.</span> <span class="nav-text">加载 Request</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#拦截-WKWebView-的请求"><span class="nav-number">3.3.</span> <span class="nav-text">拦截 WKWebView 的请求</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#NSURLProtocol-的应用场景"><span class="nav-number">3.4.</span> <span class="nav-text">NSURLProtocol 的应用场景</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#一些问题"><span class="nav-number">4.</span> <span class="nav-text">一些问题</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#白屏问题"><span class="nav-number">4.1.</span> <span class="nav-text">白屏问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#WKWebView-上通过-loadRequest-发起的-post-请求-body-数据会丢失"><span class="nav-number">4.2.</span> <span class="nav-text">WKWebView 上通过 loadRequest 发起的 post 请求 body 数据会丢失</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#WKWebView-NSURLProtocol-的-post-请求的-body-为空"><span class="nav-number">4.3.</span> <span class="nav-text">WKWebView NSURLProtocol 的 post 请求的 body 为空</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#性能优化"><span class="nav-number">5.</span> <span class="nav-text">性能优化</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#全局-WebView-与-WebViewPool"><span class="nav-number">5.1.</span> <span class="nav-text">全局 WebView 与 WebViewPool</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#webView-数据预请求"><span class="nav-number">5.2.</span> <span class="nav-text">webView 数据预请求</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#减少不必要的请求"><span class="nav-number">5.3.</span> <span class="nav-text">减少不必要的请求</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#前端优化"><span class="nav-number">5.3.1.</span> <span class="nav-text">前端优化</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#客户端优化"><span class="nav-number">5.3.2.</span> <span class="nav-text">客户端优化</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考"><span class="nav-number">6.</span> <span class="nav-text">参考</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zachary Zhang</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

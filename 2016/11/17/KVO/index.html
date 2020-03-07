@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+
+
+
+
+  <meta name="keywords" content="源码解析,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="本篇简单学习下如何使用 KVO">
+<meta name="keywords" content="源码解析">
+<meta property="og:type" content="article">
+<meta property="og:title" content="KVO 实践及 FBKVOController 原理">
+<meta property="og:url" content="http://zhang759740844.github.io/2016/11/17/KVO/index.html">
+<meta property="og:site_name" content="Zachary&#39;s blog">
+<meta property="og:description" content="本篇简单学习下如何使用 KVO">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/kvo_1.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/kvo_2.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/kvo_3.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/kvo_4.png?raw=true">
+<meta property="og:updated_time" content="2020-02-27T15:13:37.631Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="KVO 实践及 FBKVOController 原理">
+<meta name="twitter:description" content="本篇简单学习下如何使用 KVO">
+<meta name="twitter:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/kvo_1.png?raw=true">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://zhang759740844.github.io/2016/11/17/KVO/">
+
+
+
+
+
+  <title>KVO 实践及 FBKVOController 原理 | Zachary's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Zachary's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">记录成长</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://zhang759740844.github.io/2016/11/17/KVO/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zachary Zhang">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Zachary's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">KVO 实践及 FBKVOController 原理</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-11-17T14:07:12+08:00">
+                2016-11-17
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本篇简单学习下如何使用 KVO</p>
+<a id="more"></a>
+<h2 id="KVO是什么？"><a href="#KVO是什么？" class="headerlink" title="KVO是什么？"></a>KVO是什么？</h2><p>KVO 是 Object-C 中定义的一个通知机制，其定义了一种对象间监控对方状态的改变，并做出反应的机制。对象可以为自己的属性注册观察者，当这个属性的值发生了改变，系统会对这些注册的观察者做出通知。其用途十分广泛，比方说，你的下载进度条是根据下载百分比决定的，那么，可以通过观察下载百分比的改变，刷新进度条的样式，来直观的反应下载进度等等。 </p>
+<h2 id="KVO的用法"><a href="#KVO的用法" class="headerlink" title="KVO的用法"></a>KVO的用法</h2><h3 id="为对象的属性注册观察者"><a href="#为对象的属性注册观察者" class="headerlink" title="为对象的属性注册观察者"></a>为对象的属性注册观察者</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)addObserver:(<span class="built_in">NSObject</span> *)observer  </span><br><span class="line">         forKeyPath:(<span class="built_in">NSString</span> *)keyPath  </span><br><span class="line">            options:(<span class="built_in">NSKeyValueObservingOptions</span>)options  </span><br><span class="line">            context:(<span class="keyword">void</span> *)context</span><br></pre></td></tr></table></figure>
+<ul>
+<li>observer: 观察者对象. 其必须实现方法 <code>observeValueForKeyPath:ofObject:change:context:</code>.</li>
+<li>keyPath: 被观察的属性，其不能为 <code>nil</code>.</li>
+<li>options: 设定通知观察者时传递的属性值，是传改变前的呢，还是改变后的，通常设置为 <code>NSKeyValueObservingOptionNew</code>。</li>
+<li>context: 一些其他的需要传递给观察者的上下文信息，通常设置为 <code>nil</code>。</li>
+</ul>
+<h3 id="观察者接收通知"><a href="#观察者接收通知" class="headerlink" title="观察者接收通知"></a>观察者接收通知</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)observeValueForKeyPath:(<span class="built_in">NSString</span> *)keyPath  </span><br><span class="line">                      ofObject:(<span class="keyword">id</span>)object  </span><br><span class="line">                        change:(<span class="built_in">NSDictionary</span> *)change  </span><br><span class="line">                       context:(<span class="keyword">void</span> *)context</span><br></pre></td></tr></table></figure>
+<ul>
+<li>keyPath: 被观察的属性，其不能为 <code>nil</code>.</li>
+<li>object: 被观察者的对象.</li>
+<li>change: 属性值，根据上面提到的 <code>Options</code> 设置，给出对应的属性值。</li>
+<li>context: 上面传递的 <code>context</code> 对象。</li>
+</ul>
+<h3 id="清除观察者"><a href="#清除观察者" class="headerlink" title="清除观察者"></a>清除观察者</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)removeObserver:(<span class="built_in">NSObject</span> *)anObserver forKeyPath:(<span class="built_in">NSString</span> *)keyPath</span><br></pre></td></tr></table></figure>
+<h3 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h3><p>使用KVO消息传递机制有两个要求：</p>
+<ol>
+<li>观察者必须知道被观察对象，即在同一作用域。</li>
+<li>观察者还需要知道被观察对象的生命周期，因为在销毁发送者对象之前，需要取消观察者的注册。 </li>
+</ol>
+<h2 id="KVO-原理"><a href="#KVO-原理" class="headerlink" title="KVO 原理"></a>KVO 原理</h2><h3 id="实现原理"><a href="#实现原理" class="headerlink" title="实现原理"></a>实现原理</h3><p>当一个对象使用 KVO 监听，iOS 会修改对象的 isa 指针，改为指向一个由 runtime 创建的类，这个类的 superclass 为原来的 class 对象。动态创建的类拥有自己的 set 方法实现，内部会依次调用：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1.</span> - (<span class="keyword">void</span>)willChangeValueForKey:(<span class="built_in">NSString</span> *)key;</span><br><span class="line"><span class="number">2.</span> 原来的 <span class="keyword">setter</span> 方法</span><br><span class="line"><span class="number">3.</span> - (<span class="keyword">void</span>)didChangeValueForKey:(<span class="built_in">NSString</span> *)key;</span><br></pre></td></tr></table></figure>
+<p>在 <code>didChangeValueForKey</code> 中会调用监听器的监听方法。所以<strong>直接修改成员变量不会触发 KVO</strong>。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/kvo_1.png?raw=true" alt></p>
+<p>那么 <code>didChangeValueForKey</code> 是如何找到观察者的呢？添加观察者的时候，会以被观察的属性名作为键，观察者的列表作为值将观察的信息保存在一个 hashMap 中，通过关联对象的方式挂载在被观察对象上。当 <code>didChangeValueForKey</code> 调用的时候，就会在这个 hashMap 中找到对应的观察者列表，依次调用观察者的 <code>observeValueForKeyPath:ofObject:change:context:</code> 方法。</p>
+<p>那么多级 keypath 又是如何观察到的呢？添加观察者的时候，将递归创建子对象监听，子对象在将监听到的变化转发到上层。最上层则通知外部的观察者。</p>
+<h3 id="如何手动触发-KVO"><a href="#如何手动触发-KVO" class="headerlink" title="如何手动触发 KVO"></a>如何手动触发 KVO</h3><p>有时候为了在不改变属性值的情况下，触发监听方法，所以要手动触发 KVO。手动调用：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)willChangeValueForKey:(<span class="built_in">NSString</span> *)key;</span><br><span class="line">- (<span class="keyword">void</span>)didChangeValueForKey:(<span class="built_in">NSString</span> *)key;</span><br></pre></td></tr></table></figure>
+<h3 id="KVC-触发-KVO"><a href="#KVC-触发-KVO" class="headerlink" title="KVC 触发 KVO"></a>KVC 触发 KVO</h3><p>KVC 会触发 KVO。即使成员变量没有 get set 方法，KVC 手动调用 <code>willChangeValueForKey:</code> 和 <code>didChangeValueForKey:</code>。</p>
+<p>因为新的类内部重写了 <code>setValue:forKey:</code> 方法。</p>
+<h2 id="KVOController"><a href="#KVOController" class="headerlink" title="KVOController"></a>KVOController</h2><h3 id="KVO-存在的问题"><a href="#KVO-存在的问题" class="headerlink" title="KVO 存在的问题"></a>KVO 存在的问题</h3><p>KVO 本身写起来并不友好，存在一些问题：</p>
+<ol>
+<li>需要手动移除观察者</li>
+<li>处理观察事件需要和注册观察事件割裂开</li>
+</ol>
+<p>那么如何解决呢？</p>
+<p>没有什么是一个中间变量不能解决的。可以创建一个实例，观察的事件由它分发，在其 dealloc 方法中移除观察者。这样就不用在外部业务方法中移除了。<code>KVOController</code> 也是这么做的。</p>
+<h3 id="使用方式"><a href="#使用方式" class="headerlink" title="使用方式"></a>使用方式</h3><p>使用方式很简单，首先创建一个 <code>KVOController</code> 实例，然后执行 <code>observe:keyPath:options:block:</code> 方法注册观察者：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 在 ClockView 类中</span></span><br><span class="line">FBKVOController *KVOController = [FBKVOController controllerWithObserver:<span class="keyword">self</span>];</span><br><span class="line"><span class="keyword">self</span>.KVOController = KVOController;</span><br><span class="line"></span><br><span class="line"><span class="comment">// clock 是 ClockView 实例的一个属性，data 是 clock 实例的一个属性</span></span><br><span class="line">[<span class="keyword">self</span>.KVOController observe:clock keyPath:<span class="string">@"date"</span> options:<span class="built_in">NSKeyValueObservingOptionInitial</span>|<span class="built_in">NSKeyValueObservingOptionNew</span> block:^(ClockView *clockView, Clock *clock, <span class="built_in">NSDictionary</span> *change) &#123;</span><br><span class="line">  clockView.date = change[<span class="built_in">NSKeyValueChangeNewKey</span>];</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
+<p>其中， block 的第一个参数 ClockView 为 observer，第二个参数 Clock 为 target，第三个参数为变化的 keypath 的变化前后值的字典。</p>
+<h3 id="整体结构"><a href="#整体结构" class="headerlink" title="整体结构"></a>整体结构</h3><p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/kvo_2.png?raw=true" alt></p>
+<p>整体结构如上图所示，<code>KVOController</code> 对象有一个观察者 <code>observer</code> 还有一个 <code>NSMapTable</code> 的 <code>_objectInfosMap</code>，它的键是被观察的对象 <code>object</code>，值是被观察对象的各个属性的封装的 <code>NSMutableSet</code>，Set 中的每一个元素都保存了要执行的 block</p>
+<h3 id="源码解析"><a href="#源码解析" class="headerlink" title="源码解析"></a>源码解析</h3><h4 id="创建-KVOController-实例"><a href="#创建-KVOController-实例" class="headerlink" title="创建 KVOController 实例"></a>创建 KVOController 实例</h4><p>各个初始化方法都会来到这个方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">instancetype</span>)initWithObserver:(<span class="keyword">nullable</span> <span class="keyword">id</span>)observer retainObserved:(<span class="built_in">BOOL</span>)retainObserved</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">self</span> = [<span class="keyword">super</span> init];</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">if</span> (<span class="literal">nil</span> != <span class="keyword">self</span>) &#123;</span><br><span class="line">    _observer = observer;</span><br><span class="line">    <span class="comment">// 创建 NSMapTable 需要提供一个选项来决定 key 以及 value 是强引用还是弱引用</span></span><br><span class="line">    <span class="built_in">NSPointerFunctionsOptions</span> keyOptions = retainObserved ? <span class="built_in">NSPointerFunctionsStrongMemory</span>|<span class="built_in">NSPointerFunctionsObjectPointerPersonality</span> : <span class="built_in">NSPointerFunctionsWeakMemory</span>|<span class="built_in">NSPointerFunctionsObjectPointerPersonality</span>;</span><br><span class="line">    _objectInfosMap = [[<span class="built_in">NSMapTable</span> alloc] initWithKeyOptions:keyOptions valueOptions:<span class="built_in">NSPointerFunctionsStrongMemory</span>|<span class="built_in">NSPointerFunctionsObjectPersonality</span> capacity:<span class="number">0</span>];</span><br><span class="line">    pthread_mutex_init(&amp;_lock, <span class="literal">NULL</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">self</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里面的 <code>observer</code> 在外部会强引用这个 <code>KVOController</code>，所以初始化方法中的 <code>_observer</code>  默认是弱引用的，不用担心循环引用的问题。</p>
+<p>由于参数 <code>retainObserverd</code> 默认是 <code>YES</code>，所以创建的 <code>NSMapTable</code> 的 key 的选项默认是：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSPointerFunctionsStrongMemory</span>|<span class="built_in">NSPointerFunctionsObjectPointerPersonality</span></span><br></pre></td></tr></table></figure>
+<p>选项的具体含义在下面介绍 <code>NSMapTable</code> 的时候会提及。总之，这里创建的 <code>NSMapTable</code> 默认键和值都是强引用的，所以如果被观察的对象是观察者 <code>observer</code> 本身，就要注意要传入弱引用，否则会产生循环引用。</p>
+<p>最后创建了一个 <code>pthread_mutex_t</code></p>
+<h4 id="注册观察方法"><a href="#注册观察方法" class="headerlink" title="注册观察方法"></a>注册观察方法</h4><p>注册观察方法外部调用的方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)observe:(<span class="keyword">nullable</span> <span class="keyword">id</span>)object keyPath:(<span class="built_in">NSString</span> *)keyPath options:(<span class="built_in">NSKeyValueObservingOptions</span>)options context:(<span class="keyword">nullable</span> <span class="keyword">void</span> *)context &#123;</span><br><span class="line">  <span class="comment">// create info</span></span><br><span class="line">  _FBKVOInfo *info = [[_FBKVOInfo alloc] initWithController:<span class="keyword">self</span> keyPath:keyPath options:options context:context];</span><br><span class="line"></span><br><span class="line">  <span class="comment">// observe object with info</span></span><br><span class="line">  [<span class="keyword">self</span> _observe:object info:info];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>外部调用的时候会创建一个 <code>FBKVOInfo</code> 对象，这个对象保存了观察回调所需的各种要素，随后执行内部的注册方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)_observe:(<span class="keyword">id</span>)object info:(_FBKVOInfo *)info &#123;</span><br><span class="line">  <span class="comment">// lock</span></span><br><span class="line">  pthread_mutex_lock(&amp;_lock);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/// 拿到 KVOController 中所有的 object 的 KVOInfo 的集合</span></span><br><span class="line">  <span class="built_in">NSMutableSet</span> *infos = [_objectInfosMap objectForKey:object];</span><br><span class="line"></span><br><span class="line">  <span class="comment">/// 如果存在这个 info 那么就直接返回。 Info 主要是监听的 keyPath 和要执行的 block 信息，Infos 就是所有要监听的 keyPath 的集合</span></span><br><span class="line">  _FBKVOInfo *existingInfo = [infos member:info];</span><br><span class="line">  <span class="keyword">if</span> (<span class="literal">nil</span> != existingInfo) &#123;</span><br><span class="line">    <span class="comment">// unlock and return</span></span><br><span class="line">    pthread_mutex_unlock(&amp;_lock);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/// 如果没有这个 infos，那么就自己创建一个</span></span><br><span class="line">  <span class="keyword">if</span> (<span class="literal">nil</span> == infos) &#123;</span><br><span class="line">    infos = [<span class="built_in">NSMutableSet</span> set];</span><br><span class="line">    [_objectInfosMap setObject:infos forKey:object];</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// add info and oberve</span></span><br><span class="line">  [infos addObject:info];</span><br><span class="line"></span><br><span class="line">  <span class="comment">// unlock prior to callout</span></span><br><span class="line">  pthread_mutex_unlock(&amp;_lock);</span><br><span class="line"></span><br><span class="line">  [[_FBKVOSharedController sharedController] observe:object info:info];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到，这里把要观察的对象 <code>object</code> 和刚刚创建的保存回调要素的 <code>KVOInfo</code> 对象保存在了 <code>_onjectInfosMap</code> 这个 <code>NSMapTable</code> 中。</p>
+<p>所以，一个被观察的对象 <code>object</code> 的所有注册观察的 <code>keyPath</code> 都会保存在一个 <code>NSMutableSet</code> 中，再把 <code>object</code> 和 <code>NSMutableSet</code> 作为键值对，保存在 <code>NSMapTable</code> 中。</p>
+<p>最后调用的 <code>_FBKVOSharedController</code> 才是真正注册观察者的地方。</p>
+<h4 id="真正用来注册观察者的-KVOSharedController"><a href="#真正用来注册观察者的-KVOSharedController" class="headerlink" title="真正用来注册观察者的 KVOSharedController"></a>真正用来注册观察者的 <code>KVOSharedController</code></h4><p><code>KVOSharedController</code> 中还用到了 <code>NSHashTable</code>，但是和 <code>KVOController</code> 中 <code>NSMapTable</code> 不同的是，这里都是通过弱引用保存的。原因是因为外部的 <code>KVOController</code> 都保存确保不会被回收了，这里就不需要再强引用了。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">_FBKVOSharedController</span></span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="built_in">NSHashTable</span>&lt;_FBKVOInfo *&gt; *_infos;</span><br><span class="line">  pthread_mutex_t _mutex;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">+ (<span class="keyword">instancetype</span>)sharedController</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">static</span> _FBKVOSharedController *_controller = <span class="literal">nil</span>;</span><br><span class="line">  <span class="keyword">static</span> <span class="built_in">dispatch_once_t</span> onceToken;</span><br><span class="line">  <span class="built_in">dispatch_once</span>(&amp;onceToken, ^&#123;</span><br><span class="line">    _controller = [[_FBKVOSharedController alloc] init];</span><br><span class="line">  &#125;);</span><br><span class="line">  <span class="keyword">return</span> _controller;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">instancetype</span>)init</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">self</span> = [<span class="keyword">super</span> init];</span><br><span class="line">  <span class="keyword">if</span> (<span class="literal">nil</span> != <span class="keyword">self</span>) &#123;</span><br><span class="line">    <span class="built_in">NSHashTable</span> *infos = [<span class="built_in">NSHashTable</span> alloc];</span><br><span class="line">    _infos = [infos initWithOptions:<span class="built_in">NSPointerFunctionsWeakMemory</span>|<span class="built_in">NSPointerFunctionsObjectPointerPersonality</span> capacity:<span class="number">0</span>];</span><br><span class="line">    pthread_mutex_init(&amp;_mutex, <span class="literal">NULL</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">self</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>KVOSharedController</code> 是个单例，所有的注册和回调逻辑都是通过这个实例完成的.</p>
+<p>注册方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)observe:(<span class="keyword">id</span>)object info:(<span class="keyword">nullable</span> _FBKVOInfo *)info</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">if</span> (<span class="literal">nil</span> == info) &#123;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// register info</span></span><br><span class="line">  pthread_mutex_lock(&amp;_mutex);</span><br><span class="line">  [_infos addObject:info];</span><br><span class="line">  pthread_mutex_unlock(&amp;_mutex);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// add observer</span></span><br><span class="line">  [object addObserver:<span class="keyword">self</span> forKeyPath:info-&gt;_keyPath options:info-&gt;_options context:(<span class="keyword">void</span> *)info];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>还是能比较容易想到这个方法做了什么的。注意这里把 <code>KVOInfo</code> 实例作为 <code>context</code> 传了进去。</p>
+<p>回调方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)observeValueForKeyPath:(<span class="keyword">nullable</span> <span class="built_in">NSString</span> *)keyPath ofObject:(<span class="keyword">nullable</span> <span class="keyword">id</span>)object</span><br><span class="line">                        change:(<span class="keyword">nullable</span> <span class="built_in">NSDictionary</span>&lt;<span class="built_in">NSKeyValueChangeKey</span>, <span class="keyword">id</span>&gt; *)change</span><br><span class="line">                       context:(<span class="keyword">nullable</span> <span class="keyword">void</span> *)context</span><br><span class="line">&#123;</span><br><span class="line">  _FBKVOInfo *info;</span><br><span class="line"></span><br><span class="line">  &#123;</span><br><span class="line">    pthread_mutex_lock(&amp;_mutex);</span><br><span class="line">    <span class="comment">/// 之前</span></span><br><span class="line">    info = [_infos member:(__bridge <span class="keyword">id</span>)context];</span><br><span class="line">    pthread_mutex_unlock(&amp;_mutex);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (<span class="literal">nil</span> != info) &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// take strong reference to controller</span></span><br><span class="line">    FBKVOController *controller = info-&gt;_controller;</span><br><span class="line">    <span class="keyword">if</span> (<span class="literal">nil</span> != controller) &#123;</span><br><span class="line"></span><br><span class="line">      <span class="comment">// take strong reference to observer</span></span><br><span class="line">      <span class="keyword">id</span> observer = controller.observer;</span><br><span class="line">      <span class="keyword">if</span> (<span class="literal">nil</span> != observer) &#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (info-&gt;_block) &#123;</span><br><span class="line">          <span class="built_in">NSDictionary</span>&lt;<span class="built_in">NSKeyValueChangeKey</span>, <span class="keyword">id</span>&gt; *changeWithKeyPath = change;</span><br><span class="line">          <span class="comment">// add the keyPath to the change dictionary for clarity when mulitple keyPaths are being observed</span></span><br><span class="line">          <span class="keyword">if</span> (keyPath) &#123;</span><br><span class="line">            <span class="comment">/// 把 Keypath 也加入到了字典中去。</span></span><br><span class="line">            <span class="built_in">NSMutableDictionary</span>&lt;<span class="built_in">NSString</span> *, <span class="keyword">id</span>&gt; *mChange = [<span class="built_in">NSMutableDictionary</span> dictionaryWithObject:keyPath forKey:FBKVONotificationKeyPathKey];</span><br><span class="line">            [mChange addEntriesFromDictionary:change];</span><br><span class="line">            changeWithKeyPath = [mChange <span class="keyword">copy</span>];</span><br><span class="line">          &#125;</span><br><span class="line">          info-&gt;_block(observer, object, changeWithKeyPath);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>也是顺利成章的，接收到回调事件后，执行 block 里面的内容。刚才通过 <code>context</code> 把 <code>KVOInfo</code> 传入，现在再通过 <code>context</code>，把 <code>KVOInfo</code> 取出来。(说实话，这里的操作，包括下面的各种判空，其实有点多余。因为本身外部是强引用的，不会出现为空的情况)</p>
+<h4 id="取消注册"><a href="#取消注册" class="headerlink" title="取消注册"></a>取消注册</h4><p>取消注册在 <code>KVOController</code> 中存在三种情况：</p>
+<ol>
+<li>取消所有的监听</li>
+<li>取消关于某一个 object 的所有的监听</li>
+<li>取消某一个 object 内的某个 keypath 的监听</li>
+</ol>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 对应第三种情况</span></span><br><span class="line">- (<span class="keyword">void</span>)_unobserve:(<span class="keyword">id</span>)object info:(_FBKVOInfo *)info</span><br><span class="line">&#123;</span><br><span class="line">  <span class="comment">// lock</span></span><br><span class="line">  pthread_mutex_lock(&amp;_lock);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// get observation infos</span></span><br><span class="line">  <span class="built_in">NSMutableSet</span> *infos = [_objectInfosMap objectForKey:object];</span><br><span class="line"></span><br><span class="line">  <span class="comment">// lookup registered info instance</span></span><br><span class="line">  _FBKVOInfo *registeredInfo = [infos member:info];</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (<span class="literal">nil</span> != registeredInfo) &#123;</span><br><span class="line">    [infos removeObject:registeredInfo];</span><br><span class="line"></span><br><span class="line">    <span class="comment">// remove no longer used infos</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="number">0</span> == infos.count) &#123;</span><br><span class="line">      [_objectInfosMap removeObjectForKey:object];</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// unlock</span></span><br><span class="line">  pthread_mutex_unlock(&amp;_lock);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// unobserve</span></span><br><span class="line">  [[_FBKVOSharedController sharedController] unobserve:object info:registeredInfo];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 对应第二种情况</span></span><br><span class="line">- (<span class="keyword">void</span>)_unobserve:(<span class="keyword">id</span>)object</span><br><span class="line">&#123;</span><br><span class="line">  <span class="comment">// lock</span></span><br><span class="line">  pthread_mutex_lock(&amp;_lock);</span><br><span class="line"></span><br><span class="line">  <span class="built_in">NSMutableSet</span> *infos = [_objectInfosMap objectForKey:object];</span><br><span class="line"></span><br><span class="line">  <span class="comment">// remove infos</span></span><br><span class="line">  [_objectInfosMap removeObjectForKey:object];</span><br><span class="line"></span><br><span class="line">  <span class="comment">// unlock</span></span><br><span class="line">  pthread_mutex_unlock(&amp;_lock);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// unobserve</span></span><br><span class="line">  [[_FBKVOSharedController sharedController] unobserve:object infos:infos];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 对应第一种情况</span></span><br><span class="line">- (<span class="keyword">void</span>)_unobserveAll</span><br><span class="line">&#123;</span><br><span class="line">  <span class="comment">// lock</span></span><br><span class="line">  pthread_mutex_lock(&amp;_lock);</span><br><span class="line"></span><br><span class="line">  <span class="built_in">NSMapTable</span> *objectInfoMaps = [_objectInfosMap <span class="keyword">copy</span>];</span><br><span class="line"></span><br><span class="line">  <span class="comment">// clear table and map</span></span><br><span class="line">  [_objectInfosMap removeAllObjects];</span><br><span class="line"></span><br><span class="line">  <span class="comment">// unlock</span></span><br><span class="line">  pthread_mutex_unlock(&amp;_lock);</span><br><span class="line"></span><br><span class="line">  _FBKVOSharedController *shareController = [_FBKVOSharedController sharedController];</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">id</span> object <span class="keyword">in</span> objectInfoMaps) &#123;</span><br><span class="line">    <span class="comment">// unobserve each registered object and infos</span></span><br><span class="line">    <span class="built_in">NSSet</span> *infos = [objectInfoMaps objectForKey:object];</span><br><span class="line">    [shareController unobserve:object infos:infos];</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这三种情况中，第一种删除所有 Object 是第二种删除某一个 Object 的特殊情况，第二种又是第一种删除某一个 Object 的某个 keyPath 的特殊情况。总的来说，都是操作 <code>_objectInfosMap</code>，将强引用的对象删除，然后交给 <code>KVOSharedController</code> 操作。</p>
+<p>这三种情况最后都归结到 <code>KVOSharedController</code> 中去：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)unobserve:(<span class="keyword">id</span>)object info:(<span class="keyword">nullable</span> _FBKVOInfo *)info &#123;</span><br><span class="line">  <span class="keyword">if</span> (<span class="literal">nil</span> == info) &#123; <span class="keyword">return</span>; &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// unregister info</span></span><br><span class="line">  pthread_mutex_lock(&amp;_mutex);</span><br><span class="line">  [_infos removeObject:info];</span><br><span class="line">  pthread_mutex_unlock(&amp;_mutex);</span><br><span class="line"></span><br><span class="line">  [object removeObserver:<span class="keyword">self</span> forKeyPath:info-&gt;_keyPath context:(<span class="keyword">void</span> *)info];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="dealloc-时候的自动取消注册"><a href="#dealloc-时候的自动取消注册" class="headerlink" title="dealloc 时候的自动取消注册"></a>dealloc 时候的自动取消注册</h4><p>由于观察者把整个过程交给了 <code>KVOController</code>，所以在观察者销毁的时候，<code>KVOController</code> 也会一起执行 <code>dealloc</code> 方法，来清除所有的监听。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)dealloc</span><br><span class="line">&#123;</span><br><span class="line">  [<span class="keyword">self</span> unobserveAll];</span><br><span class="line">  pthread_mutex_destroy(&amp;_lock);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>整个库的流程是：<code>KVOController</code> 把观察的对象作为其 <code>NSMapTable</code> 属性 <code>_objectInfomap</code> 的键，把整个回调环境组成的对象 <code>KVOInfo</code> 作为值保存起来。同时通过一个单例的 <code>KVOSharedController</code> 执行具体的注册于监听方法。</p>
+<p>在我看来，本身 <code>KVOSharedController</code> 这个单例其实是没有多大意义的，在每个 <code>KVOController</code> 中其实就可以处理这些监听与回调了。不过这么写可能是为了更好的职责分离吧。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/kvo_3.png?raw=true" alt></p>
+<p>最后还要强调一点，我认为 KVO 自动取消监听的<strong>核心在于让 <code>KVOController</code> 这类的中间类的生命周期和被监听的 <code>object</code> 同步，而不是和 <code>Observer</code> 同步</strong>。因为，只有在被监听对象回收的时候取消监听才能真正避免 crash 的危险。</p>
+<p>事实上，我们一般在 VC 和 VM 中做监听，监听的对象是 VC 或者 VM 的属性，这种变相的把观察者 <code>Observer</code> 和被观察对象 <code>object</code> 的生命周期同步了，因而把 <code>KVOController</code> 作为监听者的属性也不会有问题。但是这会造成使用者的误解。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/kvo_4.png?raw=true" alt></p>
+<p>所以我认为 KVOController 这种一个 <code>KVOController</code> 监听多个对象的做法其实是有问题的，也是不应该被鼓励的。真正应该的是像我图上画的，给每个被观察的对象绑定一个 <code>KVOController</code> 实例。</p>
+<h3 id="NSMapTable"><a href="#NSMapTable" class="headerlink" title="NSMapTable"></a>NSMapTable</h3><p>NSMapTable 相比较 NSDictionary 的优势有：</p>
+<ol>
+<li>NSDictionary 必须是 key-obj 的形式，key 必须是满足 NSCopying 协议的；NSMapTable 则是 obj-obj 的形式</li>
+<li>NSDictionary 的 obj 是强引用；NSMapTable 的 key 和 value 都可以自己决定是强引用还是弱引用。如果弱引用回收后，会自动删除。</li>
+</ol>
+<h4 id="创建"><a href="#创建" class="headerlink" title="创建"></a>创建</h4><p>创建 NSMapTable 的时候，需要指定键和值的选项：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSMapTable</span> *keyToObjectMapping = [<span class="built_in">NSMapTable</span> mapTableWithKeyOptions:<span class="built_in">NSMapTableCopyIn</span> valueOptions:<span class="built_in">NSMapTableStrongMemory</span>];</span><br></pre></td></tr></table></figure>
+<p>上面创建的 NSMapTable 将和 NSDictionary 一模一样，复制 <code>key</code>，并对它的 <code>object</code> 引用计数 +1。</p>
+<h4 id="NSMapTable-的选项"><a href="#NSMapTable-的选项" class="headerlink" title="NSMapTable 的选项"></a>NSMapTable 的选项</h4><ul>
+<li>NSMapTableStrongMemory (a “memory option”)</li>
+<li>NSMapTableWeakMemory (a “memory option”)</li>
+<li>NSMapTableObjectPointerPersonality (a “personality option”)</li>
+<li>NSMapTableCopyIn (a “copy option”)</li>
+</ul>
+<p>其中前两个 memory option 就是控制是对 obj 进行强引用还是弱引用。</p>
+<p>personality option 在我的理解中是针对 key 的，它决定是否使用对象的指针来进行 hash （NSDictionary 中使用 NSString 来进行 hash，决定 object 的存储位置）。如果不指定这个选项，默认是使用整个对象进行 hash，那么在存储的过程中，作为 key 的这个对象是不能被改变的（对象变了，hash 值变了，自然就找不到 object 了）。</p>
+<p>copy option 选项表明是否执行对象的 copy 方法，深拷贝一个新的对象进行存储。</p>
+<h4 id="NSArray-和-NSPointerArray-的区别"><a href="#NSArray-和-NSPointerArray-的区别" class="headerlink" title="NSArray 和 NSPointerArray 的区别"></a>NSArray 和 NSPointerArray 的区别</h4><p>NSPointerArray 可以保存 NULL，因此，NSPointerArray 中的对象可以是 weak 的，销毁直接将该位置职位 null</p>
+<h4 id="NSHashTable-和-NSSet-区别"><a href="#NSHashTable-和-NSSet-区别" class="headerlink" title="NSHashTable 和 NSSet 区别"></a>NSHashTable 和 NSSet 区别</h4><p>NSHashTable 是可变的，且 NSHashTable 可以放弱引用对象</p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a href="https://draveness.me/`KVOController`" target="_blank" rel="noopener">如何优雅的使用KVO</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tag/源码解析/" rel="tag"># 源码解析</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/11/11/Effective_oc2笔记/" rel="next" title="Effective Objective-C 学习笔记">
+                <i class="fa fa-chevron-left"></i> Effective Objective-C 学习笔记
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/11/25/RN使用技巧/" rel="prev" title="React-Native 技巧与坑总结">
+                React-Native 技巧与坑总结 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.png" alt="Zachary Zhang">
+            
+              <p class="site-author-name" itemprop="name">Zachary Zhang</p>
+              <p class="site-description motion-element" itemprop="description">Stay Hungry. Stay Foolish!</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">116</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/zhang759740844" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:zch759740844@126.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#KVO是什么？"><span class="nav-number">1.</span> <span class="nav-text">KVO是什么？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#KVO的用法"><span class="nav-number">2.</span> <span class="nav-text">KVO的用法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#为对象的属性注册观察者"><span class="nav-number">2.1.</span> <span class="nav-text">为对象的属性注册观察者</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#观察者接收通知"><span class="nav-number">2.2.</span> <span class="nav-text">观察者接收通知</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#清除观察者"><span class="nav-number">2.3.</span> <span class="nav-text">清除观察者</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#注意事项"><span class="nav-number">2.4.</span> <span class="nav-text">注意事项</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#KVO-原理"><span class="nav-number">3.</span> <span class="nav-text">KVO 原理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#实现原理"><span class="nav-number">3.1.</span> <span class="nav-text">实现原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#如何手动触发-KVO"><span class="nav-number">3.2.</span> <span class="nav-text">如何手动触发 KVO</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#KVC-触发-KVO"><span class="nav-number">3.3.</span> <span class="nav-text">KVC 触发 KVO</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#KVOController"><span class="nav-number">4.</span> <span class="nav-text">KVOController</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#KVO-存在的问题"><span class="nav-number">4.1.</span> <span class="nav-text">KVO 存在的问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用方式"><span class="nav-number">4.2.</span> <span class="nav-text">使用方式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#整体结构"><span class="nav-number">4.3.</span> <span class="nav-text">整体结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#源码解析"><span class="nav-number">4.4.</span> <span class="nav-text">源码解析</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#创建-KVOController-实例"><span class="nav-number">4.4.1.</span> <span class="nav-text">创建 KVOController 实例</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#注册观察方法"><span class="nav-number">4.4.2.</span> <span class="nav-text">注册观察方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#真正用来注册观察者的-KVOSharedController"><span class="nav-number">4.4.3.</span> <span class="nav-text">真正用来注册观察者的 KVOSharedController</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#取消注册"><span class="nav-number">4.4.4.</span> <span class="nav-text">取消注册</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#dealloc-时候的自动取消注册"><span class="nav-number">4.4.5.</span> <span class="nav-text">dealloc 时候的自动取消注册</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#总结"><span class="nav-number">4.4.6.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#NSMapTable"><span class="nav-number">4.5.</span> <span class="nav-text">NSMapTable</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#创建"><span class="nav-number">4.5.1.</span> <span class="nav-text">创建</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#NSMapTable-的选项"><span class="nav-number">4.5.2.</span> <span class="nav-text">NSMapTable 的选项</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#NSArray-和-NSPointerArray-的区别"><span class="nav-number">4.5.3.</span> <span class="nav-text">NSArray 和 NSPointerArray 的区别</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#NSHashTable-和-NSSet-区别"><span class="nav-number">4.5.4.</span> <span class="nav-text">NSHashTable 和 NSSet 区别</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考"><span class="nav-number">5.</span> <span class="nav-text">参考</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zachary Zhang</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

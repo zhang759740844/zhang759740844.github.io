@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+
+
+
+
+  <meta name="keywords" content="源码解析,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="读项目工程的时候读到了 MBProgressHUD，所以仔细研究了一下它的原理，以及里面使用到的各种 api。我所看的源码是 MBProgressHUD 1.0.0">
+<meta name="keywords" content="源码解析">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MBProgressHUD 源码解析">
+<meta property="og:url" content="http://zhang759740844.github.io/2017/02/21/MBProgressHUD源码解析/index.html">
+<meta property="og:site_name" content="Zachary&#39;s blog">
+<meta property="og:description" content="读项目工程的时候读到了 MBProgressHUD，所以仔细研究了一下它的原理，以及里面使用到的各种 api。我所看的源码是 MBProgressHUD 1.0.0">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2020-02-27T15:13:37.631Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="MBProgressHUD 源码解析">
+<meta name="twitter:description" content="读项目工程的时候读到了 MBProgressHUD，所以仔细研究了一下它的原理，以及里面使用到的各种 api。我所看的源码是 MBProgressHUD 1.0.0">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://zhang759740844.github.io/2017/02/21/MBProgressHUD源码解析/">
+
+
+
+
+
+  <title>MBProgressHUD 源码解析 | Zachary's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Zachary's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">记录成长</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://zhang759740844.github.io/2017/02/21/MBProgressHUD源码解析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zachary Zhang">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Zachary's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">MBProgressHUD 源码解析</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-02-21T14:07:12+08:00">
+                2017-02-21
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>读项目工程的时候读到了 <code>MBProgressHUD</code>，所以仔细研究了一下它的原理，以及里面使用到的各种 api。我所看的源码是 <strong>MBProgressHUD 1.0.0</strong></p>
+<a id="more"></a>
+<h2 id="构造与显示方法"><a href="#构造与显示方法" class="headerlink" title="构造与显示方法"></a>构造与显示方法</h2><p>首先是 <code>MBProgressHUD</code> 的构造显示方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">+ (<span class="keyword">instancetype</span>)showHUDAddedTo:(<span class="built_in">UIView</span> *)view animated:(<span class="built_in">BOOL</span>)animated &#123;</span><br><span class="line">    MBProgressHUD *hud = [[<span class="keyword">self</span> alloc] initWithView:view];</span><br><span class="line">    hud.removeFromSuperViewOnHide = <span class="literal">YES</span>;</span><br><span class="line">    [view addSubview:hud];</span><br><span class="line">    [hud showAnimated:animated];</span><br><span class="line">    <span class="keyword">return</span> hud;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>该方法先创建了一个 <code>MBProgressHUD</code> 实例，然后将其添加到 view 上，并将其显示出来。<code>removeFromSuperViewOnHide</code> 是个标记，暂时不用管它。</p>
+<h3 id="构造方法"><a href="#构造方法" class="headerlink" title="构造方法"></a>构造方法</h3><p>进入上面的 <code>initWithView:</code> 方法，一层层进入，最终通过 <code>commonInit</code> 实现：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)commonInit &#123;</span><br><span class="line">    <span class="comment">// Set default values for properties</span></span><br><span class="line">    _animationType = MBProgressHUDAnimationFade;</span><br><span class="line">    _mode = MBProgressHUDModeIndeterminate;</span><br><span class="line">    _margin = <span class="number">20.0</span>f;</span><br><span class="line">    _opacity = <span class="number">1.</span>f;</span><br><span class="line">    _defaultMotionEffectsEnabled = <span class="literal">YES</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Default color, depending on the current iOS version</span></span><br><span class="line">    <span class="built_in">BOOL</span> isLegacy = kCFCoreFoundationVersionNumber &lt; kCFCoreFoundationVersionNumber_iOS_7_0;</span><br><span class="line">    _contentColor = isLegacy ? [<span class="built_in">UIColor</span> whiteColor] : [<span class="built_in">UIColor</span> colorWithWhite:<span class="number">0.</span>f alpha:<span class="number">0.7</span>f];</span><br><span class="line">    <span class="comment">// Transparent background</span></span><br><span class="line">    <span class="keyword">self</span>.opaque = <span class="literal">NO</span>;</span><br><span class="line">    <span class="keyword">self</span>.backgroundColor = [<span class="built_in">UIColor</span> clearColor];</span><br><span class="line">    <span class="comment">// Make it invisible for now</span></span><br><span class="line">    <span class="keyword">self</span>.alpha = <span class="number">0.0</span>f;</span><br><span class="line">    <span class="keyword">self</span>.autoresizingMask = <span class="built_in">UIViewAutoresizingFlexibleWidth</span> | <span class="built_in">UIViewAutoresizingFlexibleHeight</span>;</span><br><span class="line">    <span class="comment">//--- 父控件的透明度是否应用到子控件</span></span><br><span class="line">    <span class="keyword">self</span>.layer.allowsGroupOpacity = <span class="literal">NO</span>; </span><br><span class="line"></span><br><span class="line">    [<span class="keyword">self</span> setupViews];</span><br><span class="line">    [<span class="keyword">self</span> updateIndicators];</span><br><span class="line">    [<span class="keyword">self</span> registerForNotifications];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个方法构造了整个 view。上部设置了很多默认项，还是等到用到的时候再细说。后面又调用了三个方法 <code>setupViews</code>,<code>updateIndicators</code>,<code>registerForNotifications</code>。</p>
+<h4 id="创建-view"><a href="#创建-view" class="headerlink" title="创建 view"></a>创建 view</h4><p>进入 <code>setupVies</code> 方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)setupViews &#123;</span><br><span class="line">    <span class="built_in">UIColor</span> *defaultColor = <span class="keyword">self</span>.contentColor;</span><br><span class="line">    <span class="comment">//---这个的背景view</span></span><br><span class="line">    MBBackgroundView *backgroundView = [[MBBackgroundView alloc] initWithFrame:<span class="keyword">self</span>.bounds];</span><br><span class="line">    backgroundView.style = MBProgressHUDBackgroundStyleSolidColor;</span><br><span class="line">    backgroundView.backgroundColor = [<span class="built_in">UIColor</span> clearColor];</span><br><span class="line">    backgroundView.autoresizingMask = <span class="built_in">UIViewAutoresizingFlexibleWidth</span> | <span class="built_in">UIViewAutoresizingFlexibleHeight</span>;</span><br><span class="line">    backgroundView.alpha = <span class="number">0.</span>f;</span><br><span class="line">    [<span class="keyword">self</span> addSubview:backgroundView];</span><br><span class="line">    _backgroundView = backgroundView;</span><br><span class="line">    <span class="comment">//---容纳指示器的view</span></span><br><span class="line">    MBBackgroundView *bezelView = [MBBackgroundView new];</span><br><span class="line">    bezelView.translatesAutoresizingMaskIntoConstraints = <span class="literal">NO</span>;</span><br><span class="line">    bezelView.layer.cornerRadius = <span class="number">5.</span>f;</span><br><span class="line">    bezelView.alpha = <span class="number">0.</span>f;</span><br><span class="line">    [<span class="keyword">self</span> addSubview:bezelView];</span><br><span class="line">    _bezelView = bezelView;</span><br><span class="line">    <span class="comment">//--- 这个方法让view能够跟随陀螺仪运动。</span></span><br><span class="line">    [<span class="keyword">self</span> updateBezelMotionEffects];</span><br><span class="line"></span><br><span class="line">	...创建各种 label，detailLabel，button</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="built_in">UIView</span> *view <span class="keyword">in</span> @[label, detailsLabel, button]) &#123;</span><br><span class="line">        view.translatesAutoresizingMaskIntoConstraints = <span class="literal">NO</span>;</span><br><span class="line">        [view setContentCompressionResistancePriority:<span class="number">998.</span>f forAxis:<span class="built_in">UILayoutConstraintAxisHorizontal</span>];</span><br><span class="line">        [view setContentCompressionResistancePriority:<span class="number">998.</span>f forAxis:<span class="built_in">UILayoutConstraintAxisVertical</span>];</span><br><span class="line">        [bezelView addSubview:view];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">UIView</span> *topSpacer = [<span class="built_in">UIView</span> new];</span><br><span class="line">    topSpacer.translatesAutoresizingMaskIntoConstraints = <span class="literal">NO</span>;</span><br><span class="line">    topSpacer.hidden = <span class="literal">YES</span>;</span><br><span class="line">    [bezelView addSubview:topSpacer];</span><br><span class="line">    _topSpacer = topSpacer;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">UIView</span> *bottomSpacer = [<span class="built_in">UIView</span> new];</span><br><span class="line">    bottomSpacer.translatesAutoresizingMaskIntoConstraints = <span class="literal">NO</span>;</span><br><span class="line">    bottomSpacer.hidden = <span class="literal">YES</span>;</span><br><span class="line">    [bezelView addSubview:bottomSpacer];</span><br><span class="line">    _bottomSpacer = bottomSpacer;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个方法里创建了 HUD 中要显示的各个部分。首先创建了两个 <code>MBBackgroundView</code>，一个是整个 view 的背景，另一个则用来容纳指示器。进入它的构造方法，在 <code>updateForBackgroundStyle</code> 中用到了 <code>UIBlurEffect</code>。这是 iOS 中提供的用来实现高斯模糊的 API，不熟悉的朋友可以参见 <a href="https://zhang759740844.github.io/2017/02/13/iOS中API的使用方法/">UIVisualEffectView 实现高斯模糊</a></p>
+<p>接下来是 <code>updateBezelMotionEffects</code> 方法。这个方法能够让 view 跟随屏幕倾斜而位移(看源码前还真没发现可以动)。这个方法里用到的是 <code>UIInterpolatingMotionEffect</code> 的 API，不熟悉的朋友可以参见 <a href="https://zhang759740844.github.io/2017/02/13/iOS中API的使用方法/">UIInterpolatingMotionEffect 视图运动</a></p>
+<p>后面就是创建各个提示内容的 view，也就是后面经常用到的 <code>NSMutableArray *subviews = [NSMutableArray arrayWithObjects:self.topSpacer, self.label, self.detailsLabel, self.button, self.bottomSpacer, nil];</code>这里只是将 view 加入到 <code>MBBackgroundView</code> 中，约束设置在 <code>updateConstraints</code> 方法中，如果你对这个方法不太熟悉，可以参见<a href="https://zhang759740844.github.io/2017/02/09/iOS技巧/">图像显示过程与一些注意事项</a>。</p>
+<h4 id="设置指示器"><a href="#设置指示器" class="headerlink" title="设置指示器"></a>设置指示器</h4><p>现在执行到 <code>setupViews</code> 方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)updateIndicators &#123;</span><br><span class="line">    <span class="built_in">UIView</span> *indicator = <span class="keyword">self</span>.indicator;</span><br><span class="line">    <span class="built_in">BOOL</span> isActivityIndicator = [indicator isKindOfClass:[<span class="built_in">UIActivityIndicatorView</span> <span class="keyword">class</span>]];</span><br><span class="line">    <span class="built_in">BOOL</span> isRoundIndicator = [indicator isKindOfClass:[MBRoundProgressView <span class="keyword">class</span>]];</span><br><span class="line"></span><br><span class="line">    MBProgressHUDMode mode = <span class="keyword">self</span>.mode;</span><br><span class="line">    <span class="keyword">if</span> (mode == MBProgressHUDModeIndeterminate) &#123;</span><br><span class="line">        <span class="keyword">if</span> (!isActivityIndicator) &#123;</span><br><span class="line">            <span class="comment">//--- 系统自带的旋转的菊花。</span></span><br><span class="line">            <span class="comment">// Update to indeterminate indicator</span></span><br><span class="line">            [indicator removeFromSuperview];</span><br><span class="line">            indicator = [[<span class="built_in">UIActivityIndicatorView</span> alloc] initWithActivityIndicatorStyle:<span class="built_in">UIActivityIndicatorViewStyleWhiteLarge</span>];</span><br><span class="line">            [(<span class="built_in">UIActivityIndicatorView</span> *)indicator startAnimating];</span><br><span class="line">            [<span class="keyword">self</span>.bezelView addSubview:indicator];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (mode == MBProgressHUDModeDeterminateHorizontalBar) &#123;</span><br><span class="line">        <span class="comment">// Update to bar determinate indicator</span></span><br><span class="line">        <span class="comment">//--- 自定义的一个进度条 条状的</span></span><br><span class="line">        [indicator removeFromSuperview];</span><br><span class="line">        indicator = [[MBBarProgressView alloc] init];</span><br><span class="line">        [<span class="keyword">self</span>.bezelView addSubview:indicator];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (mode == MBProgressHUDModeDeterminate || mode == MBProgressHUDModeAnnularDeterminate) &#123;</span><br><span class="line">        <span class="comment">//--- 自定义进图条 条状的还是环状的</span></span><br><span class="line">        <span class="keyword">if</span> (!isRoundIndicator) &#123;</span><br><span class="line">            <span class="comment">// Update to determinante indicator</span></span><br><span class="line">            [indicator removeFromSuperview];</span><br><span class="line">            indicator = [[MBRoundProgressView alloc] init];</span><br><span class="line">            [<span class="keyword">self</span>.bezelView addSubview:indicator];</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (mode == MBProgressHUDModeAnnularDeterminate) &#123;</span><br><span class="line">            [(MBRoundProgressView *)indicator setAnnular:<span class="literal">YES</span>];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; </span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (mode == MBProgressHUDModeCustomView &amp;&amp; <span class="keyword">self</span>.customView != indicator) &#123;</span><br><span class="line">        <span class="comment">//--- 通过用户设置的 customView 设置进度条</span></span><br><span class="line">        <span class="comment">// Update custom view indicator</span></span><br><span class="line">        [indicator removeFromSuperview];</span><br><span class="line">        indicator = <span class="keyword">self</span>.customView;</span><br><span class="line">        [<span class="keyword">self</span>.bezelView addSubview:indicator];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (mode == MBProgressHUDModeText) &#123;</span><br><span class="line">        [indicator removeFromSuperview];</span><br><span class="line">        indicator = <span class="literal">nil</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    indicator.translatesAutoresizingMaskIntoConstraints = <span class="literal">NO</span>;</span><br><span class="line">    <span class="keyword">self</span>.indicator = indicator;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> ([indicator respondsToSelector:<span class="keyword">@selector</span>(setProgress:)]) &#123;</span><br><span class="line">        [(<span class="keyword">id</span>)indicator setValue:@(<span class="keyword">self</span>.progress) forKey:<span class="string">@"progress"</span>];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    [indicator setContentCompressionResistancePriority:<span class="number">998.</span>f forAxis:<span class="built_in">UILayoutConstraintAxisHorizontal</span>];</span><br><span class="line">    [indicator setContentCompressionResistancePriority:<span class="number">998.</span>f forAxis:<span class="built_in">UILayoutConstraintAxisVertical</span>];</span><br><span class="line"></span><br><span class="line">    [<span class="keyword">self</span> updateViewsForColor:<span class="keyword">self</span>.contentColor];</span><br><span class="line">    [<span class="keyword">self</span> setNeedsUpdateConstraints];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个方法设置指示器到底是什么样的，通过前面设置的 mode 来区别。可以是系统自带的菊花型 <code>UIActivityIndicatorView</code>，也可以是自定义的条状指示器 <code>MBBarProgressView</code>，还可以是自定义的环状的 <code>MBRoundProgressView</code>，当然，也可以是用户自定义的 view 作为视图指示器。</p>
+<p>如果是自定义的指示器，外部可以随时改变 customView，这会触发内部的 set 方法，更新约束：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)setCustomView:(<span class="built_in">UIView</span> *)customView &#123;</span><br><span class="line">    <span class="keyword">if</span> (customView != _customView) &#123;</span><br><span class="line">        _customView = customView;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">self</span>.mode == MBProgressHUDModeCustomView) &#123;</span><br><span class="line">            [<span class="keyword">self</span> updateIndicators];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以把 <code>customView</code> 设置为 <code>UIImageView</code> 来实现加载时的动态效果，详情看<a href="https://zhang759740844.github.io/2017/02/09/iOS技巧/">用 UIImageView 播放动图</a></p>
+<p>在 <code>MBBarProgressView</code> 和 <code>MBRoundProgressView</code> 的 <code>drawRect:</code> 方法中实现了指示器的绘制。使用了 <code>UIBezierPath</code> 和 <code>CoreGraphics</code> 的 API，如果不熟，可以参见 <a href="https://zhang759740844.github.io/2017/02/13/iOS中API的使用方法/">绘制图形</a>。进度显示是以 <code>_progress</code> 变量为准的。</p>
+<h4 id="注册通知"><a href="#注册通知" class="headerlink" title="注册通知"></a>注册通知</h4><p>这里的注册通知其实挺无关紧要的：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)registerForNotifications &#123;</span><br><span class="line"><span class="meta">#if !TARGET_OS_TV</span></span><br><span class="line">    <span class="built_in">NSNotificationCenter</span> *nc = [<span class="built_in">NSNotificationCenter</span> defaultCenter];</span><br><span class="line"></span><br><span class="line">    [nc addObserver:<span class="keyword">self</span> selector:<span class="keyword">@selector</span>(statusBarOrientationDidChange:)</span><br><span class="line">               name:<span class="built_in">UIApplicationDidChangeStatusBarOrientationNotification</span> object:<span class="literal">nil</span>];</span><br><span class="line"><span class="meta">#endif</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其实就是注册一个监听屏幕旋转的通知。而且现在大部分机型都是 iOS8 之后，基本不用设置什么。</p>
+<h3 id="显示方法"><a href="#显示方法" class="headerlink" title="显示方法"></a>显示方法</h3><p>看一下显示方法 <code>showAnimated:</code>：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)showAnimated:(<span class="built_in">BOOL</span>)animated &#123;</span><br><span class="line">    MBMainThreadAssert();</span><br><span class="line">    [<span class="keyword">self</span>.minShowTimer invalidate];</span><br><span class="line">    <span class="keyword">self</span>.useAnimation = animated;</span><br><span class="line">    <span class="keyword">self</span>.finished = <span class="literal">NO</span>;</span><br><span class="line">    <span class="comment">// If the grace time is set, postpone the HUD display</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.graceTime &gt; <span class="number">0.0</span>) &#123;</span><br><span class="line">        <span class="built_in">NSTimer</span> *timer = [<span class="built_in">NSTimer</span> timerWithTimeInterval:<span class="keyword">self</span>.graceTime target:<span class="keyword">self</span> selector:<span class="keyword">@selector</span>(handleGraceTimer:) userInfo:<span class="literal">nil</span> repeats:<span class="literal">NO</span>];</span><br><span class="line">        [[<span class="built_in">NSRunLoop</span> currentRunLoop] addTimer:timer forMode:<span class="built_in">NSRunLoopCommonModes</span>];</span><br><span class="line">        <span class="keyword">self</span>.graceTimer = timer;</span><br><span class="line">    &#125; </span><br><span class="line">    <span class="comment">// ... otherwise show the HUD immediately</span></span><br><span class="line">    <span class="keyword">else</span> &#123;</span><br><span class="line">        [<span class="keyword">self</span> showUsingAnimation:<span class="keyword">self</span>.useAnimation];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以看一下 <code>graceTime</code> 是一个显示的延迟时间。如果设置了这个时间，就会创建一个 <code>NSTimer</code> 的定时器，在 <code>graceTime</code> 之后再执行 <code>showUsingAnimation</code> 方法，将 hud 显示出来。<code>finished</code> 就是用来监控在这段时间还没有被显示出来的时间内，hud 是否已经被设置隐藏了的标记。</p>
+<p>接下来看 <code>showUsingAnimation:</code> 方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)showUsingAnimation:(<span class="built_in">BOOL</span>)animated &#123;</span><br><span class="line">    <span class="comment">// Cancel any previous animations</span></span><br><span class="line">    [<span class="keyword">self</span>.bezelView.layer removeAllAnimations];</span><br><span class="line">    [<span class="keyword">self</span>.backgroundView.layer removeAllAnimations];</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Cancel any scheduled hideDelayed: calls</span></span><br><span class="line">    [<span class="keyword">self</span>.hideDelayTimer invalidate];</span><br><span class="line">    <span class="comment">//--- 记录显示的时间</span></span><br><span class="line">    <span class="keyword">self</span>.showStarted = [<span class="built_in">NSDate</span> date];</span><br><span class="line">    <span class="keyword">self</span>.alpha = <span class="number">1.</span>f;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Needed in case we hide and re-show with the same NSProgress object attached.</span></span><br><span class="line">    <span class="comment">//--- 设置以CADisplayLink为基准的刷新，注意这里并不是所有的进度条都是以CAD来刷新的，只有设置了 progressObject 的才会使用</span></span><br><span class="line">    [<span class="keyword">self</span> setNSProgressDisplayLinkEnabled:<span class="literal">YES</span>];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (animated) &#123;</span><br><span class="line">        [<span class="keyword">self</span> animateIn:<span class="literal">YES</span> withType:<span class="keyword">self</span>.animationType completion:<span class="literal">NULL</span>];</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line"><span class="meta">#pragma clang diagnostic push</span></span><br><span class="line"><span class="meta">#pragma clang diagnostic ignored <span class="meta-string">"-Wdeprecated-declarations"</span></span></span><br><span class="line">        <span class="keyword">self</span>.bezelView.alpha = <span class="keyword">self</span>.opacity;</span><br><span class="line"><span class="meta">#pragma clang diagnostic pop</span></span><br><span class="line">        <span class="keyword">self</span>.backgroundView.alpha = <span class="number">1.</span>f;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里 <code>showStarted</code> 用来记录一个显示开始的时间，这个将会在后面用到，将通过这个时间来设置 hud 的最短显示时间。下面两个方法 <code>setNSProgressDisplayLinkEnabled:</code> 和 <code>animateIn:withType:completion:</code> 方法，一个用来设置 <code>progressObject</code> 进度（注意，不是所有进度变化都会用到这个方法），一个用来自定义展示动画。</p>
+<p>我们来看看设置 progressObject 进度的方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)setNSProgressDisplayLinkEnabled:(<span class="built_in">BOOL</span>)enabled &#123;</span><br><span class="line">    <span class="comment">// We're using CADisplayLink, because NSProgress can change very quickly and observing it may starve the main thread,</span></span><br><span class="line">    <span class="comment">// so we're refreshing the progress only every frame draw</span></span><br><span class="line">    <span class="keyword">if</span> (enabled &amp;&amp; <span class="keyword">self</span>.progressObject) &#123;</span><br><span class="line">        <span class="comment">// Only create if not already active.</span></span><br><span class="line">        <span class="keyword">if</span> (!<span class="keyword">self</span>.progressObjectDisplayLink) &#123;</span><br><span class="line">            <span class="comment">//--- 这里要注意，重写了 progressObjectDisplayLink 的 set 方法</span></span><br><span class="line">            <span class="keyword">self</span>.progressObjectDisplayLink = [<span class="built_in">CADisplayLink</span> displayLinkWithTarget:<span class="keyword">self</span> selector:<span class="keyword">@selector</span>(updateProgressFromProgressObject)];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">self</span>.progressObjectDisplayLink = <span class="literal">nil</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)updateProgressFromProgressObject &#123;</span><br><span class="line">    <span class="keyword">self</span>.progress = <span class="keyword">self</span>.progressObject.fractionCompleted;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>之所以说是设置 <code>progressObject</code> 的进度，是因为显示的进度是以 <code>_progress</code> 为准的。如果你仔细看上面的 <code>drawRect:</code> 方法，就能发现所有的图形都是以 <code>_progress</code> 显示的。那么这里的 <code>progressObject</code> 有什么用呢？</p>
+<p>如果使用了 <code>progressObject</code>，那么就会创建一个 <code>CADisplayLink</code> 实例。<code>CADisplayLink</code> 适合于高精度的定时刷新，具体使用方法可见：<a href="https://zhang759740844.github.io/2017/02/13/iOS中API的使用方法/">CADisplayLink 方式的定时器</a> </p>
+<p><code>progressObject</code> 是一个 <code>NSProgress</code> 对象，如果对其不了解可以参见<a href="https://my.oschina.net/u/2340880/blog/679367" target="_blank" rel="noopener">iOS进度指示器——NSProgress</a>，它将进度设置给 <code>_progress</code>。我们可以看一下 <code>_progress</code> 的 set 方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)setProgress:(<span class="keyword">float</span>)progress &#123;</span><br><span class="line">    <span class="keyword">if</span> (progress != _progress) &#123;</span><br><span class="line">        _progress = progress;</span><br><span class="line">        <span class="built_in">UIView</span> *indicator = <span class="keyword">self</span>.indicator;</span><br><span class="line">        <span class="keyword">if</span> ([indicator respondsToSelector:<span class="keyword">@selector</span>(setProgress:)]) &#123;</span><br><span class="line">            [(<span class="keyword">id</span>)indicator setValue:@(<span class="keyword">self</span>.progress) forKey:<span class="string">@"progress"</span>];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这样就会触发指示器的 <code>progress</code> 的 set 方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)setProgress:(<span class="keyword">float</span>)progress &#123;</span><br><span class="line">    <span class="keyword">if</span> (progress != _progress) &#123;</span><br><span class="line">        _progress = progress;</span><br><span class="line">        [<span class="keyword">self</span> setNeedsDisplay];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>只要 <code>progress</code> 变化了，就会设置重绘视图。</p>
+<p>至于动画的执行方法，没什么特别的地方，不太了解的话可以参考 <a href="https://zhang759740844.github.io/2016/08/16/ios动画/">核心动画</a></p>
+<h2 id="隐藏方法"><a href="#隐藏方法" class="headerlink" title="隐藏方法"></a>隐藏方法</h2><p>来看一下隐藏方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">+ (<span class="built_in">BOOL</span>)hideHUDForView:(<span class="built_in">UIView</span> *)view animated:(<span class="built_in">BOOL</span>)animated &#123;</span><br><span class="line">    MBProgressHUD *hud = [<span class="keyword">self</span> HUDForView:view];</span><br><span class="line">    <span class="keyword">if</span> (hud != <span class="literal">nil</span>) &#123;</span><br><span class="line">        hud.removeFromSuperViewOnHide = <span class="literal">YES</span>;</span><br><span class="line">        [hud hideAnimated:animated];</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">YES</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NO</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>先找到 <code>MBProgressHUD</code> 类，然后调动 <code>hideAnimated:</code> 方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)hideAnimated:(<span class="built_in">BOOL</span>)animated &#123;</span><br><span class="line">    MBMainThreadAssert();</span><br><span class="line">    [<span class="keyword">self</span>.graceTimer invalidate];</span><br><span class="line">    <span class="keyword">self</span>.useAnimation = animated;</span><br><span class="line">    <span class="keyword">self</span>.finished = <span class="literal">YES</span>;</span><br><span class="line">    <span class="comment">// If the minShow time is set, calculate how long the HUD was shown,</span></span><br><span class="line">    <span class="comment">// and postpone the hiding operation if necessary</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.minShowTime &gt; <span class="number">0.0</span> &amp;&amp; <span class="keyword">self</span>.showStarted) &#123;</span><br><span class="line">        <span class="built_in">NSTimeInterval</span> interv = [[<span class="built_in">NSDate</span> date] timeIntervalSinceDate:<span class="keyword">self</span>.showStarted];</span><br><span class="line">        <span class="keyword">if</span> (interv &lt; <span class="keyword">self</span>.minShowTime) &#123;</span><br><span class="line">            <span class="built_in">NSTimer</span> *timer = [<span class="built_in">NSTimer</span> timerWithTimeInterval:(<span class="keyword">self</span>.minShowTime - interv) target:<span class="keyword">self</span> selector:<span class="keyword">@selector</span>(handleMinShowTimer:) userInfo:<span class="literal">nil</span> repeats:<span class="literal">NO</span>];</span><br><span class="line">            [[<span class="built_in">NSRunLoop</span> currentRunLoop] addTimer:timer forMode:<span class="built_in">NSRunLoopCommonModes</span>];</span><br><span class="line">            <span class="keyword">self</span>.minShowTimer = timer;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125; </span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// ... otherwise hide the HUD immediately</span></span><br><span class="line">    [<span class="keyword">self</span> hideUsingAnimation:<span class="keyword">self</span>.useAnimation];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个方法的解构和上面的 show 类似，其中 <code>minShowTime</code> 表示最少显示的时间，避免加载太快，hud 一闪而过的情况出现。这里就用到了上面说过的 <code>showStarted</code> 了。往下走，来看看 <code>hideUsingAnimation:</code> 方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)hideUsingAnimation:(<span class="built_in">BOOL</span>)animated &#123;</span><br><span class="line">    <span class="keyword">if</span> (animated &amp;&amp; <span class="keyword">self</span>.showStarted) &#123;</span><br><span class="line">        <span class="keyword">self</span>.showStarted = <span class="literal">nil</span>;</span><br><span class="line">        [<span class="keyword">self</span> animateIn:<span class="literal">NO</span> withType:<span class="keyword">self</span>.animationType completion:^(<span class="built_in">BOOL</span> finished) &#123;</span><br><span class="line">            [<span class="keyword">self</span> done];</span><br><span class="line">        &#125;];</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">self</span>.showStarted = <span class="literal">nil</span>;</span><br><span class="line">        <span class="keyword">self</span>.bezelView.alpha = <span class="number">0.</span>f;</span><br><span class="line">        <span class="keyword">self</span>.backgroundView.alpha = <span class="number">1.</span>f;</span><br><span class="line">        [<span class="keyword">self</span> done];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其实也和 show 的时候差不多，有动画显示隐藏动画，没有动画直接就隐藏掉。只不过这里要做一些扫尾操作：执行 <code>done</code> 方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)done &#123;</span><br><span class="line">    <span class="comment">// Cancel any scheduled hideDelayed: calls</span></span><br><span class="line">    [<span class="keyword">self</span>.hideDelayTimer invalidate];</span><br><span class="line">    [<span class="keyword">self</span> setNSProgressDisplayLinkEnabled:<span class="literal">NO</span>];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.hasFinished) &#123;</span><br><span class="line">        <span class="keyword">self</span>.alpha = <span class="number">0.0</span>f;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">self</span>.removeFromSuperViewOnHide) &#123;</span><br><span class="line">            [<span class="keyword">self</span> removeFromSuperview];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    MBProgressHUDCompletionBlock completionBlock = <span class="keyword">self</span>.completionBlock;</span><br><span class="line">    <span class="keyword">if</span> (completionBlock) &#123;</span><br><span class="line">        completionBlock();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">id</span>&lt;MBProgressHUDDelegate&gt; delegate = <span class="keyword">self</span>.delegate;</span><br><span class="line">    <span class="keyword">if</span> ([delegate respondsToSelector:<span class="keyword">@selector</span>(hudWasHidden:)]) &#123;</span><br><span class="line">        [delegate performSelector:<span class="keyword">@selector</span>(hudWasHidden:) withObject:<span class="keyword">self</span>];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里就是执行一下外部传进来的 <code>completionBlock</code> 回调。如果外部设置了代理方法，并且重写了 <code>hudWasHidden</code> 那么就调用执行。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><code>MBProgressHUD</code> 确实是一个比较简单的框架。看的时候我还是蛮仔细的注意每一个知识点的，诸如 view 的绘制显示过程、贝塞尔曲线的绘制、<code>UIInterpolatingMotionEffect</code> 的使用 等等等等。所以还是花了不少时间去搞懂的。写到这里再想想，整个框架的结构还是非常清晰易懂的。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tag/源码解析/" rel="tag"># 源码解析</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/02/13/iOS中API的使用方法/" rel="next" title="许多 iOS API 的使用方式(持续更新)">
+                <i class="fa fa-chevron-left"></i> 许多 iOS API 的使用方式(持续更新)
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/02/22/swift语法/" rel="prev" title="Swift 3.1 语法学习（一）">
+                Swift 3.1 语法学习（一） <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.png" alt="Zachary Zhang">
+            
+              <p class="site-author-name" itemprop="name">Zachary Zhang</p>
+              <p class="site-description motion-element" itemprop="description">Stay Hungry. Stay Foolish!</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">116</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/zhang759740844" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:zch759740844@126.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#构造与显示方法"><span class="nav-number">1.</span> <span class="nav-text">构造与显示方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#构造方法"><span class="nav-number">1.1.</span> <span class="nav-text">构造方法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#创建-view"><span class="nav-number">1.1.1.</span> <span class="nav-text">创建 view</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#设置指示器"><span class="nav-number">1.1.2.</span> <span class="nav-text">设置指示器</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#注册通知"><span class="nav-number">1.1.3.</span> <span class="nav-text">注册通知</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#显示方法"><span class="nav-number">1.2.</span> <span class="nav-text">显示方法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#隐藏方法"><span class="nav-number">2.</span> <span class="nav-text">隐藏方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">3.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zachary Zhang</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

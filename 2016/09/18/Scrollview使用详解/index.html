@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+
+
+
+
+  <meta name="keywords" content="基本控件,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="本次将参考iOS 性能优化之 UIScrollView 实践经验对UIScrollView的使用方式进行详细介绍">
+<meta name="keywords" content="基本控件">
+<meta property="og:type" content="article">
+<meta property="og:title" content="UIScrollView详细介绍">
+<meta property="og:url" content="http://zhang759740844.github.io/2016/09/18/Scrollview使用详解/index.html">
+<meta property="og:site_name" content="Zachary&#39;s blog">
+<meta property="og:description" content="本次将参考iOS 性能优化之 UIScrollView 实践经验对UIScrollView的使用方式进行详细介绍">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/UIScrollView_pagingEnabled.png?raw=true">
+<meta property="og:updated_time" content="2020-02-27T15:13:37.636Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="UIScrollView详细介绍">
+<meta name="twitter:description" content="本次将参考iOS 性能优化之 UIScrollView 实践经验对UIScrollView的使用方式进行详细介绍">
+<meta name="twitter:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/UIScrollView_pagingEnabled.png?raw=true">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://zhang759740844.github.io/2016/09/18/Scrollview使用详解/">
+
+
+
+
+
+  <title>UIScrollView详细介绍 | Zachary's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Zachary's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">记录成长</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://zhang759740844.github.io/2016/09/18/Scrollview使用详解/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zachary Zhang">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Zachary's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">UIScrollView详细介绍</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-09-18T14:07:12+08:00">
+                2016-09-18
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本次将参考<a href="https://my.oschina.net/zhxx/blog/620969#OSC_h3_11" target="_blank" rel="noopener">iOS 性能优化之 UIScrollView 实践经验</a>对UIScrollView的使用方式进行详细介绍<br><a id="more"></a></p>
+<h2 id="ScrollView和Auto-Layout"><a href="#ScrollView和Auto-Layout" class="headerlink" title="ScrollView和Auto Layout"></a>ScrollView和Auto Layout</h2><p><code>UIScrollView</code> 在 <code>Auto Layout</code> 是一个很特殊的 <code>view</code>，对于 <code>UIScrollView</code> 的 <code>subview</code> 来说，它的 <code>leading/trailing/top/bottom space</code> 是<strong>相对于 <code>UIScrollView</code>的 <code>contentSize</code> 而不是 <code>bounds</code> (自身在屏幕上显示的边界，不明白的可以查一下 bounds 和 frame 的区别)来确定的。</strong></p>
+<p>所以，一般的做法是在<code>UIScrollVIew</code>和它的<code>subViews</code>之间增加一个<code>content view</code>。这样可以方便地给 <code>subview</code> 提供 <code>leading/trailing/top/bottom</code>，方便 <code>subview</code> 的布局，并且可以 通过调整<code>content view</code> 的 <code>size</code>（调整<code>constraint</code> 的 <code>IBOutlet</code>）来调整 <code>contentSize</code>。</p>
+<h3 id="添加ContentView的注意点"><a href="#添加ContentView的注意点" class="headerlink" title="添加ContentView的注意点"></a>添加ContentView的注意点</h3><p><code>scrollview</code>中添加的<code>contentview</code>和添加一般的视图不同，一般的视图只要提供<code>leading/trailing/top/bottom space</code>就能唯一确定长宽，位置。<br>而<code>ScrollView</code>的<code>contentView</code>除了上述四个约束，还需要设置长宽，作为滚动的范围的一部分。</p>
+<p>所以整个<code>scrollview</code>的<code>contentSize</code>的等式应该是：<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">scrollView.contentSize.width = (scrollview与contentview之间leading的constant)+（contentView的width）+（scrollview与contentview之间trailing的constant）</span><br></pre></td></tr></table></figure></p>
+<p><strong>另外一点需要强调两点：</strong></p>
+<ol>
+<li><code>ScrollView</code>的<code>bounds</code>早就确定了下来，在设置<code>contentview</code>的宽度的时候，如果设置<code>contentview.width = superview.width + constant</code>这里的<code>superview.width</code>是指<code>ScrollView.bounds</code>而不是<code>contentSize</code></li>
+<li>在设置<code>contentview</code>的上下左右约束的时候，如果设置<code>contentview.trailing = superview.trailing + constant</code>,这里的<code>superview.trailing</code>指的是<code>contentSize.trailing</code>而不是<code>bounds</code>。此时就可以通过上面的公式计算<code>contentSize</code>的宽度了。</li>
+</ol>
+<blockquote>
+<p>Demo参见AutoLayout</p>
+</blockquote>
+<h2 id="UIScrollView部分属性"><a href="#UIScrollView部分属性" class="headerlink" title="UIScrollView部分属性"></a>UIScrollView部分属性</h2><h3 id="contentSize、contentInset和contentOffset"><a href="#contentSize、contentInset和contentOffset" class="headerlink" title="contentSize、contentInset和contentOffset"></a><strong>contentSize</strong>、<strong>contentInset</strong>和<strong>contentOffset</strong></h3><ul>
+<li>contentSize: 就是scrollview可以滚动的区域.<br>比如frame = (0 ,0 ,320 ,480) contentSize = (320 ,960)，代表你的scrollview可以上下滚动，滚动区域为frame大小的两倍。</li>
+<li>contentOffset:就是scrollview当前显示区域顶点相对于frame顶点的偏移量。<br>比如上个例子你拉到最下面，contentoffset就是(0 ,480)，也就是y偏移了480 </li>
+<li>contentInset:就是scrollview的contentview的顶点相对于scrollview的位置。<br>例如你的contentInset = (0 ,100)，那么你的contentview就是从scrollview的(0 ,100)开始显示 </li>
+</ul>
+<p>/<em> 上拉刷新一般实现代码如下 </em>/<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)scrollViewDidEndDragging:(<span class="built_in">UIScrollView</span> *)scrollView willDecelerate:(<span class="built_in">BOOL</span>)decelerate&#123;     </span><br><span class="line">    [_refreshHeaderView egoRefreshScrollViewDidEndDragging:scrollView];  </span><br><span class="line">    <span class="keyword">float</span> offset=scrollView.contentOffset.y;  </span><br><span class="line">    <span class="keyword">float</span> contentHeight=scrollView.contentSize.height;  </span><br><span class="line">    <span class="keyword">float</span> sub=contentHeight-offset;  </span><br><span class="line">    <span class="keyword">if</span> ((scrollView.height-sub)&gt;<span class="number">20</span>) &#123;<span class="comment">//如果上拉距离超过20p，则加载更多数据  </span></span><br><span class="line">        <span class="comment">//[self loadMoreData];//此处在view底部加载更多数据  </span></span><br><span class="line">    &#125;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="UIScrollViewDelegate"><a href="#UIScrollViewDelegate" class="headerlink" title="UIScrollViewDelegate"></a>UIScrollViewDelegate</h2><p><code>UIScrollViewDelegate</code> 是 <code>UIScrollView</code> 的 <code>delegate protocol</code>，<code>UIScrollView</code> 有意思的功能都是通过它的 delegate 方法实现的。</p>
+<h3 id="void-scrollViewDidScroll-UIScrollView-scrollView"><a href="#void-scrollViewDidScroll-UIScrollView-scrollView" class="headerlink" title="- (void)scrollViewDidScroll:(UIScrollView *)scrollView"></a>- (void)scrollViewDidScroll:(UIScrollView *)scrollView</h3><p>这个方法在任何方式触发 <code>contentOffset</code> 变化的时候都会被调用（包括用户拖动，减速过程，直接通过代码设置等），可以用于监控 <code>contentOffset</code> 的变化，并根据当前的 <code>contentOffset</code> 对其他 view 做出随动调整。</p>
+<h3 id="void-scrollViewWillBeginDragging-UIScrollView-scrollView"><a href="#void-scrollViewWillBeginDragging-UIScrollView-scrollView" class="headerlink" title="- (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView"></a>- (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView</h3><p>用户开始拖动 scroll view 的时候被调用。</p>
+<h3 id="void-scrollViewWillEndDragging-UIScrollView-scrollView-withVelocity-CGPoint-velocity-targetContentOffset-inout-CGPoint-targetContentOffset"><a href="#void-scrollViewWillEndDragging-UIScrollView-scrollView-withVelocity-CGPoint-velocity-targetContentOffset-inout-CGPoint-targetContentOffset" class="headerlink" title="- (void)scrollViewWillEndDragging:(UIScrollView *)scrollView withVelocity:(CGPoint)velocity targetContentOffset:(inout CGPoint *)targetContentOffset"></a>- (void)scrollViewWillEndDragging:(UIScrollView *)scrollView withVelocity:(CGPoint)velocity targetContentOffset:(inout CGPoint *)targetContentOffset</h3><p>在 didEndDragging 前被调用，当 willEndDragging 方法中 <code>velocity</code> 为 <code>CGPointZero</code>（结束拖动时两个方向都没有速度）时，didEndDragging 中的 <code>decelerate</code> 为 <code>NO</code>，即没有减速过程，willBeginDecelerating 和 didEndDecelerating 也就不会被调用。反之，当 <code>velocity</code> 不为 <code>CGPointZero</code> 时，scroll view 会以 <code>velocity</code> 为初速度，减速直到 <code>targetContentOffset</code>。值得注意的是，这里的 <code>targetContentOffset</code> 是个指针，可以改变减速运动的目的地，这在一些效果的实现时十分有用。</p>
+<h3 id="void-scrollViewDidEndDragging-UIScrollView-scrollView-willDecelerate-BOOL-decelerate"><a href="#void-scrollViewDidEndDragging-UIScrollView-scrollView-willDecelerate-BOOL-decelerate" class="headerlink" title="- (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate"></a>- (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate</h3><p>在用户结束拖动后被调用，<code>decelerate</code> 为 <code>YES</code> 时，结束拖动后会有减速过程。注，在 didEndDragging 之后，如果有减速过程，scroll view 的 dragging 并不会立即置为 <code>NO</code>，而是要等到减速结束之后，所以<strong>这个 dragging 属性的实际语义更接近 scrolling</strong>。</p>
+<h3 id="void-scrollViewWillBeginDecelerating-UIScrollView-scrollView"><a href="#void-scrollViewWillBeginDecelerating-UIScrollView-scrollView" class="headerlink" title="- (void)scrollViewWillBeginDecelerating:(UIScrollView *)scrollView"></a>- (void)scrollViewWillBeginDecelerating:(UIScrollView *)scrollView</h3><p>减速动画开始前被调用。</p>
+<h3 id="void-scrollViewDidEndDecelerating-UIScrollView-scrollView"><a href="#void-scrollViewDidEndDecelerating-UIScrollView-scrollView" class="headerlink" title="- (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView"></a>- (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView</h3><p>减速动画结束时被调用。</p>
+<p>这里有一种特殊情况：当一次减速动画尚未结束的时候再次 drag scroll view，didEndDecelerating 不会被调用，<strong>并且这时 scroll view 的 <code>dragging</code> 和 <code>decelerating</code> 属性都是 <code>YES</code></strong>(因为，此时ScrollView还在滚动，并且还在减速)。新的 dragging 如果有加速度，那么 willBeginDecelerating 会再一次被调用，然后才是 didEndDecelerating；如果没有加速度，虽然 willBeginDecelerating 不会被调用，但前一次留下的 didEndDecelerating 会被调用。</p>
+<blockquote>
+<p>Demo参见Delegate</p>
+</blockquote>
+<h2 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h2><h3 id="Table-View-中图片加载逻辑的优化"><a href="#Table-View-中图片加载逻辑的优化" class="headerlink" title="Table View 中图片加载逻辑的优化"></a>Table View 中图片加载逻辑的优化</h3><p><strong>优化目的</strong>：滑动时不加载图片，在滑动停止时加载图片</p>
+<p><strong>优化难点</strong>：前面提到，刚开始拖动的时候，<code>dragging</code> 为 <code>YES</code>，<code>decelerating</code> 为 <code>NO</code>；<code>decelerate</code> 过程中，<code>dragging</code> 和 <code>decelerating</code> 都为 <code>YES</code>；decelerate 未结束时开始下一次拖动，<code>dragging</code> 和 <code>decelerating</code> 依然都为 <code>YES</code>。所以无法简单通过 table view 的 <code>dragging</code> 和 <code>decelerating</code> 判断是在用户拖动还是减速过程。</p>
+<p>所以不能仅通过<code>decelerating</code>来判断是否加载图片，还需要自己记录用户拖动状态，在拖动时也要加载图片。（涉及到需要注意的点很多，还是直接看<a href="https://my.oschina.net/zhxx/blog/620969#OSC_h3_11" target="_blank" rel="noopener">原文</a>比较好）</p>
+<p><strong>优化方法</strong>：</p>
+<ol>
+<li>每次开始拖动时scrollViewWillBeginDragging，通过<code>NSArray *cells = [self.tableView visibleCells];</code>获取屏幕上所有显示的<code>Cell</code>，全部加载一遍图片（解决问题三）</li>
+<li>利用<code>scrollViewWillEndDragging: withVelocity: targetContentOffset:</code>方法，将<code>targetContentOffset</code>即最后减速结束后在屏幕上显示的位置，转换为一个<code>CGRect</code>，在<code>CGRect</code>范围里的<code>Cell</code>才在<code>CellForRowAtIndex</code>中加载。</li>
+</ol>
+<blockquote>
+<p>Demo详见LazyLoad</p>
+</blockquote>
+<h3 id="分页的几种实现方法"><a href="#分页的几种实现方法" class="headerlink" title="分页的几种实现方法"></a>分页的几种实现方法</h3><p>分页类似于 android 中的 viewpager ，利用 UIScrollView 有多种方法实现分页，但是各自的效果和用途不尽相同。</p>
+<h4 id="pagingEnabled"><a href="#pagingEnabled" class="headerlink" title="pagingEnabled"></a>pagingEnabled</h4><p>系统提供的分页方式，实现简单，只需要<code>_scrollView.pagingEnabled = YES</code>即可，但是有局限性：</p>
+<ul>
+<li>只能以 ScrollView 的 frame size 为单位翻页，减速动画阻尼大，减速过程不超过一页。</li>
+<li>需要一些 hacking 实现 bleeding 和 padding（即页与页之间有 padding，在当前页可以看到前后页的部分内容）</li>
+</ul>
+<p>Sample 中 Pagination 有简单实现 bleeding 和 padding 效果的代码，主要的思路是：</p>
+<ul>
+<li>让 scroll view 的宽度为 page 宽度 + padding，并且设置 <code>clipsToBounds</code> 为 <code>NO</code>,这样前后不在 scrollView 中的部分就能显示一部分出来。见下图:</li>
+<li>这样虽然能看到前后页的内容，但是无法响应 touch，所以需要另一个覆盖期望的可触摸区域的 view 来实现类似 touch bridging 的功能</li>
+</ul>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/UIScrollView_pagingEnabled.png?raw=true" alt="UIScrollView_pagingEnabled"></p>
+<p>适用场景：上述局限性同时也是这种实现方式的优点，比如一般 App 的引导页（教程），Calendar 里的月视图，都可以用这种方法实现。</p>
+<h4 id="Snap"><a href="#Snap" class="headerlink" title="Snap"></a>Snap</h4><p>核心算法是在 <code>didEndDragging</code> 方法中，通过当前 contentOffset 计算最近的整数页及其对应的 contentOffset，通过动画 snap 到该页。这个方法实现的效果都有个通病，就是最后的 snap 会在 decelerate 结束以后才发生，总感觉很突兀。使用体验不如下面的方法。</p>
+<h4 id="修改targetContentOffset"><a href="#修改targetContentOffset" class="headerlink" title="修改targetContentOffset"></a>修改targetContentOffset</h4><p>通过修改 <code>scrollViewWillEndDragging: withVelocity: targetContentOffset:</code> 方法中的 <code>targetContentOffset</code> 直接修改目标 <code>offset</code> 为整数页位置。其中核心代码：<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">CGPoint</span>)nearestTargetOffsetForOffset:(<span class="built_in">CGPoint</span>)offset</span><br><span class="line">&#123;    <span class="built_in">CGFloat</span> pageSize = BUBBLE_DIAMETER + BUBBLE_PADDING;    <span class="built_in">NSInteger</span> page = roundf(offset.x / pageSize);    <span class="built_in">CGFloat</span> targetX = pageSize * page;    <span class="keyword">return</span> <span class="built_in">CGPointMake</span>(targetX, offset.y);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)scrollViewWillEndDragging:(<span class="built_in">UIScrollView</span> *)scrollView withVelocity:(<span class="built_in">CGPoint</span>)velocity targetContentOffset:(<span class="keyword">inout</span> <span class="built_in">CGPoint</span> *)targetContentOffset</span><br><span class="line">&#123;    <span class="built_in">CGPoint</span> targetOffset = [<span class="keyword">self</span> nearestTargetOffsetForOffset:*targetContentOffset];</span><br><span class="line">    targetContentOffset-&gt;x = targetOffset.x;</span><br><span class="line">    targetContentOffset-&gt;y = targetOffset.y;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>适用场景：方法 2 和 方法 3 的原理近似，效果也相近，适用场景也基本相同，但方法 3 的体验会好很多，snap 到整数页的过程很自然，或者说用户完全感知不到 snap 过程的存在。这两种方法的减速过程流畅，适用于一屏有多页，但需要按整数页滑动的场景；也适用于如图表中自动 snap 到整数天的场景；还适用于每页大小不同的情况下 snap 到整数页的场景（不做举例，自行发挥，其实只需要修改计算目标 offset 的方法）。</p>
+<blockquote>
+<p>Demo详见Pagination</p>
+</blockquote>
+<h4 id="UIPageControl"><a href="#UIPageControl" class="headerlink" title="UIPageControl"></a>UIPageControl</h4><p>首先声明这个和 ScrollView 如何设置分页没有关系。这个组件是 iOS 在分页中经常用的表示页数的小白点。简单记录一下怎么使用。</p>
+<p>使用起来其实蛮简单的，就当一个 View 来使用就行了：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">_pageControl = [[<span class="built_in">UIPageControl</span> alloc]initWithFrame:<span class="built_in">CGRectMake</span>(SCREEN_WIDTH/<span class="number">2</span><span class="number">-75</span>, SCREEN_HEIGHT<span class="number">-30</span><span class="number">-20</span>, <span class="number">150</span>, <span class="number">20</span>)];</span><br><span class="line">_pageControl.numberOfPages = <span class="number">3</span>;</span><br><span class="line">_pageControl.currentPage = <span class="number">0</span>;</span><br><span class="line">_pageControl.pageIndicatorTintColor = [<span class="built_in">UIColor</span> colorWithHexString:<span class="string">@"E1E1E1"</span>];</span><br><span class="line">_pageControl.currentPageIndicatorTintColor = COLOR_MAINRED;</span><br><span class="line">[<span class="keyword">self</span>.view addSubview:_pageControl];</span><br></pre></td></tr></table></figure>
+<p>几个属性也比较易懂，基本上就设置好了，当然这里还没有设置和 Scrollview 的联动：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//监听scrollView滚动事件</span></span><br><span class="line">- (<span class="keyword">void</span>)scrollViewDidScroll:(<span class="built_in">UIScrollView</span> *)scrollView &#123;</span><br><span class="line">    <span class="keyword">int</span> page = scrollView.contentOffset.x / SCREEN_WIDTH;</span><br><span class="line">    _pageControl.currentPage = page;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>监听 Scrollview 的滚动事件就可以了。</p>
+<h3 id="重用"><a href="#重用" class="headerlink" title="重用"></a>重用</h3><p>大部分的 iOS 开发应该都清楚 <code>UITableView</code> 的 cell 重用机制，这种重用机制减少了内存开销也提高了 performance，<code>UIScrollView</code> 作为 <code>UITableView</code> 的父类，在很多场景中也很适合应用重用机制。</p>
+<p>可以参照 <code>UITableView</code> 的 cell 重用机制，总结重用机制如下：</p>
+<ul>
+<li>维护一个重用队列</li>
+<li>当元素离开可见范围时，<code>removeFromSuperview</code> 并加入重用队列（enqueue）</li>
+<li>当需要加入新的元素时，先尝试从重用队列获取可重用元素（dequeue）并且从重用队列移除</li>
+<li>如果队列为空，新建元素</li>
+<li>将新建元素的view通过<code>addSubView</code>添加至 <code>contentView</code>上</li>
+<li>这些一般都在 <code>scrollViewDidScroll:</code> 方法中完成</li>
+</ul>
+<p>Demo中演示了一个在scrollView中添加多个重用ViewController的场景，具体重用方法参见Demo</p>
+<hr>
+<p>这里要说明一下Demo中用到的<code>addChildViewController</code>。</p>
+<p>苹果在iOS 5 添加了一系列的方法，希望我们在使用<code>addSubView</code>时，同时调用<code>[self addChildViewController:child]</code>方法将sub view对应的viewController也加到当前ViewController的管理中。</p>
+<p>对于那些当前暂时不需要显示的subview，只通过<code>addChildViewController</code>把subViewController加进去；需要显示时再调用<code>transitionFromViewController</code>方法。将其添加进入底层的ViewController中。</p>
+<p>这样做的好处：</p>
+<ol>
+<li>对页面中的逻辑更加分明了。相应的View对应相应的ViewController。</li>
+<li>当某个子View没有显示时，将不会被Load，减少了内存的使用。</li>
+<li>当内存紧张时，没有Load的View将被首先释放，优化了程序的内存释放机制。</li>
+<li>可以调用<code>transitionFromViewController</code>等系统方法，ios对于显示以及动画做了比较好的封装</li>
+<li>相当于对于 ViewController 实例的保存。实例都保存在<code>self.childViewControllers</code>中，需要使用的时候从中取出即可。</li>
+</ol>
+<p>当然，像本例中在 ScrollView 中添加 ViewController ，只需要对 ViewController 进行复用，但是用不到其提供的系统方法时，其实只要使用一个数组将各个 ViewController 保存起来就可以了。</p>
+<p>其实这些都不重要，如果不需要对 ViewController 做复用或者一些其他操作，我们连ViewController的实例都不必保存。我们只需要在需要显示的时候<code>[self.contentView addSubview:vc.view];</code>,不需要显示的时候<code>[vc.view removeFromSuperview];</code>，就可以达到显示和相应事件的需求了。</p>
+<hr>
+<blockquote>
+<p>Demo详见Reuse</p>
+</blockquote>
+<h3 id="联动"><a href="#联动" class="headerlink" title="联动"></a>联动</h3><p>所谓联动，就是当 A 滚动的时候，在 <strong><code>scrollViewDidScroll:</code></strong> 里根据 A 的 <code>contentOffset</code> 动态计算 B 的 <code>contentOffset</code> 并设给 B。同样对于非 scroll view 的 C，也可以动态计算 C 的 frame 或是 transform实现视差滚动或者其他高级动画，这在现在许多应用的引导页面里会被用到。</p>
+<p>Demo中的核心代码:<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)scrollViewDidScroll:(<span class="built_in">UIScrollView</span> *)scrollView&#123;</span><br><span class="line">    <span class="keyword">if</span> (scrollView == <span class="keyword">self</span>.titleScrollView) &#123;</span><br><span class="line">        <span class="built_in">CGFloat</span> contentX = <span class="keyword">self</span>.titleScrollView.contentOffset.x / <span class="keyword">self</span>.titleScrollView.frame.size.width * <span class="keyword">self</span>.contentScrollView.frame.size.width;</span><br><span class="line">        <span class="keyword">self</span>.contentScrollView.contentOffset = <span class="built_in">CGPointMake</span>(contentX, <span class="number">0.0</span>);</span><br><span class="line">        <span class="built_in">CGFloat</span> transX = <span class="keyword">self</span>.titleScrollView.contentOffset.x / (<span class="keyword">self</span>.titleScrollView.contentSize.width - <span class="keyword">self</span>.titleScrollView.frame.size.width) * (<span class="keyword">self</span>.backgroundImage.frame.size.width - <span class="keyword">self</span>.view.frame.size.width);</span><br><span class="line">        transX = MAX(<span class="number">0.0</span>, transX);</span><br><span class="line">        transX = MIN(<span class="keyword">self</span>.backgroundImage.frame.size.width - <span class="keyword">self</span>.view.frame.size.width, transX);</span><br><span class="line">        <span class="keyword">self</span>.backgroundImage.transform = <span class="built_in">CGAffineTransformMakeTranslation</span>(-transX, <span class="number">0.0</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>通过<code>titleScrollView</code>计算<code>contentX</code>和<code>transX</code>来分别控制<code>contentScrollView</code>以及<code>backgroundImage</code>这两个View的位置变化。</p>
+<blockquote>
+<p>Demo参见Parallax</p>
+</blockquote>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>ScrollView看似简单，其实还是有非常多的地方值得去挖掘的。使用好，能够实现很多非常酷炫的效果。上面的原理和应用涉及到的点很多，还需要细细琢磨，学以致用.</p>
+<blockquote>
+<p>上述所有Demo均在UIScrollViewDemo文件夹中</p>
+</blockquote>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tag/基本控件/" rel="tag"># 基本控件</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/09/13/NSNotification基本使用/" rel="next" title="NSNotification的使用">
+                <i class="fa fa-chevron-left"></i> NSNotification的使用
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/09/21/lldb调试方法/" rel="prev" title="lldb 调试方法">
+                lldb 调试方法 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.png" alt="Zachary Zhang">
+            
+              <p class="site-author-name" itemprop="name">Zachary Zhang</p>
+              <p class="site-description motion-element" itemprop="description">Stay Hungry. Stay Foolish!</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">116</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/zhang759740844" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:zch759740844@126.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#ScrollView和Auto-Layout"><span class="nav-number">1.</span> <span class="nav-text">ScrollView和Auto Layout</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#添加ContentView的注意点"><span class="nav-number">1.1.</span> <span class="nav-text">添加ContentView的注意点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#UIScrollView部分属性"><span class="nav-number">2.</span> <span class="nav-text">UIScrollView部分属性</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#contentSize、contentInset和contentOffset"><span class="nav-number">2.1.</span> <span class="nav-text">contentSize、contentInset和contentOffset</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#UIScrollViewDelegate"><span class="nav-number">3.</span> <span class="nav-text">UIScrollViewDelegate</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#void-scrollViewDidScroll-UIScrollView-scrollView"><span class="nav-number">3.1.</span> <span class="nav-text">- (void)scrollViewDidScroll:(UIScrollView *)scrollView</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#void-scrollViewWillBeginDragging-UIScrollView-scrollView"><span class="nav-number">3.2.</span> <span class="nav-text">- (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#void-scrollViewWillEndDragging-UIScrollView-scrollView-withVelocity-CGPoint-velocity-targetContentOffset-inout-CGPoint-targetContentOffset"><span class="nav-number">3.3.</span> <span class="nav-text">- (void)scrollViewWillEndDragging:(UIScrollView *)scrollView withVelocity:(CGPoint)velocity targetContentOffset:(inout CGPoint *)targetContentOffset</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#void-scrollViewDidEndDragging-UIScrollView-scrollView-willDecelerate-BOOL-decelerate"><span class="nav-number">3.4.</span> <span class="nav-text">- (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#void-scrollViewWillBeginDecelerating-UIScrollView-scrollView"><span class="nav-number">3.5.</span> <span class="nav-text">- (void)scrollViewWillBeginDecelerating:(UIScrollView *)scrollView</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#void-scrollViewDidEndDecelerating-UIScrollView-scrollView"><span class="nav-number">3.6.</span> <span class="nav-text">- (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实例"><span class="nav-number">4.</span> <span class="nav-text">实例</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Table-View-中图片加载逻辑的优化"><span class="nav-number">4.1.</span> <span class="nav-text">Table View 中图片加载逻辑的优化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#分页的几种实现方法"><span class="nav-number">4.2.</span> <span class="nav-text">分页的几种实现方法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#pagingEnabled"><span class="nav-number">4.2.1.</span> <span class="nav-text">pagingEnabled</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Snap"><span class="nav-number">4.2.2.</span> <span class="nav-text">Snap</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#修改targetContentOffset"><span class="nav-number">4.2.3.</span> <span class="nav-text">修改targetContentOffset</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#UIPageControl"><span class="nav-number">4.2.4.</span> <span class="nav-text">UIPageControl</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#重用"><span class="nav-number">4.3.</span> <span class="nav-text">重用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#联动"><span class="nav-number">4.4.</span> <span class="nav-text">联动</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zachary Zhang</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

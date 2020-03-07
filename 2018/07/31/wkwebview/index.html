@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+
+
+
+
+  <meta name="keywords" content="学习笔记,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="WKWebView 的简单用法">
+<meta name="keywords" content="学习笔记">
+<meta property="og:type" content="article">
+<meta property="og:title" content="WKWebView 使用（一）—— 基本用法">
+<meta property="og:url" content="http://zhang759740844.github.io/2018/07/31/wkwebview/index.html">
+<meta property="og:site_name" content="Zachary&#39;s blog">
+<meta property="og:description" content="WKWebView 的简单用法">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/jscore1.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/jscore2.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/jscore3.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/jscore4.png?raw=true">
+<meta property="og:updated_time" content="2020-02-27T15:13:37.660Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="WKWebView 使用（一）—— 基本用法">
+<meta name="twitter:description" content="WKWebView 的简单用法">
+<meta name="twitter:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/jscore1.png?raw=true">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://zhang759740844.github.io/2018/07/31/wkwebview/">
+
+
+
+
+
+  <title>WKWebView 使用（一）—— 基本用法 | Zachary's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Zachary's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">记录成长</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://zhang759740844.github.io/2018/07/31/wkwebview/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zachary Zhang">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Zachary's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">WKWebView 使用（一）—— 基本用法</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-07-31T14:07:12+08:00">
+                2018-07-31
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>WKWebView 的简单用法</p>
+<a id="more"></a>
+<h2 id="基本用法"><a href="#基本用法" class="headerlink" title="基本用法"></a>基本用法</h2><h3 id="创建"><a href="#创建" class="headerlink" title="创建"></a>创建</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (instancetype)initWithFrame:(CGRect)frame configuration:(WKWebViewConfiguration *)configuration;</span><br></pre></td></tr></table></figure>
+<p>比<code>UIWebView</code>多了个<code>configuration</code>，这个配置可以设置很多东西。具体查看<code>WKWebViewConfiguration.h</code>，可以配置js是否支持，画中画是否开启等，这里主要讲两个比较常用的属性:</p>
+<h4 id="websiteDataStore"><a href="#websiteDataStore" class="headerlink" title="websiteDataStore"></a>websiteDataStore</h4><p><code>WKWebView</code> 拥有自己的私有存储，它的一些缓存等数据都存在<code>websiteDataStore</code>中。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>) <span class="built_in">WKWebsiteDataStore</span> *websiteDataStore;</span><br></pre></td></tr></table></figure>
+<p>具体增删改查就可以通过<code>WKWebsiteDataStore.h</code>中提供的方法，这里不多说，一般用的时候比较少，真的要清除缓存，简单粗暴的方法是删除沙盒目录中的Cache文件夹。</p>
+<h4 id="userContentController"><a href="#userContentController" class="headerlink" title="userContentController"></a>userContentController</h4><p>这个属性很重要，js与oc交互，以及注入js都会用到。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>) <span class="built_in">WKUserContentController</span> *userContentController;</span><br></pre></td></tr></table></figure>
+<p>查看<code>WKUserContentController</code>的头文件，你会发现它有如下几个方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">WKUserContentController</span> : <span class="title">NSObject</span> &lt;<span class="title">NSCoding</span>&gt;</span></span><br><span class="line"><span class="comment">//读取添加过的脚本</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">readonly</span>, <span class="keyword">copy</span>) <span class="built_in">NSArray</span>&lt;<span class="built_in">WKUserScript</span> *&gt; *userScripts;</span><br><span class="line"><span class="comment">//添加脚本</span></span><br><span class="line">- (<span class="keyword">void</span>)addUserScript:(<span class="built_in">WKUserScript</span> *)userScript;</span><br><span class="line"><span class="comment">//删除所有添加的脚本</span></span><br><span class="line">- (<span class="keyword">void</span>)removeAllUserScripts;</span><br><span class="line"><span class="comment">//通过window.webkit.messageHandlers.&lt;name&gt;.postMessage(&lt;messageBody&gt;) 来实现js-&gt;oc传递消息，并添加handler</span></span><br><span class="line">- (<span class="keyword">void</span>)addScriptMessageHandler:(<span class="keyword">id</span> &lt;<span class="built_in">WKScriptMessageHandler</span>&gt;)scriptMessageHandler name:(<span class="built_in">NSString</span> *)name;</span><br><span class="line"><span class="comment">//删除handler</span></span><br><span class="line">- (<span class="keyword">void</span>)removeScriptMessageHandlerForName:(<span class="built_in">NSString</span> *)name;</span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure>
+<h4 id="基本创建"><a href="#基本创建" class="headerlink" title="基本创建"></a>基本创建</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">WKWebViewConfiguration</span> *configuration = [[<span class="built_in">WKWebViewConfiguration</span> alloc] init];</span><br><span class="line"><span class="built_in">WKUserContentController</span> *controller = [[<span class="built_in">WKUserContentController</span> alloc] init];</span><br><span class="line">configuration.userContentController = controller;</span><br><span class="line"><span class="keyword">self</span>.webView = [[<span class="built_in">WKWebView</span> alloc] initWithFrame:<span class="keyword">self</span>.view.bounds configuration:configuration];</span><br><span class="line"><span class="keyword">self</span>.webView.allowsBackForwardNavigationGestures = <span class="literal">YES</span>; <span class="comment">//允许右滑返回上个链接，左滑前进</span></span><br><span class="line"><span class="keyword">self</span>.webView.allowsLinkPreview = <span class="literal">YES</span>; <span class="comment">//允许链接3D Touch</span></span><br><span class="line"><span class="keyword">self</span>.webView.customUserAgent = <span class="string">@"WebViewDemo/1.0.0"</span>; <span class="comment">//自定义UA，UIWebView就没有此功能，后面会讲到通过其他方式实现</span></span><br><span class="line"><span class="keyword">self</span>.webView.UIDelegate = <span class="keyword">self</span>;</span><br><span class="line"><span class="keyword">self</span>.webView.navigationDelegate = <span class="keyword">self</span>;</span><br><span class="line">[<span class="keyword">self</span>.view addSubview:<span class="keyword">self</span>.webView];</span><br></pre></td></tr></table></figure>
+<h3 id="动态注入js"><a href="#动态注入js" class="headerlink" title="动态注入js"></a>动态注入js</h3><p>通过给<code>userContentController</code>添加<code>WKUserScript</code>，可以实现动态注入js。比如我先注入一个脚本，给每个页面添加一个Cookie</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//注入一个Cookie</span></span><br><span class="line"><span class="built_in">WKUserScript</span> *newCookieScript = [[<span class="built_in">WKUserScript</span> alloc] initWithSource:<span class="string">@"document.cookie = 'DarkAngelCookie=DarkAngel;'"</span> injectionTime:<span class="built_in">WKUserScriptInjectionTimeAtDocumentStart</span> forMainFrameOnly:<span class="literal">NO</span>];</span><br><span class="line">[controller addUserScript:newCookieScript];</span><br></pre></td></tr></table></figure>
+<p>然后再注入一个脚本，每当页面加载，就会alert当前页面cookie:</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//创建脚本</span></span><br><span class="line"><span class="built_in">WKUserScript</span> *cookieScript = [[<span class="built_in">WKUserScript</span> alloc] initWithSource:<span class="string">@"alert(document.cookie);"</span> injectionTime:<span class="built_in">WKUserScriptInjectionTimeAtDocumentEnd</span> forMainFrameOnly:<span class="literal">NO</span>];</span><br><span class="line"><span class="comment">//添加脚本</span></span><br><span class="line">[controller addUserScript:script];</span><br></pre></td></tr></table></figure>
+<p>注入的js source可以是任何js字符串，也可以js文件。比如你本地可能就会有一个<code>native_functions.js</code>，你可以通过以下的方式添加：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSString</span> *jsSource = [<span class="built_in">NSString</span> stringWithContentsOfFile:[[<span class="built_in">NSBundle</span> mainBundle] pathForResource:<span class="string">@"native_functions"</span> ofType:<span class="string">@"js"</span>] encoding:<span class="built_in">NSUTF8StringEncoding</span> error:<span class="literal">nil</span>];</span><br><span class="line"><span class="comment">//添加自定义的脚本</span></span><br><span class="line"><span class="built_in">WKUserScript</span> *js = [[<span class="built_in">WKUserScript</span> alloc] initWithSource:jsSource injectionTime:<span class="built_in">WKUserScriptInjectionTimeAtDocumentEnd</span> forMainFrameOnly:<span class="literal">NO</span>];</span><br><span class="line">[<span class="keyword">self</span>.configuration.userContentController addUserScript:js];</span><br></pre></td></tr></table></figure>
+<h3 id="加载"><a href="#加载" class="headerlink" title="加载"></a>加载</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">nullable</span> <span class="built_in">WKNavigation</span> *)loadRequest:(<span class="built_in">NSURLRequest</span> *)request;</span><br><span class="line">- (<span class="keyword">nullable</span> <span class="built_in">WKNavigation</span> *)loadFileURL:(<span class="built_in">NSURL</span> *)URL allowingReadAccessToURL:(<span class="built_in">NSURL</span> *)readAccessURL </span><br><span class="line">- (<span class="keyword">nullable</span> <span class="built_in">WKNavigation</span> *)loadHTMLString:(<span class="built_in">NSString</span> *)string baseURL:(<span class="keyword">nullable</span> <span class="built_in">NSURL</span> *)baseURL;</span><br></pre></td></tr></table></figure>
+<p>比如加载主 bundle 中的一个html需要使用<code>loadRequest:</code>方法。<code>loadReqest</code> 这种方式会把当前load的这个html文件的路径作为baseURL，以此寻找其他资源。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[<span class="keyword">self</span>.webView loadRequest:[<span class="built_in">NSURLRequest</span> requestWithURL:[<span class="built_in">NSURL</span> fileURLWithPath:[[<span class="built_in">NSBundle</span> mainBundle] pathForResource:<span class="string">@"test"</span> ofType:<span class="string">@"html"</span>]]]];</span><br></pre></td></tr></table></figure>
+<p><code>loadHTMLString:baseURL:</code> 直接加载 html 字符串。<code>baseURL</code> 是 html 中资源的路径：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSString</span> *html = <span class="string">@"...."</span>;</span><br><span class="line"><span class="comment">// 加载 mainBundle 下的资源 `[[NSBundle mainBundle] resourcePath]` 获取 mainBundle 的路径字符串</span></span><br><span class="line">[<span class="keyword">self</span>.wkWebView loadHTMLString:html baseURL:[<span class="built_in">NSURL</span> fileURLWithPath:[[<span class="built_in">NSBundle</span> mainBundle] resourcePath]]];</span><br></pre></td></tr></table></figure>
+<h3 id="代理"><a href="#代理" class="headerlink" title="代理"></a>代理</h3><p><code>UIWebView</code>的代理协议拆成了一个跳转的协议和一个关于UI的协议：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@protocol</span> <span class="title">WKNavigationDelegate</span>; //类似于<span class="title">UIWebView</span>的加载成功、失败、是否允许跳转等</span></span><br><span class="line"><span class="class"><span class="keyword">@protocol</span> <span class="title">WKUIDelegate</span>; //主要是一些<span class="title">alert</span>、打开新窗口之类的</span></span><br></pre></td></tr></table></figure>
+<h4 id="WKNavigationDelegate"><a href="#WKNavigationDelegate" class="headerlink" title="WKNavigationDelegate"></a>WKNavigationDelegate</h4><p>常用方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//下面这2个方法共同对应了UIWebView的 - (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType;</span></span><br><span class="line"><span class="comment">//发送请求前：针对一次action来决定是否允许跳转，action中可以获取request，允许与否都需要调用decisionHandler，比如decisionHandler(WKNavigationActionPolicyCancel);</span></span><br><span class="line">- (<span class="keyword">void</span>)webView:(<span class="built_in">WKWebView</span> *)webView decidePolicyForNavigationAction:(<span class="built_in">WKNavigationAction</span> *)navigationAction decisionHandler:(<span class="keyword">void</span> (^)(<span class="built_in">WKNavigationActionPolicy</span>))decisionHandler；</span><br><span class="line"><span class="comment">//获取返回后：根据response来决定，是否允许跳转，允许与否都需要调用decisionHandler，如decisionHandler(WKNavigationResponsePolicyAllow);</span></span><br><span class="line">- (<span class="keyword">void</span>)webView:(<span class="built_in">WKWebView</span> *)webView decidePolicyForNavigationResponse:(<span class="built_in">WKNavigationResponse</span> *)navigationResponse decisionHandler:(<span class="keyword">void</span> (^)(<span class="built_in">WKNavigationResponsePolicy</span>))decisionHandler;</span><br><span class="line"></span><br><span class="line"><span class="comment">//开始加载，对应UIWebView的- (void)webViewDidStartLoad:(UIWebView *)webView;</span></span><br><span class="line">- (<span class="keyword">void</span>)webView:(<span class="built_in">WKWebView</span> *)webView didStartProvisionalNavigation:(<span class="keyword">null_unspecified</span> <span class="built_in">WKNavigation</span> *)navigation;</span><br><span class="line"></span><br><span class="line"><span class="comment">//加载成功，对应UIWebView的- (void)webViewDidFinishLoad:(UIWebView *)webView;</span></span><br><span class="line">- (<span class="keyword">void</span>)webView:(<span class="built_in">WKWebView</span> *)webView didFinishNavigation:(<span class="keyword">null_unspecified</span> <span class="built_in">WKNavigation</span> *)navigation;</span><br><span class="line"></span><br><span class="line"><span class="comment">//加载失败，对应UIWebView的- (void)webView:(UIWebView *)webView didFailLoadWithError:(NSError *)error;</span></span><br><span class="line">- (<span class="keyword">void</span>)webView:(<span class="built_in">WKWebView</span> *)webView didFailNavigation:(<span class="keyword">null_unspecified</span> <span class="built_in">WKNavigation</span> *)navigation withError:(<span class="built_in">NSError</span> *)error;</span><br></pre></td></tr></table></figure>
+<h5 id="示例：控制哪些站点可以被访问"><a href="#示例：控制哪些站点可以被访问" class="headerlink" title="示例：控制哪些站点可以被访问"></a>示例：控制哪些站点可以被访问</h5><figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">webView</span><span class="params">(<span class="number">_</span> webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping <span class="params">(WKNavigationActionPolicy)</span></span></span> -&gt; <span class="type">Void</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">let</span> host = navigationAction.request.url?.host &#123;</span><br><span class="line">        <span class="keyword">if</span> host == <span class="string">"www.apple.com"</span> &#123;</span><br><span class="line">            decisionHandler(.allow)</span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    decisionHandler(.cancel)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="WKUIDelegate"><a href="#WKUIDelegate" class="headerlink" title="WKUIDelegate"></a>WKUIDelegate</h4><p>当 JS 中调用 alert 等方法的时候，会来到这几个代理方法中，进行自定义操作。可以使用这个方式来进行 JS 向 Native 传递参数执行方法。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*  警告 */</span></span><br><span class="line">- (<span class="keyword">void</span>)webView:(<span class="built_in">WKWebView</span> *)webView runJavaScriptAlertPanelWithMessage:(<span class="built_in">NSString</span> *)message initiatedByFrame:(<span class="built_in">WKFrameInfo</span> *)frame completionHandler:(<span class="keyword">void</span> (^)(<span class="keyword">void</span>))completionHandler &#123;</span><br><span class="line">    <span class="built_in">UIAlertController</span> *alert = [<span class="built_in">UIAlertController</span> alertControllerWithTitle:<span class="literal">nil</span> message:message ? message : <span class="string">@""</span> preferredStyle:<span class="built_in">UIAlertControllerStyleAlert</span>];</span><br><span class="line">    [alert addAction:[<span class="built_in">UIAlertAction</span> actionWithTitle:<span class="string">@"确定"</span> style:<span class="built_in">UIAlertActionStyleDefault</span> handler:^(<span class="built_in">UIAlertAction</span> *action) &#123;</span><br><span class="line">        completionHandler();</span><br><span class="line">    &#125;]];</span><br><span class="line">    [vc presentViewController:alert animated:<span class="literal">YES</span> completion:<span class="literal">NULL</span>];</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">///** 确认框 */</span></span><br><span class="line">- (<span class="keyword">void</span>)webView:(<span class="built_in">WKWebView</span> *)webView runJavaScriptConfirmPanelWithMessage:(<span class="built_in">NSString</span> *)message initiatedByFrame:(<span class="built_in">WKFrameInfo</span> *)frame completionHandler:(<span class="keyword">void</span> (^)(<span class="built_in">BOOL</span> result))completionHandler&#123;</span><br><span class="line">    <span class="built_in">UIAlertController</span> *alert = [<span class="built_in">UIAlertController</span> alertControllerWithTitle:<span class="literal">nil</span> message:message ? message : <span class="string">@""</span> preferredStyle:<span class="built_in">UIAlertControllerStyleAlert</span>];</span><br><span class="line">    [alert addAction:[<span class="built_in">UIAlertAction</span> actionWithTitle:<span class="string">@"确定"</span> style:<span class="built_in">UIAlertActionStyleDefault</span> handler:^(<span class="built_in">UIAlertAction</span> * _Nonnull action) &#123;</span><br><span class="line">        completionHandler(<span class="literal">YES</span>);</span><br><span class="line">    &#125;]];</span><br><span class="line">    [alert addAction:[<span class="built_in">UIAlertAction</span> actionWithTitle:<span class="string">@"取消"</span> style:<span class="built_in">UIAlertActionStyleCancel</span> handler:^(<span class="built_in">UIAlertAction</span> * _Nonnull action) &#123;</span><br><span class="line">        completionHandler(<span class="literal">NO</span>);</span><br><span class="line">    &#125;]];</span><br><span class="line">    [vc presentViewController:alert animated:<span class="literal">YES</span> completion:<span class="literal">NULL</span>];</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/**  输入框 */</span></span><br><span class="line">- (<span class="keyword">void</span>)webView:(<span class="built_in">WKWebView</span> *)webView runJavaScriptTextInputPanelWithPrompt:(<span class="built_in">NSString</span> *)prompt defaultText:(<span class="keyword">nullable</span> <span class="built_in">NSString</span> *)defaultText initiatedByFrame:(<span class="built_in">WKFrameInfo</span> *)frame completionHandler:(<span class="keyword">void</span> (^)(<span class="built_in">NSString</span> * __<span class="keyword">nullable</span> result))completionHandler&#123;</span><br><span class="line">    [alert addTextFieldWithConfigurationHandler:^(<span class="built_in">UITextField</span> * _Nonnull textField) &#123;</span><br><span class="line">        textField.textColor = [<span class="built_in">UIColor</span> blackColor];</span><br><span class="line">        textField.placeholder = defaultText ? defaultText : <span class="string">@""</span>;</span><br><span class="line">    &#125;];</span><br><span class="line">    [alert addAction:[<span class="built_in">UIAlertAction</span> actionWithTitle:<span class="string">@"确定"</span> style:<span class="built_in">UIAlertActionStyleDefault</span> handler:^(<span class="built_in">UIAlertAction</span> * _Nonnull action) &#123;</span><br><span class="line">        completionHandler([[alert.textFields lastObject] text]);</span><br><span class="line">    &#125;]];</span><br><span class="line">    [alert addAction:[<span class="built_in">UIAlertAction</span> actionWithTitle:<span class="string">@"取消"</span> style:<span class="built_in">UIAlertActionStyleCancel</span> handler:^(<span class="built_in">UIAlertAction</span> * _Nonnull action) &#123;</span><br><span class="line">        completionHandler(<span class="literal">nil</span>);</span><br><span class="line">    &#125;]];</span><br><span class="line">    [vc presentViewController:alert animated:<span class="literal">YES</span> completion:<span class="literal">NULL</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="新属性"><a href="#新属性" class="headerlink" title="新属性"></a>新属性</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">@property</span> (<span class="keyword">nullable</span>, <span class="keyword">nonatomic</span>, <span class="keyword">readonly</span>, <span class="keyword">copy</span>) <span class="built_in">NSString</span> *title;    <span class="comment">//页面的title，终于可以直接获取了</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nullable</span>, <span class="keyword">nonatomic</span>, <span class="keyword">readonly</span>, <span class="keyword">copy</span>) <span class="built_in">NSURL</span> *URL;     <span class="comment">//当前webView的URL</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">readonly</span>, <span class="keyword">getter</span>=isLoading) <span class="built_in">BOOL</span> loading; <span class="comment">//是否正在加载</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">readonly</span>) <span class="keyword">double</span> estimatedProgress;   <span class="comment">//加载的进度</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">readonly</span>) <span class="built_in">BOOL</span> canGoBack; <span class="comment">//是否可以后退，跟UIWebView相同</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">readonly</span>) <span class="built_in">BOOL</span> canGoForward;  <span class="comment">//是否可以前进，跟UIWebView相同</span></span><br></pre></td></tr></table></figure>
+<p>这些属性都很有用，而且<strong>支持KVO</strong>，所以我们可以通过KVO观察这些值的变化，以便于我们做出最友好的交互。</p>
+<h2 id="OC-JS-交互"><a href="#OC-JS-交互" class="headerlink" title="OC JS 交互"></a>OC JS 交互</h2><h3 id="OC-gt-JS"><a href="#OC-gt-JS" class="headerlink" title="OC -&gt; JS"></a>OC -&gt; JS</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//执行一段js，并将结果返回，如果出错，error则不为空</span></span><br><span class="line">- (<span class="keyword">void</span>)evaluateJavaScript:(<span class="built_in">NSString</span> *)javaScriptString completionHandler:(<span class="keyword">void</span> (^ _Nullable)(_Nullable <span class="keyword">id</span> result, <span class="built_in">NSError</span> * _Nullable error))completionHandler;</span><br></pre></td></tr></table></figure>
+<p>示例，比如我想获取页面中的<code>title</code>，除了直接<code>self.webView.title</code>外，还可以通过这个方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[<span class="keyword">self</span>.webView evaluateJavaScript:<span class="string">@"document.title"</span> completionHandler:^(<span class="keyword">id</span> _Nullable title, <span class="built_in">NSError</span> * _Nullable error) &#123;</span><br><span class="line">        <span class="built_in">NSLog</span>(<span class="string">@"调用evaluateJavaScript异步获取title：%@"</span>, title);</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
+<h3 id="JS-gt-OC"><a href="#JS-gt-OC" class="headerlink" title="JS -&gt; OC"></a>JS -&gt; OC</h3><h4 id="URL-拦截"><a href="#URL-拦截" class="headerlink" title="URL 拦截"></a>URL 拦截</h4><p>通过自定义Scheme，在链接激活时，拦截该URL，拿到参数，调用OC方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 在HTML中写上A标签直接填写假请求地址</span></span><br><span class="line">&lt;a href="myScheme://login?username=12323123&amp;code=892845"&gt;短信验证登录&lt;/a&gt;</span><br><span class="line"><span class="comment">// 在JS中用location.href跳转</span></span><br><span class="line">location.href = 'wakaka://wahahalalala/action?param=paramobj'</span><br><span class="line"><span class="comment">// 在JS中创建一个iframe，然后插入dom之中进行跳转</span></span><br><span class="line">$('body').append('&lt;iframe src="' + 'wakaka://wahahalalala/action?param=paramobj' + '" style="display:none"&gt;&lt;/iframe&gt;');</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)webView:(<span class="built_in">WKWebView</span> *)webView decidePolicyForNavigationAction:(<span class="built_in">WKNavigationAction</span> *)navigationAction decisionHandler:(<span class="keyword">void</span> (^)(<span class="built_in">WKNavigationActionPolicy</span>))decisionHandler &#123;</span><br><span class="line">    <span class="comment">//可以通过navigationAction.navigationType获取跳转类型，如新链接、后退等</span></span><br><span class="line">    <span class="built_in">NSURL</span> *URL = navigationAction.request.URL;</span><br><span class="line">    <span class="comment">//判断URL是否符合自定义的URL Scheme</span></span><br><span class="line">    <span class="keyword">if</span> ([URL.scheme isEqualToString:<span class="string">@"myScheme"</span>]) &#123;</span><br><span class="line">        <span class="comment">//根据不同的业务，来执行对应的操作，且获取参数</span></span><br><span class="line">        <span class="keyword">if</span> ([URL.host isEqualToString:<span class="string">@"login"</span>]) &#123;</span><br><span class="line">            <span class="built_in">NSString</span> *param = URL.query;</span><br><span class="line">            <span class="built_in">NSLog</span>(<span class="string">@"短信验证码登录, 参数为%@"</span>, param);</span><br><span class="line">            decisionHandler(<span class="built_in">WKNavigationActionPolicyCancel</span>);</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    decisionHandler(<span class="built_in">WKNavigationActionPolicyAllow</span>);</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@"%@"</span>, <span class="built_in">NSStringFromSelector</span>(_cmd));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>WKWebView 拦截：<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)webView:(<span class="built_in">WKWebView</span> *)webView decidePolicyForNavigationAction:(<span class="built_in">WKNavigationAction</span> *)navigationAction decisionHandler:(<span class="keyword">void</span> (^)(<span class="built_in">WKNavigationActionPolicy</span>))decisionHandler &#123;</span><br><span class="line">    <span class="comment">//1 根据url，判断是否是所需要的拦截的调用 判断协议/域名</span></span><br><span class="line">    <span class="keyword">if</span> (是)&#123;</span><br><span class="line">      <span class="comment">//2 取出路径，确认要发起的native调用的指令是什么</span></span><br><span class="line">      <span class="comment">//3 取出参数，拿到JS传过来的数据</span></span><br><span class="line">      <span class="comment">//4 根据指令调用对应的native方法，传递数据</span></span><br><span class="line">      <span class="comment">//确认拦截，拒绝WebView继续发起请求</span></span><br><span class="line">        decisionHandler(<span class="built_in">WKNavigationActionPolicyCancel</span>);</span><br><span class="line">    &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">        decisionHandler(<span class="built_in">WKNavigationActionPolicyAllow</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">YES</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>假跳转的缺点：</p>
+<ul>
+<li>丢失消息。在同一个运行逻辑内快速的连续发送两个通信请求，那么后面的消息将收不到。</li>
+<li>URL长度限制。</li>
+</ul>
+<h4 id="scriptMessageHandler"><a href="#scriptMessageHandler" class="headerlink" title="scriptMessageHandler"></a>scriptMessageHandler</h4><p>在OC中添加一个scriptMessageHandler，则会在<code>all frames</code>中添加一个js的function： <code>window.webkit.messageHandlers.&lt;name&gt;.postMessage(&lt;messageBody&gt;)</code> 。那么当我在OC中通过如下的方法添加了一个handler，如</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//配置对象注入</span></span><br><span class="line">[<span class="keyword">self</span>.webView.configuration.userContentController addScriptMessageHandler:<span class="keyword">self</span> name:<span class="string">@"nativeObject"</span>];</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>这里不能直接传入 self，会被 <code>WKUserContentController</code> 强引用，而不能销毁。所以需要创建一个代理类对象，类似于处理 NSTimer。</p>
+</blockquote>
+<p>当我在js中调用下面的方法时:</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//准备要传给native的数据，包括指令，数据，回调等</span></span><br><span class="line">var data = &#123;</span><br><span class="line">    action:'xxxx',</span><br><span class="line">    params:'xxxx',</span><br><span class="line">    callback:'xxxx',</span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment">//传递给客户端</span></span><br><span class="line">window.webkit.messageHandlers.nativeObject.postMessage(data);</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>注意，<code>postMessage</code> 方法要求必须要有一个参数，即使是一个空对象，也要写成 <code>postMessage({})</code>，否则 native 无法收到消息。</p>
+</blockquote>
+<p>在OC中将会收到<code>WKScriptMessageHandler</code>的回调</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">-(<span class="keyword">void</span>)userContentController:(<span class="built_in">WKUserContentController</span> *)userContentController didReceiveScriptMessage:(<span class="built_in">WKScriptMessage</span> *)message&#123;</span><br><span class="line">    <span class="comment">//1 解读JS传过来的JSValue  data数据</span></span><br><span class="line">    <span class="built_in">NSDictionary</span> *msgBody = message.body;</span><br><span class="line">    <span class="comment">//2 取出指令参数，确认要发起的native调用的指令是什么</span></span><br><span class="line">    <span class="comment">//3 取出数据参数，拿到JS传过来的数据</span></span><br><span class="line">    <span class="comment">//4 根据指令调用对应的native方法，传递数据</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p> 我们可以把js的function转换为字符串，再传递给OC。再让 OC 通过 <code>evaluateJavaScript:completionHandler:</code> 调用，将结果传出。就实现了 js-&gt;oc-&gt;js-&gt;oc 的回调</p>
+</blockquote>
+<p>记得在适当的地方调用 <code>removeScriptMessageHandler</code>:</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)dealloc &#123;</span><br><span class="line">    <span class="comment">//移除对象注入</span></span><br><span class="line">    [<span class="keyword">self</span>.webView.configuration.userContentController removeScriptMessageHandlerForName:<span class="string">@"nativeObject"</span>]; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="WKUIDelegate-1"><a href="#WKUIDelegate-1" class="headerlink" title="WKUIDelegate"></a>WKUIDelegate</h4><p>前面说到，<code>WKUIDelegate</code> 协议中的几个弹窗方法，可以用来实现 JS2OC 的通信。前面几种 JS2OC 的通信的 callback 都需要 OC自己调用 OC2JS 的异步方法返回。而使用 <code>WKUIDelegate</code> 可以同步返回结果。</p>
+<p><strong>JS 端调用</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> data = &#123;</span><br><span class="line">    action:<span class="string">'xxxx'</span>,</span><br><span class="line">    params:<span class="string">'xxxx'</span>,</span><br><span class="line">    callback:<span class="string">'xxxx'</span>,</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">var</span> jsonData = <span class="built_in">JSON</span>.stringify([data]);</span><br><span class="line"><span class="comment">//发起弹框</span></span><br><span class="line">prompt(jsonData);</span><br></pre></td></tr></table></figure>
+<p> <strong>客户端拦截：</strong></p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)webView:(<span class="built_in">WKWebView</span> *)webView runJavaScriptTextInputPanelWithPrompt:(<span class="built_in">NSString</span> *)prompt defaultText:(<span class="keyword">nullable</span> <span class="built_in">NSString</span> *)defaultText initiatedByFrame:(<span class="built_in">WKFrameInfo</span> *)frame completionHandler:(<span class="keyword">void</span> (^)(<span class="built_in">NSString</span> * _Nullable result))completionHandler&#123;</span><br><span class="line">    <span class="comment">//1 根据传来的字符串反解出数据，判断是否是所需要的拦截而非常规H5弹框</span></span><br><span class="line">    <span class="keyword">if</span> (是)&#123;</span><br><span class="line">        <span class="comment">//2 取出指令参数，确认要发起的native调用的指令是什么</span></span><br><span class="line">        <span class="comment">//3 取出数据参数，拿到JS传过来的数据</span></span><br><span class="line">        <span class="comment">//4 根据指令调用对应的native方法，传递数据</span></span><br><span class="line">        <span class="comment">//直接返回JS空字符串</span></span><br><span class="line">        completionHandler(<span class="string">@""</span>);</span><br><span class="line">    &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">        <span class="comment">//直接返回JS空字符串</span></span><br><span class="line">        completionHandler(<span class="string">@""</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里 <code>prompt</code> 和 <code>defaultText</code> 就是 JS 端传来的数据。通过 <code>completionHandler()</code> 就可以同步将值返回了。js 端调用接收：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> result = <span class="built_in">window</span>.prompt(somePrompt, someDefaultText)</span><br></pre></td></tr></table></figure>
+<h2 id="JavaScriptCore"><a href="#JavaScriptCore" class="headerlink" title="JavaScriptCore"></a>JavaScriptCore</h2><p>JavaScriptCore是苹果Safari浏览器的JavaScript引擎</p>
+<h3 id="OC-调用-JS"><a href="#OC-调用-JS" class="headerlink" title="OC 调用 JS"></a>OC 调用 JS</h3><p>OC 调用 JS 可以直接使用 <code>evaluteScript</code> 方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#import <span class="meta-string">&lt;JavaScriptCore/JavaScriptCore.h&gt;</span></span></span><br><span class="line"><span class="keyword">int</span> main() &#123;</span><br><span class="line">    JSContext *context = [[JSContext alloc] init];</span><br><span class="line">    JSValue *value = [context evaluateScript:<span class="string">@"2 + 2"</span>];</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@"2 + 2 = %d"</span>, [value toInt32]);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="JSContext"><a href="#JSContext" class="headerlink" title="JSContext"></a>JSContext</h4><ul>
+<li>JSContext 是JS代码的执行环境。JSContext 为JS代码的执行提供了上下文环境，通过jSCore执行的JS代码都得通过JSContext来执行。</li>
+<li>JSContext对应于一个 JS 中的全局对象。JSContext对应着一个全局对象，相当于浏览器中的window对象，JSContext中有一个GlobalObject属性，实际上JS代码都是在这个GlobalObject上执行的，但是为了容易理解，可以把JSContext等价于全局对象。我们甚至可以直接在 JSContext 上拿 GlobalObject 的属性。</li>
+</ul>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">JSValue *value = [context evaluateScript:<span class="string">@"var a = 1+2*3;"</span>];</span><br><span class="line"></span><br><span class="line"><span class="built_in">NSLog</span>(<span class="string">@"a = %@"</span>, [context objectForKeyedSubscript:<span class="string">@"a"</span>]);</span><br><span class="line"><span class="built_in">NSLog</span>(<span class="string">@"a = %@"</span>, [context.globalObject objectForKeyedSubscript:<span class="string">@"a"</span>]);</span><br><span class="line"><span class="built_in">NSLog</span>(<span class="string">@"a = %@"</span>, context[<span class="string">@"a"</span>]);</span><br><span class="line"></span><br><span class="line">/</span><br><span class="line">Output:</span><br><span class="line"></span><br><span class="line">a = <span class="number">7</span></span><br><span class="line">a = <span class="number">7</span></span><br><span class="line">a = <span class="number">7</span></span><br></pre></td></tr></table></figure>
+<h4 id="JSValue"><a href="#JSValue" class="headerlink" title="JSValue"></a>JSValue</h4><ul>
+<li>JSValue 是对 JS 值的包装。JS中的值拿到OC中是不能直接用的，需要包装一下</li>
+<li>JSValue存在于JSContext中。JSValue是不能独立存在的，它必须存在于某一个JSContext中。</li>
+<li>JSValue对其对应的JS值和其所属的JSContext对象都是强引用的关系。因为jSValue需要这两个东西来执行JS代码，所以JSValue会一直持有着它们。</li>
+</ul>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/jscore1.png?raw=true" alt></p>
+<p>示例：</p>
+<p>js 代码：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 计算阶乘</span></span><br><span class="line"><span class="keyword">var</span> factorial = <span class="function"><span class="keyword">function</span> (<span class="params">n</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (n &lt; <span class="number">0</span>) <span class="keyword">return</span></span><br><span class="line">    <span class="keyword">if</span> (n === <span class="number">0</span>) <span class="keyword">return</span> <span class="number">1</span></span><br><span class="line">    <span class="keyword">return</span> n * factortial(n<span class="number">-1</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>oc 调用：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSString</span> *factorialScript = [<span class="keyword">self</span> loadJSFromBundle];</span><br><span class="line">JSContext *context = [[JSContext alloc] init];</span><br><span class="line">[context evaluteScript: factorialScript];</span><br><span class="line">JSValue *function = context[<span class="string">@"factorial"</span>];</span><br><span class="line">JSValue *result = [function callWithArguments:@[@<span class="number">5</span>]];</span><br><span class="line"><span class="built_in">NSLog</span>(<span class="string">@"factorial(5) = %d"</span>, [result toInt32]);</span><br></pre></td></tr></table></figure>
+<p>从 Bundle 中拿到 js 代码执行，从 context 中拿到方法，然后通过 <code>callWithArguments</code> 执行，执行后得到 JSValue 的值。</p>
+<h3 id="JS-调用-OC"><a href="#JS-调用-OC" class="headerlink" title="JS 调用 OC"></a>JS 调用 OC</h3><p>两种方式可以让 OC 暴露方法给 JS：</p>
+<ul>
+<li>Block：可以将 OC 中的单个方法暴露给 JS 调用。</li>
+<li>JSExport协议：可以将OC的中某个对象直接暴露给JS使用</li>
+</ul>
+<h4 id="Block"><a href="#Block" class="headerlink" title="Block"></a>Block</h4><p>JSCore会自动将这个Block包装成一个JS方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">context[<span class="string">@"makeNSColor"</span>] = ^(<span class="built_in">NSDictorary</span> * colors)&#123;</span><br><span class="line">    <span class="keyword">float</span> r = [colors[<span class="string">@"red"</span>] floatValue];</span><br><span class="line">    <span class="keyword">float</span> g = [colors[<span class="string">@"green"</span>] floatValue];</span><br><span class="line">    <span class="keyword">float</span> b = [colors[<span class="string">@"blue"</span>] floatValue];</span><br><span class="line">    <span class="keyword">return</span> [<span class="built_in">NSColor</span> colorWithRed:(r / <span class="number">255.0</span>) green:(g / <span class="number">255.0</span>) blue:(b / <span class="number">255</span>) alpha:<span class="number">1.0</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>js 端就可以直接调用这个 <code>makeNSColor</code> 方法了。运行得到一个 NSColor 对象，在 js 中表现为一个 object。</p>
+<p>如果我们在 js 端再对这个方法封装一下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> colorForWord = <span class="function"><span class="keyword">function</span> (<span class="params">word</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> makeNSColor(word)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在 oc 端调用的示意图如下：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/jscore2.png?raw=true" alt></p>
+<p><code>OC Caller</code>去调用这个<code>colorForWrod</code>函数，因为<code>colorForWrod</code>函数接收的是一个<code>String</code>类型那个参数word，<code>OC Caller</code>传过去的是一个<code>NSString</code>类型的参数，JSCore转换成对应的<code>String</code>类型。然后<code>colorForWrod</code>函数继续向下调用，就像上面说的，知道其拿到返回的<code>wrapper Object</code>，它将<code>wrapper Object</code>返回给调用它的<code>OC Caller</code>，JSCore又会在这时候把<code>wrapper Object</code>转成JSValue类型，最后再OC中通过对JSValue调用对应的转换方法，即可拿到里面包装的值，这里我们调用<code>- toObject</code>方法，最后会得到一个<code>NSColor</code>对象，即从最开始那个暴露给JS的Block中返回的对象。</p>
+<h5 id="注意点"><a href="#注意点" class="headerlink" title="注意点"></a>注意点</h5><ol>
+<li>不要在Block中直接使用JSValue。</li>
+<li>不要在Block中直接使用JSContext。</li>
+</ol>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/jscore3.png?raw=true" alt></p>
+<p>Block会强引用它里面用到的外部变量，如果直接在Block中使用JSValue的话，那么这个JSvalue就会被这个Block强引用，而每个JSValue都是强引用着它所属的那个JSContext的，这是前面说过的，而这个Block又是注入到这个Context中，所以这个Block会被context强引用，这样会造成循环引用，导致内存泄露。不能直接使用JSContext的原因同理。所以建议把JSValue当做参数传到Block中，而不是直接在Block内部使用，这样Block就不会强引用JSValue了。</p>
+<p>针对第二点，可以使用<code>[JSContext currentContext]</code>方法来获取当前的Context。</p>
+<h4 id="JSExport-协议"><a href="#JSExport-协议" class="headerlink" title="JSExport 协议"></a>JSExport 协议</h4><p>通过JSExport 协议可以很方便的将OC中的对象暴露给JS使用，且在JS中用起来就和JS对象一样。</p>
+<p>声明一个自定义的协议并继承自JSExport协议。然后当你把实现这个自定义协议的对象暴露给JS时，JS就能像使用原生对象一样使用OC对象了：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/jscore4.png?raw=true" alt></p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a href="https://mp.weixin.qq.com/s/rhYKLIbXOsUJC_n6dt9UfA" target="_blank" rel="noopener">WKWebView 那些坑</a></p>
+<p><a href="https://www.jianshu.com/p/870dba42ec15" target="_blank" rel="noopener">iOS中UIWebView与WKWebView、JavaScript与OC交互、Cookie管理看我就够</a></p>
+<p><a href="http://awhisper.github.io/2018/03/06/hybrid-webcontainer/" target="_blank" rel="noopener">从零收拾一个hybrid框架（二）– WebView容器基础功能设计思路</a></p>
+<p><a href="https://lvwenhan.com/ios/462.html" target="_blank" rel="noopener">自己动手打造基于 WKWebView 的混合开发框架</a></p>
+<p><a href="https://juejin.im/post/5a40492f6fb9a0451969ce95#heading-7" target="_blank" rel="noopener">WebViewJavascriptBridge 源码中 Get 到的“桥梁美学”</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tag/学习笔记/" rel="tag"># 学习笔记</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/06/05/Redux基础/" rel="next" title="Redux 基础">
+                <i class="fa fa-chevron-left"></i> Redux 基础
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/08/13/创建私有npm/" rel="prev" title="如何创建私有npm">
+                如何创建私有npm <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.png" alt="Zachary Zhang">
+            
+              <p class="site-author-name" itemprop="name">Zachary Zhang</p>
+              <p class="site-description motion-element" itemprop="description">Stay Hungry. Stay Foolish!</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">116</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/zhang759740844" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:zch759740844@126.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#基本用法"><span class="nav-number">1.</span> <span class="nav-text">基本用法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#创建"><span class="nav-number">1.1.</span> <span class="nav-text">创建</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#websiteDataStore"><span class="nav-number">1.1.1.</span> <span class="nav-text">websiteDataStore</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#userContentController"><span class="nav-number">1.1.2.</span> <span class="nav-text">userContentController</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#基本创建"><span class="nav-number">1.1.3.</span> <span class="nav-text">基本创建</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#动态注入js"><span class="nav-number">1.2.</span> <span class="nav-text">动态注入js</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#加载"><span class="nav-number">1.3.</span> <span class="nav-text">加载</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#代理"><span class="nav-number">1.4.</span> <span class="nav-text">代理</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#WKNavigationDelegate"><span class="nav-number">1.4.1.</span> <span class="nav-text">WKNavigationDelegate</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#示例：控制哪些站点可以被访问"><span class="nav-number">1.4.1.1.</span> <span class="nav-text">示例：控制哪些站点可以被访问</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#WKUIDelegate"><span class="nav-number">1.4.2.</span> <span class="nav-text">WKUIDelegate</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#新属性"><span class="nav-number">1.5.</span> <span class="nav-text">新属性</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OC-JS-交互"><span class="nav-number">2.</span> <span class="nav-text">OC JS 交互</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#OC-gt-JS"><span class="nav-number">2.1.</span> <span class="nav-text">OC -&gt; JS</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#JS-gt-OC"><span class="nav-number">2.2.</span> <span class="nav-text">JS -&gt; OC</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#URL-拦截"><span class="nav-number">2.2.1.</span> <span class="nav-text">URL 拦截</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#scriptMessageHandler"><span class="nav-number">2.2.2.</span> <span class="nav-text">scriptMessageHandler</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#WKUIDelegate-1"><span class="nav-number">2.2.3.</span> <span class="nav-text">WKUIDelegate</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#JavaScriptCore"><span class="nav-number">3.</span> <span class="nav-text">JavaScriptCore</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#OC-调用-JS"><span class="nav-number">3.1.</span> <span class="nav-text">OC 调用 JS</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#JSContext"><span class="nav-number">3.1.1.</span> <span class="nav-text">JSContext</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#JSValue"><span class="nav-number">3.1.2.</span> <span class="nav-text">JSValue</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#JS-调用-OC"><span class="nav-number">3.2.</span> <span class="nav-text">JS 调用 OC</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Block"><span class="nav-number">3.2.1.</span> <span class="nav-text">Block</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#注意点"><span class="nav-number">3.2.1.1.</span> <span class="nav-text">注意点</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#JSExport-协议"><span class="nav-number">3.2.2.</span> <span class="nav-text">JSExport 协议</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考"><span class="nav-number">4.</span> <span class="nav-text">参考</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zachary Zhang</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

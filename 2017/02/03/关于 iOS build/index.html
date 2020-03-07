@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+
+
+
+
+  <meta name="keywords" content="Xcode,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="关于 Xcode 是如何编译的，下面是一些较为浅显的讨论。">
+<meta name="keywords" content="Xcode">
+<meta property="og:type" content="article">
+<meta property="og:title" content="关于 iOS build">
+<meta property="og:url" content="http://zhang759740844.github.io/2017/02/03/关于 iOS build/index.html">
+<meta property="og:site_name" content="Zachary&#39;s blog">
+<meta property="og:description" content="关于 Xcode 是如何编译的，下面是一些较为浅显的讨论。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/build_编译器.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/build_中间代码.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/build_链接过程.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/build_代码签名.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/build过程.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/build_build过程.png?raw=true">
+<meta property="og:updated_time" content="2020-02-27T15:13:37.661Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="关于 iOS build">
+<meta name="twitter:description" content="关于 Xcode 是如何编译的，下面是一些较为浅显的讨论。">
+<meta name="twitter:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/build_编译器.png?raw=true">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://zhang759740844.github.io/2017/02/03/关于 iOS build/">
+
+
+
+
+
+  <title>关于 iOS build | Zachary's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Zachary's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">记录成长</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://zhang759740844.github.io/2017/02/03/关于 iOS build/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zachary Zhang">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Zachary's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">关于 iOS build</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-02-03T10:07:12+08:00">
+                2017-02-03
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>关于 Xcode 是如何编译的，下面是一些较为浅显的讨论。</p>
+<a id="more"></a>
+<h2 id="点击run后发生了什么"><a href="#点击run后发生了什么" class="headerlink" title="点击run后发生了什么"></a>点击run后发生了什么</h2><p>点击 Run 之后 App 进行<strong>编译、汇编、链接、代码签名以及启动执行</strong>等操作</p>
+<h3 id="编译"><a href="#编译" class="headerlink" title="编译"></a>编译</h3><p>Clang是LLVM的前端，可以用来编译C，C++，ObjectiveC等语言。传统的编译器通常分为三个部分，<strong>前端(frontEnd)</strong>，<strong>优化器(Optimizer)</strong>和<strong>后端(backEnd)</strong>。在编译过程中，前端主要负责词法和语法分析，将源代码转化为抽象语法树；优化器则是在前端的基础上，对得到的中间代码进行优化，使代码更加高效；后端则是将已经优化的<strong>中间代码</strong>转化为针对各自平台的机器代码。Clang则是以LLVM为后端的一款高效易用，并且与IDE结合很好的编译前端。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/build_编译器.png?raw=true" alt="编译器解构"></p>
+<p>编译器分别编译器前端（clang）和编译器后端，编译器前端负责产生机器无关的中间代码，编译器后端负责对中间代码进行优化并转化为目标机器代码，对于为什么需要 中间代码这个东西，看个图就一目了然啦（IR：intermediate representation中间表示）</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/build_中间代码.png?raw=true" alt="中间代码"></p>
+<h3 id="汇编"><a href="#汇编" class="headerlink" title="汇编"></a>汇编</h3><p>目标代码需要经过汇编器处理，才能变成机器上可以执行的指令。生成对应的<code>.o</code>文件</p>
+<h3 id="链接"><a href="#链接" class="headerlink" title="链接"></a>链接</h3><p>链接器（这里指的是静态链接器）将多个目标文件合并为一个可执行文件，在 OS X 和 iOS中的可执行文件是 <code>Mach-O</code> 。链接呢，又分为静态链接和动态链接</p>
+<p>静态链接：在编译链接期间发挥作用，把目标文件和静态库一起链接形成可执行文件。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/build_链接过程.png?raw=true" alt="链接过程"></p>
+<p>动态链接：链接过程推迟到运行时再进行。对于动态链接和静态链接，各有千秋。</p>
+<h3 id="代码签名"><a href="#代码签名" class="headerlink" title="代码签名"></a>代码签名</h3><p>我们每次 <code>build</code> 之后，都会发现工程目录下多了一个 <code>.app</code> 文件。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/build_代码签名.png?raw=true" alt="代码签名"></p>
+<p>在 <code>.app</code> 目录中，有又一个叫 <code>_CodeSignature</code> 的子目录，这是一个  <code>plist</code> 文件，里面包含了程序的代码签名，你的程序一旦签名，就没有办法更改其中的任何东西，包括资源文件，可执行文件等，iOS系统会检查这个签名。</p>
+<p>签名过程本身是由命令行工具 <code>codesign</code> 来完成的。如果你在 Xcode 中build 一个应用，这个应用构建完成之后会自动调用 <code>codesign</code> 命令进行签名，这也是 Link 之后的一个关键步骤。</p>
+<h3 id="启动"><a href="#启动" class="headerlink" title="启动"></a>启动</h3><p>在启动过程中，<code>dyld</code>（动态链接器） 起了很重要的作用，进行动态链接，进行符号和地址的一个绑定。</p>
+<p><code>dyld</code> 主要在启动过程中主要做了以下事情：</p>
+<ul>
+<li>加载所依赖的 <code>dylibs</code></li>
+</ul>
+<ul>
+<li><code>Fix-ups</code>：Rebase 修正地址偏移，因为 OS X和 iOS 通过 <code>ASLR</code> 来做地址偏移（随机化）来避免收到攻击</li>
+<li><code>Fix-ups</code>：Binding确定 <code>Non-Lazy Pointer</code> 地址，进行符号地址绑定。</li>
+<li><code>ObjC runtime</code> 初始化：加载所有类</li>
+<li><code>Initializers</code> ：执行 <code>load</code> 方法和 <code>__attribute__((constructor))</code> 修饰的函数</li>
+</ul>
+<h2 id="Build过程"><a href="#Build过程" class="headerlink" title="Build过程"></a>Build过程</h2><p>在选择工程后会出现下面这样的几个选项：<br><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/build过程.png?raw=true" alt="build过程"></p>
+<h3 id="Build-Phases"><a href="#Build-Phases" class="headerlink" title="Build Phases"></a>Build Phases</h3><p>Build Phases 代表着将代码转变为可执行文件的最高级别规则。里面描述了 build 过程中必须执行的不同类型规则。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/build_build过程.png?raw=true" alt="build phases"></p>
+<p>首先是 target 依赖项的构建。这里会告诉 build 系统，build 当前的 target 之前，必须先对这里的依赖性进行 build。实际上这并不属于真正的 build phase，在这里，Xcode 只不过将其与 build phase 显示到一块罢了。</p>
+<p>接着在 build phase中是一个 CocoaPods 相关的脚本 <em>script execution</em> 。接着在 Compile Sources section 中规定了所有必须参与编译的文件。此处列出的所有文件将根据相关的 rules 和 settings 被处理。</p>
+<p>当编译结束之后，接下来就是将编译所生成的目标文件链接到一块。注意观察，Xcode 中的 build phase 之后是：”Link Binary with Libraries.” 这里面列出了所有的静态库和动态库，这些库会参与上面编译阶段生成的目标文件进行链接。</p>
+<p>当链接完成之后，build phase 中最后需要处理的就是将静态资源（例如图片和字体）拷贝到 app bundle 中。需要注意的是，如果图片资源是PNG格式，那么不仅仅对其进行拷贝，还会做一些优化（内部已经集成了第三方png优化工具pngcrush,它可以在编译时对png格式文件进行优化和压缩）。</p>
+<p>虽然静态资源的拷贝是 build phase 中的最后一步，但 build 还没有完成。例如，还没有进行 code signing （这并不是 build phase 考虑的范畴），code signing 属于 build 步骤中的最后一步 “Packaging”。</p>
+<h3 id="Build-Rules"><a href="#Build-Rules" class="headerlink" title="Build Rules"></a>Build Rules</h3><p>Build rules 指定了不同的文件类型该如何编译。一般来说，开发者并不需要修改这里面的内容。如果你需要对特定类型的文件添加处理方法，那么可以在此处添加一条新的规则。一条 build rule 指定了其应用于哪种类型文件，该类型文件是如何被处理的，以及输出的内容该如何处置。</p>
+<h3 id="Build-Settings"><a href="#Build-Settings" class="headerlink" title="Build Settings"></a>Build Settings</h3><p>至此，我们已经了解到在 build phases 中是如何定义 build 处理的过程，以及 build rules 是如何指定哪些文件类型在编译阶段需要被预处理。在 build settings 中，我们可以配置每个任务的详细内容。</p>
+<p>你会发现 build 过程的每一个阶段，都有许多选项：从编译、链接一直到 code signing 和 packaging。注意，settings 是如何被分割为不同的部分 – 其实这大部分会与 build phases 有关联，有时候也会指定编译的文件类型。</p>
+<h3 id="工程文件"><a href="#工程文件" class="headerlink" title="工程文件"></a>工程文件</h3><p>上面我们介绍的所有内容都被保存在工程文件（<code>.pbxproj</code>）中，除了其它一些工程相关信息（例如 file groups），我们很少会深入该文件内部，除非在代码 merge 时发生冲突，或许会进去看看。</p>
+<p>如果用文本编辑器打开一个工程文件，从头到尾看一遍里面的内容。它的可读性非常高，里面的许多内容一看就知道什么意思了，不会存在太大的问题。通过阅读并完全理解工程文件，这对于合并工程文件的冲突非常有帮助。</p>
+<p>首先，我们来看看文件中叫做 rootObject 的条目。在我的工程中，如下所示：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rootObject = <span class="number">1793817</span>C17A9421F0078255E /* Project object *<span class="regexp">/;</span></span><br></pre></td></tr></table></figure>
+<p>根据这个 ID（1793817C17A9421F0078255E），我们可以找到 main 工程的定义：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">/* Begin PBXProject section *<span class="regexp">/</span></span><br><span class="line"><span class="regexp">    1793817C17A9421F0078255E /</span>* Project object *<span class="regexp">/ = &#123;</span></span><br><span class="line"><span class="regexp">        isa = PBXProject;</span></span><br><span class="line"><span class="regexp">...</span></span><br></pre></td></tr></table></figure>
+<p>在这部分中有一些 keys，顺从这些 key，我们可以了解到更多关于这个工程文件的组成。例如，mainGroup 指向了 root file group。如果你按照这个思路，你可以快速了解到在 <code>.pbxproj</code> 文件中工程的结构。</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span>BC1E1511ACBEFFA0042431B = &#123;</span><br><span class="line">	isa = PBXGroup;</span><br><span class="line">	children = (</span><br><span class="line">		B62C765C1D9B71D300CB2CD4 /* OKit.framework *<span class="regexp">/,</span></span><br><span class="line"><span class="regexp">		230935DA1C4F3D9C0070A5B3 /</span>* QiNiuManager.xcodeproj *<span class="regexp">/,</span></span><br><span class="line"><span class="regexp">		23D1991E1C2B8FF600E1DE8A /</span>* Debug.xcodeproj *<span class="regexp">/,</span></span><br><span class="line"><span class="regexp">		0DD10D591C28FB4900ADF8E5 /</span>* Track.xcodeproj *<span class="regexp">/,</span></span><br><span class="line"><span class="regexp">		0D106DDC1BE70BF600C49E7B /</span>* Interface.xcodeproj *<span class="regexp">/,</span></span><br><span class="line"><span class="regexp">		0D106D761BE7052800C49E7B /</span>* Model.xcodeproj *<span class="regexp">/,</span></span><br><span class="line"><span class="regexp">		0DC641041C0D427A007025D5 /</span>* Wallet.xcodeproj *<span class="regexp">/,</span></span><br><span class="line"><span class="regexp">		0DC641A41C0D997C007025D5 /</span>* Tool.xcodeproj *<span class="regexp">/,</span></span><br><span class="line"><span class="regexp">		0DC641CA1C0D9ADB007025D5 /</span>* Location.xcodeproj *<span class="regexp">/,</span></span><br><span class="line"><span class="regexp">		1BC1E1631ACBEFFA0042431B /</span>* Mike *<span class="regexp">/,</span></span><br><span class="line"><span class="regexp">		1BC1E15C1ACBEFFA0042431B /</span>* Frameworks *<span class="regexp">/,</span></span><br><span class="line"><span class="regexp">		1BC1E15B1ACBEFFA0042431B /</span>* Products *<span class="regexp">/,</span></span><br><span class="line"><span class="regexp">		FF0DD481DA78D64E15039700 /</span>* Pods *<span class="regexp">/,</span></span><br><span class="line"><span class="regexp">	);</span></span><br><span class="line"><span class="regexp">	sourceTree = "&lt;group&gt;";</span></span><br><span class="line"><span class="regexp">&#125;;</span></span><br></pre></td></tr></table></figure>
+<p>下面来看一些与 build 过程相关的内容。其中 target key 指向了 build target 的定义：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">targets = (</span><br><span class="line">	<span class="number">1</span>BC1E1591ACBEFFA0042431B /* Mike *<span class="regexp">/,</span></span><br><span class="line"><span class="regexp">);</span></span><br></pre></td></tr></table></figure>
+<p>根据第一个内容，我们找到一个 target 的定义：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span>BC1E1591ACBEFFA0042431B /* Mike *<span class="regexp">/ = &#123;</span></span><br><span class="line"><span class="regexp">			isa = PBXNativeTarget;</span></span><br><span class="line"><span class="regexp">			buildConfigurationList = 1BC1E1861ACBEFFA0042431B /</span>* Build configuration list <span class="keyword">for</span> PBXNativeTarget <span class="string">"Mike"</span> *<span class="regexp">/;</span></span><br><span class="line"><span class="regexp">			buildPhases = (</span></span><br><span class="line"><span class="regexp">				E2E1BAED1E12657500A4F13C /</span>* ShellScript *<span class="regexp">/,</span></span><br><span class="line"><span class="regexp">				D328411202E8C8A158C68A9A /</span>* [CP] Check Pods Manifest.lock *<span class="regexp">/,</span></span><br><span class="line"><span class="regexp">				32F9C08DAB34C3D77A8CD59E /</span>* [CP] Check Pods Manifest.lock *<span class="regexp">/,</span></span><br><span class="line"><span class="regexp">				1BC1E1561ACBEFFA0042431B /</span>* Sources *<span class="regexp">/,</span></span><br><span class="line"><span class="regexp">				1BC1E1571ACBEFFA0042431B /</span>* Frameworks *<span class="regexp">/,</span></span><br><span class="line"><span class="regexp">				1BC1E1581ACBEFFA0042431B /</span>* Resources *<span class="regexp">/,</span></span><br><span class="line"><span class="regexp">				7C20CC96F9690C1C11011773 /</span>* [CP] Embed Pods Frameworks *<span class="regexp">/,</span></span><br><span class="line"><span class="regexp">				1DBEA7A742BF77DA6EC31CEB /</span>* [CP] Copy Pods Resources *<span class="regexp">/,</span></span><br><span class="line"><span class="regexp">				2337E6001BCDF5EC007659ED /</span>* ShellScript *<span class="regexp">/,</span></span><br><span class="line"><span class="regexp">				2CA588C55C8E11D9779AABF0 /</span>* 📦 Embed Pods Frameworks *<span class="regexp">/,</span></span><br><span class="line"><span class="regexp">				789C695793C24ECAC7D8420E /</span>* 📦 Copy Pods Resources *<span class="regexp">/,</span></span><br><span class="line"><span class="regexp">				B60684181D9924B00003E3E5 /</span>* Embed Frameworks *<span class="regexp">/,</span></span><br><span class="line"><span class="regexp">			);</span></span><br><span class="line"><span class="regexp">			buildRules = (</span></span><br><span class="line"><span class="regexp">			);</span></span><br><span class="line"><span class="regexp">			dependencies = (</span></span><br><span class="line"><span class="regexp">				230935E91C4F55B20070A5B3 /</span>* PBXTargetDependency *<span class="regexp">/,</span></span><br><span class="line"><span class="regexp">				23D199251C2B918700E1DE8A /</span>* PBXTargetDependency *<span class="regexp">/,</span></span><br><span class="line"><span class="regexp">				0DD10D601C28FB5D00ADF8E5 /</span>* PBXTargetDependency *<span class="regexp">/,</span></span><br><span class="line"><span class="regexp">				0DE3C0941C0F103000184463 /</span>* PBXTargetDependency *<span class="regexp">/,</span></span><br><span class="line"><span class="regexp">				0DE3C0921C0F102D00184463 /</span>* PBXTargetDependency *<span class="regexp">/,</span></span><br><span class="line"><span class="regexp">				2390C7521C0DB98B008C31B1 /</span>* PBXTargetDependency *<span class="regexp">/,</span></span><br><span class="line"><span class="regexp">				0D106DE41BE70C2600C49E7B /</span>* PBXTargetDependency *<span class="regexp">/,</span></span><br><span class="line"><span class="regexp">				0D106D7E1BE7060100C49E7B /</span>* PBXTargetDependency *<span class="regexp">/,</span></span><br><span class="line"><span class="regexp">			);</span></span><br><span class="line"><span class="regexp">			name = Mike;</span></span><br><span class="line"><span class="regexp">			productName = Mike;</span></span><br><span class="line"><span class="regexp">			productReference = 1BC1E15A1ACBEFFA0042431B /</span>* Mike.app *<span class="regexp">/;</span></span><br><span class="line"><span class="regexp">			productType = "com.apple.product-type.application";</span></span><br><span class="line"><span class="regexp">		&#125;;</span></span><br></pre></td></tr></table></figure>
+<p>其中 <code>buildConfigurationList</code> 指向了可用的配置项，一般是 Debug 和 Release。</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span>BC1E1861ACBEFFA0042431B /* Build configuration list <span class="keyword">for</span> PBXNativeTarget <span class="string">"Mike"</span> *<span class="regexp">/ = &#123;</span></span><br><span class="line"><span class="regexp">	isa = XCConfigurationList;</span></span><br><span class="line"><span class="regexp">	buildConfigurations = (</span></span><br><span class="line"><span class="regexp">		1BC1E1871ACBEFFA0042431B /</span>* Debug *<span class="regexp">/,</span></span><br><span class="line"><span class="regexp">		1BC1E1881ACBEFFA0042431B /</span>* Release *<span class="regexp">/,</span></span><br><span class="line"><span class="regexp">	);</span></span><br><span class="line"><span class="regexp">	defaultConfigurationIsVisible = 0;</span></span><br><span class="line"><span class="regexp">	defaultConfigurationName = Release;</span></span><br><span class="line"><span class="regexp">&#125;;</span></span><br></pre></td></tr></table></figure>
+<p>根据 debug 对应的 id，我们可以找到 build setting tab 中所有选项存储的位置：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span>BC1E1871ACBEFFA0042431B /* Debug *<span class="regexp">/ = &#123;</span></span><br><span class="line"><span class="regexp">			isa = XCBuildConfiguration;</span></span><br><span class="line"><span class="regexp">			baseConfigurationReference = 31FD03C25841C700BD562061 /</span>* Pods-Mike.debug.xcconfig *<span class="regexp">/;</span></span><br><span class="line"><span class="regexp">			buildSettings = &#123;</span></span><br><span class="line"><span class="regexp">              	ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;</span></span><br><span class="line"><span class="regexp">				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;</span></span><br><span class="line"><span class="regexp">				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";</span></span><br><span class="line"><span class="regexp">				CLANG_CXX_LIBRARY = "compiler-default";</span></span><br><span class="line"><span class="regexp">				CLANG_ENABLE_OBJC_ARC = YES;</span></span><br><span class="line"><span class="regexp">              ...</span></span><br></pre></td></tr></table></figure>
+<p><code>buildPhases</code> 属性则简单的列出了在 Xcode 中定义的所有 <code>build phases</code>。这非常容易识别出来（Xcode 中的参数使用了它们原本真正的名字，并以 C 风格进行注释）。<code>buildRules</code> 属性是空的：因为在该工程中，我没有自定义 <code>build rules</code>。<code>dependencies</code> 列出了在 <code>Xcode build phase tab</code> 中列出的 target 依赖项。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tag/Xcode/" rel="tag"># Xcode</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/01/24/RN显示原理/" rel="next" title="React-Native 如何创建原生 View 源码解析">
+                <i class="fa fa-chevron-left"></i> React-Native 如何创建原生 View 源码解析
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/02/03/iOS持久化/" rel="prev" title="iOS 持久化方式">
+                iOS 持久化方式 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.png" alt="Zachary Zhang">
+            
+              <p class="site-author-name" itemprop="name">Zachary Zhang</p>
+              <p class="site-description motion-element" itemprop="description">Stay Hungry. Stay Foolish!</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">116</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/zhang759740844" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:zch759740844@126.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#点击run后发生了什么"><span class="nav-number">1.</span> <span class="nav-text">点击run后发生了什么</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#编译"><span class="nav-number">1.1.</span> <span class="nav-text">编译</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#汇编"><span class="nav-number">1.2.</span> <span class="nav-text">汇编</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#链接"><span class="nav-number">1.3.</span> <span class="nav-text">链接</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#代码签名"><span class="nav-number">1.4.</span> <span class="nav-text">代码签名</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#启动"><span class="nav-number">1.5.</span> <span class="nav-text">启动</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Build过程"><span class="nav-number">2.</span> <span class="nav-text">Build过程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Build-Phases"><span class="nav-number">2.1.</span> <span class="nav-text">Build Phases</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Build-Rules"><span class="nav-number">2.2.</span> <span class="nav-text">Build Rules</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Build-Settings"><span class="nav-number">2.3.</span> <span class="nav-text">Build Settings</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#工程文件"><span class="nav-number">2.4.</span> <span class="nav-text">工程文件</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zachary Zhang</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

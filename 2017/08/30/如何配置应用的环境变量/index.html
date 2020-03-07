@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+
+
+
+
+  <meta name="keywords" content="学习笔记,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="一般的项目中多个环境的切换，都是依靠修改代码。但是这样的做法不够优雅，我们其实可以通过两种更好的方式去实现。">
+<meta name="keywords" content="学习笔记">
+<meta property="og:type" content="article">
+<meta property="og:title" content="如何配置应用的环境变量">
+<meta property="og:url" content="http://zhang759740844.github.io/2017/08/30/如何配置应用的环境变量/index.html">
+<meta property="og:site_name" content="Zachary&#39;s blog">
+<meta property="og:description" content="一般的项目中多个环境的切换，都是依靠修改代码。但是这样的做法不够优雅，我们其实可以通过两种更好的方式去实现。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config1.jpg?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config2.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config3.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config4.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config5.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config6.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config7.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config8.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config9.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config10.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config11.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config12.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config13.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config13.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config14.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config15.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config16.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config17.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config18.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config19.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config20.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config21.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config22.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config23.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config24.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config25.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config26.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config27.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config28.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config29.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config30.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config31.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config32.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config33.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config34.png?raw=true">
+<meta property="og:updated_time" content="2020-02-27T15:13:37.662Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="如何配置应用的环境变量">
+<meta name="twitter:description" content="一般的项目中多个环境的切换，都是依靠修改代码。但是这样的做法不够优雅，我们其实可以通过两种更好的方式去实现。">
+<meta name="twitter:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config1.jpg?raw=true">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://zhang759740844.github.io/2017/08/30/如何配置应用的环境变量/">
+
+
+
+
+
+  <title>如何配置应用的环境变量 | Zachary's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Zachary's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">记录成长</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://zhang759740844.github.io/2017/08/30/如何配置应用的环境变量/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zachary Zhang">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Zachary's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">如何配置应用的环境变量</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-08-30T11:07:12+08:00">
+                2017-08-30
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>一般的项目中多个环境的切换，都是依靠修改代码。但是这样的做法不够优雅，我们其实可以通过两种更好的方式去实现。</p>
+<a id="more"></a>
+<h2 id="使用-Build-Configuration-配置"><a href="#使用-Build-Configuration-配置" class="headerlink" title="使用 Build Configuration 配置"></a>使用 Build Configuration 配置</h2><p>系统默认有两个 Configuration，一个是 Debug，一个是 Release。如果要多环境切换的话就需要我们自己创建 Build Configuration。</p>
+<h3 id="新建-Build-Configuration"><a href="#新建-Build-Configuration" class="headerlink" title="新建 Build Configuration"></a>新建 Build Configuration</h3><p>在 Project 的 Configuration 中选择 <code>Duplicate &quot;Debug&quot; Cofiguration</code>，添加一个 Bebug 模式的 copy。将其改名为 <code>OnlineDebug</code>，之后它将被用于线上环境的 debug：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config1.jpg?raw=true" alt="复制 Debug"></p>
+<p>如果使用 Cocoapods，那么添加新的 Configuration 后必须执行 <code>pod install</code>。pod 会为新的 Configuration 生成 xcconfig 文件：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config2.png?raw=true" alt="生成xcconfig"></p>
+<p>添加了这个 Configuration 后，在 Build Setting 中就多了一个 <code>OnlineDebug</code> 的配置：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config3.png?raw=true" alt="OnlineDebug"></p>
+<h3 id="修改-Build-Setting"><a href="#修改-Build-Setting" class="headerlink" title="修改 Build Setting"></a>修改 Build Setting</h3><p>创建好了新的 Configuration，我们要用它干什么呢？我们可以在 Build Setting 中根据不同的 Configuration 设置不同的参数。比如我们可以针对不同的 Configuration 设置 target 的 Build Settings(注意是 target 不是 project，为什么后面再说) 中的 <code>Product Bundle Indentifer</code> 以及 <code>Product Name</code> 。这样安装的时候就会按照配置更换 Bundle ID 和 名字：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config4.png?raw=true" alt="设置 ID 和 Name"></p>
+<p>不仅如此，我们还可以自定义一些设置。这次我们回到 project 的 Build Setting 中去，点击 <code>Add User-Defined Setting</code>:</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config5.png?raw=true" alt="自定义设置"></p>
+<p>之后就会在 Build Setting 底部的 <code>User-SETTING</code> 一栏添加了一个 <code>NEW_SETTING</code>。举个例子，我们将其改名为 <code>CustomProductName</code>，然后修改各个 Configuration 对应的值：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config6.png?raw=true" alt></p>
+<p>这样我们就可以在其他地方使用这个 <code>CustomProductName</code> 了。</p>
+<p>虽然我们是在 Project 中修改的，但是打开 target 的 Build Setting，可以看到，在其中也添加了一个 <code>CustomProductName</code>:</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config7.png?raw=true" alt="target"></p>
+<h3 id="修改-info-plist-文件"><a href="#修改-info-plist-文件" class="headerlink" title="修改 info.plist 文件"></a>修改 info.plist 文件</h3><p>info.plist 文件中保存着许多应用的配置信息：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config8.png?raw=true" alt="plist"></p>
+<p>比如上面的 Bundle Name 对应的值 <code>$(PRODUCT_NAME)</code>，就表示 Build Setting 中的 <code>Product Name</code> 这一项。其实可以直接在 Build Setting 中设置 <code>Product Name</code> 的，但是由于上面我们是自定义了一个 <code>CustomProductName</code>，所以我们这里将其改为 <code>${CustomProductName}</code>(用小括号和大括号是一样的，<a href="https://pewpewthespells.com/blog/xcconfig_guide.html#BuildSettingInheritance" target="_blank" rel="noopener">参考</a>)。运行一下发现 App 的名称确实和 <code>CustomProductName</code> 配置的一样。</p>
+<p>其实 info.plist 也是可以在 Build Setting 中设置的，我们可以自己创建诸如 myInfo.plist，yourInfo.plist 等文件，只要设置好其索引就行：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config9.png?raw=true" alt="配置 plist"></p>
+<h3 id="新建-Scheme"><a href="#新建-Scheme" class="headerlink" title="新建 Scheme"></a>新建 Scheme</h3><p>现在我们如果要切换 Configuration，需要在 Edit Scheme 中切换 Build Configuration:</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config10.png?raw=true" alt="切换"></p>
+<p>这样每次 Run 都需要多点几下比较麻烦。既然在一个 scheme 中修改比较麻烦，那么我们为什么不新建多个 Scheme 呢？</p>
+<p>我们选择 New Scheme 后，会弹出如下对话框，选择正确的需要运行的 Target，然后给新的 Scheme 取一个名字 <code>TestConfigurationNew</code>:</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config11.png?raw=true" alt="新建Scheme"></p>
+<p> 新建号 Scheme 后，我们选择 manage scheme 查看:</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config12.png?raw=true" alt="manage scheme"></p>
+<p>看到有两个勾选项，一个叫 show，一个叫 shared。show 选项勾上后，就可以在上图的位置显示以及能被选择运行，否则就隐藏起来。shared 选项表示是否将 scheme 共享给别人。如下图所示，如果我们不为刚刚创建的 <code>TestConfigurationNew</code> 勾上，那么该 scheme 生成的 <code>TestConfigurationNew.xcscheme</code> 文件将会保存在 <code>zachary.xcuserdatad</code> 文件夹下，别人的 xcode 是无法识别的。但是如果你勾上了 share，那么就会像下面那样显示在 <code>xcshareddata</code> 文件夹下。这也告诉我们，在写 gitignore 的时候，可以忽略 <code>xcuserdata</code> 文件夹内的文件，但是一定不能忽略 <code>xcshareddata</code> 内的文件。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config13.png?raw=true" alt="文件位置"></p>
+<p>现在我们新建了 <code>TestConfigurationNew</code> 这个 scheme 后，就可以为每个 scheme 设置单独的 Build Configuration。每次 Run 的时候，切换 scheme，而不是切换 scheme 中的 Configuration。</p>
+<h3 id="分环境的比较好的方式"><a href="#分环境的比较好的方式" class="headerlink" title="分环境的比较好的方式"></a>分环境的比较好的方式</h3><p>上面的方式是新建一个 scheme，然后在 debug 模式下对应的 Configuration 是 <code>OnlineDebug</code>，但是其 Archieve 对应的还是 <code>release</code>。那么如果想要针对 <code>OnlineDebug</code> 的环境打一个 <code>release</code> 包，该怎么办呢？我们需要再 <code>Deplicate release Configuration</code>，然后将其命名为 <code>OnlineRelease</code>:</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config13.png?raw=true" alt="新建 onlineRelease"></p>
+<p>然后，将 <code>TestConfigurationNew</code> 的 archieve 中的 Build Configuration 改为 <code>OnlineRelease</code>:</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config14.png?raw=true" alt></p>
+<p>也就是说，每一个环境都应该有其对应用 debug 以及 release 的 Configuration：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config15.png?raw=true" alt="环境配置"></p>
+<h3 id="配置和获取环境变量"><a href="#配置和获取环境变量" class="headerlink" title="配置和获取环境变量"></a>配置和获取环境变量</h3><p>说了半天添加 Configuration，那么到底和区分环境有什么关系呢？有两种方式可以处理。</p>
+<h4 id="使用预编译宏"><a href="#使用预编译宏" class="headerlink" title="使用预编译宏"></a>使用预编译宏</h4><p>我们进入 Project 的 Build Setting，其中的 <code>Preprocessor Macros</code> 可以添加一些环境变量的宏来做标识符，比如添加 <code>ONLINE</code> 和 <code>OFFLINE</code> 标识符，来区分线上和线下环境：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config16.png?raw=true" alt="配置环境"></p>
+<p>现在，你就可以这样设置环境了：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> ONLINE</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> searchURL @<span class="meta-string">"http://www.baidu.com"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> sociaURL  @<span class="meta-string">"weibo.com"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">elif</span> OFFLINE</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> searchURL @<span class="meta-string">"http://www.bing.com"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> sociaURL  @<span class="meta-string">"twitter.com"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> searchURL @<span class="meta-string">"http://www.google.com"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> sociaURL  @<span class="meta-string">"facebook.com"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br></pre></td></tr></table></figure>
+<h4 id="使用-plist-文件动态配置"><a href="#使用-plist-文件动态配置" class="headerlink" title="使用 plist 文件动态配置"></a>使用 plist 文件动态配置</h4><p>除了使用宏，还可以读取 plist 里的配置信息。我们可以为每一个 Configuration 提供一个 plist 文件，将配置信息分别写入。由于一个文件夹内不能有同名的文件，所以我们为每一个 Configuration 的 plist 都创建一个文件夹：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config17.png?raw=true" alt="多个plist"></p>
+<p>然后在 target 的 build phase 中添加 <code>New Run Script Phase</code>，将其命名为 <code>Copy Configuration</code>:</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config18.png?raw=true" alt="添加 script"></p>
+<p>在其中添加如下 shell 脚本：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">echo "CONFIGURATION -&gt; $&#123;CONFIGURATION&#125;"</span><br><span class="line">RESOURCE_PATH=$&#123;SRCROOT&#125;/$&#123;PRODUCT_NAME&#125;/config/$&#123;CONFIGURATION&#125;</span><br><span class="line"></span><br><span class="line">BUILD_APP_DIR=$&#123;BUILT_PRODUCTS_DIR&#125;/$&#123;PRODUCT_NAME&#125;.app</span><br><span class="line"></span><br><span class="line">echo "Copying all files under $&#123;RESOURCE_PATH&#125; to $&#123;BUILD_APP_DIR&#125;"</span><br><span class="line">cp -v "$&#123;RESOURCE_PATH&#125;/"* "$&#123;BUILD_APP_DIR&#125;/"</span><br></pre></td></tr></table></figure>
+<p>这个脚本的目的就是将根据 Configuration 复制不同 config 文件夹下的文件，到 xxx.app 的根目录下，也就是 <code>mainBundle</code> 下。</p>
+<p>读取配置文件的时候，可以根据文件路径获取：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">NSString</span> *) readValueFromConfigurationFile &#123;</span><br><span class="line">    <span class="built_in">NSBundle</span> *bundle = [<span class="built_in">NSBundle</span> mainBundle];</span><br><span class="line">    <span class="built_in">NSString</span> *path = [bundle pathForResource:<span class="string">@"Configuration"</span> ofType:<span class="string">@"plist"</span>];</span><br><span class="line">    <span class="built_in">NSDictionary</span> *config = [<span class="built_in">NSDictionary</span> dictionaryWithContentsOfFile:path];</span><br><span class="line">    <span class="keyword">return</span> config[<span class="string">@"serverURL"</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>除了 plist，我们也可以用这种方法配置不同的文件。</p>
+<h3 id="上面提到的几个概念"><a href="#上面提到的几个概念" class="headerlink" title="上面提到的几个概念"></a>上面提到的几个概念</h3><p>上面一会儿修改 project 的 Build Setting，一会儿修改 target 的 Build Setting。一会儿添加 Configuration，一会儿又添加 Scheme 的。那么这些概念到底是什么意思呢？</p>
+<h4 id="Scheme，Configuration-以及-Target"><a href="#Scheme，Configuration-以及-Target" class="headerlink" title="Scheme，Configuration 以及 Target"></a>Scheme，Configuration 以及 Target</h4><p>这三者的关系，用 Edit Scheme 就可以表现的一目了然：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config19.png?raw=true" alt></p>
+<p>可以看到，Scheme，就是同意调配 Configuration 以及 Target 的，也就是让哪个 Target 对应于 哪个 Configuration。</p>
+<h4 id="xcconfig-和-Configuration"><a href="#xcconfig-和-Configuration" class="headerlink" title=".xcconfig 和 Configuration"></a>.xcconfig 和 Configuration</h4><p>我们可以看一下一个非官方的 xccofig 的<a href="https://pewpewthespells.com/blog/xcconfig_guide.html" target="_blank" rel="noopener">教程</a>(这个教程对于 xcconfig 介绍的非常好)中的一句话：</p>
+<blockquote>
+<p> A xcconfig file is used as a supplemental file to a specific build configuration. A build configuration can have an associated xcconfig file, this allows for additional changes to the target’s build settings from outside the Xcode project editor.</p>
+</blockquote>
+<p>意思是一个 Configuration 可以有一个与其相关联的 xcconfig。<strong>xcconfig 可以使我们能够不在 Xcode 的提供的编辑器中编辑 Build Setting</strong>。</p>
+<p>对于一个没有使用 Cocoapods 的项目，其 Configuration 下 Based on Configuration File 都是 None，因为我们直接修改 Build Setting 就可以了：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config20.png?raw=true" alt></p>
+<p>但是使用了 Cocoapods 的项目，在 <code>pod install</code> 后，会自动为每一个 Configuration 生成一个 xcconfig。因为 Pod 不能直接修改你的 Build Setting，所以只能借助于 xcconfig：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config21.png?raw=true" alt></p>
+<p>我们来看一下 Pod 生成的一个 xcconfig：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config22.png?raw=true" alt></p>
+<p>首先看第一句 <code>GCC_PREPROCESSOR_DEFINITIONS = $(inherited) COCOAPODS=1</code>。<code>GCC_PREPROCESSOR_DEFINITIONS</code> 是 GCC 预编译头参数，也就是我们之前设置过的 <code>Preprocessor Macros</code>。<code>$(inherited)</code> 表示继承于之前的设置。我们打开 target 的 Build Setting，找到这一项：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config23.png?raw=true" alt></p>
+<p>可以看到，这一项和 xcconfig 中设置的一样。因此，我们可以猜想：<strong>在 project 的 Configuration 这一项中，将 target 和xcconfig 关联了起来，xcconfig 中的每一项，如果 target 的 Build Setting 中原来不存在，那么就是新建的 <code>User-Defined</code>，如果 target 的 Build Setting 中存在，那么就是重写。</strong>上面提及的<a href="https://pewpewthespells.com/blog/xcconfig_guide.html#VariableAssignment" target="_blank" rel="noopener">非官方教程</a>中也有详细说明。</p>
+<p>比如上面 xcconfig 中提及的 <code>PODS_ROOT</code> 一项是 Build Setting 中原本没有的，那我们就到 target 的 <code>User-Defined</code> 中去查看，确实被新建了出来。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config24.png?raw=true" alt></p>
+<p>再比如，我们修改 xcconfig 中的 <code>GCC_PREPROCESSOR_DEFINITIONS = $(inherited) COCOAPODS=1</code> 为 <code>GCC_PREPROCESSOR_DEFINITIONS = $(inherited) COCOAPODS=1 hello=1</code>，增加了一个 <code>hello=1</code>。我们来看 Build Setting，确实增加了 hello 这一项。再次验证了猜想：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config25.png?raw=true" alt></p>
+<p>每一个 target 都可以设置一个相关的 xcconfig，来配置其 Build Setting，没有就是 None，Cocoapods 就是基于这个原理。我们也可以自己创建 xcconfig 来配置：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config26.png?raw=true" alt></p>
+<p>这里盗用了一张别人的图，他为每一个 Configuration 都创建了一个 xcconfig，并将其与 target 关联：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config27.png?raw=true" alt></p>
+<p>然后在其中添加自己的设置。注意，如果使用了 pod 要在其中引入 pod 的 xcconfig：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config28.png?raw=true" alt></p>
+<p>所以，<strong>对于我们来说，自定义 xcconfig 其实完全等价于直接处理 Build Setting</strong>。因此，这也是一种修改环境变量的方式。</p>
+<h4 id="Target-以及-Project-的-Build-Setting"><a href="#Target-以及-Project-的-Build-Setting" class="headerlink" title="Target 以及 Project 的 Build Setting"></a>Target 以及 Project 的 Build Setting</h4><p>之前我们时而设置 Target 的 Build Setting，时而设置 Project 的 Build Setting，那么到底两者有什么区别呢。其实之前说的那篇<a href="https://pewpewthespells.com/blog/xcconfig_guide.html#BuildSettingInheritance" target="_blank" rel="noopener">教程</a>中也有说明。</p>
+<p>简单来说，Build Setting 有一个继承关系，我们可以通过下面一张图了解：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config29.png?raw=true" alt></p>
+<p>我们在 Build Setting 中选择 Levels，这样整个继承关系就平铺了下来。继承级别从左向右依次降低。最右边的是 iOS Default，提供一个默认的设置，我们可以在 Project 的 Build Setting 中修改它。然后是 target 的 xcconfig，这里就是 pod 生成的 xcconfig，它可以修改 Build Setting 的选项。最后是 target 的 Build Setting，修改级别最高。最终的结果就是 Resolved 一栏显示的。</p>
+<p>这也就解释了之前为什么时而用 Project 的 Build Setting，时而用 Target 的 Build Setting。当你想要修改的东西要作用于所有 target 的时候，就在 Project 中修改。如果只是想针对某一个 target，那么就修改 target 的 Build Setting。</p>
+<h3 id="一个小问题"><a href="#一个小问题" class="headerlink" title="一个小问题"></a>一个小问题</h3><p>这里在看到一个关于新建 Configuration 会产生的一个问题：新建的 Configuration 在默认情况下无法调试：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config30.png?raw=true" alt="bug"></p>
+<p>可见<a href="https://guides.cocoapods.org/syntax/podfile.html#project" target="_blank" rel="noopener">官方文档</a></p>
+<h2 id="使用-Target-配置"><a href="#使用-Target-配置" class="headerlink" title="使用 Target 配置"></a>使用 Target 配置</h2><p>在创建了项目后，项目本身包含一个 target，我们可以以这个 target 为基础，创建出测试环境，线上环境的 target。</p>
+<p>我们先 Duplicate 一个 target：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config31.png?raw=true" alt></p>
+<p>将会生成一个 <code>TestConfiguration copy</code>，以及一个 <code>TestConfiguration copy-Info.plist</code> 文件：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config32.png?raw=true" alt></p>
+<p>我们将其名字修改为 <code>TestConfiguration_Test</code> 以及 <code>TestConfiguration_Test-Info.plist</code>。改了 plist 的名称后，对应的，在 target 的 Build Setting 中 <code>Info.plist File</code> 也要改成对应的名称：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config33.png?raw=true" alt></p>
+<p>除此之外，新建了 target 后，还会自动创建一个 scheme，我们同样要修改 scheme 的名字。记得要勾上 shared：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/config34.png?raw=true" alt></p>
+<p>之后配置和获取环境变量的方式和之前的 Configuration 一模一样。两者的不同在于 Configuration 修改的是同一个 Build Setting；复制 Target，则相当于创建了一个 Build Setting 的副本。</p>
+<p>如果维护一套代码，以后这些app如果需求有不同怎么办？？比如要进入不同界面，跳转不同界面，页面也显示不同怎么办？？这个问题其实很简单。在Targets里面的<strong>Compile Sources</strong>里面是可以给每个不同的Targets添加不同的编译代码的。只需要在每个不同的Targets里面加入不同界面的代码进行编译就可以了，在跳转的那个界面加上宏，来控制不同的app跳转到相应界面。这样本地还是维护的一套代码，只不过每个Targets编译的代码就是这套代码的子集了。这样维护起来还是很方便。也实现了不同app不同界面，不同需求了。</p>
+<h2 id="如何选择"><a href="#如何选择" class="headerlink" title="如何选择"></a>如何选择</h2><p>那么什么时候选择 Configuration 什么时候选择 Target 呢？如果只上架一个 app，但是需要多个环境，并且不同环境的功能基本相同，那么用 Configuration 就可以了。如果要上架多个类似的 app，那么一定要用 target，因为不同 app 所需的证书不同，archive的时候还会有各种问题。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tag/学习笔记/" rel="tag"># 学习笔记</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/08/05/设计模式/" rel="next" title="设计模式学习">
+                <i class="fa fa-chevron-left"></i> 设计模式学习
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/09/09/iOS单元测试/" rel="prev" title="iOS 单元测试">
+                iOS 单元测试 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.png" alt="Zachary Zhang">
+            
+              <p class="site-author-name" itemprop="name">Zachary Zhang</p>
+              <p class="site-description motion-element" itemprop="description">Stay Hungry. Stay Foolish!</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">116</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/zhang759740844" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:zch759740844@126.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#使用-Build-Configuration-配置"><span class="nav-number">1.</span> <span class="nav-text">使用 Build Configuration 配置</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#新建-Build-Configuration"><span class="nav-number">1.1.</span> <span class="nav-text">新建 Build Configuration</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#修改-Build-Setting"><span class="nav-number">1.2.</span> <span class="nav-text">修改 Build Setting</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#修改-info-plist-文件"><span class="nav-number">1.3.</span> <span class="nav-text">修改 info.plist 文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#新建-Scheme"><span class="nav-number">1.4.</span> <span class="nav-text">新建 Scheme</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#分环境的比较好的方式"><span class="nav-number">1.5.</span> <span class="nav-text">分环境的比较好的方式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#配置和获取环境变量"><span class="nav-number">1.6.</span> <span class="nav-text">配置和获取环境变量</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#使用预编译宏"><span class="nav-number">1.6.1.</span> <span class="nav-text">使用预编译宏</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#使用-plist-文件动态配置"><span class="nav-number">1.6.2.</span> <span class="nav-text">使用 plist 文件动态配置</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#上面提到的几个概念"><span class="nav-number">1.7.</span> <span class="nav-text">上面提到的几个概念</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Scheme，Configuration-以及-Target"><span class="nav-number">1.7.1.</span> <span class="nav-text">Scheme，Configuration 以及 Target</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#xcconfig-和-Configuration"><span class="nav-number">1.7.2.</span> <span class="nav-text">.xcconfig 和 Configuration</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Target-以及-Project-的-Build-Setting"><span class="nav-number">1.7.3.</span> <span class="nav-text">Target 以及 Project 的 Build Setting</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#一个小问题"><span class="nav-number">1.8.</span> <span class="nav-text">一个小问题</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用-Target-配置"><span class="nav-number">2.</span> <span class="nav-text">使用 Target 配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#如何选择"><span class="nav-number">3.</span> <span class="nav-text">如何选择</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zachary Zhang</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

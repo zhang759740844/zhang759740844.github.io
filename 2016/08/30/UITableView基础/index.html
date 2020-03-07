@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+
+
+
+
+  <meta name="keywords" content="基本控件,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="UITableView是最常用的基本控件。此处对其一般用法进行总结。">
+<meta name="keywords" content="基本控件">
+<meta property="og:type" content="article">
+<meta property="og:title" content="UITableView 基础">
+<meta property="og:url" content="http://zhang759740844.github.io/2016/08/30/UITableView基础/index.html">
+<meta property="og:site_name" content="Zachary&#39;s blog">
+<meta property="og:description" content="UITableView是最常用的基本控件。此处对其一般用法进行总结。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2020-02-27T15:13:37.640Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="UITableView 基础">
+<meta name="twitter:description" content="UITableView是最常用的基本控件。此处对其一般用法进行总结。">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://zhang759740844.github.io/2016/08/30/UITableView基础/">
+
+
+
+
+
+  <title>UITableView 基础 | Zachary's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Zachary's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">记录成长</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://zhang759740844.github.io/2016/08/30/UITableView基础/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zachary Zhang">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Zachary's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">UITableView 基础</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-08-30T14:07:12+08:00">
+                2016-08-30
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>UITableView是最常用的基本控件。此处对其一般用法进行总结。</p>
+<a id="more"></a>
+<h2 id="UITableView基础"><a href="#UITableView基础" class="headerlink" title="UITableView基础"></a>UITableView基础</h2><h3 id="UITableView-的样式"><a href="#UITableView-的样式" class="headerlink" title="UITableView 的样式"></a>UITableView 的样式</h3><ol>
+<li>UITableViewStylePlain        将会保持在顶部直到被顶掉</li>
+<li>UITableViewStyleGrouped将会随着cell一起滚动</li>
+</ol>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">UITableView</span> *tableView = [[<span class="built_in">UITableView</span> alloc] initWithFrame:<span class="built_in">CGRectZero</span> style:<span class="built_in">UITableViewStyle</span>];</span><br></pre></td></tr></table></figure>
+<p>其中<code>CGRectZero</code>表示<code>equivalent to CGRectMake(0, 0, 0, 0)</code>.之后代码会改UITableView的Frame，所以暂且都是0。</p>
+<h3 id="UITableView对象提供数据"><a href="#UITableView对象提供数据" class="headerlink" title="UITableView对象提供数据"></a>UITableView对象提供数据</h3><p>UITableView不包含任何数据，需要提供一个数据源.<br>我们将BNRAppDelegate实例设置为UITableView对象的数据源。BNRAPPDelegate必须遵循UITableViewDataSource协议。<br>在BNRAPPDelegate.h文件中，声明BNRAPPDelegate遵循UITableViewDataSource协议<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">BNRAppDelegate</span>: <span class="title">UIResponder</span> &lt;<span class="title">UIApplicationDelegate</span>,<span class="title">UITableViewDataSource</span>&gt;</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>) <span class="built_in">UITableView</span> *taskTable;</span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>) <span class="built_in">NSMutable</span> Array *tasks;</span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure></p>
+<p>在.m中向UITableView发送<code>setDataSource</code>消息，将BNRAPPDelegate实例设置为数据源</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">self</span>.taskTable.dataSource = <span class="keyword">self</span>;</span><br></pre></td></tr></table></figure>
+<p>UITableViewDataSource设置了两个必须方法：</p>
+<ol>
+<li>根据指定的表格索引给出相应表格段包含的行数（<code>tableView：numberOfRowsInSection：</code>）</li>
+<li>根据指定表格段索引和行索引给出相应的UITableViewCell对象（<code>tableView：cellForRowAtIndexPath：</code>）<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">BNRAppDelegate</span></span></span><br><span class="line">-(<span class="built_in">NSInteger</span>)tableView:(<span class="built_in">UITableView</span> *)tableView numberOfRowsInSection:(<span class="built_in">NSInteger</span>)section&#123;</span><br><span class="line">	    <span class="keyword">return</span> [<span class="keyword">self</span>.tasks count];</span><br><span class="line">&#125;</span><br><span class="line">-(<span class="built_in">UITableViewCell</span> *)tableView:(<span class="built_in">UITableView</span> *)tableView cellForRowAtIndexPath:(<span class="built_in">NSIndexPath</span> *)indexPath&#123;</span><br><span class="line">        <span class="built_in">UITableViewCell</span> *c = [<span class="keyword">self</span>.taskTable dequeueReusableCellWithIdentifier:@“cell” forIndexPath:indexPath];</span><br><span class="line">	    <span class="comment">//重用cell</span></span><br><span class="line">	    <span class="built_in">NSString</span> *item = [<span class="keyword">self</span>.tasks objectAtIndex:indexPath.row];</span><br><span class="line">	    c.textLabel.text = item;</span><br><span class="line">	    <span class="keyword">return</span> c;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>刷新表格：<code>[self.taskTable reloadData];</code></p>
+<blockquote>
+<p>使用 <code>dequeueReuseableCellWithIdentifier:forIndexPath:</code> 必须要注册 <code>registerClass</code> ，但是不用判断是否非空以及手动创建。</p>
+<p>使用 <code>dequeueReuseableCellWithIdentifier:</code> 可以免去注册，但是需要手动判断是否为空，为空的话还要手动创建</p>
+</blockquote>
+<h3 id="重用UITableViewCell对象"><a href="#重用UITableViewCell对象" class="headerlink" title="重用UITableViewCell对象"></a>重用UITableViewCell对象</h3><p>需要将自定义的cell类和identifier进行关联。<br>在ViewController.m中覆盖viewDidLoad方法，向表视图注册应该使用的UITabeViewCell<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">-(<span class="keyword">void</span>)viewDidLoad&#123;</span><br><span class="line">	[<span class="keyword">super</span> viewDidLoad];</span><br><span class="line">	[<span class="keyword">self</span>.tableView registerClass:[<span class="built_in">UITableViewCell</span> <span class="keyword">class</span>] forCellReuseIdentifier:@“<span class="built_in">UITableViewCell</span>”];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这样UITableViewCell类就和这个string关联起来了。也可以使用nib文件关联<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[<span class="keyword">self</span>.tableView registerNib:[<span class="built_in">UINib</span> nibWithNibName:<span class="string">@"MineUserInfoCell"</span> bundle:<span class="literal">nil</span>]  forCellReuseIdentifier:<span class="string">@"MineUserInfoCellIdentifier"</span>];</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p>纯代码用 <code>registerClass</code>，有 xib 用 <code>registerNib</code>.</p>
+<p>代码创建，使用  <code>registerClass:</code> 注册, dequeue时会调用 cell 的 <code>- (id)initWithStyle:withReuseableCellIdentifier:</code></p>
+<p>若使用nib，使用  <code>registerNib:</code> 注册，dequeue时会调用 cell 的<code>-(void)awakeFromNib</code></p>
+</blockquote>
+<h3 id="使用UIViewController创建tabeView"><a href="#使用UIViewController创建tabeView" class="headerlink" title="使用UIViewController创建tabeView"></a>使用UIViewController创建tabeView</h3><p>需要自己创建tableview属性：<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>) <span class="built_in">UITableView</span> *tableView;</span><br></pre></td></tr></table></figure></p>
+<p>这里要用strong ，因为这个tableview是自己创建的。如果是weak那么指向的地方在创建后就被ARC回收了,那么这个tableview指针就成了野指针了。<br>如果是连线的就可以用weak，weak属性一般用在当前属性是其他类创建，只存一个该属性的引用的时候，为了强引用那个类。</p>
+<h3 id="创建多个section的tableview"><a href="#创建多个section的tableview" class="headerlink" title="创建多个section的tableview"></a>创建多个section的tableview</h3><p>创建多个section的tableview需要实现方法<code>numberOfSectionsInTableView:</code>返回tableview中section的个数。其余使用和单个section一样。</p>
+<p>在<code>cellForRowAtIndexPath:</code>方法中，需要区分不同section返回不同cell。区分section的方式在于该方法传入的参数<code>(NSIndexPath *)indexPath</code>。</p>
+<p><code>NSIndexPath</code>是一个结构体，具有两个属性<code>row</code>和<code>section</code>。表示所在section和section内row。<br><code>NSIndexPath</code>中的属性是只读的，不能直接修改。只能通过重新创建的形式，达到修改属性的目的。<br>创建方式:<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSIndexPath</span> *indexPath = [<span class="built_in">NSIndexPath</span> indexPathForRow:<span class="number">1</span> inSection:<span class="number">1</span>];</span><br></pre></td></tr></table></figure></p>
+<h3 id="TableView表头视图"><a href="#TableView表头视图" class="headerlink" title="TableView表头视图"></a>TableView表头视图</h3><p>表头视图是指UITableView对象可以在其表格上方显示的特定视图，是和放置针对某个表格段或整张表格的标题和控件。表头视图可以是任意UIView对象。表格视图有两种，分别针对表格段和表格。类似的，还有表尾视图。<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">UIView</span> *headerView = [[[<span class="built_in">NSBundle</span> mainBundle] loadNibNamed:<span class="string">@"HotelReviewsHeaderView"</span> owner:<span class="literal">nil</span> options:<span class="literal">nil</span>]lastObject];</span><br></pre></td></tr></table></figure></p>
+<p><strong>loadNibNamed:owner:options:</strong>返回的是个数组，保存了xib中的各个view。xib中有几个view，数组元素就是几。因此，可以将多个自定义的view或者cell放在一个xib中，通过数组的方式获取想要的view。<code>initWithNibName</code>的实现和该方法类似，其中也会用到该方法。不过<code>initWithNibName</code>用在获取Controller的xib中。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)viewDidLoad&#123;</span><br><span class="line">	<span class="built_in">UIView</span> *header = <span class="keyword">self</span>.headerView;</span><br><span class="line">	[<span class="keyword">self</span>.tableView setTableHeaderView:header];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>加载完headerView后，将其设置为UITableView对象的表头视图。<br>也可以在 <strong>(UIView *)tableView:viewForHeaderInSection:</strong>方法中设置，当只有一个section时效果相同。<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">UIView</span> *)tableView:(<span class="built_in">UITableView</span> *)tableView viewForHeaderInSection:(<span class="built_in">NSInteger</span>)section&#123;</span><br><span class="line">    <span class="built_in">UIView</span> *view = [[[<span class="built_in">NSBundle</span> mainBundle] loadNibNamed:<span class="string">@"HeaderView"</span> owner:<span class="literal">nil</span> options:<span class="literal">nil</span>] lastObject];</span><br><span class="line">    <span class="keyword">return</span> view;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="tableview的字母索引"><a href="#tableview的字母索引" class="headerlink" title="tableview的字母索引"></a>tableview的字母索引</h3><p>实现<code>sectionIndexTitlesForTableView</code>方法，返回一个字符串数组：<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">NSArray</span>&lt;<span class="built_in">NSString</span> *&gt; *)sectionIndexTitlesForTableView:(<span class="built_in">UITableView</span> *)tableView&#123;</span><br><span class="line">    <span class="built_in">NSMutableArray</span> *indexs = [[<span class="built_in">NSMutableArray</span> alloc]init];</span><br><span class="line">    [indexs addObject:<span class="string">@"我"</span>];</span><br><span class="line">    [indexs addObject:<span class="string">@"是"</span>];</span><br><span class="line">    <span class="keyword">return</span> indexs;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这个返回数组的内容和各个section对应，点击索引，就能跳转到对应section。</p>
+<h3 id="点击cell中button获取所属indexpath"><a href="#点击cell中button获取所属indexpath" class="headerlink" title="点击cell中button获取所属indexpath"></a>点击cell中button获取所属indexpath</h3><p>button点击事件中有一个event对象，记录了当前点击坐标，然后通过坐标能够找到所属的cell。可以在cell中为点击事件设置代理，然后在viewcontroller中实现。当然，更推荐的是直接在viewcontroller中添加和实现点击事件。<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">[cell.btn addTarget:<span class="keyword">self</span> action:<span class="keyword">@selector</span>(cellBtnClicked:event:) forControlEvents:<span class="built_in">UIControlEventTouchUpInside</span>];</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)cellBtnClicked:(<span class="keyword">id</span>)sender event:(<span class="keyword">id</span>)event</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">NSSet</span> *touches =[event allTouches];</span><br><span class="line">    <span class="built_in">UITouch</span> *touch =[touches anyObject];</span><br><span class="line">    <span class="built_in">CGPoint</span> currentTouchPosition = [touch locationInView:_tableView];</span><br><span class="line">    <span class="built_in">NSIndexPath</span> *indexPath= [_tableView indexPathForRowAtPoint:currentTouchPosition];</span><br><span class="line">    <span class="keyword">if</span> (indexPath!= <span class="literal">nil</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// do something</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>可以通过<code>event</code>拿到在tableView中的位置<code>cure</code>，再通过<code>indexPathForRowAtPoint:</code>方法获取<code>NSIndexPath</code>。</p>
+<p>另外一种方法是，在cell中使用代理，直接将cell传给viewcontroller：<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//cell.h中的声明</span></span><br><span class="line">- (<span class="keyword">IBAction</span>)buttonPressed :(<span class="keyword">id</span>)；</span><br><span class="line"></span><br><span class="line"><span class="comment">//cell.m中的实现，设置代理</span></span><br><span class="line">- (<span class="keyword">void</span>)buttonPressed:(<span class="keyword">id</span>)sender&#123;</span><br><span class="line">    [<span class="keyword">self</span>.delegate buttonPressed:<span class="keyword">self</span> event:event];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//viewcontroller中的实现</span></span><br><span class="line">- (<span class="keyword">void</span>)buttonPressed:(TableViewCell1 *)cell&#123;</span><br><span class="line">    <span class="built_in">NSIndexPath</span> *indexPath2 = [_tableView indexPathForCell:cell];</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@"所属行数：%ld"</span>,(<span class="keyword">long</span>)indexPath2.row+<span class="number">1</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>通过设置delegate，将button的点击事件交给viewController完成。</p>
+<blockquote>
+<p>注意，如果是那种点击 button 后删除的需求，在调用 <code>deleteItemsAtIndexPaths:</code> 之前，一定要先删除数据源里的数据，因为<code>deleteItemsAtIndexPaths:</code> 调用后，会刷新部分数据。</p>
+</blockquote>
+<p><a href="http://doc.okbase.net/CHENYUFENG1991/archive/193953.html" target="_blank" rel="noopener">iOS高级开发——CollectionView的动态增删cell及使用模型重构</a></p>
+<h2 id="编辑UITableView"><a href="#编辑UITableView" class="headerlink" title="编辑UITableView"></a>编辑UITableView</h2><h3 id="编辑模式下的UITableView"><a href="#编辑模式下的UITableView" class="headerlink" title="编辑模式下的UITableView"></a>编辑模式下的UITableView</h3><h4 id="进入编辑模式"><a href="#进入编辑模式" class="headerlink" title="进入编辑模式"></a>进入编辑模式</h4><p>通过调用<code>[_tableView setEditing:!_tableView.isEditing animated:true]</code>进入编辑模式,可实现添加，删除，移动操作。<br>默认是删除，即cell左边出现一个红色的减号，点击可以删除该行。</p>
+<h4 id="设置可以编辑的行"><a href="#设置可以编辑的行" class="headerlink" title="设置可以编辑的行"></a>设置可以编辑的行</h4><p>使用<strong>setEditing:animated:</strong>方法让tableView进入编辑模式.可以使用<strong>tableView:canEditRowAtIndexPath</strong>方法筛选能进入编辑模式的行：<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">BOOL</span>)tableView:(<span class="built_in">UITableView</span> *)tableView canEditRowAtIndexPath:(<span class="built_in">NSIndexPath</span> *)indexPath &#123;</span><br><span class="line">    <span class="keyword">if</span>(indexPath.row == (<span class="number">10</span> | <span class="number">12</span> | <span class="number">14</span>))&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NO</span>;</span><br><span class="line">    &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">YES</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>如果不实现该方法，默认为YES。</p>
+<h4 id="设置编辑模式"><a href="#设置编辑模式" class="headerlink" title="设置编辑模式"></a>设置编辑模式</h4><p>通过设置<code>UITableViewCellEditingStyle</code>可以切换进入的编辑模式是实现插入还是删除操作。这个返回值将作为下面的<code>commitEditingStyle:forRowAtIndexPath:</code>方法的入参传入。<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">-(<span class="built_in">UITableViewCellEditingStyle</span>)tableView:(<span class="built_in">UITableView</span> *)tableView editingStyleForRowAtIndexPath:(<span class="built_in">NSIndexPath</span> *)indexPath&#123;</span><br><span class="line">    <span class="keyword">if</span> (具体情况) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">UITableViewCellEditingStyleInsert</span>;</span><br><span class="line">    &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">   		<span class="keyword">return</span> <span class="built_in">UITableViewCellEditingStyleDelete</span>;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h4 id="设置编辑模式下的操作"><a href="#设置编辑模式下的操作" class="headerlink" title="设置编辑模式下的操作"></a>设置编辑模式下的操作</h4><p>实现<code>tableView:commitEditingStyle:forRowAtIndexPath:</code>这个统一的回调方法，无论是添加还是删除都会执行，需要自己根据入参区分开。第二个实参是<code>UITableViewCellEditingStyle</code>类型的常数(删除表格行时，传入的是<code>UITableViewCellEditingStyleDelete</code>;插入表格行时，传入的是<code>UITableViewCellEditingStyleInsert</code>)。<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)tableView:(<span class="built_in">UITableView</span> *)tableView commitEditingStyle:(<span class="built_in">UITableViewCellEditingStyle</span>)editingStyle forRowAtIndexPath:(<span class="built_in">NSIndexPath</span> *)indexPath &#123;</span><br><span class="line">    <span class="keyword">if</span> (editingStyle == <span class="built_in">UITableViewCellEditingStyleDelete</span>) &#123;</span><br><span class="line">        [<span class="keyword">self</span>.dataSource removeObjectAtIndex:indexPath.row];</span><br><span class="line">        [<span class="keyword">self</span>.tableView deleteRowsAtIndexPaths:[<span class="built_in">NSArray</span> arrayWithObject:indexPath] withRowAnimation:<span class="built_in">UITableViewRowAnimationFade</span>];</span><br><span class="line">    &#125;<span class="keyword">else</span> <span class="keyword">if</span> (editingStyle == <span class="built_in">UITableViewCellEditingStyleInsert</span>)&#123;</span><br><span class="line">    	[<span class="keyword">self</span>.dataSource insertObject:<span class="string">@"我是新来的"</span> atIndex:indexPath.row];</span><br><span class="line">        [_tableView insertRowsAtIndexPaths:@[indexPath] withRowAnimation:<span class="built_in">UITableViewRowAnimationBottom</span>];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>使用<code>deleteRowsAtIndexPaths</code>和<code>insertRowsAtIndexPaths</code>可以进行局部刷新，节省资源，并且还能添加指定动画。</p>
+<h4 id="cell的移动"><a href="#cell的移动" class="headerlink" title="cell的移动"></a>cell的移动</h4><p>进入编辑模式后<br>实现<code>tableView:moveRowAtIndexPath:</code>方法<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)tableView:(<span class="built_in">UITableView</span> *)tableView moveRowAtIndexPath:(<span class="built_in">NSIndexPath</span> *)sourceIndexPath toIndexPath:(<span class="built_in">NSIndexPath</span> *)destinationIndexPath&#123;</span><br><span class="line">    <span class="keyword">if</span>(sourceIndexPath == destinationIndexPath)&#123;</span><br><span class="line">        <span class="keyword">return</span> ;</span><br><span class="line">    &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">        Comment *comment = [<span class="keyword">self</span>.dataSource objectAtIndex:sourceIndexPath.row];</span><br><span class="line">        [<span class="keyword">self</span>.dataSource removeObjectAtIndex:sourceIndexPath.row];</span><br><span class="line">        [<span class="keyword">self</span>.dataSource insertObject:comment atIndex:destinationIndexPath.row];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>一定要对数据源进行正确操作。</p>
+<h3 id="侧滑菜单"><a href="#侧滑菜单" class="headerlink" title="侧滑菜单"></a>侧滑菜单</h3><p>许多 app 提供侧滑某一栏展示菜单的功能。这在 iOS8 中有了默认的实现：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//设置cell可编辑状态</span></span><br><span class="line">-(<span class="built_in">BOOL</span>)tableView:(<span class="built_in">UITableView</span> *)tableView canEditRowAtIndexPath:(<span class="built_in">NSIndexPath</span> *)indexPath&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">YES</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//定义编辑样式为删除样式</span></span><br><span class="line">-(<span class="built_in">UITableViewCellEditingStyle</span>)tableView:(<span class="built_in">UITableView</span> *)tableView editingStyleForRowAtIndexPath:(<span class="built_in">NSIndexPath</span> *)indexPath&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">UITableViewCellEditingStyleDelete</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//设置返回存放侧滑按钮数组</span></span><br><span class="line">-(<span class="built_in">NSArray</span>&lt;<span class="built_in">UITableViewRowAction</span> *&gt; *)tableView:(<span class="built_in">UITableView</span> *)tableView editActionsForRowAtIndexPath:(<span class="built_in">NSIndexPath</span> *)indexPath&#123;</span><br><span class="line">    </span><br><span class="line">  <span class="comment">//这是iOS8以后的方法</span></span><br><span class="line">    <span class="built_in">UITableViewRowAction</span> *deleBtn = [<span class="built_in">UITableViewRowAction</span> rowActionWithStyle:<span class="built_in">UITableViewRowActionStyleDestructive</span> title:<span class="string">@"删除"</span> handler:^(<span class="built_in">UITableViewRowAction</span> * _Nonnull action, <span class="built_in">NSIndexPath</span> * _Nonnull indexPath) &#123;</span><br><span class="line">       </span><br><span class="line">        [_messageData removeObjectAtIndex:indexPath.row];</span><br><span class="line">        </span><br><span class="line">        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:<span class="built_in">UITableViewRowAnimationBottom</span>];</span><br><span class="line">        </span><br><span class="line">    &#125;];</span><br><span class="line">    </span><br><span class="line">    </span><br><span class="line">    <span class="built_in">UITableViewRowAction</span> *moreBtn = [<span class="built_in">UITableViewRowAction</span>  rowActionWithStyle:<span class="built_in">UITableViewRowActionStyleDestructive</span> title:<span class="string">@"更多更多"</span> handler:^(<span class="built_in">UITableViewRowAction</span> * _Nonnull action, <span class="built_in">NSIndexPath</span> * _Nonnull indexPath) &#123;</span><br><span class="line">       </span><br><span class="line">        <span class="built_in">NSLog</span>(<span class="string">@"更多，，点了"</span>);</span><br><span class="line">        </span><br><span class="line">    &#125;];</span><br><span class="line">    </span><br><span class="line">   </span><br><span class="line">    <span class="built_in">UITableViewRowAction</span> *upBtn = [<span class="built_in">UITableViewRowAction</span> rowActionWithStyle:<span class="built_in">UITableViewRowActionStyleDestructive</span> title:<span class="string">@"置顶"</span> handler:^(<span class="built_in">UITableViewRowAction</span> * _Nonnull action, <span class="built_in">NSIndexPath</span> * _Nonnull indexPath) &#123;</span><br><span class="line">       </span><br><span class="line">        [_messageData exchangeObjectAtIndex:indexPath.row withObjectAtIndex:<span class="number">0</span>];</span><br><span class="line">        </span><br><span class="line">        <span class="built_in">NSIndexPath</span> *firstIndexPath = [<span class="built_in">NSIndexPath</span> indexPathForRow:<span class="number">0</span> inSection:indexPath.section];</span><br><span class="line">        </span><br><span class="line">        [tableView moveRowAtIndexPath:indexPath toIndexPath:firstIndexPath];</span><br><span class="line">        </span><br><span class="line">    &#125;];</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//设置背景颜色，他们的大小会分局文字内容自适应，所以不用担心</span></span><br><span class="line">    deleBtn.backgroundColor = [<span class="built_in">UIColor</span> redColor];</span><br><span class="line">    </span><br><span class="line">    moreBtn.backgroundColor = [<span class="built_in">UIColor</span> orangeColor];</span><br><span class="line">    </span><br><span class="line">    upBtn.backgroundColor = [<span class="built_in">UIColor</span> grayColor];</span><br><span class="line">    </span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> @[deleBtn,moreBtn,upBtn];</span><br><span class="line">    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>还是设置为可编辑，然后设置编辑样式为删除样式。不同的是，需要实现一个侧滑的专用回调方法。需要创建多个 <code>UITableViewRowAction</code> 对象，你可以像 button 一样设置它们，不过在初始化的时候需要事先设置好毁掉方法。</p>
+<h3 id="代码控制的编辑方式"><a href="#代码控制的编辑方式" class="headerlink" title="代码控制的编辑方式"></a>代码控制的编辑方式</h3><p>上面说的都是交互情况下的编辑方式。我们可以自己通过代码控制刷新视图，不需要交互。</p>
+<h4 id="刷新方式"><a href="#刷新方式" class="headerlink" title="刷新方式"></a>刷新方式</h4><p>简单总结一些UITableView的刷新方法：</p>
+<ul>
+<li>reloadData                                    刷新整个表格</li>
+<li>reloadRowsAtIndexPaths:withRowAnimation:刷新indexPath指向的cell</li>
+<li>reloadSections:withRowAnimation:                刷新NSIndexSet内包含的Section</li>
+</ul>
+<p>这三个分别刷新tableview的各个部分<br>第一个没有动画效果。<br>第二个可以传入一个数组<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[_tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:<span class="built_in">UITableViewRowAnimationTop</span>];</span><br></pre></td></tr></table></figure></p>
+<p>第三个可以传入一个NSIndexSet集合<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[<span class="keyword">self</span>.tableView reloadSections:[<span class="built_in">NSIndexSet</span> indexSetWithIndexesInRange:<span class="built_in">NSMakeRange</span>(<span class="number">0</span>, <span class="number">2</span>)] withRowAnimation:<span class="built_in">UITableViewRowAnimationFade</span>];</span><br><span class="line">[_tableView reloadSections:[<span class="built_in">NSIndexSet</span> indexSetWithIndex:indexPath.section]withRowAnimation:<span class="built_in">UITableViewRowAnimationLeft</span>];</span><br></pre></td></tr></table></figure></p>
+<h4 id="插入删除"><a href="#插入删除" class="headerlink" title="插入删除"></a>插入删除</h4><p>在编辑模式下的插入删除方式，可以直接用在任何想用的场景下，只需要调用一下方法，并且保持dataSource正确即可。</p>
+<ul>
+<li>deleteRowsAtIndexPaths:withRowAnimation:</li>
+<li>insertRowsAtIndexPaths:withRowAnimation:</li>
+</ul>
+<p>就不举例了。同上面一样。</p>
+<h4 id="beginUpdates和endUpdates"><a href="#beginUpdates和endUpdates" class="headerlink" title="beginUpdates和endUpdates"></a>beginUpdates和endUpdates</h4><p>如果要同时进行刷新或者插入删除移动等操作，需要使用 <code>beginUpdates</code> 和 <code>endUpdates</code> 包裹，作为一个动画组进行。</p>
+<p>如果要自己控制动画的时间可以通过动画的方式：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">[<span class="built_in">UIView</span> animateKeyframesWithDuration:<span class="number">1</span> delay:<span class="number">0</span> options:<span class="built_in">UIViewKeyframeAnimationOptionAutoreverse</span> animations:^&#123;</span><br><span class="line">    &#125; completion:^(<span class="built_in">BOOL</span> finished) &#123;</span><br><span class="line">    	<span class="comment">// 添加Transaction事务</span></span><br><span class="line">        [<span class="built_in">CATransaction</span> begin];</span><br><span class="line">        [<span class="built_in">CATransaction</span> setCompletionBlock:^&#123;</span><br><span class="line">            <span class="built_in">NSLog</span>(<span class="string">@"动画完成"</span>)</span><br><span class="line">        &#125;];</span><br><span class="line">        [<span class="keyword">self</span>.tableView beginUpdates];</span><br><span class="line">        [<span class="keyword">self</span>.tableView moveRowAtIndexPath:[<span class="built_in">NSIndexPath</span> indexPathForRow:<span class="number">0</span> inSection:<span class="number">0</span>] toIndexPath:[<span class="built_in">NSIndexPath</span> indexPathForRow:<span class="number">2</span> inSection:<span class="number">0</span>]];</span><br><span class="line">        <span class="built_in">NSString</span> *str = <span class="keyword">self</span>.arrayData[<span class="number">0</span>];</span><br><span class="line">        [<span class="keyword">self</span>.arrayData removeObjectAtIndex:<span class="number">0</span>];</span><br><span class="line">        [<span class="keyword">self</span>.arrayData insertObject:str atIndex:<span class="number">2</span>];</span><br><span class="line">        [<span class="keyword">self</span>.tableView endUpdates];</span><br><span class="line">        [<span class="built_in">CATransaction</span> commit];</span><br><span class="line">    &#125;];</span><br></pre></td></tr></table></figure>
+<p><code>beginUpdates</code> 和 <code>endUpdates</code> 有一个好处就是会调用 <code>heightForRow</code> 改变高度，但是不会调用 <code>cellForRow</code> 刷新视图。所以，当 tableView 的某一项高度改变的时候，可以直接使用该方法刷新高度。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 刷新 tableView 中 cell 的高度</span></span><br><span class="line"><span class="keyword">self</span>.tableView.beginUpdates()</span><br><span class="line"><span class="keyword">self</span>.tableView.endUpdates()</span><br></pre></td></tr></table></figure>
+<h2 id="小技巧"><a href="#小技巧" class="headerlink" title="小技巧"></a>小技巧</h2><h3 id="当cell未能填满tableview时，怎么响应空白部分点击事件"><a href="#当cell未能填满tableview时，怎么响应空白部分点击事件" class="headerlink" title="当cell未能填满tableview时，怎么响应空白部分点击事件"></a>当cell未能填满tableview时，怎么响应空白部分点击事件</h3><p>当 tableview 太大，cell 太少，以至于不能填满tableview的时候，那么空白部分的点击事件该怎么设置呢？只要给 tableview 添加一个 footerview，这个 footerview 的大小是整个 tableview 的大小，然后设置这个 footerview 的点击事件即可。</p>
+<p>为什么能这样呢？因为 cell 没有填充满的部分都用 footerview 填充了。</p>
+<h3 id="UITableView-取消点击cell的选中背景颜色"><a href="#UITableView-取消点击cell的选中背景颜色" class="headerlink" title="UITableView 取消点击cell的选中背景颜色"></a>UITableView 取消点击cell的选中背景颜色</h3><h4 id="方法一"><a href="#方法一" class="headerlink" title="方法一"></a>方法一</h4><p>在选中的回调方法中取消选中：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)tableView:(<span class="built_in">UITableView</span> *)tableView didSelectRowAtIndexPath:(<span class="built_in">NSIndexPath</span> *)indexPath &#123;</span><br><span class="line">    [tableView deselectRowAtIndexPath:indexPath animated:<span class="literal">NO</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="方法二"><a href="#方法二" class="headerlink" title="方法二"></a>方法二</h4><p>设置 cell 的选中属性：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">-(<span class="built_in">UITableViewCell</span> *)tableView:(<span class="built_in">UITableView</span> *)tableView cellForRowAtIndexPath:(<span class="built_in">NSIndexPath</span> *)indexPath&#123;</span><br><span class="line">  ...</span><br><span class="line">  cell.selectionStyle = <span class="built_in">UITableViewCellSelectionStyleNone</span>;</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="cell-的点击事件不响应"><a href="#cell-的点击事件不响应" class="headerlink" title="cell 的点击事件不响应"></a>cell 的点击事件不响应</h4><p>有可能是在 cell 里设置了 <code>UIButton</code>，由于响应机制，先响应 <code>UIButton</code> 的点击事件。所以就忽略了 cell 的 <code>didSelect</code> 方法。</p>
+<p>所以要做的就是将 <code>UIButton</code> 的 <code>UserInteractionEnabled</code> 设置为 No。</p>
+<h3 id="使用-UILocalizedIndexedCollation-对数据源分组"><a href="#使用-UILocalizedIndexedCollation-对数据源分组" class="headerlink" title="使用 UILocalizedIndexedCollation 对数据源分组"></a>使用 UILocalizedIndexedCollation 对数据源分组</h3><p>比如一个联系人的 tableView，我们需要把联系人按照首字母分组显示。iOS 就提供了一个 <code>UILocalizedIndexedCollation</code> 帮助我们进行分组。</p>
+<h4 id="属性与方法"><a href="#属性与方法" class="headerlink" title="属性与方法"></a>属性与方法</h4><p><code>UILocalizedIndexedCollation</code> 需要被记住的属性和方法就这么几个：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 获得单例 UILocalizedIndexedCollation 的实例</span></span><br><span class="line">+ (<span class="keyword">instancetype</span>)currentCollation;</span><br><span class="line"><span class="comment">// 字符索引数组(其实内容是固定的就是 A-Z,加上一个代表其他的 #)</span></span><br><span class="line"><span class="keyword">@property</span>(<span class="keyword">nonatomic</span>, <span class="keyword">readonly</span>) <span class="built_in">NSArray</span>&lt;<span class="built_in">NSString</span> *&gt; * sectionTitles;</span><br><span class="line"><span class="comment">// 输入对象以及一个返回字符串的对象方法，根据返回的 int 判断字符串要加入哪个分组</span></span><br><span class="line">- (<span class="built_in">NSInteger</span>)sectionForObject:(<span class="keyword">id</span>)object collationStringSelector:(SEL)selector;</span><br><span class="line"><span class="comment">// 数组内对象排序</span></span><br><span class="line">- (<span class="built_in">NSArray</span> *)sortedArrayFromArray:(<span class="built_in">NSArray</span> *)array collationStringSelector:(SEL)selector;</span><br></pre></td></tr></table></figure>
+<p>除了上面的属性和方法还有一个属性和一个方法用不到，不用管它。</p>
+<h4 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h4><p>比如要实现一个需求是对联系人进行归类，然后以 tableView 的形式展示。特殊的地方时，只展示有值的分组。</p>
+<h5 id="初始化数组"><a href="#初始化数组" class="headerlink" title="初始化数组"></a>初始化数组</h5><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 单例对象 </span></span><br><span class="line"><span class="built_in">UILocalizedIndexedCollation</span> *localIndex = [<span class="built_in">UILocalizedIndexedCollation</span> curre ntCollation]; </span><br><span class="line"><span class="comment">// 获得当前语言下的所有的indexTitles </span></span><br><span class="line">_allIndexTitles = localIndex.sectionTitles; </span><br><span class="line"><span class="comment">// 初始化所有数据的数组 (之后的所有进过分组的数据都保存在这个 _data 里)</span></span><br><span class="line">_data = [<span class="built_in">NSMutableArray</span> arrayWithCapacity:_allIndexTitles.count]; </span><br><span class="line"><span class="comment">// 为每一个indexTitle 生成一个可变的数组 </span></span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i&lt;_allIndexTitles.count; i++) &#123;</span><br><span class="line">	<span class="comment">// 初始化数组 (_data 里的元素是各个分组，所以也是数组)</span></span><br><span class="line">	[_data addObject:[<span class="built_in">NSMutableArray</span> array]]; </span><br><span class="line">&#125; </span><br><span class="line"><span class="comment">// 初始化有效的sectionIndexs (之后有值的分组的索引会被保存在这里)</span></span><br><span class="line">_sectionIndexs = [<span class="built_in">NSMutableArray</span> arrayWithCapacity:_allIndexTitles.count];</span><br></pre></td></tr></table></figure>
+<p>这里要强调的是 <code>_data</code> 是不管分组有没有数据，都创建并保存到其中了。而 <code>_sectionIndexs</code> 只保存有数据的分组的索引。</p>
+<h5 id="分组"><a href="#分组" class="headerlink" title="分组"></a>分组</h5><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">SEL nameSelector = <span class="keyword">@selector</span>(name); </span><br><span class="line"><span class="keyword">for</span> (Person *person <span class="keyword">in</span> persons) &#123; </span><br><span class="line">  	<span class="keyword">if</span> (person == <span class="literal">nil</span>) <span class="keyword">continue</span>;</span><br><span class="line">  </span><br><span class="line">	<span class="comment">// 获取到这个contact的name的首字母对应的indexTitle </span></span><br><span class="line">  	<span class="comment">// 注意这里必须使用对象，这个selector也是有要求的 </span></span><br><span class="line">  	<span class="comment">// 必须是这个对象中的selector, 并且不能有参数，必须返回字符串</span></span><br><span class="line">  	<span class="comment">// 所以这里直接使用 name 属性的get方法就可以 </span></span><br><span class="line">  	<span class="built_in">NSInteger</span> index = [localIndex sectionForObject:person collationStringSe lector:nameSelector];</span><br><span class="line">	</span><br><span class="line">  	<span class="comment">// 处理多音字 例如 "曾" --&gt;&gt; 会被当做 ceng 来处理，其他需要处理的多音字类似 </span></span><br><span class="line">  	<span class="keyword">if</span> ([person.name hasPrefix:<span class="string">@"曾"</span>]) &#123; </span><br><span class="line">      	index = [_allIndexTitles indexOfObject:<span class="string">@"Z"</span>]; </span><br><span class="line">    &#125; </span><br><span class="line">  	<span class="comment">// 将这个contact添加到对应indexTitle的数组中去 </span></span><br><span class="line">  	[_data[index] addObject:person];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里就通过 <code>UILocalizedIndexedCollation</code> 提供的方法将数据源分组了。上面的注释也写到了，传入一个对象以及对象的方法，通过方法返回的字符串获取所在分组的索引。获取到的索引你可以做进一步判断修改。然后通过这个索引将其放到 <code>_data</code> 的对应分组内。</p>
+<h5 id="遍历分组"><a href="#遍历分组" class="headerlink" title="遍历分组"></a>遍历分组</h5><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i=<span class="number">0</span>; i&lt;_data.count; i++) &#123; </span><br><span class="line">	<span class="built_in">NSArray</span> *temp = _data[i]; </span><br><span class="line">  	<span class="keyword">if</span> (temp.count != <span class="number">0</span>) &#123; </span><br><span class="line">      	<span class="comment">// 取出不为空的部分对应的indexTitle </span></span><br><span class="line">      	[_sectionIndexs addObject:[<span class="built_in">NSNumber</span> numberWithInt:i]]; </span><br><span class="line">    &#125; </span><br><span class="line">  	<span class="comment">// 排序每一个数组 </span></span><br><span class="line">  	_data[i] = [localIndex sortedArrayFromArray:temp collationStringSelecto r:nameSelector]; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上一节将数据源全都塞到了对应的分组里。现在就要将分组里的数据排序，并且剔除没有数据的分组了。</p>
+<p>判断 <code>_data</code> 中有数据的分组的索引保存到 <code>_sectionIndexs</code> 中。这样以后拿着 <code>_sectionIndexs</code> 中保存的索引就可以到 <code>sectionTitles</code> 中，找到索引对应的值。</p>
+<h5 id="结合字母索引展示"><a href="#结合字母索引展示" class="headerlink" title="结合字母索引展示"></a>结合字母索引展示</h5><p>现在我们已经获得了完整的 <code>_data</code> 和 <code>_sectionIndexs</code>。只需要通过 <code>_sectionIndexs</code> 中保存的索引找到 <code>_data</code> 中相应的分组即可完成展示。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tag/基本控件/" rel="tag"># 基本控件</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/08/29/UIButton基础/" rel="next" title="UIButton 简介">
+                <i class="fa fa-chevron-left"></i> UIButton 简介
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/09/01/Block基础/" rel="prev" title="Block 的使用">
+                Block 的使用 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.png" alt="Zachary Zhang">
+            
+              <p class="site-author-name" itemprop="name">Zachary Zhang</p>
+              <p class="site-description motion-element" itemprop="description">Stay Hungry. Stay Foolish!</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">116</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/zhang759740844" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:zch759740844@126.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#UITableView基础"><span class="nav-number">1.</span> <span class="nav-text">UITableView基础</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#UITableView-的样式"><span class="nav-number">1.1.</span> <span class="nav-text">UITableView 的样式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#UITableView对象提供数据"><span class="nav-number">1.2.</span> <span class="nav-text">UITableView对象提供数据</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#重用UITableViewCell对象"><span class="nav-number">1.3.</span> <span class="nav-text">重用UITableViewCell对象</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用UIViewController创建tabeView"><span class="nav-number">1.4.</span> <span class="nav-text">使用UIViewController创建tabeView</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创建多个section的tableview"><span class="nav-number">1.5.</span> <span class="nav-text">创建多个section的tableview</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#TableView表头视图"><span class="nav-number">1.6.</span> <span class="nav-text">TableView表头视图</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tableview的字母索引"><span class="nav-number">1.7.</span> <span class="nav-text">tableview的字母索引</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#点击cell中button获取所属indexpath"><span class="nav-number">1.8.</span> <span class="nav-text">点击cell中button获取所属indexpath</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#编辑UITableView"><span class="nav-number">2.</span> <span class="nav-text">编辑UITableView</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#编辑模式下的UITableView"><span class="nav-number">2.1.</span> <span class="nav-text">编辑模式下的UITableView</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#进入编辑模式"><span class="nav-number">2.1.1.</span> <span class="nav-text">进入编辑模式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#设置可以编辑的行"><span class="nav-number">2.1.2.</span> <span class="nav-text">设置可以编辑的行</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#设置编辑模式"><span class="nav-number">2.1.3.</span> <span class="nav-text">设置编辑模式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#设置编辑模式下的操作"><span class="nav-number">2.1.4.</span> <span class="nav-text">设置编辑模式下的操作</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#cell的移动"><span class="nav-number">2.1.5.</span> <span class="nav-text">cell的移动</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#侧滑菜单"><span class="nav-number">2.2.</span> <span class="nav-text">侧滑菜单</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#代码控制的编辑方式"><span class="nav-number">2.3.</span> <span class="nav-text">代码控制的编辑方式</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#刷新方式"><span class="nav-number">2.3.1.</span> <span class="nav-text">刷新方式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#插入删除"><span class="nav-number">2.3.2.</span> <span class="nav-text">插入删除</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#beginUpdates和endUpdates"><span class="nav-number">2.3.3.</span> <span class="nav-text">beginUpdates和endUpdates</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#小技巧"><span class="nav-number">3.</span> <span class="nav-text">小技巧</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#当cell未能填满tableview时，怎么响应空白部分点击事件"><span class="nav-number">3.1.</span> <span class="nav-text">当cell未能填满tableview时，怎么响应空白部分点击事件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#UITableView-取消点击cell的选中背景颜色"><span class="nav-number">3.2.</span> <span class="nav-text">UITableView 取消点击cell的选中背景颜色</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#方法一"><span class="nav-number">3.2.1.</span> <span class="nav-text">方法一</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#方法二"><span class="nav-number">3.2.2.</span> <span class="nav-text">方法二</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#cell-的点击事件不响应"><span class="nav-number">3.2.3.</span> <span class="nav-text">cell 的点击事件不响应</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用-UILocalizedIndexedCollation-对数据源分组"><span class="nav-number">3.3.</span> <span class="nav-text">使用 UILocalizedIndexedCollation 对数据源分组</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#属性与方法"><span class="nav-number">3.3.1.</span> <span class="nav-text">属性与方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#实例"><span class="nav-number">3.3.2.</span> <span class="nav-text">实例</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#初始化数组"><span class="nav-number">3.3.2.1.</span> <span class="nav-text">初始化数组</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#分组"><span class="nav-number">3.3.2.2.</span> <span class="nav-text">分组</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#遍历分组"><span class="nav-number">3.3.2.3.</span> <span class="nav-text">遍历分组</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#结合字母索引展示"><span class="nav-number">3.3.2.4.</span> <span class="nav-text">结合字母索引展示</span></a></li></ol></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zachary Zhang</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+
+
+
+
+  <meta name="keywords" content="学习笔记,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="这篇将探究一下 iOS 上的四种定时器的实现">
+<meta name="keywords" content="学习笔记">
+<meta property="og:type" content="article">
+<meta property="og:title" content="iOS 的各种定时器">
+<meta property="og:url" content="http://zhang759740844.github.io/2017/02/03/iOS定时器/index.html">
+<meta property="og:site_name" content="Zachary&#39;s blog">
+<meta property="og:description" content="这篇将探究一下 iOS 上的四种定时器的实现">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/cadisplaylink.png?raw=true">
+<meta property="og:updated_time" content="2020-02-27T15:13:37.647Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="iOS 的各种定时器">
+<meta name="twitter:description" content="这篇将探究一下 iOS 上的四种定时器的实现">
+<meta name="twitter:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/cadisplaylink.png?raw=true">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://zhang759740844.github.io/2017/02/03/iOS定时器/">
+
+
+
+
+
+  <title>iOS 的各种定时器 | Zachary's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Zachary's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">记录成长</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://zhang759740844.github.io/2017/02/03/iOS定时器/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zachary Zhang">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Zachary's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">iOS 的各种定时器</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-02-03T11:07:12+08:00">
+                2017-02-03
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>这篇将探究一下 iOS 上的四种定时器的实现</p>
+<a id="more"></a>
+<h2 id="NSTimer"><a href="#NSTimer" class="headerlink" title="NSTimer"></a>NSTimer</h2><p>一个 NSTimer 注册到 RunLoop 后，RunLoop 会为其重复的时间点注册好事件。例如 10:00, 10:10, 10:20 这几个时间点。RunLoop 为了节省资源，并不会在非常准确的时间点回调这个 Timer。Timer 有个属性叫做 Tolerance (宽容度)，标示了当时间点到后，容许有多少最大误差。</p>
+<h3 id="创建"><a href="#创建" class="headerlink" title="创建"></a>创建</h3><p>有两种创建方式，方法一：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">self</span>.timer = [<span class="built_in">NSTimer</span> timerWithTimeInterval:<span class="number">5</span> target:<span class="keyword">self</span> selector:<span class="keyword">@selector</span>(showTime) userInfo:<span class="literal">nil</span> repeats:<span class="literal">YES</span>];</span><br><span class="line"><span class="comment">// 必须加</span></span><br><span class="line">[[<span class="built_in">NSRunLoop</span> currentRunLoop] addTimer:<span class="keyword">self</span>.timer forMode:<span class="built_in">NSRunLoopCommonModes</span>];</span><br><span class="line"><span class="comment">// 如果是非主线程要调用,主线程已经自动运行 runloop 就不需要自己 run 了</span></span><br><span class="line">[[<span class="built_in">NSRunLoop</span> currentRunLoop] run];</span><br></pre></td></tr></table></figure>
+<p>这个类方法创建出来的对象如果不用 <code>addTimer: forMode</code> 方法手动加入循环池中，将不会循环执行。</p>
+<p>这里如果不是用的 <code>NSRunLoopCommonModes</code> 而是 <code>NSDefaultRunLoopMode</code> 那么当界面滑动时，无法执行 <code>showTime</code> 方法回调。当滑动停止时，立刻执行最初的注册的定时事件，之后由于滑动导致未能注册的事件的回调一律忽略。</p>
+<p>方法二：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">self</span>.timer = [<span class="built_in">NSTimer</span> scheduledTimerWithTimeInterval:<span class="number">3.0</span> target:<span class="keyword">self</span> selector:<span class="keyword">@selector</span>(run:) userInfo:<span class="string">@"abc"</span> repeats:<span class="literal">NO</span>];</span><br><span class="line"></span><br><span class="line"><span class="comment">// 下面这两句用来修改模式，如果不想修改默认模式，可以不加</span></span><br><span class="line">[[<span class="built_in">NSRunLoop</span> currentRunLoop] addTimer:<span class="keyword">self</span>.timer forMode:<span class="built_in">NSRunLoopCommonModes</span>];</span><br><span class="line"><span class="comment">// 如果是非主线程要调用,主线程已经自动运行 runloop 就不需要自己 run 了</span></span><br><span class="line">[[<span class="built_in">NSRunLoop</span> currentRunLoop] run];</span><br></pre></td></tr></table></figure>
+<p>这个方法会将定时器添加到当前的运行循环，运行循环的模式为默认模式。虽然指定了默认模式，但是还是允许你修改模式的。</p>
+<p>和 <code>CADisplayLink</code> 一样，<code>NSTimer</code> 也需要手动取消定时器：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//取消定时器  </span></span><br><span class="line">[<span class="keyword">self</span>.timer invalidate]; </span><br><span class="line"><span class="keyword">self</span>.timer = <span class="literal">nil</span>;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>NSRunLoop 会强引用 NSTimer，所以外部不需要强引用 timer。</p>
+</blockquote>
+<h3 id="执行N次后结束"><a href="#执行N次后结束" class="headerlink" title="执行N次后结束"></a>执行N次后结束</h3><p>可以在外部创建一个计数器，当执行到一定次数后在内部结束：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> runCount = <span class="number">0</span></span><br><span class="line"></span><br><span class="line"><span class="type">Timer</span>.scheduledTimer(withTimeInterval: <span class="number">1.0</span>, repeats: <span class="literal">true</span>) &#123; timer <span class="keyword">in</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">"Timer fired!"</span>)</span><br><span class="line">    runCount += <span class="number">1</span></span><br><span class="line">    <span class="keyword">if</span> runCount == <span class="number">3</span> &#123;</span><br><span class="line">        timer.invalidate()</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="附加-context"><a href="#附加-context" class="headerlink" title="附加 context"></a>附加 context</h3><p>创建 timer 时传入的 userInfo 是一个 id 类型。所以可以直接通过 timer 拿到 userInfo 代表的值，需要强转类型：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> context = [<span class="string">"user"</span>: <span class="string">"@twostraws"</span>]</span><br><span class="line"><span class="type">Timer</span>.scheduledTimer(timeInterval: <span class="number">1.0</span>, target: <span class="keyword">self</span>, selector: #selector(fireTimer), userInfo: context, repeats: <span class="literal">true</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@objc</span> <span class="function"><span class="keyword">func</span> <span class="title">fireTimer</span><span class="params">(timer: Timer)</span></span> &#123;</span><br><span class="line">    <span class="keyword">guard</span> <span class="keyword">let</span> context = timer.userInfo <span class="keyword">as</span>? [<span class="type">String</span>: <span class="type">String</span>] <span class="keyword">else</span> &#123; <span class="keyword">return</span> &#125;</span><br><span class="line">    <span class="keyword">let</span> user = context[<span class="string">"user"</span>, <span class="keyword">default</span>: <span class="string">"Anonymous"</span>]</span><br><span class="line"></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">"Timer fired by \(user)!"</span>)</span><br><span class="line">    runCount += <span class="number">1</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> runCount == <span class="number">3</span> &#123;</span><br><span class="line">        timer.invalidate()</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="NSTimer-不准时"><a href="#NSTimer-不准时" class="headerlink" title="NSTimer 不准时"></a>NSTimer 不准时</h3><p>NSTimer 是由 RunLoop 控制执行的，当到达时间后，会触发睡眠的 RunLoop 执行定时器方法。但是如果当前 RunLoop 一直在运行，则无法立刻执行定时器方法，导致延时执行。</p>
+<h2 id="CADisplayLink"><a href="#CADisplayLink" class="headerlink" title="CADisplayLink"></a>CADisplayLink</h2><h3 id="基本用法"><a href="#基本用法" class="headerlink" title="基本用法"></a>基本用法</h3><p><code>CADisplayLink</code> 是一个能让我们<strong>以和屏幕刷新率同步的频率将特定的内容画到屏幕上的定时器类</strong>。<code>CADisplayLink</code> 以特定模式注册到 runloop 后， 每当屏幕显示内容刷新结束的时候， runloop 就会向 <code>CADisplayLink</code> 指定的 target 发送一次指定的 selector 消息，  <code>CADisplayLink</code> 类对应的 selector 就会被调用一次。 </p>
+<p>使用方式：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)startDisplayLink</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">self</span>.displayLink = [<span class="built_in">CADisplayLink</span> displayLinkWithTarget:<span class="keyword">self</span></span><br><span class="line">                                                   selector:<span class="keyword">@selector</span>(handleDisplayLink:)];</span><br><span class="line">    <span class="keyword">self</span>.displayLink.frameInterval = <span class="number">3</span>;</span><br><span class="line">    [<span class="keyword">self</span>.displayLink addToRunLoop:[<span class="built_in">NSRunLoop</span> currentRunLoop]</span><br><span class="line">                           forMode:<span class="built_in">NSDefaultRunLoopMode</span>];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)handleDisplayLink:(<span class="built_in">CADisplayLink</span> *)displayLink</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">//do something</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)stopDisplayLink</span><br><span class="line">&#123;</span><br><span class="line">  	<span class="comment">// 注意，下面两步都要做。先从 runloop 里注销 displaylink。再将 displaylink 置为 nil,防止你对已经 invalidate 的对象进行操作。</span></span><br><span class="line">    [<span class="keyword">self</span>.displayLink invalidate];</span><br><span class="line">    <span class="keyword">self</span>.displayLink = <span class="literal">nil</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当把 <code>CADisplayLink</code> 对象 add 到 runloop 中后（一定要加啊，否则无效），selector就能被周期性调用，类似于 <code>NSTimer</code> 被启动了；执行 invalidate 操作时， <code>CADisplayLink</code> 对象就会从 runloop 中移除，selector 调用也随即停止，类似于 <code>NSTimer</code> 的 invalidate 方法。</p>
+<p>iOS 设备的 FPS 是60Hz，因此 <code>CADisplayLink</code> 的 selector 默认调用周期是每秒60次，这个周期可以通过 <code>frameInterval</code> 属性设置， <code>CADisplayLink</code>的 selector 每秒调用次数为 <code>60/ frameInterval</code>。比如当 <code>frameInterval</code> 设为2，每秒调用就变成30次。因此， <code>CADisplayLink</code> 周期的设置方式略显不便。不过 <code>CADisplayLink</code> 适合于需要精度较高的定时。</p>
+<blockquote>
+<p>NSRunLoop 会强引用 CADisplayLink，所以外部也不需要强引用 CADisplayLink </p>
+</blockquote>
+<h3 id="应用之查看-FPS"><a href="#应用之查看-FPS" class="headerlink" title="应用之查看 FPS"></a>应用之查看 FPS</h3><p>CADisplayLink 和屏幕的刷新率是一致的，所以可以通过判断一秒钟内 CADisplayLink 执行了多少次来间接知道屏幕刷新率：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/cadisplaylink.png?raw=true" alt></p>
+<h3 id="与-NSTimer-不同"><a href="#与-NSTimer-不同" class="headerlink" title="与 NSTimer 不同"></a>与 NSTimer 不同</h3><p><strong>iOS</strong>设备的屏幕刷新频率是固定的，<code>CADisplayLink</code>在正常情况下会在每次刷新结束都被调用，精确度相当高。<br><code>NSTimer</code>的精确度就显得低了点，比如<code>NSTimer</code>的触发时间到的时候，<code>runloop</code>如果在阻塞状态，触发时间就会推迟到下一个<code>runloop</code>周期。并且 <code>NSTimer</code>新增了<code>tolerance</code>属性，让用户可以设置可以容忍的触发的时间的延迟范围。<br><code>CADisplayLink</code>使用场合相对专一，适合做UI的不停重绘，比如自定义动画引擎或者视频播放的渲染。<code>NSTimer</code>的使用范围要广泛的多，各种需要单次或者循环定时处理的任务都可以使用。</p>
+<blockquote>
+<p>可以通过 <code>CADisplayLink</code> 和上面的绘图，完成很多动画效果</p>
+</blockquote>
+<h2 id="延迟调用"><a href="#延迟调用" class="headerlink" title="延迟调用"></a>延迟调用</h2><p>当调用 NSObject 的 <code>performSelector:afterDelay:</code> 后，<strong>实际上其内部会创建一个 Timer 并添加到当前线程的 Run Loop 中</strong>。<strong>所以如果当前线程没有 Run Loop，则这个方法会失效</strong>（注意，这是一个考点，所以在子线程中直接调用该方法是无效的）。</p>
+<p>当调用 <code>performSelector:onThread:</code> 时，实际上其会创建一个 Timer 加到对应的线程去，同样的，如果对应线程没有 Run Loop 该方法也会失效。</p>
+<p>所以一般还是在主线程调用这些方法，如果实在要在子线程里调用，那么记得在其后调用 <code>[[NSRunLoop currentRunLoop] run];</code></p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 3秒后自动调用self的run:方法，并且传递参数：@"abc"</span></span><br><span class="line">[<span class="keyword">self</span> performSelector:<span class="keyword">@selector</span>(run:) withObject:<span class="string">@"abc"</span> afterDelay:<span class="number">3</span>];</span><br><span class="line"><span class="comment">// 在子线程中创建的时候，要开启子线程的 runloop</span></span><br><span class="line">[[<span class="built_in">NSRunLoop</span> currentRunLoop] run];</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>本质上就是一个 NSTimer</p>
+</blockquote>
+<h2 id="GCD"><a href="#GCD" class="headerlink" title="GCD"></a>GCD</h2><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** 创建定时器对象</span></span><br><span class="line"><span class="comment"> * para1: DISPATCH_SOURCE_TYPE_TIMER 为定时器类型</span></span><br><span class="line"><span class="comment"> * para2-3: 中间两个参数对定时器无用</span></span><br><span class="line"><span class="comment"> * para4: 最后为在什么调度队列中使用</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">dispatch_source_t _gcdTimer; <span class="comment">//(不是指针)</span></span><br><span class="line">_gcdTimer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, <span class="number">0</span>, <span class="number">0</span>, dispatch_get_global_queue(<span class="number">0</span>, <span class="number">0</span>));</span><br><span class="line"><span class="comment">/** 设置定时器</span></span><br><span class="line"><span class="comment"> * para2: 任务开始时间</span></span><br><span class="line"><span class="comment"> * para3: 任务的间隔</span></span><br><span class="line"><span class="comment"> * para4: 可接受的误差时间，设置0即不允许出现误差</span></span><br><span class="line"><span class="comment"> * Tips: 单位均为纳秒</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">dispatch_source_set_timer(_gcdTimer, DISPATCH_TIME_NOW, <span class="number">2.0</span> * <span class="built_in">NSEC_PER_SEC</span>, <span class="number">0.0</span> * <span class="built_in">NSEC_PER_SEC</span>);</span><br><span class="line"><span class="comment">/** 设置定时器任务</span></span><br><span class="line"><span class="comment"> * 可以通过block方式</span></span><br><span class="line"><span class="comment"> * 也可以通过C函数方式</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">dispatch_source_set_event_handler(_gcdTimer, ^&#123;</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">int</span> gcdIdx = <span class="number">0</span>;</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@"GCD Method: %d"</span>, gcdIdx++);</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@"%@"</span>, [<span class="built_in">NSThread</span> currentThread]);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span>(gcdIdx == <span class="number">5</span>) &#123;</span><br><span class="line">        <span class="comment">// 终止定时器</span></span><br><span class="line">        dispatch_suspend(_gcdTimer);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br><span class="line"><span class="comment">// 启动任务，GCD计时器创建后需要手动启动</span></span><br><span class="line">dispatch_resume(_gcdTimer);</span><br></pre></td></tr></table></figure>
+<p>GCD 是准时的定时器</p>
+<blockquote>
+<p>注意 <code>dispatch_source_t</code> 并不是一个指针</p>
+</blockquote>
+<blockquote>
+<p><code>dispatch_source_t</code> 本身需要强引用，否则会立刻回收，无法完成定时</p>
+</blockquote>
+<h2 id="关于-runloop"><a href="#关于-runloop" class="headerlink" title="关于 runloop"></a>关于 runloop</h2><p>我们可以观察到，除了 GCD，另外三种方法都需要把定时器加入当前 runloop 中。这里要强调一点，一般情况下，不要把定时器加到非主线程中去。因为定时器需要线程的 runloop 启动，即 <code>[[NSRunLoop currentRunLoop] run];</code>。对于主线程，这没有任何问题，主线程的 runloop 默认开启。但是<strong>对于子线程，我们最好不要启动它的 runloop，这会导致子线程一直处于活动状态而不被回收，从而造成内存泄漏</strong>。所以，定时器最好还是加在主线程里吧。<strong>如果一定要在子线程里设置，那么一定要在结束的时候，停止运行循环</strong>。</p>
+<h2 id="关于循环引用问题"><a href="#关于循环引用问题" class="headerlink" title="关于循环引用问题"></a>关于循环引用问题</h2><p>定时器包括 CADisplayLink 和  NSTimer 都需要手动通过 <code>invalidate</code> 方法来销毁。这就关系到销毁的时机。</p>
+<h3 id="方式一"><a href="#方式一" class="headerlink" title="方式一"></a>方式一</h3><p>通过 <code>dealloc</code> 方法销毁：</p>
+<p>错误的做法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">__<span class="keyword">weak</span> <span class="keyword">typeof</span>(<span class="keyword">self</span>) wself = <span class="keyword">self</span>;</span><br><span class="line"><span class="keyword">self</span>.displayLink = [<span class="built_in">CADisplayLink</span> displayLinkWithTarget:wself selector:<span class="keyword">@selector</span>(selector)];</span><br><span class="line">[<span class="keyword">self</span>.displayLink addToRunLoop:[<span class="built_in">NSRunLoop</span> currentRunLoop] forMode:<span class="built_in">NSRunLoopCommonModes</span>];</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)dealloc &#123;</span><br><span class="line">    [<span class="keyword">self</span>.displayLink invalidate];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面这种弱引用方式是没有用的。因为它们内部会强引用 target。所以其实不会执行 dealloc 方法。</p>
+<p>为了打破这种强引用，我们可以新建一个 weakTarget 的类，通过转发实现：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// class WeakTarget</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">weak</span>) <span class="keyword">id</span> target;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">instancetype</span>)initWithTarget:(<span class="keyword">id</span>)target &#123;</span><br><span class="line">    <span class="keyword">self</span> = [<span class="keyword">super</span> init];</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>) &#123;</span><br><span class="line">        <span class="keyword">self</span>.target = target;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">self</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">id</span>)forwardingTargetForSelector:(SEL)aSelector &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">self</span>.target;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>使用：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">self</span>.displayLink = [<span class="built_in">CADisplayLink</span> displayLinkWithTarget:[[WeakTarget alloc] initWithTarget:<span class="keyword">self</span>] selector:<span class="keyword">@selector</span>(selector)];</span><br><span class="line">[<span class="keyword">self</span>.displayLink addToRunLoop:[<span class="built_in">NSRunLoop</span> currentRunLoop] forMode:<span class="built_in">NSRunLoopCommonModes</span>];</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)dealloc &#123;</span><br><span class="line">    [<span class="keyword">self</span>.displayLink invalidate];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这样，timer 强引用的就不是我们业务相关的类了。</p>
+<h3 id="方式二"><a href="#方式二" class="headerlink" title="方式二"></a>方式二</h3><p>通过 VC 或者 View 的生命周期销毁。虽然强引用了不会调用 <code>dealloc</code> ，但是生命周期还是会回调的比如在 <code>viewWillDisappear</code> 或者 <code>removeFromSuperView</code> 等方法中。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tag/学习笔记/" rel="tag"># 学习笔记</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/02/03/iOS持久化/" rel="next" title="iOS 持久化方式">
+                <i class="fa fa-chevron-left"></i> iOS 持久化方式
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/02/06/FDFullScreenPopGesture_源码解析/" rel="prev" title="FDFullScreenPopGesture 源码解析">
+                FDFullScreenPopGesture 源码解析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.png" alt="Zachary Zhang">
+            
+              <p class="site-author-name" itemprop="name">Zachary Zhang</p>
+              <p class="site-description motion-element" itemprop="description">Stay Hungry. Stay Foolish!</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">116</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/zhang759740844" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:zch759740844@126.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#NSTimer"><span class="nav-number">1.</span> <span class="nav-text">NSTimer</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#创建"><span class="nav-number">1.1.</span> <span class="nav-text">创建</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#执行N次后结束"><span class="nav-number">1.2.</span> <span class="nav-text">执行N次后结束</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#附加-context"><span class="nav-number">1.3.</span> <span class="nav-text">附加 context</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#NSTimer-不准时"><span class="nav-number">1.4.</span> <span class="nav-text">NSTimer 不准时</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CADisplayLink"><span class="nav-number">2.</span> <span class="nav-text">CADisplayLink</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#基本用法"><span class="nav-number">2.1.</span> <span class="nav-text">基本用法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#应用之查看-FPS"><span class="nav-number">2.2.</span> <span class="nav-text">应用之查看 FPS</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#与-NSTimer-不同"><span class="nav-number">2.3.</span> <span class="nav-text">与 NSTimer 不同</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#延迟调用"><span class="nav-number">3.</span> <span class="nav-text">延迟调用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GCD"><span class="nav-number">4.</span> <span class="nav-text">GCD</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#关于-runloop"><span class="nav-number">5.</span> <span class="nav-text">关于 runloop</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#关于循环引用问题"><span class="nav-number">6.</span> <span class="nav-text">关于循环引用问题</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#方式一"><span class="nav-number">6.1.</span> <span class="nav-text">方式一</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#方式二"><span class="nav-number">6.2.</span> <span class="nav-text">方式二</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zachary Zhang</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

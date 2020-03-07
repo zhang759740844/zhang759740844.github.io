@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+
+
+
+
+  <meta name="keywords" content="源码解析,RxSwift,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="前面两篇讲了 RxSwift 以及 RxCocoa 的使用，这篇探究下 RxSwift 的实现原理。">
+<meta name="keywords" content="源码解析,RxSwift">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RxSwift 的一些原理解析">
+<meta property="og:url" content="http://zhang759740844.github.io/2017/11/14/RxSwift原理/index.html">
+<meta property="og:site_name" content="Zachary&#39;s blog">
+<meta property="og:description" content="前面两篇讲了 RxSwift 以及 RxCocoa 的使用，这篇探究下 RxSwift 的实现原理。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_prin_1.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_prin_2.png?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_prin_3.png?raw=true">
+<meta property="og:updated_time" content="2020-02-27T15:13:37.635Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="RxSwift 的一些原理解析">
+<meta name="twitter:description" content="前面两篇讲了 RxSwift 以及 RxCocoa 的使用，这篇探究下 RxSwift 的实现原理。">
+<meta name="twitter:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_prin_1.png?raw=true">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://zhang759740844.github.io/2017/11/14/RxSwift原理/">
+
+
+
+
+
+  <title>RxSwift 的一些原理解析 | Zachary's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Zachary's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">记录成长</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://zhang759740844.github.io/2017/11/14/RxSwift原理/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zachary Zhang">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Zachary's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">RxSwift 的一些原理解析</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-11-14T10:07:12+08:00">
+                2017-11-14
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>前面两篇讲了 RxSwift 以及 RxCocoa 的使用，这篇探究下 RxSwift 的实现原理。</p>
+<a id="more"></a>
+<p>这篇将从四个方面探究 RxSwift 的实现原理。包括 ：</p>
+<ol>
+<li>rx 的命名空间如何产生的</li>
+<li>如何创建 Observable 以及订阅</li>
+<li>Subject 是如何实现的</li>
+<li>如何实现调用 delegate 方法的</li>
+</ol>
+<h2 id="rx-的命名空间如何产生"><a href="#rx-的命名空间如何产生" class="headerlink" title="rx 的命名空间如何产生"></a>rx 的命名空间如何产生</h2><p>我们都知道，RxCocoa 为我们的基本控件添加了 rx 的命名空间，然后定义了 rx 相关的属性。那么这是怎么做到的呢？</p>
+<p>我们点进 rx 的定义：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// A type that has reactive extensions.</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">protocol</span> <span class="title">ReactiveCompatible</span> </span>&#123;</span><br><span class="line">    <span class="comment">/// Extended type</span></span><br><span class="line">    associatedtype <span class="type">CompatibleType</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/// Reactive extensions.</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">var</span> rx: <span class="type">Reactive</span>&lt;<span class="type">CompatibleType</span>&gt;.<span class="type">Type</span> &#123; <span class="keyword">get</span> <span class="keyword">set</span> &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// Reactive extensions.</span></span><br><span class="line">    <span class="keyword">var</span> rx: <span class="type">Reactive</span>&lt;<span class="type">CompatibleType</span>&gt; &#123; <span class="keyword">get</span> <span class="keyword">set</span> &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到，rx 是定义在这个叫 <code>ReactiveCompatible</code> 的协议中的。rx 是 <code>Reactive</code> 类型。在协议拓展中，实现了这个协议的默认实现，即返回 <code>Reactive</code> 类型，或者返回该类型实例。其中，它将上面的关联类型 <code>associatedtype</code>，设置为调用者自身：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">extension</span> <span class="title">ReactiveCompatible</span> </span>&#123;</span><br><span class="line">    <span class="comment">/// Reactive extensions.</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">var</span> rx: <span class="type">Reactive</span>&lt;<span class="type">Self</span>&gt;.<span class="type">Type</span> &#123;</span><br><span class="line">        <span class="keyword">get</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="type">Reactive</span>&lt;<span class="type">Self</span>&gt;.<span class="keyword">self</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">set</span> &#123;</span><br><span class="line">            <span class="comment">// this enables using Reactive to "mutate" base type</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// Reactive extensions.</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">var</span> rx: <span class="type">Reactive</span>&lt;<span class="type">Self</span>&gt; &#123;</span><br><span class="line">        <span class="keyword">get</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="type">Reactive</span>(<span class="keyword">self</span>)</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">set</span> &#123;</span><br><span class="line">            <span class="comment">// this enables using Reactive to "mutate" base object</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>接着看 <code>Reactive</code> 的定义，它是一个结构体，接受一个泛型参数。这个结构体很简单，只有一个泛型类型的属性 <code>base</code>。上面方法在创建 <code>Reactive</code> 实例的时候，将调用者设置为其 <code>base</code> 属性，比如调用 <code>button.rx</code>，那么就会将 button 实例设置为其 <code>base</code>：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">struct</span> <span class="title">Reactive</span>&lt;<span class="title">Base</span>&gt; </span>&#123;</span><br><span class="line">    <span class="comment">/// Base object to extend.</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">let</span> base: <span class="type">Base</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/// Creates extensions with base object.</span></span><br><span class="line">    <span class="comment">///</span></span><br><span class="line">    <span class="comment">/// - parameter base: Base object.</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">init</span>(<span class="number">_</span> base: <span class="type">Base</span>) &#123;</span><br><span class="line">        <span class="keyword">self</span>.base = base</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>因为所有的控件都是继承于 <code>NSObject</code>，所以要让所有控件都拥有 rx 这个属性，只需要让 <code>NSObject</code> 实现 <code>ReactiveCompatible</code> 即可：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// Extend NSObject with `rx` proxy.</span></span><br><span class="line"><span class="class"><span class="keyword">extension</span> <span class="title">NSObject</span>: <span class="title">ReactiveCompatible</span> </span>&#123; &#125;</span><br></pre></td></tr></table></figure>
+<p>这样，rx 就和基本控件关联了起来。但是 <code>Reactive</code> 这个结构体这么简单，它是怎么拓展出这么多 rx 属性的呢？我们以 UIButton 为例。打开 RxCocoa 中的 <code>UIButton+Rx.swift</code>，这是一个对于 button 的 rx 拓展：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">extension</span> <span class="title">Reactive</span> <span class="title">where</span> <span class="title">Base</span>: <span class="title">UIButton</span> </span>&#123;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/// Reactive wrapper for `TouchUpInside` control event.</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">var</span> tap: <span class="type">ControlEvent</span>&lt;<span class="type">Void</span>&gt; &#123;</span><br><span class="line">        <span class="keyword">return</span> controlEvent(.touchUpInside)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里通过模式匹配 where 将泛型 <code>Base</code> 限制为 <code>UIButton</code>，为 <code>UIButton</code> 添加特定的属性。这里只列举一个 <code>tap</code> 属性，其实还有一个 <code>title</code> 方法。我们先不管这个 <code>ControlEvent</code> 是啥，这个后面会讲。至此，控件就获得了 rx 相关的属性了。</p>
+<blockquote>
+<p>总之，整个过程就是，通过让 <code>NSObject</code> 实现一个协议，使控件获得 rx 属性，然后在 rx 类型的 extension 中，以模式匹配的方式为不同控件的 rx 添加相应的属性。过程如图所示：</p>
+</blockquote>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_prin_1.png?raw=true" alt></p>
+<h2 id="如何创建-Observable-以及订阅"><a href="#如何创建-Observable-以及订阅" class="headerlink" title="如何创建 Observable 以及订阅"></a>如何创建 Observable 以及订阅</h2><h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><p>我们知道通过 <code>create</code>，<code>just</code>，<code>of</code> 等方法可以创建一个 Observable。那么这是如何做到的呢？我们以 <code>create</code> 创建的订阅为例。这一创建及订阅过程还是比较复杂的，涉及的类以及相互关系很多。所以我先把所有相关类的关系图展示出来：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_prin_2.png?raw=true" alt></p>
+<p>整个过程涉及四个部分：Observable，Observer，Sink，Disposer。</p>
+<p>Observable 主要就是保存了事件队列；Observer 主要保存了事件队列的处理方法；Sink 连接前两者，由它来让 Observer 响应 Observable 的事件；Disposer 保存了 Sink 的实例，以便回收。</p>
+<h3 id="创建"><a href="#创建" class="headerlink" title="创建"></a>创建</h3><p>首先我们来看 step 1，调用的 <code>create</code> 方法存在于  <code>Observable</code> 的一个拓展中，包含了各种 Observable 的创建方法。<code>create</code> 方法创建了一个匿名的 Observable <code>AnonymousObservable</code>，并将包含各种事件的闭包传入：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">extension</span> <span class="title">Observable</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="function"><span class="keyword">func</span> <span class="title">create</span><span class="params">(<span class="number">_</span> subscribe: @escaping <span class="params">(AnyObserver&lt;E&gt;)</span></span></span> -&gt; <span class="type">Disposable</span>) -&gt; <span class="type">Observable</span>&lt;<span class="type">E</span>&gt; &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="type">AnonymousObservable</span>(subscribe)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>来到 step 2， <code>AnonymousObservable</code> 初始化的过程很简单，就是将传入的包含事件的闭包保存起来。另外该类还提供了一个重写的 <code>run</code> 方法：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">AnonymousObservable</span>&lt;<span class="title">Element</span>&gt; : <span class="title">Producer</span>&lt;<span class="title">Element</span>&gt; </span>&#123;</span><br><span class="line">	<span class="keyword">typealias</span> <span class="type">SubscribeHandler</span> = (<span class="type">AnyObserver</span>&lt;<span class="type">Element</span>&gt;) -&gt; <span class="type">Disposable</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> _subscribeHandler: <span class="type">SubscribeHandler</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">init</span>(<span class="number">_</span> subscribeHandler: @escaping <span class="type">SubscribeHandler</span>) &#123;</span><br><span class="line">        _subscribeHandler = subscribeHandler</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">func</span> <span class="title">run</span>&lt;O : ObserverType&gt;<span class="params">(<span class="number">_</span> observer: O, cancel: Cancelable)</span></span> -&gt; (sink: <span class="type">Disposable</span>, subscription: <span class="type">Disposable</span>) <span class="keyword">where</span> <span class="type">O</span>.<span class="type">E</span> == <span class="type">Element</span> &#123;</span><br><span class="line">        <span class="keyword">let</span> sink = <span class="type">AnonymousObservableSink</span>(observer: observer, cancel: cancel)</span><br><span class="line">        <span class="keyword">let</span> subscription = sink.run(<span class="keyword">self</span>)</span><br><span class="line">        <span class="keyword">return</span> (sink: sink, subscription: subscription)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>到这里，创建 Observable 的过程就结束了。简单来说就是内部创建了一个匿名的 Observable，然后将事件闭包保存。下面是订阅过程。</p>
+<h3 id="订阅"><a href="#订阅" class="headerlink" title="订阅"></a>订阅</h3><p>来到 step 3，订阅的时候，我们调用的是 <code>ObservableType</code> 提供的订阅方法。<code>ObservableType</code> 是一个协议，由 <code>Observable</code> 实现。这个方法中创建了一个匿名的 Observer <code>AnonymousObserver</code>，也就是 step 4，把事件处理方法的闭包传入。然后就是观察者订阅事件队列，即 step 5：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">extension</span> <span class="title">ObservableType</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">func</span> <span class="title">subscribe</span><span class="params">(<span class="number">_</span> on: @escaping <span class="params">(Event&lt;E&gt;)</span></span></span> -&gt; <span class="type">Void</span>)</span><br><span class="line">        -&gt; <span class="type">Disposable</span> &#123;</span><br><span class="line">        <span class="keyword">let</span> observer = <span class="type">AnonymousObserver</span> &#123; e <span class="keyword">in</span></span><br><span class="line">            on(e)</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">self</span>.subscribeSafe(observer)</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    <span class="keyword">fileprivate</span> <span class="function"><span class="keyword">func</span> <span class="title">subscribeSafe</span>&lt;O: ObserverType&gt;<span class="params">(<span class="number">_</span> observer: O)</span></span> -&gt; <span class="type">Disposable</span> <span class="keyword">where</span> <span class="type">O</span>.<span class="type">E</span> == <span class="type">E</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">self</span>.asObservable().subscribe(observer)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>step 5 的方法中，调用的是入参为 Observer 的 <code>subscribe</code> 方法。在 <code>Observable</code> 类中定义了该方法。不过这个方法并没有具体实现，它要求其子类实现。否则就会抛出异常：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Observable</span>&lt;<span class="title">Element</span>&gt; : <span class="title">ObservableType</span> </span>&#123;</span><br><span class="line">    <span class="comment">/// Type of elements in sequence.</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">typealias</span> <span class="type">E</span> = <span class="type">Element</span></span><br><span class="line">  </span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">func</span> <span class="title">subscribe</span>&lt;O: ObserverType&gt;<span class="params">(<span class="number">_</span> observer: O)</span></span> -&gt; <span class="type">Disposable</span> <span class="keyword">where</span> <span class="type">O</span>.<span class="type">E</span> == <span class="type">E</span> &#123;</span><br><span class="line">        abstractMethod()</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>Observable</code> 在本例的子类是 <code>AnonymousObservable</code>，不过不是直接子类，这两个类中还夹着一个 <code>Producer</code> 类。所以订阅的过程 step 6 在 <code>Producer</code> 中：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Producer</span>&lt;<span class="title">Element</span>&gt; : <span class="title">Observable</span>&lt;<span class="title">Element</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">func</span> <span class="title">subscribe</span>&lt;O : ObserverType&gt;<span class="params">(<span class="number">_</span> observer: O)</span></span> -&gt; <span class="type">Disposable</span> <span class="keyword">where</span> <span class="type">O</span>.<span class="type">E</span> == <span class="type">Element</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> !<span class="type">CurrentThreadScheduler</span>.isScheduleRequired &#123;</span><br><span class="line">            <span class="comment">// The returned disposable needs to release all references once it was disposed.</span></span><br><span class="line">            <span class="keyword">let</span> disposer = <span class="type">SinkDisposer</span>()</span><br><span class="line">            <span class="keyword">let</span> sinkAndSubscription = run(observer, cancel: disposer)</span><br><span class="line">            disposer.setSinkAndSubscription(sink: sinkAndSubscription.sink, subscription: sinkAndSubscription.subscription)</span><br><span class="line"></span><br><span class="line">            <span class="keyword">return</span> disposer</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="type">CurrentThreadScheduler</span>.instance.schedule(()) &#123; <span class="number">_</span> <span class="keyword">in</span></span><br><span class="line">                <span class="keyword">let</span> disposer = <span class="type">SinkDisposer</span>()</span><br><span class="line">                <span class="keyword">let</span> sinkAndSubscription = <span class="keyword">self</span>.run(observer, cancel: disposer)</span><br><span class="line">                disposer.setSinkAndSubscription(sink: sinkAndSubscription.sink, subscription: sinkAndSubscription.subscription)</span><br><span class="line"></span><br><span class="line">                <span class="keyword">return</span> disposer</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">func</span> <span class="title">run</span>&lt;O : ObserverType&gt;<span class="params">(<span class="number">_</span> observer: O, cancel: Cancelable)</span></span> -&gt; (sink: <span class="type">Disposable</span>, subscription: <span class="type">Disposable</span>) <span class="keyword">where</span> <span class="type">O</span>.<span class="type">E</span> == <span class="type">Element</span> &#123;</span><br><span class="line">        abstractMethod()</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>step 6 的方法先创建了一个 <code>SinkDisposer</code>，即 step 7。要留意这个 <code>SinkDisposer</code>，因为最后我们加入 disposebag 的，就是这个 disposer 实例。</p>
+<p>下一步调用 <code>run</code> 方法。我们看到上面的代码中，<code>run</code> 方法也是一个类似的抽象方法。那么 step 8 中，我们就要到它的子类 <code>AnonymousObservable</code> 中找，这个上面也提到过。</p>
+<h3 id="执行"><a href="#执行" class="headerlink" title="执行"></a>执行</h3><p>来看一下这个 <code>run</code> 方法的实现。它接受刚才创建的匿名 Observer <code>AnonymousObserver</code>，以及 <code>SinkDisposer</code>：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">AnonymousObservable</span>&lt;<span class="title">Element</span>&gt; : <span class="title">Producer</span>&lt;<span class="title">Element</span>&gt; </span>&#123;</span><br><span class="line">	...</span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">func</span> <span class="title">run</span>&lt;O : ObserverType&gt;<span class="params">(<span class="number">_</span> observer: O, cancel: Cancelable)</span></span> -&gt; (sink: <span class="type">Disposable</span>, subscription: <span class="type">Disposable</span>) <span class="keyword">where</span> <span class="type">O</span>.<span class="type">E</span> == <span class="type">Element</span> &#123;</span><br><span class="line">        <span class="keyword">let</span> sink = <span class="type">AnonymousObservableSink</span>(observer: observer, cancel: cancel)</span><br><span class="line">        <span class="keyword">let</span> subscription = sink.run(<span class="keyword">self</span>)</span><br><span class="line">        <span class="keyword">return</span> (sink: sink, subscription: subscription)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>第一步 step 9，创建了一个 <code>AnonymousObservableSink</code> 实例。这个 <code>AnonymousObservableSink</code> 即实现了 <code>ObserverType</code> 协议，又实现了 <code>Disposable</code> 协议，所以它既是一个 Observer，又是一个 Disposer。在它的初始化方法中，调用了父类 <code>Sink</code> 的初始化方法，也就是 step 10：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Sink</span>&lt;<span class="title">O</span> : <span class="title">ObserverType</span>&gt; : <span class="title">Disposable</span> </span>&#123;</span><br><span class="line">    <span class="keyword">fileprivate</span> <span class="keyword">let</span> _observer: <span class="type">O</span></span><br><span class="line">    <span class="keyword">fileprivate</span> <span class="keyword">let</span> _cancel: <span class="type">Cancelable</span></span><br><span class="line">    <span class="keyword">fileprivate</span> <span class="keyword">var</span> _disposed: <span class="type">Bool</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">init</span>(observer: <span class="type">O</span>, cancel: <span class="type">Cancelable</span>) &#123;</span><br><span class="line">        _observer = observer</span><br><span class="line">        _cancel = cancel</span><br><span class="line">        _disposed = <span class="literal">false</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>无关代码删除后，可以看到，<code>Sink</code> 中包含了 Observer，也包含了最终的 Disposer 实例。</p>
+<p>回到 step 8，在创建完 <code>AnonymousSink</code> 后，调用其 <code>run</code> 方法，并将返回值赋给 <code>subscription</code>。我们来看一下 step 11，这个 <code>run</code> 方法做了什么：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">AnonymousObservableSink</span>&lt;<span class="title">O</span>: <span class="title">ObserverType</span>&gt; : <span class="title">Sink</span>&lt;<span class="title">O</span>&gt;, <span class="title">ObserverType</span> </span>&#123;</span><br><span class="line">    <span class="keyword">typealias</span> <span class="type">E</span> = <span class="type">O</span>.<span class="type">E</span></span><br><span class="line">    <span class="keyword">typealias</span> <span class="type">Parent</span> = <span class="type">AnonymousObservable</span>&lt;<span class="type">E</span>&gt;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">func</span> <span class="title">on</span><span class="params">(<span class="number">_</span> event: Event&lt;E&gt;)</span></span> &#123;</span><br><span class="line">        <span class="keyword">switch</span> event &#123;</span><br><span class="line">        <span class="keyword">case</span> .next:</span><br><span class="line">            <span class="keyword">if</span> _isStopped == <span class="number">1</span> &#123;</span><br><span class="line">                <span class="keyword">return</span></span><br><span class="line">            &#125;</span><br><span class="line">            forwardOn(event)</span><br><span class="line">        <span class="keyword">case</span> .error, .completed:</span><br><span class="line">            <span class="keyword">if</span> <span class="type">AtomicCompareAndSwap</span>(<span class="number">0</span>, <span class="number">1</span>, &amp;_isStopped) &#123;</span><br><span class="line">                forwardOn(event)</span><br><span class="line">                dispose()</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">func</span> <span class="title">run</span><span class="params">(<span class="number">_</span> parent: Parent)</span></span> -&gt; <span class="type">Disposable</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> parent._subscribeHandler(<span class="type">AnyObserver</span>(<span class="keyword">self</span>))</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个方法中总算执行了之前保存在 <code>AnonymousObservable</code> 对象中的事件闭包。我们可以会奇怪为什么它要用 <code>AnyObserver(self)</code> 来代替之前创建的 <code>AnonymousObserver</code>，这是为了擦除类型，反正现在需要的就是一个有事件响应方法的 Observer。</p>
+<p>执行事件闭包发出事件，也就是调用 Observer 相应的响应方法。<code>AnyObserver</code> 稍微做了个转换，响应方法调用的是上面 <code>AnonymousObservableSink</code> 的 <code>on</code> 方法。这一步是 step 12。</p>
+<p>在 <code>on</code> 方法中，将事件进行转发，来到 step 13， <code>sink</code> 中的 <code>forwardOn</code> 中：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Sink</span>&lt;<span class="title">O</span> : <span class="title">ObserverType</span>&gt; : <span class="title">Disposable</span> </span>&#123;</span><br><span class="line">   	...</span><br><span class="line">    <span class="keyword">final</span> <span class="function"><span class="keyword">func</span> <span class="title">forwardOn</span><span class="params">(<span class="number">_</span> event: Event&lt;O.E&gt;)</span></span> &#123;</span><br><span class="line">        <span class="keyword">if</span> _disposed &#123;</span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        &#125;</span><br><span class="line">        _observer.on(event)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里的 <code>_observer</code> 应该很熟悉，就是刚才保存的 <code>AnonymousObserver</code>。不过 <code>AnonymousObserver</code> 这个类很简陋，并没有 <code>on</code> 方法啊：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">AnonymousObserver</span>&lt;<span class="title">ElementType</span>&gt; : <span class="title">ObserverBase</span>&lt;<span class="title">ElementType</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">typealias</span> <span class="type">Element</span> = <span class="type">ElementType</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">typealias</span> <span class="type">EventHandler</span> = (<span class="type">Event</span>&lt;<span class="type">Element</span>&gt;) -&gt; <span class="type">Void</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">let</span> _eventHandler : <span class="type">EventHandler</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">init</span>(<span class="number">_</span> eventHandler: @escaping <span class="type">EventHandler</span>) &#123;</span><br><span class="line">#<span class="keyword">if</span> <span class="type">TRACE_RESOURCES</span></span><br><span class="line">        <span class="keyword">let</span> <span class="number">_</span> = <span class="type">Resources</span>.incrementTotal()</span><br><span class="line">#endif</span><br><span class="line">        _eventHandler = eventHandler</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">func</span> <span class="title">onCore</span><span class="params">(<span class="number">_</span> event: Event&lt;Element&gt;)</span></span> &#123;</span><br><span class="line">        <span class="keyword">return</span> _eventHandler(event)</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">#<span class="keyword">if</span> <span class="type">TRACE_RESOURCES</span></span><br><span class="line">    <span class="keyword">deinit</span> &#123;</span><br><span class="line">        <span class="keyword">let</span> <span class="number">_</span> = <span class="type">Resources</span>.decrementTotal()</span><br><span class="line">    &#125;</span><br><span class="line">#endif</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>到父类 <code>ObserverBase</code> 中查看：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ObserverBase</span>&lt;<span class="title">ElementType</span>&gt; : <span class="title">Disposable</span>, <span class="title">ObserverType</span> </span>&#123;</span><br><span class="line">    <span class="keyword">typealias</span> <span class="type">E</span> = <span class="type">ElementType</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">var</span> _isStopped: <span class="type">AtomicInt</span> = <span class="number">0</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">func</span> <span class="title">on</span><span class="params">(<span class="number">_</span> event: Event&lt;E&gt;)</span></span> &#123;</span><br><span class="line">        <span class="keyword">switch</span> event &#123;</span><br><span class="line">        <span class="keyword">case</span> .next:</span><br><span class="line">            <span class="keyword">if</span> _isStopped == <span class="number">0</span> &#123;</span><br><span class="line">                onCore(event)</span><br><span class="line">            &#125;</span><br><span class="line">        <span class="keyword">case</span> .error, .completed:</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> !<span class="type">AtomicCompareAndSwap</span>(<span class="number">0</span>, <span class="number">1</span>, &amp;_isStopped) &#123;</span><br><span class="line">                <span class="keyword">return</span></span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            onCore(event)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">func</span> <span class="title">onCore</span><span class="params">(<span class="number">_</span> event: Event&lt;E&gt;)</span></span> &#123;</span><br><span class="line">        abstractMethod()</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>ObserverBase</code> 的 <code>on</code> 中，最终还是走了子类的 <code>onCore</code>。我的天，这一通折腾。处理完事件，最终返回给前面的 <code>subscription</code> 的就是在事件队列中创建的 Disposer。</p>
+<h3 id="回收"><a href="#回收" class="headerlink" title="回收"></a>回收</h3><p>现在事件都已经处理完了，回到 step 6，继续往下走，执行 step 16：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fileprivate</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">SinkDisposer</span>: <span class="title">Cancelable</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">var</span> _state: <span class="type">AtomicInt</span> = <span class="number">0</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">var</span> _sink: <span class="type">Disposable</span>? = <span class="literal">nil</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">var</span> _subscription: <span class="type">Disposable</span>? = <span class="literal">nil</span></span><br><span class="line">  </span><br><span class="line">    <span class="function"><span class="keyword">func</span> <span class="title">setSinkAndSubscription</span><span class="params">(sink: Disposable, subscription: Disposable)</span></span> &#123;</span><br><span class="line">        _sink = sink</span><br><span class="line">        _subscription = subscription</span><br><span class="line"></span><br><span class="line">        <span class="keyword">let</span> previousState = <span class="type">AtomicOr</span>(<span class="type">DisposeState</span>.sinkAndSubscriptionSet.rawValue, &amp;_state)</span><br><span class="line">        <span class="keyword">if</span> (previousState &amp; <span class="type">DisposeStateInt32</span>.sinkAndSubscriptionSet.rawValue) != <span class="number">0</span> &#123;</span><br><span class="line">            rxFatalError(<span class="string">"Sink and subscription were already set"</span>)</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (previousState &amp; <span class="type">DisposeStateInt32</span>.disposed.rawValue) != <span class="number">0</span> &#123;</span><br><span class="line">            sink.dispose()</span><br><span class="line">            subscription.dispose()</span><br><span class="line">            _sink = <span class="literal">nil</span></span><br><span class="line">            _subscription = <span class="literal">nil</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>它把 <code>AnonymousObservableSink</code> 以及 <code>subscription</code> 保存了起来。也就是说最终返回的 <code>SinkDisposer</code> 中会包含两个 Disposer。如果执行了 <code>dispose()</code>，那么这两个 Disposer 都会执行各自的 <code>dispose()</code>，并且释放。这样就是为什么我们在 <code>subscribeHandle</code> 中随便创建的一个 Disposer，也能起作用的原因。</p>
+<p><code>SinkDisposer</code> 引用了 <code>AnonymousObservableSink</code> 以及 <code>subscription</code>。<code>AnonymousObservableSink</code> 引用了 <code>SinkDisposer</code> 以及 <code>AnonymousObserver</code>。这是一个引用循环，为的是各自调用各自的 <code>dispose()</code> 的时候，都能触发对方的 <code>dispose()</code> ，将对方也回收。</p>
+<blockquote>
+<p>其实在没看源码前大概的想法也是，在 Observable 内部创建保存一个不被外界知道的 Observer，进行事件处理。实际上呢是添加了一个 <code>Sink</code> 类转梦用来保存 Observer，并且进行处理。</p>
+<p>明白了 Disposer 的引用关系，也就明白了如何将订阅回收的了。另外，将 <code>Sink</code> 设计成 <code>Disposable</code> 也使得回收更加方便</p>
+</blockquote>
+<h2 id="Subject-的创建与订阅"><a href="#Subject-的创建与订阅" class="headerlink" title="Subject 的创建与订阅"></a>Subject 的创建与订阅</h2><p>Subject 是 hot observable，和上面的区别在于，可以自己定义事件触发的时机。那么这个不同是如何体现出来的呢？下面来瞧瞧 Variable 的原理。</p>
+<h3 id="Variable"><a href="#Variable" class="headerlink" title="Variable"></a>Variable</h3><p>Variable 是 BehaviorSubject 的封装。来看一下 Variable 中的属性：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">Variable</span>&lt;<span class="title">Element</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">typealias</span> <span class="type">E</span> = <span class="type">Element</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">let</span> _subject: <span class="type">BehaviorSubject</span>&lt;<span class="type">Element</span>&gt;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">var</span> _lock = <span class="type">SpinLock</span>()</span><br><span class="line"> </span><br><span class="line">    <span class="comment">// state</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">var</span> _value: <span class="type">E</span></span><br><span class="line">  </span><br><span class="line">  	...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到，很简单，一个 <code>BehaviorSubject</code>，一个同步锁，以及一个 <code>value</code> 属性。Variable 和 BehaviorSubject 相比，唯一的不同就是 Variable 有一个 <code>value</code> 属性， 并在其 set 方法中，自动触发了 next 事件。</p>
+<p>现在看一下初始化方法，以及 <code>value</code> 的 get set 方法：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">Variable</span>&lt;<span class="title">Element</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">	...</span><br><span class="line">    <span class="comment">/// Gets or sets current value of variable.</span></span><br><span class="line">    <span class="comment">///</span></span><br><span class="line">    <span class="comment">/// Whenever a new value is set, all the observers are notified of the change.</span></span><br><span class="line">    <span class="comment">///</span></span><br><span class="line">    <span class="comment">/// Even if the newly set value is same as the old value, observers are still notified for change.</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">var</span> value: <span class="type">E</span> &#123;</span><br><span class="line">        <span class="keyword">get</span> &#123;</span><br><span class="line">            _lock.lock(); <span class="keyword">defer</span> &#123; _lock.unlock() &#125;</span><br><span class="line">            <span class="keyword">return</span> _value</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">set</span>(newValue) &#123;</span><br><span class="line">            _lock.lock()</span><br><span class="line">            _value = newValue</span><br><span class="line">            _lock.unlock()</span><br><span class="line"></span><br><span class="line">            _subject.on(.next(newValue))</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/// Initializes variable with initial value.</span></span><br><span class="line">    <span class="comment">///</span></span><br><span class="line">    <span class="comment">/// - parameter value: Initial variable value.</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">init</span>(<span class="number">_</span> value: <span class="type">Element</span>) &#123;</span><br><span class="line">        _value = value</span><br><span class="line">        _subject = <span class="type">BehaviorSubject</span>(value: value)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  	...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>init</code> 方法就是初始化了一个 <code>BehaviorSubject</code> 以及设置了 <code>value</code> 的初始值。<code>value</code> 的 setter 方法就是更新了 <code>value</code> 值，然后触发了 BehaviorSubject 的事件。</p>
+<p>这里学习一个加锁解锁的方法，在 getter 方法中通过 <code>defer</code> 在 return 之后执行解锁操作。</p>
+<p>好了这就是 Variable 的全部了。由于 Variable 并不是继承于 Observable，所以你甚至都不能订阅，只能通过 <code>asObservable</code> 方法，返回其中的 <code>BehaviorSubject</code> 属性。下面来看下 BehaviorSubject 是如何实现的。</p>
+<h3 id="BehaviorSubject"><a href="#BehaviorSubject" class="headerlink" title="BehaviorSubject"></a>BehaviorSubject</h3><p>我们使用 BehaviorSubject 进行订阅的时候，一开始的步骤还是一样的：<code>Observable</code> 先创建一个 <code>AnonymousObserver</code>，将事件处理方法设置给它的 <code>eventHandler</code> 属性。所有的 Observable 订阅，都会进行这样的方法，我们可以将这部分成为订阅的公共部分。</p>
+<p>然后到上面的 step 5 开始有区别了。在 <code>create</code> 中，由于继承关系调用的是 <code>Producer</code> 的 <code>subscribe</code>；而 BehaviorSubject 中也实现了自己的 <code>subscribe</code> 方法，我们可以称这部分为订阅的私有部分(这两个名字都是我随便起的)。</p>
+<p>在 <code>Producer</code> 的订阅私有部分，进行的是 step7 以及 step 8，也就是创建一个 <code>SinkDisposer</code> 和执行 <code>run</code> 方法(执行事件闭包中的事件)，这也就是 <code>create</code> 能够自己发出事件的原因。BehaviorSubject 的订阅私有部分做的是将刚创建的 <code>AnonymousObserver</code> 保存起来，然后以当前 <code>value</code> 值作为事件值，发出一个事件，这就是 BehaviorSubject 订阅就会触发事件的原因。</p>
+<p>下面来看代码，首先看看 <code>BehaviorSubject</code> 的属性:</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">BehaviorSubject</span>&lt;<span class="title">Element</span>&gt;</span></span><br><span class="line"><span class="class">    : <span class="title">Observable</span>&lt;<span class="title">Element</span>&gt;</span></span><br><span class="line"><span class="class">    , <span class="title">SubjectType</span></span></span><br><span class="line"><span class="class">    , <span class="title">ObserverType</span></span></span><br><span class="line"><span class="class">    , <span class="title">SynchronizedUnsubscribeType</span></span></span><br><span class="line"><span class="class">    , <span class="title">Disposable</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">typealias</span> <span class="type">SubjectObserverType</span> = <span class="type">BehaviorSubject</span>&lt;<span class="type">Element</span>&gt;</span><br><span class="line">    <span class="keyword">typealias</span> <span class="type">DisposeKey</span> = <span class="type">Bag</span>&lt;<span class="type">AnyObserver</span>&lt;<span class="type">Element</span>&gt;&gt;.<span class="type">KeyType</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">/// Indicates whether the subject has any observers</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">var</span> hasObservers: <span class="type">Bool</span> &#123;</span><br><span class="line">        _lock.lock()</span><br><span class="line">        <span class="keyword">let</span> value = _observers.<span class="built_in">count</span> &gt; <span class="number">0</span></span><br><span class="line">        _lock.unlock()</span><br><span class="line">        <span class="keyword">return</span> value</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">let</span> _lock = <span class="type">RecursiveLock</span>()</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// state</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">var</span> _isDisposed = <span class="literal">false</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">var</span> _value: <span class="type">Element</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">var</span> _observers = <span class="type">Bag</span>&lt;(<span class="type">Event</span>&lt;<span class="type">Element</span>&gt;) -&gt; ()&gt;()</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">var</span> _stoppedEvent: <span class="type">Event</span>&lt;<span class="type">Element</span>&gt;?</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// Indicates whether the subject has been disposed.</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">var</span> isDisposed: <span class="type">Bool</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> _isDisposed</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>BehaviorSubject 的属性就这么多，基本上看到都是能一眼看明白的。<code>_observers</code> 就是创建的 <code>AnonymousObserver</code>，它的类型 <code>Bag</code> 是一个字典的封装，它可以为不同的 <code>AnonymousObserver</code> 提供不同的键，这样能在取消订阅的时候便于回收响应 <code>AnonymousObserver</code>。另外，<code>_stoppedEvent</code> 也是需要解释一下的，就是在 <code>completed</code> 以及 <code>error</code> 事件发生后，保存这个 event，以后当有其他事件触发的时候，发出的是这个 event 的事件。</p>
+<p>接下来看一下订阅的私有部分的相关代码：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// Subscribes an observer to the subject.</span></span><br><span class="line"><span class="comment">///</span></span><br><span class="line"><span class="comment">/// - parameter observer: Observer to subscribe to the subject.</span></span><br><span class="line"><span class="comment">/// - returns: Disposable object that can be used to unsubscribe the observer from the subject.</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">override</span> <span class="function"><span class="keyword">func</span> <span class="title">subscribe</span>&lt;O : ObserverType&gt;<span class="params">(<span class="number">_</span> observer: O)</span></span> -&gt; <span class="type">Disposable</span> <span class="keyword">where</span> <span class="type">O</span>.<span class="type">E</span> == <span class="type">Element</span> &#123;</span><br><span class="line">    _lock.lock()</span><br><span class="line">    <span class="keyword">let</span> subscription = _synchronized_subscribe(observer)</span><br><span class="line">    _lock.unlock()</span><br><span class="line">    <span class="keyword">return</span> subscription</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> _synchronized_subscribe&lt;O : ObserverType&gt;<span class="params">(<span class="number">_</span> observer: O)</span></span> -&gt; <span class="type">Disposable</span> <span class="keyword">where</span> <span class="type">O</span>.<span class="type">E</span> == <span class="type">E</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> _isDisposed &#123;</span><br><span class="line">        observer.on(.error(<span class="type">RxError</span>.disposed(object: <span class="keyword">self</span>)))</span><br><span class="line">        <span class="keyword">return</span> <span class="type">Disposables</span>.create()</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">let</span> stoppedEvent = _stoppedEvent &#123;</span><br><span class="line">        observer.on(stoppedEvent)</span><br><span class="line">        <span class="keyword">return</span> <span class="type">Disposables</span>.create()</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">let</span> key = _observers.insert(observer.on)</span><br><span class="line">    observer.on(.next(_value))</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="type">SubscriptionDisposable</span>(owner: <span class="keyword">self</span>, key: key)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>需要把这部分加上锁，防止在将 Observer 加入字典的时候，产生错误。然后就像上面讲的一样，先看看有没有 <code>stoppedEvent</code>，有的话执行该 event，没有的话，将 Observer 加入字典，然后触发这个 Observer 的事件。</p>
+<p>最后，返回了一个 <code>SubscriptionDisposable</code>，它是一个非常简单的结构体。保存了 self，防止 BehaviorSubject 回收，保存了<code>key</code>，用于回收对应的 Observer。</p>
+<p><code>on</code> 方法是因为 BehaviorSubject 也实现了 <code>ObserverType</code> 协议，再看一下 <code>on</code> 做了什么：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// Notifies all subscribed observers about next event.</span></span><br><span class="line"><span class="comment">///</span></span><br><span class="line"><span class="comment">/// - parameter event: Event to send to the observers.</span></span><br><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">func</span> <span class="title">on</span><span class="params">(<span class="number">_</span> event: Event&lt;E&gt;)</span></span> &#123;</span><br><span class="line">    _lock.lock()</span><br><span class="line">    dispatch(_synchronized_on(event), event)</span><br><span class="line">    _lock.unlock()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> _synchronized_on<span class="params">(<span class="number">_</span> event: Event&lt;E&gt;)</span></span> -&gt; <span class="type">Bag</span>&lt;(<span class="type">Event</span>&lt;<span class="type">Element</span>&gt;) -&gt; ()&gt; &#123;</span><br><span class="line">    <span class="keyword">if</span> _stoppedEvent != <span class="literal">nil</span> || _isDisposed &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="type">Bag</span>()</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">switch</span> event &#123;</span><br><span class="line">    <span class="keyword">case</span> .next(<span class="keyword">let</span> value):</span><br><span class="line">        _value = value</span><br><span class="line">    <span class="keyword">case</span> .error, .completed:</span><br><span class="line">        _stoppedEvent = event</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> _observers</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>同样的也是将这个过程锁上，避免在执行的时候，新的 Observer 被加入字典中，导致新的 Observer 也响应事件。这里的 <code>dispatch</code> 方法主要就是通过一个 for 循环，将 <code>_observers</code> 中的每个 Observer 都触发 <code>event</code> 事件。下面同步的 <code>on</code> 方法也就不多解释了。</p>
+<p>这就是 BehaviorSubject 的大致实现过程。</p>
+<blockquote>
+<p>其实 Subject 就是典型的观察者模式。<code>create</code> 把类大概分成了四个部分。Subject 则结合了 Observable 和 Sink 做的事情。它在内部为每个观察者创建了匿名的 Observer 并保存，然后可以自行调用 <code>onNext</code> 调用这些 Observer 的事件处理方法。将创建事件队列和执行事件队列放在了一起。</p>
+</blockquote>
+<h2 id="代理转发"><a href="#代理转发" class="headerlink" title="代理转发"></a>代理转发</h2><p>前面的文章说到，会详细叙述一下代理转发的流程，那么现在来看一看这方面的源码。我们在 RxCocoa 中找一个需要实现代理的控件类，看一下它的解决方式。比如 UITabBarController。</p>
+<h3 id="控件的-rx-拓展"><a href="#控件的-rx-拓展" class="headerlink" title="控件的 rx 拓展"></a>控件的 rx 拓展</h3><p>关于代理转发需要我们创建的只有两个类，一个是 UITabBarController 的 rx 拓展类，一个是 UITabBarControllerDelegate 的实现类 DelegateProxy。先来看一下 UITabBarController 的 rx 拓展类：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">extension</span> <span class="title">Reactive</span> <span class="title">where</span> <span class="title">Base</span>: <span class="title">UITabBarController</span> </span>&#123;</span><br><span class="line">    <span class="comment">/// Reactive wrapper for `delegate`.</span></span><br><span class="line">    <span class="comment">///</span></span><br><span class="line">    <span class="comment">/// For more information take a look at `DelegateProxyType` protocol documentation.</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">var</span> delegate: <span class="type">DelegateProxy</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="type">RxTabBarControllerDelegateProxy</span>.proxyForObject(base)</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/// Reactive wrapper for `delegate` message `tabBarController:didSelect:`.</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">var</span> didSelect: <span class="type">ControlEvent</span>&lt;<span class="type">UIViewController</span>&gt; &#123;</span><br><span class="line">        <span class="keyword">let</span> source = delegate.methodInvoked(#selector(<span class="type">UITabBarControllerDelegate</span>.tabBarController(<span class="number">_</span>:didSelect:)))</span><br><span class="line">            .<span class="built_in">map</span> &#123; a <span class="keyword">in</span></span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">try</span> castOrThrow(<span class="type">UIViewController</span>.<span class="keyword">self</span>, a[<span class="number">1</span>])</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> <span class="type">ControlEvent</span>(events: source)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们可以看到，这个类中先定义了一个 <code>DelegateProxy</code> 类型的 <code>delegate</code>，这就是上面所说的 UITabBarControllerDelegate 的实现类。另外定义了一个 <code>didSelect</code> 属性，它的类型是 <code>ControlEvent</code>，其实就是一个 Observable。我们知道 UITabBarControllerDelegate 中有一个代理方法就是 <code>didSelect</code>，所以这里定义的 Observable 其实就是用来替代传统的代理方法的。</p>
+<p><code>delegate</code> 是一个只读属性，它只是调用了 DelegateProxy 的 <code>proxyForObject</code> 方法。DelegateProxy 的继承关系比较复杂，我们先看一下关系图：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/rx_prin_3.png?raw=true" alt></p>
+<blockquote>
+<p>强调一下，<code>delegate</code> 是 rx 命名空间下的，不会影响到控件本生的 delegate 属性。</p>
+</blockquote>
+<h3 id="替换代理类"><a href="#替换代理类" class="headerlink" title="替换代理类"></a>替换代理类</h3><p>可以看到 <code>proxyForObject</code> 是 <code>DelegateProxyType</code> 协议中的方法，它在协议的拓展中提供了默认的实现：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="function"><span class="keyword">func</span> <span class="title">proxyForObject</span><span class="params">(<span class="number">_</span> object: AnyObject)</span></span> -&gt; <span class="type">Self</span> &#123;</span><br><span class="line">    <span class="type">MainScheduler</span>.ensureExecutingOnScheduler()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> maybeProxy = <span class="type">Self</span>.assignedProxyFor(object) <span class="keyword">as</span>? <span class="type">Self</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> proxy: <span class="type">Self</span></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">let</span> existingProxy = maybeProxy &#123;</span><br><span class="line">        proxy = existingProxy</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> &#123;</span><br><span class="line">        proxy = <span class="type">Self</span>.createProxyForObject(object) <span class="keyword">as</span>! <span class="type">Self</span></span><br><span class="line">        <span class="type">Self</span>.assignProxy(proxy, toObject: object)</span><br><span class="line">        <span class="built_in">assert</span>(<span class="type">Self</span>.assignedProxyFor(object) === proxy)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> currentDelegate: <span class="type">AnyObject</span>? = <span class="type">Self</span>.currentDelegateFor(object)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> currentDelegate !== proxy &#123;</span><br><span class="line">        proxy.setForwardToDelegate(currentDelegate, retainDelegate: <span class="literal">false</span>)</span><br><span class="line">        <span class="built_in">assert</span>(proxy.forwardToDelegate() === currentDelegate)</span><br><span class="line">        <span class="type">Self</span>.setCurrentDelegate(proxy, toObject: object)</span><br><span class="line">        <span class="built_in">assert</span>(<span class="type">Self</span>.currentDelegateFor(object) === proxy)</span><br><span class="line">        <span class="built_in">assert</span>(proxy.forwardToDelegate() === currentDelegate)</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> proxy</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="创建-proxy"><a href="#创建-proxy" class="headerlink" title="创建 proxy"></a>创建 proxy</h4><p>首先通过 <code>assignedPorxyFor</code> 这个类方法方法，获取指定控件(object)的 DelegateProxy 的实例。这个方法在 <code>DelegateProxyType</code> 协议中定义，在 <code>DelegateType</code> 中实现：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">open</span> <span class="class"><span class="keyword">class</span> <span class="title">func</span> <span class="title">assignedProxyFor</span>(_ <span class="title">object</span>: <span class="title">AnyObject</span>) -&gt; <span class="title">AnyObject</span>? </span>&#123;</span><br><span class="line">    <span class="keyword">let</span> maybeDelegate = objc_getAssociatedObject(object, <span class="keyword">self</span>.delegateAssociatedObjectTag())</span><br><span class="line">    <span class="keyword">return</span> castOptionalOrFatalError(maybeDelegate.<span class="built_in">map</span> &#123; $<span class="number">0</span> <span class="keyword">as</span> <span class="type">AnyObject</span> &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>它通过关联对象的方式，从指定控件中取出。如果这个 proxy 存在，就说明之前已经设置过了，如果没有，那么通过 <code>createProxyForObject</code> 方法创建。这个创建方法同样是在 <code>DelegateProxyType</code> 中定义，在 <code>DelegateProxy</code> 中实现。它做的很简单，就是实例化自身：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">open</span> <span class="class"><span class="keyword">class</span> <span class="title">func</span> <span class="title">createProxyForObject</span>(_ <span class="title">object</span>: <span class="title">AnyObject</span>) -&gt; <span class="title">AnyObject</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">self</span>.<span class="keyword">init</span>(parentObject: object)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后就是将自身与控件关联。总的来说，上面就是要创建一个 DelegateProxy，然后保存为相应控件的属性的一个属性。</p>
+<h4 id="获取当前代理对象"><a href="#获取当前代理对象" class="headerlink" title="获取当前代理对象"></a>获取当前代理对象</h4><p>接下来通过 <code>currentDelegateFor</code> 获取当前控件的实际代理类。这个方法是需要自己在 DelegtateProxy 子类中实现的，因为虽然用做代理，但是可能叫法不同，比如 tableView 的数据源代理就叫做 dataSource。TabBarController 的 DelegateProxy 中仅有的两个方法就是取出和设置自身的代理：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RxTabBarControllerDelegateProxy</span></span></span><br><span class="line"><span class="class">    : <span class="title">DelegateProxy</span></span></span><br><span class="line"><span class="class">    , <span class="title">UITabBarControllerDelegate</span></span></span><br><span class="line"><span class="class">    , <span class="title">DelegateProxyType</span> </span>&#123;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/// For more information take a look at `DelegateProxyType`.</span></span><br><span class="line">    <span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">func</span> <span class="title">currentDelegateFor</span>(_ <span class="title">object</span>: <span class="title">AnyObject</span>) -&gt; <span class="title">AnyObject</span>? </span>&#123;</span><br><span class="line">        <span class="keyword">let</span> tabBarController: <span class="type">UITabBarController</span> = castOrFatalError(object)</span><br><span class="line">        <span class="keyword">return</span> tabBarController.delegate</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/// For more information take a look at `DelegateProxyType`.</span></span><br><span class="line">    <span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">func</span> <span class="title">setCurrentDelegate</span>(_ <span class="title">delegate</span>: <span class="title">AnyObject</span>?, <span class="title">toObject</span> <span class="title">object</span>: <span class="title">AnyObject</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">let</span> tabBarController: <span class="type">UITabBarController</span> = castOrFatalError(object)</span><br><span class="line">        tabBarController.delegate = castOptionalOrFatalError(delegate)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>就是说，上面代码中的 delegate 在一些情况下，可能不叫 delegate，所以没法写成一个公共的方法，必须要每个 DelegateProxy 都自己根据情况实现。</p>
+</blockquote>
+<h4 id="用-proxy-替换代理对象"><a href="#用-proxy-替换代理对象" class="headerlink" title="用 proxy 替换代理对象"></a>用 proxy 替换代理对象</h4><p>拿到当前的代理对象后，通过一个 if 判断当前代理对象是否是上面得到的 proxy。如果是，说明之前已经设置过了，直接将 proxy 返回即可；如果不是，那就要用 proxy 将代理对象替换掉。这个过程由 <code>setForwardToDelegate</code> 方法完成，实现还是在 <code>DelegateProxy</code> 中：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">open</span> <span class="function"><span class="keyword">func</span> <span class="title">setForwardToDelegate</span><span class="params">(<span class="number">_</span> delegate: AnyObject?, retainDelegate: Bool)</span></span> &#123;</span><br><span class="line">    <span class="keyword">self</span>._setForward(toDelegate: delegate, retainDelegate: retainDelegate)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>看到这个带下划线的方法，应该能猜到，这就是调用的 OC 的方法了。在 <code>_RXDelegateProxy</code> 这个 OC 类中，定义了一个 <code>__forwardToDelegate</code> 属性。这个属性是弱引用的，它用来保存正真的代理对象：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">-(<span class="keyword">void</span>)_setForwardToDelegate:(<span class="keyword">id</span> __<span class="keyword">nullable</span>)forwardToDelegate retainDelegate:(<span class="built_in">BOOL</span>)retainDelegate &#123;</span><br><span class="line">    __forwardToDelegate = forwardToDelegate;</span><br><span class="line">    <span class="keyword">if</span> (retainDelegate) &#123;</span><br><span class="line">        <span class="keyword">self</span>.strongForwardDelegate = forwardToDelegate;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">self</span>.strongForwardDelegate = <span class="literal">nil</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们可以看到有一个 Bool 类型的  <code>retainDelegate</code> 入参。它来决定是否将弱引用变成强引用，不过一般情况，我们并不需要强引用。总之，将原本的代理对象安顿好了之后，就通过 <code>setCurrentDelegate</code> 将 proxy 设置为代理对象，并且返回了。</p>
+<h3 id="获取方法的-Observable"><a href="#获取方法的-Observable" class="headerlink" title="获取方法的 Observable"></a>获取方法的 Observable</h3><p>回到我们看过的控件的 rx 拓展中，前面说到 <code>didSelect</code> 这个计算属性，返回一个 Observable，拦截代理方法的工作也是由它自己完成的：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">var</span> didSelect: <span class="type">ControlEvent</span>&lt;<span class="type">UIViewController</span>&gt; &#123;</span><br><span class="line">    <span class="keyword">let</span> source = delegate.methodInvoked(#selector(<span class="type">UITabBarControllerDelegate</span>.tabBarController(<span class="number">_</span>:didSelect:)))</span><br><span class="line">        .<span class="built_in">map</span> &#123; a <span class="keyword">in</span></span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">try</span> castOrThrow(<span class="type">UIViewController</span>.<span class="keyword">self</span>, a[<span class="number">1</span>])</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> <span class="type">ControlEvent</span>(events: source)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里的主要方法就是这个 <code>methodInvoked</code>，它在 <code>DelegateProxy</code> 中。（另外插一句，这里的 <code>a</code> 代表的是代理方法的各个入参，<code>a[0]</code> 表示该 tabBarController，<code>a[1]</code> 表示的就是 <code>didSelect:</code> 对应的入参。）我们继续看下去：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">open</span> <span class="function"><span class="keyword">func</span> <span class="title">methodInvoked</span><span class="params">(<span class="number">_</span> selector: Selector)</span></span> -&gt; <span class="type">Observable</span>&lt;[<span class="type">Any</span>]&gt; &#123;</span><br><span class="line">    checkSelectorIsObservable(selector)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> subject = methodInvokedForSelector[selector]</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">let</span> subject = subject &#123;</span><br><span class="line">        <span class="keyword">return</span> subject</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">let</span> subject = <span class="type">PublishSubject</span>&lt;[<span class="type">Any</span>]&gt;()</span><br><span class="line">        methodInvokedForSelector[selector] = subject</span><br><span class="line">        <span class="keyword">return</span> subject</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>首先通过 <code>checkSelectorIsObservable</code> 检查方法是否已通过非 rx 的代理方式实现了。这个方法不是太重要。之后从 <code>methodInvokedForSelector</code> 中取出 selector 对应的 subject 对象。这个属性是一个字典，以 selector 为键，以 subject 为值。如果存在 subject 就说明，已经创建了 selector 对应的 Observable 对象了，直接返回即可；如果没有，那么就创建一个 PublishSubject，并且将其存入 <code>methodInvokedForSelecotr</code> 字典中去，最后返回这个 subject。我们就可以使用这个 subject 来进行订阅了。</p>
+<blockquote>
+<p>所以获取方法的 Observable 的过程就是从一个字典中取出方法对应 Observable 的过程。</p>
+</blockquote>
+<h3 id="拦截方法"><a href="#拦截方法" class="headerlink" title="拦截方法"></a>拦截方法</h3><p>那么调用代理方法的过程是如何转变为触发事件的呢？这里就要用到 OC runtime 中的消息转发。在 <code>_RXDelegateProxy</code> 中实现了消息转发的方法 <code>forwardInvocation</code>。我们将 DelegateProxy 设置为代理类，但是我们一直没有实现代理方法。所以系统企图调用代理方法的时候发现没有代理方法，就执行消息转发的方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">-(<span class="keyword">void</span>)forwardInvocation:(<span class="built_in">NSInvocation</span> *)anInvocation &#123;</span><br><span class="line">    <span class="built_in">BOOL</span> isVoid = RX_is_method_signature_void(anInvocation.methodSignature);</span><br><span class="line">    <span class="built_in">NSArray</span> *arguments = <span class="literal">nil</span>;</span><br><span class="line">    <span class="keyword">if</span> (isVoid) &#123;</span><br><span class="line">        arguments = RX_extract_arguments(anInvocation);</span><br><span class="line">        [<span class="keyword">self</span> _sentMessage:anInvocation.selector withArguments:arguments];</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>._forwardToDelegate &amp;&amp; [<span class="keyword">self</span>._forwardToDelegate respondsToSelector:anInvocation.selector]) &#123;</span><br><span class="line">        [anInvocation invokeWithTarget:<span class="keyword">self</span>._forwardToDelegate];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (isVoid) &#123;</span><br><span class="line">        [<span class="keyword">self</span> _methodInvoked:anInvocation.selector withArguments:arguments];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>首先检查一下代理方法是不是有返回值。为什么要检查这个呢？因为我们订阅 Observable 的处理方法是不会有返回值的，但是一般的代理方法不同，代理方法有一些是要返回处理完的数据的。对于有返回值的代理方法，我们是无法以 Observable 的方式订阅的，只能老老实实的写回调方法。</p>
+<p>下面是三个 if 判断。中间的 if 我们看到了熟悉的 <code>_forwardToDelegate</code> 属性。我们也说过了，这个属性是用来临时保存原本正真的代理对象的。这个 if 的作用就是，检查一下正真的代理对象有没有实现这个 selector，如果有，那么执行。这样的好处就是既不影响原本代理方法的执行，又能给我们提供用 Observable 处理的余地。</p>
+<p>上下两个 if 判断就都是用来触发事件的。一上一下分别在正真的代理方法执行前后触发。前文中，我们有通过 <code>methodInvoked</code> 方法获取 selector 对应的 Observable，其实还有一个 <code>sendMessage</code> 方法也起着一样的作用，原理也是相同的。是不是很像 AOP。</p>
+<p><code>_methodInvoked</code> 方法将代理方法的参数作为事件值触发事件：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">open</span> <span class="keyword">override</span> <span class="function"><span class="keyword">func</span> _methodInvoked<span class="params">(<span class="number">_</span> selector: Selector, withArguments arguments: [Any])</span></span> &#123;</span><br><span class="line">    methodInvokedForSelector[selector]?.on(.next(arguments))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>如何获得触发事件的入口？答案就是通过消息转发。所有没有实现的代理方法走消息转发，达到统一触发事件的目的。</p>
+</blockquote>
+<h3 id="另一种替换代理类的方式"><a href="#另一种替换代理类的方式" class="headerlink" title="另一种替换代理类的方式"></a>另一种替换代理类的方式</h3><p>前面替换代理类的方式是 <code>proxyForObject</code>方法，它会把该 Object 的 delegate 替换为 DelegateProxy，把原本的 delegate 对象设置为 DelegateProxy 的 forwardDelegate 属性。</p>
+<p>除此之外，还有一个替换代理的方法：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="function"><span class="keyword">func</span> <span class="title">installForwardDelegate</span><span class="params">(<span class="number">_</span> forwardDelegate: AnyObject, retainDelegate: Bool, onProxyForObject object: AnyObject)</span></span> -&gt; <span class="type">Disposable</span> &#123;</span><br><span class="line">    <span class="keyword">weak</span> <span class="keyword">var</span> weakForwardDelegate: <span class="type">AnyObject</span>? = forwardDelegate</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> proxy = <span class="type">Self</span>.proxyForObject(object)</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">assert</span>(proxy.forwardToDelegate() === <span class="literal">nil</span>, <span class="string">"This is a feature to warn you that there is already a delegate (or data source) set somewhere previously. The action you are trying to perform will clear that delegate (data source) and that means that some of your features that depend on that delegate (data source) being set will likely stop working.\n"</span> +</span><br><span class="line">        <span class="string">"If you are ok with this, try to set delegate (data source) to `nil` in front of this operation.\n"</span> +</span><br><span class="line">        <span class="string">" This is the source object value: \(object)\n"</span> +</span><br><span class="line">        <span class="string">" This this the original delegate (data source) value: \(proxy.forwardToDelegate()!)\n"</span> +</span><br><span class="line">        <span class="string">"Hint: Maybe delegate was already set in xib or storyboard and now it's being overwritten in code.\n"</span>)</span><br><span class="line"></span><br><span class="line">    proxy.setForwardToDelegate(forwardDelegate, retainDelegate: retainDelegate)</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// refresh properties after delegate is set</span></span><br><span class="line">    <span class="comment">// some views like UITableView cache `respondsToSelector`</span></span><br><span class="line">    <span class="type">Self</span>.setCurrentDelegate(<span class="literal">nil</span>, toObject: object)</span><br><span class="line">    <span class="type">Self</span>.setCurrentDelegate(proxy, toObject: object)</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">assert</span>(proxy.forwardToDelegate() === forwardDelegate, <span class="string">"Setting of delegate failed:\ncurrent:\n\(String(describing: proxy.forwardToDelegate()))\nexpected:\n\(forwardDelegate)"</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> <span class="type">Disposables</span>.create &#123;</span><br><span class="line">        <span class="type">MainScheduler</span>.ensureExecutingOnScheduler()</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">let</span> delegate: <span class="type">AnyObject</span>? = weakForwardDelegate</span><br><span class="line">        </span><br><span class="line">        <span class="built_in">assert</span>(delegate == <span class="literal">nil</span> || proxy.forwardToDelegate() === delegate, <span class="string">"Delegate was changed from time it was first set. Current \(String(describing: proxy.forwardToDelegate())), and it should have been \(proxy)"</span>)</span><br><span class="line">        </span><br><span class="line">        proxy.setForwardToDelegate(<span class="literal">nil</span>, retainDelegate: retainDelegate)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个方法会直接让你传入 forwardDelegate，并且你要是之前设置过 delegate，它还不高兴了。所以这个方法最好在你没有设置代理的时候用。该方法中也调用了 <code>proxyForObject</code>。除此之外，这个方法返回一个 Disposer，并在 dispose 的时候，将 forwardDelegate 正式设置为 delegate。因此，用这种方式的话，你需要将其放入 disposableBag 中。这样的功效就是如果 DelegateProxy 回收了，那么 forwardDelegate 就顺势升值了。</p>
+<p>其实这也就是 Disposer 给我们带来的便利。我们不需要再 dealloc 的时候做设置了，直接全部扔到 disposableBag 中去。</p>
+<blockquote>
+<p>整个过程就是，我们通过  proxyForObject 将 delegate 设置为 DelegateProxy。DelegateProxy 为每一个无返回值的代理方法都创建了 subject。我们通过 DelegateProxy 提供的 methodInvoked 获取这些 subject，并订阅。不在 DelegateProxy 中实现这些代理方法，使其触发消息转发。消息转发中统一执行方法，获取 selector 的 subject，并触发事件。</p>
+<p>我们需要做的是：</p>
+<ol>
+<li>在 rx 拓展中，添加一个只读的代理属性(不一定叫做 delegate)。读取方法中调用相应 DelegateProxy 的 proxyForObject 并返回。</li>
+<li>在 rx 拓展中，添加只读的属性。读取方法中调用 DelegateProxy 的 methodInvoked 获取相应 selector 的 subject</li>
+<li>在相应 DelegateProxy 中添加 <code>currentDelegateFor</code>  和 <code>setCurrentDelegate</code> 方法，返回，设置类的原始代理属性(不一定是 delegate)。</li>
+<li>在相应 DelegateProxy 中添加返回值非空的代理方法的实现。</li>
+</ol>
+</blockquote>
+<p>不想在写了，累的兔血，暂时就这样吧。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tag/源码解析/" rel="tag"># 源码解析</a>
+          
+            <a href="/tag/RxSwift/" rel="tag"># RxSwift</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/11/03/RxCocoa应用/" rel="next" title="RxCocoa 的应用">
+                <i class="fa fa-chevron-left"></i> RxCocoa 的应用
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/11/30/FMDB/" rel="prev" title="FMDB 及其封装框架的实现过程">
+                FMDB 及其封装框架的实现过程 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.png" alt="Zachary Zhang">
+            
+              <p class="site-author-name" itemprop="name">Zachary Zhang</p>
+              <p class="site-description motion-element" itemprop="description">Stay Hungry. Stay Foolish!</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">116</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/zhang759740844" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:zch759740844@126.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#rx-的命名空间如何产生"><span class="nav-number">1.</span> <span class="nav-text">rx 的命名空间如何产生</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#如何创建-Observable-以及订阅"><span class="nav-number">2.</span> <span class="nav-text">如何创建 Observable 以及订阅</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#概述"><span class="nav-number">2.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创建"><span class="nav-number">2.2.</span> <span class="nav-text">创建</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#订阅"><span class="nav-number">2.3.</span> <span class="nav-text">订阅</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#执行"><span class="nav-number">2.4.</span> <span class="nav-text">执行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#回收"><span class="nav-number">2.5.</span> <span class="nav-text">回收</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Subject-的创建与订阅"><span class="nav-number">3.</span> <span class="nav-text">Subject 的创建与订阅</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Variable"><span class="nav-number">3.1.</span> <span class="nav-text">Variable</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#BehaviorSubject"><span class="nav-number">3.2.</span> <span class="nav-text">BehaviorSubject</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#代理转发"><span class="nav-number">4.</span> <span class="nav-text">代理转发</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#控件的-rx-拓展"><span class="nav-number">4.1.</span> <span class="nav-text">控件的 rx 拓展</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#替换代理类"><span class="nav-number">4.2.</span> <span class="nav-text">替换代理类</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#创建-proxy"><span class="nav-number">4.2.1.</span> <span class="nav-text">创建 proxy</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#获取当前代理对象"><span class="nav-number">4.2.2.</span> <span class="nav-text">获取当前代理对象</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#用-proxy-替换代理对象"><span class="nav-number">4.2.3.</span> <span class="nav-text">用 proxy 替换代理对象</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#获取方法的-Observable"><span class="nav-number">4.3.</span> <span class="nav-text">获取方法的 Observable</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#拦截方法"><span class="nav-number">4.4.</span> <span class="nav-text">拦截方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#另一种替换代理类的方式"><span class="nav-number">4.5.</span> <span class="nav-text">另一种替换代理类的方式</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zachary Zhang</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

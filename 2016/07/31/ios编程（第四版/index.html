@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+
+
+
+
+  <meta name="keywords" content="学习笔记,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="本文是对《ios编程(第四版)》一书学习后摘录的笔记，属于ios开发基础。">
+<meta name="keywords" content="学习笔记">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ios编程(第四版) 学习笔记">
+<meta property="og:url" content="http://zhang759740844.github.io/2016/07/31/ios编程（第四版/index.html">
+<meta property="og:site_name" content="Zachary&#39;s blog">
+<meta property="og:description" content="本文是对《ios编程(第四版)》一书学习后摘录的笔记，属于ios开发基础。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/iOS_视图.jpg?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/iOS_运行循环.jpg?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/iOS_fileowner.jpg?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/iOS_ViewControllerClass.jpg?raw=true">
+<meta property="og:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/iOS_Outlet.jpg?raw=true">
+<meta property="og:updated_time" content="2020-02-27T15:13:37.651Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ios编程(第四版) 学习笔记">
+<meta name="twitter:description" content="本文是对《ios编程(第四版)》一书学习后摘录的笔记，属于ios开发基础。">
+<meta name="twitter:image" content="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/iOS_视图.jpg?raw=true">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://zhang759740844.github.io/2016/07/31/ios编程（第四版/">
+
+
+
+
+
+  <title>ios编程(第四版) 学习笔记 | Zachary's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Zachary's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">记录成长</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://zhang759740844.github.io/2016/07/31/ios编程（第四版/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zachary Zhang">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Zachary's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">ios编程(第四版) 学习笔记</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-07-31T14:07:12+08:00">
+                2016-07-31
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本文是对《ios编程(第四版)》一书学习后摘录的笔记，属于ios开发基础。</p>
+<a id="more"></a>
+<h2 id="视图与视图层次结构"><a href="#视图与视图层次结构" class="headerlink" title="视图与视图层次结构"></a>视图与视图层次结构</h2><h3 id="视图层次结构"><a href="#视图层次结构" class="headerlink" title="视图层次结构"></a>视图层次结构</h3><p>视图层次结构中的每个视图分别绘制自己。视图会将自己绘制到图层(layer)上，每个 <strong>UIView</strong> 对象都有一个 layer 属性，指向一个 <strong>CALayer</strong> 类的对象。</p>
+<blockquote>
+<p>layer 只负责显示，layer 可以不和 View 重叠的放在任何位置，但是关于视图的响应还是要靠 UIView，即看 View 的位置。</p>
+</blockquote>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/iOS_视图.jpg?raw=true" alt="视图首先分别绘制自己，然后组合起来绘制到屏幕上"></p>
+<h3 id="创建-UIView-子类"><a href="#创建-UIView-子类" class="headerlink" title="创建 UIView 子类"></a>创建 UIView 子类</h3><p>每个 <strong>UIView</strong> 对象都有一个 superview 属性。将一个视图作为子视图加入另一个视图时，会自动创建相应的反向关联。</p>
+<h3 id="在-drawRect-方法中自定义绘图"><a href="#在-drawRect-方法中自定义绘图" class="headerlink" title="在 drawRect: 方法中自定义绘图"></a>在 drawRect: 方法中自定义绘图</h3><p>视图根据 <strong>drawRect:</strong> 方法将自己绘制到图层上。每个 <strong>UIView</strong> 的子类可以覆盖 <strong>drawRect:</strong>，完成自定义的绘图任务。例如 <strong>UIButton</strong> 的 <strong>drawRect:</strong> 方法默认会在 frame 表示的矩形区域中心画一行浅蓝色的文字。</p>
+<p>可以使用 <strong>UIBezeierPath</strong> 绘制直线或者曲线来组成各种形状，例如画一个同心圆的一个略伪的代码：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)drawRect:(<span class="built_in">CGRect</span>)rect&#123;</span><br><span class="line">  <span class="built_in">UIBezierPath</span> *path = [[<span class="built_in">UIBezierPath</span> alloc] init];</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 画同心圆</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">float</span> currentRadius = maxRadius; currentRadius &gt;<span class="number">0</span>; currentRadius -= <span class="number">20</span>)&#123;</span><br><span class="line">    <span class="comment">// 每一次一个 path 的 stroke 都相当于是一笔画，绘制完一个圆后必须要抬笔让起始点移动到另一个地方</span></span><br><span class="line">    [path moveToPoint:<span class="built_in">CGPointMake</span>(center.x + currentRadius, center.y)];</span><br><span class="line">    <span class="comment">// 画弧</span></span><br><span class="line">    [path addArcWithCenter:center radius:currentRadius startAngle:<span class="number">0.0</span> endAngle:M_PI*<span class="number">2</span> clockwise:<span class="literal">YES</span>];</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 设置线条宽度为10</span></span><br><span class="line">  path.lineWidth = <span class="number">10</span>;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 设置画笔颜色为浅灰色</span></span><br><span class="line">  [[<span class="built_in">UIColor</span> lightGrayColor] setStroke];</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 绘制路径</span></span><br><span class="line">  [path stroke];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="深入学习-Core-Graphics"><a href="#深入学习-Core-Graphics" class="headerlink" title="深入学习: Core Graphics"></a>深入学习: Core Graphics</h3><p> Core Graphics 中最重要的对象是图形上下文，图形上下文是 CGContextRef 的对象，负责存储回话状态(例如画笔颜色和线条粗细)和挥之内容所处的内存空间。</p>
+<p>参与绘图操作的类都定义了改变绘图状态和执行绘图操作的方法，这些方法其实调用了对应的 Core Graphics 函数。有时候我们不得不用到其中的一些属性，但是一般情况下，我们没有必要直接使用 Core Graphics。</p>
+<h2 id="视图-重绘与-UIScrollView"><a href="#视图-重绘与-UIScrollView" class="headerlink" title="视图:重绘与 UIScrollView"></a>视图:重绘与 UIScrollView</h2><h3 id="运行循环和重绘视图"><a href="#运行循环和重绘视图" class="headerlink" title="运行循环和重绘视图"></a>运行循环和重绘视图</h3><p>iOS 应用启动会开始一个运行循环。运行循环的工作是处理事件，例如触摸。运行循环会为相应的事件找到合适的处理方法。当这些方法执行完毕后，控制权会再次回到运行循环。</p>
+<p>当应用将控制权交回给运行循环时，运行循环首先会检查是否有等待重绘的视图(即当前循环收到过 <strong>setNeedDisplay</strong> 消息的视图)，然后向所有等待重绘的视图发送 <strong>drawRect:</strong></p>
+<p>在事件处理周期中，视图的属性可能会多次改变，如果经常重绘自己，会减慢界面的响应速度。iOS 会在运行循环的最后阶段集中处理所有需要重绘的视图，尤其是对于属性多次发生改变的视图，在每次时间处理周期中只重绘一次。</p>
+<p>为了标记视图要重绘，必须向其发送 <strong>setNeedsDisplay</strong> 消息。系统中的视图对象会在显示的内容发生改变时向自身发送 <strong>setNeedsDisplay</strong> 消息，例如 <strong>UILabel</strong> 对象收到 <strong>setText:</strong> 消息后，会自动标记为需要重绘。而自定义的 <strong>UIView</strong> 子类，必须手动向其发送 <strong>setNeedsDisplay</strong> 消息。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/iOS_运行循环.jpg?raw=true" alt="视图在运行循环中重绘自己"></p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)setCircleColor:(<span class="built_in">UIColor</span> *)circleColor&#123;</span><br><span class="line">  circleColor = circleColor;</span><br><span class="line">  [<span class="keyword">self</span> setNeedsDisplay];	<span class="comment">// 重绘</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="使用-UIScrollView"><a href="#使用-UIScrollView" class="headerlink" title="使用 UIScrollView"></a>使用 UIScrollView</h3><p>另一篇专门讲 <strong>UIScrollView</strong> 的文章已经说了，<strong>UIScrollView</strong> 有两个 size，一个控制显示的框框的大小，就是指 <strong>frame</strong>，一个是实际内部图像的大小，就是其中的 <strong>contentSize</strong> 属性：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 外部大小设置为屏幕大小</span></span><br><span class="line"><span class="built_in">UIScrollView</span> *scrollView = [[<span class="built_in">UIScrollView</span> alloc] initWithFrame:screenRect];</span><br><span class="line"><span class="comment">// 添加一个 ContentView，在这个 View 上添加更多要显示的图形</span></span><br><span class="line"><span class="built_in">UIView</span> *contentView = [[<span class="built_in">UIView</span> alloc] initWithFrame:bigRect];</span><br><span class="line">[scrollView addSubview:contentView];</span><br><span class="line"><span class="comment">// 告诉 UIScrollView 取景范围多大</span></span><br><span class="line">scrollView.contentSize = bigRect.size;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 可以在 contentView 中添加各种 subview</span></span><br><span class="line">[contentView addSubview:xx1View];</span><br><span class="line">[contentView addSubview:xx2View];</span><br></pre></td></tr></table></figure>
+<p><strong>UIScrollView</strong> 中有一个分页的属性 <strong>pagingEnabled</strong>，如果将其设置为 YES，会一页一页地显示视图，其实现原理是： <strong>UIScrollView</strong> 对象会根据其 bounds 的尺寸，将 contentSize 分割为尺寸相同的多个区域。拖动结束后， <strong>UIScrollView</strong> 会自动滚动并值显示其中一个区域。</p>
+<h2 id="视图控制器"><a href="#视图控制器" class="headerlink" title="视图控制器"></a>视图控制器</h2><h3 id="创建-UIViewController子类"><a href="#创建-UIViewController子类" class="headerlink" title="创建 UIViewController子类"></a>创建 UIViewController子类</h3><p><strong>UIViewController</strong>有一个重要属性 view，它是视图层次结构的根视图，所有视图都添加在这个 view 上:</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>) <span class="built_in">UIView</span> *view;</span><br></pre></td></tr></table></figure>
+<p>视图控制器可以通过两种方式创建视图层次结构:</p>
+<ul>
+<li>代码方式:覆盖 <strong>UIViewController</strong> 中的 <strong>loadView</strong> </li>
+<li>NIB 文件方式:不覆盖 <strong>UIViewController</strong> 中的 <strong>loadView</strong> </li>
+</ul>
+<p><strong>loadView</strong> 方法会在 ViewController 的 view 被请求并且<strong>当前view为nil时</strong>调用这个方法。所以你调用 <code>[[UIViewController alloc] init]</code> 并且将这个 ViewController 显示出来的时候，会自动触发 <strong>loadView</strong> 方法。</p>
+<p>系统的 <strong>loadView</strong> 方法的默认实现是：寻找有关的 nib 文件的信息，根据这个信息来加载 nib 文件。如果没有相关nib文件的信息，默认创建一个空白的 UIView 对象，然后把对象成赋值给 ViewController 的主 view。</p>
+<p>这个nib文件的信息是 <strong>initWithNibName:Bundle:</strong> 方法提供的，你可以在创建 VC 的时候直接手动调用：<code>[[UIViewController alloc] initWithNibName:@&quot;xxxx&quot; Bundle:[UIBundle mainBundle]]</code>。如果是使用 init 方法初始化的，init 方法会默认调用该方法，其中的 nibName 默认是同名文件。</p>
+<blockquote>
+<p>通过 Nib 文件方式加载视图就是不要重写 loadView 方法</p>
+</blockquote>
+<p>自定义重载 <strong>loadView</strong> 的时候注意不需要调用上面所说的系统实现方法 <code>[super loadView];</code> 因为你想自定义 view 的话，就需要自己给 view 属性赋值。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)loadView&#123;</span><br><span class="line">  <span class="comment">// 创建一个view</span></span><br><span class="line">  <span class="built_in">UIView</span> *view = [[<span class="built_in">UIView</span> alloc] init];</span><br><span class="line">  <span class="comment">// 将 view 赋给控制器的 view 属性</span></span><br><span class="line">  <span class="keyword">self</span>.view = view;</span><br><span class="line">  <span class="comment">// 添加其他的view</span></span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>重写 loadView 来实现代码方式自定义视图</p>
+</blockquote>
+<p>无论 XIB 还是代码创建都会调用 <strong>viewDidLoad</strong> 方法。<strong>如果你需要对 view 及添加在其上的视图做一些其他的定制操作，在 viewDidLoad 里面去做。</strong></p>
+<h3 id="另一个视图控制器"><a href="#另一个视图控制器" class="headerlink" title="另一个视图控制器"></a>另一个视图控制器</h3><p>通过 <strong>initWithNibName:Bundle:</strong> 方法可以指定加载的 NIB 文件，bundle 用于指定所在的程序包，默认是主程序包 <code>[NSBundle mainBundle];</code>，对应于文件系统中的根目录，包含代码文件和资源文件。</p>
+<p>在加载前，我们要确保 nib 对象和 ViewController 已关联起来(<strong>尤其是 view 属性要关联起来</strong>，不关联就会抛出异常)，需要使用 File’s Owner 对象。File’s Owner 对象是一个占位符，当某个视图控制器将 Xib 文件加载为 NIB 文件时，首先会创建 XIB 文件中所有视图对象，然后会将自己填入相应的 File’s Owner 空洞，并建立之前在 Interface Builder 中设置的关联。</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/iOS_fileowner.jpg?raw=true" alt="NIB文件加载过程的时间轴"></p>
+<p>关联 view 属性，首先选中 Files’s Owner 然后打开检视面板，将 Class 设置为目标 ViewController 的 Class：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/iOS_ViewControllerClass.jpg?raw=true" alt="针对 File&#39;s Owner 的标识检视面板"></p>
+<p>设置 File’s Owner 是在 <strong>initWithNibName:bundle:</strong> 方法里设置的，那么上图的设置意义是什么呢？只有正确的设置了 Class，下面关联插座的时候才能将 ViewController 中的插座变量展示出来，提供给使用者连线：</p>
+<p><img src="https://github.com/zhang759740844/MyImgs/blob/master/MyBlog/iOS_Outlet.jpg?raw=true" alt="关联 view 插座变量"></p>
+<p>比如<strong>在 NavigationController 中的一堆 ViewController，在内存偏少时，会释放其视图并在显示的时候再创建出来。所以 ViewController 中的插座变量一般声明为 weak，防止 ViewController 强引用 Xib，导致系统不能释放 Xib。</strong></p>
+<h3 id="插播一：File‘s-Owner-和-View-的-custom-class-的区别"><a href="#插播一：File‘s-Owner-和-View-的-custom-class-的区别" class="headerlink" title="插播一：File‘s Owner 和 View 的 custom class 的区别"></a><strong>插播一：File‘s Owner 和 View 的 custom class 的区别</strong></h3><h4 id="用于-ViewController-上的区别"><a href="#用于-ViewController-上的区别" class="headerlink" title="用于 ViewController 上的区别"></a>用于 ViewController 上的区别</h4><p>除了 File’s Owner 可以设置 custom class，xib 中的 view 也可以设置 custom class。但是<strong>前者可以是任意对象即 NSObject 而后者只能是 UIView 的子类</strong>。我们在对 ViewController 设置 xib 的时候只可以设置 File’s Owner 的 custom class，并通过 <strong>initWithNibName:bundle:</strong> 初始化，而不能设置 xib 中 view 的 custom class。</p>
+<p>因为 UIViewController 继承于 NSObject，本质上是一个控制器，而不是一个 View。所以这个 xib 所代表的 View 是 custom class 也就是 VC 的一部分。从连线上就可以作证，因为如果创建 VC 的时候连同创建了 xib 的话，Xcode 会默认将 VC 的 View 属性和 xib 连接。</p>
+<p>而 View 则表示 custom class 就是这个 view。所以不能将其用在 VC 上。</p>
+<h4 id="用于-View-上的区别"><a href="#用于-View-上的区别" class="headerlink" title="用于 View 上的区别"></a>用于 View 上的区别</h4><p>那对于一个自定义的 View，我们是该设置哪个的 custom class 呢？答案是：两者都可以实现，但是使用场景和方式都略有区别。</p>
+<p>对于自定义 view，两者都可以使用下面的方法表示。前者需要将 <code>owner</code> 设置为现在的 owner，一般是 self；后者将其置为 nil 即可：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSArray</span> *nibViews = [[<span class="built_in">NSBundle</span> mainBundle] loadNibNamed:<span class="string">@"NibName"</span> owner:owner options:<span class="literal">nil</span>];</span><br></pre></td></tr></table></figure>
+<p>如果是设置 view 的 custom class。例如一个 TestView 视图，直接就可以将这个 View 赋给了 TestView 对象。这里设置 <code>owner</code> 为 nil：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 在某个 ViewController 中添加 TestView 视图</span></span><br><span class="line"><span class="built_in">NSArray</span>* nibView = [[<span class="built_in">NSBundle</span> mainBundle] loadNibNamed:<span class="string">@"TestView"</span> owner:<span class="literal">nil</span> options:<span class="literal">nil</span>];</span><br><span class="line">TestView *testView = [nibView firstObject];</span><br><span class="line">[<span class="keyword">self</span>.view addSubview:testView];</span><br></pre></td></tr></table></figure>
+<p>设置 Files’s Owner 的 custom class 的方式则需要通过 <code>addSubView:</code> 方法手动添加到其 owner 类中：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 自定义的 TestView 的某个实例化方法</span></span><br><span class="line">- (<span class="keyword">instancetype</span>)initFromNibWithFrame:(<span class="built_in">CGRect</span>)frame&#123;</span><br><span class="line">    <span class="built_in">UIView</span> *nibView = [[[<span class="built_in">NSBundle</span> mainBundle] loadNibNamed:<span class="string">@"TestView"</span> owner:<span class="keyword">self</span> options:<span class="literal">nil</span>] firstObject];</span><br><span class="line">    nibView.frame = frame;</span><br><span class="line">    <span class="keyword">self</span> = [<span class="keyword">super</span> initWithFrame:nibView.frame];</span><br><span class="line">    [<span class="keyword">self</span> addSubview:nibView];</span><br><span class="line"> 	<span class="comment">// 这个自定义的方法用来自定义设置 View</span></span><br><span class="line">    [<span class="keyword">self</span> nib_viewDidLoad];</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">self</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>一般我们如果自定义 View 都是直接采用设置 View 的 custom class 的方式，比如 TableView 中加载头视图，设置 TableViewCell 等：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 设置头视图</span></span><br><span class="line"><span class="built_in">UIView</span> *headerView = [[[<span class="built_in">NSBundle</span> mainBundle] loadNibNamed:<span class="string">@"HotelReviewsHeaderView"</span> owner:<span class="literal">nil</span> options:<span class="literal">nil</span>]lastObject];</span><br><span class="line"></span><br><span class="line"><span class="comment">// 设置 Cell</span></span><br><span class="line">[<span class="keyword">self</span>.tableView registerNib:[<span class="built_in">UINib</span> nibWithNibName:<span class="string">@"MineUserInfoCell"</span> bundle:<span class="literal">nil</span>]  forCellReuseIdentifier:<span class="string">@"MineUserInfoCellIdentifier"</span>];</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>设置 File‘s owner 就表示这个 xib 是我 Custom class 的马仔，所以要 <code>addSubview</code> 的方式添加进去。设置 View 的custom class 表示这个 xib 就是我自己呀。</p>
+</blockquote>
+<p>参考：<a href="http://honglu.me/2016/02/22/通过XIB加载UIView/" target="_blank" rel="noopener">通过 XIB 加载 UIView</a></p>
+<h3 id="插播二：在-xib-中使用自定义的view"><a href="#插播二：在-xib-中使用自定义的view" class="headerlink" title="插播二：在 xib 中使用自定义的view"></a>插播二：在 xib 中使用自定义的view</h3><p>上面演示了如何用代码的方式对设置了 File’s owner 或 View 的 custom view 的自定义视图进行实例化。那么一直有一个疑惑，如何在 xib 中直接添加自定义view 的 xib？</p>
+<p>在 ViewController 的 xib 中，我们拖入一个 UIView 的控件，然后将这个 UIView 的 Custom Class 设置为自定义的 view 的类名。此刻你觉得大功告成了么？非也，如果运行就会发现，刚刚拖入并设置了 Custom Class 的控件并没有显示出来，只是一片空白。那么我们要如何修改呢？</p>
+<blockquote>
+<p>其实为什么是一片空白很好理解，因为你拖的这个 UIView 就是空白的，Xcode 就认为你将类和这个空白的 UIView 关联了起来。</p>
+<p>虽然你还将另外的一个 xib 和这个类关联起来了，但是你显示的并不是那个 xib。其实就相当于一个类关联了多个 xib 的视图。</p>
+</blockquote>
+<p>当指定了类的那个 UIView 随着 <strong>ViewController 的 xib</strong> 被加载的时候，会调用 <code>initWithCoder:</code> 以及 <code>awakeFromeNib</code> 方法（只要是从文件(即 xib)中加载的，就都会调用其类的该方法。其实就相当于在加载 VC 的 xib 的时候，递归的调用了其内部所有 View 的 <code>initWithCoder</code> 方法）。我们可以重写 <code>initWithCoder:</code> 方法将我们要展示的 UIView 添加上去。</p>
+<blockquote>
+<p><code>initWithCoder</code> 是文件方式创建 UIView 的时候就会调用的，调用 <code>[super initWithCoder:aDecoder]</code> 就完成了 UIView 的创建。你可以添加自己的代码，在 UIView 中添加视图。</p>
+<p><code>initWithFrame</code> 就是以代码方式创建 UIView 的了。</p>
+<p><code>awakeFromNib</code> 是在 <code>initWithCoder</code> 成功从文件创建好 UIView 之后调用的。</p>
+</blockquote>
+<p>这里就不能像前面一样可以设置 File’s Owner 和 View 的 custom class 都可以加载自定义视图对象了。这里只能设置 File’s Owner 的 custom class，然后在 <code>initWithCoder:</code> 方法中添加 subView。最后注意由于是添加的 subView，那么需要设置 frame。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">instancetype</span>)initWithCoder:(<span class="built_in">NSCoder</span> *)aDecoder</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">self</span> = [<span class="keyword">super</span> initWithCoder:aDecoder];</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>) &#123;</span><br><span class="line">        <span class="built_in">NSString</span> *className = <span class="built_in">NSStringFromClass</span>([<span class="keyword">self</span> <span class="keyword">class</span>]);</span><br><span class="line">        <span class="built_in">UIView</span> *view = [[[<span class="built_in">NSBundle</span> mainBundle] loadNibNamed:className owner:<span class="keyword">self</span> options:<span class="literal">nil</span>] firstObject];</span><br><span class="line">        view.frame = <span class="keyword">self</span>.bounds;</span><br><span class="line">        [<span class="keyword">self</span> addSubview:view];</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">self</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>通过设置 View 的 custom class 将会产生无线递归，最终导致栈溢出崩溃。为什么？因为 <strong>如果你在 xib 中将 View 的 custom class 设置为自定义view 的类</strong>，那么你在 <code>initWithCoder</code> 中调用 <code>UIView *view = [[[NSBundle mainBundle] loadNibNamed:className owner:self options:nil] firstObject];</code> 的时候会触发 <code>initWithCoder:</code>。所以这个过程相当于不停的在加载自己。只有当你将其设置为 File’s Owner 的时候，在 <code>initWithCoder</code> 中加载视图，就是加载子视图，就相当于加载自己的儿子。</p>
+<p><a href="http://blog.wtlucky.com/blog/2014/08/10/nested-xib-views/" target="_blank" rel="noopener">参考：Nested Xib Views - 使用XIB实现嵌套自定义视图</a></p>
+<h3 id="UITabBarController"><a href="#UITabBarController" class="headerlink" title="UITabBarController"></a>UITabBarController</h3><p><strong>UITabBarController</strong> 的 <strong>view</strong> 属性指向一个包含两个子视图的 <strong>UIView</strong> 对象，分别是标签栏和当前选中的视图控制器的视图。其 <strong>viewControllers</strong> 属性保存一组视图控制器，每一个视图控制器对应一个 tabItem：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">BOOL</span>)application:(<span class="built_in">UIApplication</span> *)application didFinishLaunchingWithOptions:(<span class="built_in">NSDictionary</span> *)launchOptions&#123;</span><br><span class="line">  <span class="built_in">UIImage</span> *mainImage = [<span class="built_in">UIImage</span> imageNamed:<span class="string">@"tab_home"</span>];</span><br><span class="line">  <span class="built_in">UIImage</span> *mainImageSel = [<span class="built_in">UIImage</span> imageNamed:<span class="string">@"tab_home_active"</span>];</span><br><span class="line">  <span class="comment">//设置图片的渲染模式</span></span><br><span class="line">  mainImage = [mainImage imageWithRenderingMode:<span class="built_in">UIImageRenderingModeAlwaysOriginal</span>];</span><br><span class="line">  mainImageSel = [mainImageSel imageWithRenderingMode:<span class="built_in">UIImageRenderingModeAlwaysOriginal</span>];</span><br><span class="line">  <span class="comment">//设置tabBarItem</span></span><br><span class="line">  <span class="built_in">UITabBarItem</span> *mainTabBarItem = [[<span class="built_in">UITabBarItem</span> alloc] initWithTitle:<span class="string">@"首页"</span> image:mainImage selectedImage:mainImageSel];</span><br><span class="line">  mainNav.tabBarItem = mainTabBarItem;</span><br><span class="line">  <span class="comment">//初始化tabBar</span></span><br><span class="line">  <span class="built_in">UITabBarController</span> *tabBarController = [[<span class="built_in">UITabBarController</span> alloc] init];</span><br><span class="line">  tabBarController.viewControllers = @[mainNav,nextNav];</span><br><span class="line">  <span class="comment">// 设为根ViewController</span></span><br><span class="line">  <span class="keyword">self</span>.window.rootViewController = tabBarController;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>为tabbar添加subview:</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">UIView</span> *backview = [[<span class="built_in">UIView</span> alloc] initWithFrame:<span class="keyword">self</span>.tabBar.bounds];</span><br><span class="line">[backview setBackgroundColor:[<span class="built_in">UIColor</span> whiteColor]];</span><br><span class="line">[<span class="keyword">self</span>.tabBar addSubview:backview];</span><br></pre></td></tr></table></figure>
+<h3 id="与视图控制器及其视图交互"><a href="#与视图控制器及其视图交互" class="headerlink" title="与视图控制器及其视图交互"></a>与视图控制器及其视图交互</h3><p><strong>application:didFinishLaunchingWithOptions:</strong>    该方法中设置和初始化应用窗口的根视图控制器。该方法只会在应用启动后调用一次。如果从其他应用切换回本地应用，该方法不会被调用，如果关闭应用后台在重启才会再次调用。<br><strong>initWithNibName：bundle：</strong>该方法是UIViewController的指定初始化方法，创建视图控制器时，就会调用该方法。<br><strong>loadView：</strong>覆盖该方法，使用代码方式设置视图控制的的view属性。<br><strong>viewDidLoad：</strong>该方法会在视图控制器加载完视图后被调用。<br><strong>viewWillAppear：</strong>该方法会在视图控制器的view显示在屏幕上时被调用。  </p>
+<h2 id="文本框与文本输入"><a href="#文本框与文本输入" class="headerlink" title="文本框与文本输入"></a>文本框与文本输入</h2><h3 id="文本框"><a href="#文本框" class="headerlink" title="文本框"></a>文本框</h3><p><strong>UIResponder</strong> 是 UIKit框架中的一个抽象类。诸如 <strong>UIView，UIViewController，UIApplication</strong> 都是它的子类。 <strong>UIResponder</strong> 定义了一系列方法，用于接收和处理用户事件，例如触摸事件，运动时间(如摇晃)和功能控制事件(如编辑文本和播放音乐)等。</p>
+<p>在上面的事件中，触摸事件应该由被触摸的视图负责处理，其他类型的事件会由第一响应者负责处理。 <strong>UIWindow</strong> 有一个 firstResponder 属性指向第一响应者。</p>
+<h3 id="main-与-UIApplication"><a href="#main-与-UIApplication" class="headerlink" title="main() 与 UIApplication"></a>main() 与 UIApplication</h3><p>用 c 写的程序，入口都是 <strong>main()</strong>:</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> main(<span class="keyword">int</span> argc, <span class="keyword">char</span> * argv[]) &#123;</span><br><span class="line">    <span class="keyword">@autoreleasepool</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">UIApplicationMain</span>(argc, argv, <span class="literal">nil</span>, <span class="built_in">NSStringFromClass</span>([AppDelegate <span class="keyword">class</span>]));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>UIApplicationMain</strong> 函数会创建一个 <strong>UIApplication</strong> 对象。每个 iOS 应用都有且只有一个 <strong>UIApplication</strong> 对象，该对象作用是维护运行循环。一旦程序创建了某个 <strong>UIApplication</strong> 对象，该对象就会一直循环下去， <strong>main()</strong> 的执行也会因此堵塞。</p>
+<p><strong>UIApplicationMain</strong> 函数还会创建某个指定类的对象，并将其设置为 <strong>UIApplication</strong> 对象的 delegate。该对象的类由 <strong>UIApplicationMain</strong> 的最后一个参数指定。</p>
+<p>应用启动运行循环并开始接收事件前， <strong>UIApplication</strong> 对象会像其委托发送一个特定的消息，使应用完成相应的初始化工作。这个消息的名称是 <strong>application:didFinishLaunchingWithOptions:</strong></p>
+<h2 id="UIMenuController"><a href="#UIMenuController" class="headerlink" title="UIMenuController"></a>UIMenuController</h2><p>iOS SDK 提供一个名为 <strong>UIMenuController</strong> 的类，可以用来显示菜单。例如在单击手势的实现方法中弹出一个菜单：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)tap:(<span class="built_in">UIGestureRecognizer</span> *)gr&#123;</span><br><span class="line">  <span class="comment">// 获取手势的坐标</span></span><br><span class="line">  <span class="built_in">CGPoint</span> point = [gr locationInView:<span class="keyword">self</span>];</span><br><span class="line">  <span class="comment">// 让视图变成 UIMenuItem 动作消息的目标</span></span><br><span class="line">  [<span class="keyword">self</span> becomeFirstResponder];</span><br><span class="line">  <span class="comment">// 获取 UIMenuController 对象</span></span><br><span class="line">  <span class="built_in">UIMenuController</span> *menu = [<span class="built_in">UIMenuController</span> sharedMenuController];</span><br><span class="line">  <span class="comment">// 创建一个新的标题为"delete"的UIMenuItem对象</span></span><br><span class="line">  <span class="built_in">UIMenuItem</span> *deleteItem = [[<span class="built_in">UIMenuItem</span> alloc] initWithTitle:<span class="string">@"Delete"</span> action:<span class="keyword">@selector</span>(deleteLine:)];</span><br><span class="line">  menu.menuItems = @[deleteItem];</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 先为 UIMenuController 对象设置显示区域，然后将其设置为可见</span></span><br><span class="line">  [menu setTargetRect:<span class="built_in">CGRectMake</span>(point.x,point.y,<span class="number">2</span>,<span class="number">2</span>) inView:<span class="keyword">self</span>];</span><br><span class="line">  [menu setMenuVisible:<span class="literal">YES</span> animated:<span class="literal">YES</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>要显示 <strong>UIMenuController</strong> 对象，还要满足一个条件：显示 <strong>UIMenuController</strong> 对象的 <strong>UIView</strong> 对象必须是当前 <strong>UIWindow</strong> 对象的第一响应对象。如果要将某个自定义的 <strong>UIView</strong> 子类对象设置为第一响应对象，就必须覆盖该对象的 <strong>canBecomeFirstResponder</strong> 方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">BOOL</span>)canBecomeFirstResponder&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">YES</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="问题："><a href="#问题：" class="headerlink" title="问题："></a>问题：</h2><ul>
+<li>什么情况下会进行重绘，重绘的时机是什么时候？</li>
+<li><code>loadView</code> 什么时候会被调用？</li>
+<li>系统的  <code>loadView</code> 做了什么事？什么情况下要自定义 <code>loadView</code> ？要注意什么？</li>
+<li>为什么要在 xib 中设置 Files’s Owner 的 Custom Class 为目标 ViewController？</li>
+<li>插座变量为什么要设置为 weak？</li>
+<li>为什么不能将 ViewController 设置为 View 的 Custom Class ？</li>
+<li>将某个 View 设置为 Files’s Owner 的 Custom Class 或者设置为 View 的 Custom Class 在创建方式上有什么不同？</li>
+<li><code>initWithCoder</code> 何时会被调用？怎么使用？</li>
+<li>如何将 ViewController 的 xib 中拖拽出的一个 view 和自定义的 View 关联？此时怎么用这个自定义的 View 加载另一个 nib 文件？有什么注意点？</li>
+<li>如何设置一个 UITabBarController，包括 tabbar、tabBarItem 属性？</li>
+<li>如何给一个 View 设置一个 UIMenuController？对这个 View 有什么要求？</li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tag/学习笔记/" rel="tag"># 学习笔记</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/07/31/mac技巧/" rel="next" title="Mac 使用技巧">
+                <i class="fa fa-chevron-left"></i> Mac 使用技巧
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/07/31/UI开发捷径/" rel="prev" title="《iOS UI 开发捷径》读书笔记">
+                《iOS UI 开发捷径》读书笔记 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.png" alt="Zachary Zhang">
+            
+              <p class="site-author-name" itemprop="name">Zachary Zhang</p>
+              <p class="site-description motion-element" itemprop="description">Stay Hungry. Stay Foolish!</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">116</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/zhang759740844" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:zch759740844@126.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#视图与视图层次结构"><span class="nav-number">1.</span> <span class="nav-text">视图与视图层次结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#视图层次结构"><span class="nav-number">1.1.</span> <span class="nav-text">视图层次结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创建-UIView-子类"><span class="nav-number">1.2.</span> <span class="nav-text">创建 UIView 子类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#在-drawRect-方法中自定义绘图"><span class="nav-number">1.3.</span> <span class="nav-text">在 drawRect: 方法中自定义绘图</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#深入学习-Core-Graphics"><span class="nav-number">1.4.</span> <span class="nav-text">深入学习: Core Graphics</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#视图-重绘与-UIScrollView"><span class="nav-number">2.</span> <span class="nav-text">视图:重绘与 UIScrollView</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#运行循环和重绘视图"><span class="nav-number">2.1.</span> <span class="nav-text">运行循环和重绘视图</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用-UIScrollView"><span class="nav-number">2.2.</span> <span class="nav-text">使用 UIScrollView</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#视图控制器"><span class="nav-number">3.</span> <span class="nav-text">视图控制器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#创建-UIViewController子类"><span class="nav-number">3.1.</span> <span class="nav-text">创建 UIViewController子类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#另一个视图控制器"><span class="nav-number">3.2.</span> <span class="nav-text">另一个视图控制器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#插播一：File‘s-Owner-和-View-的-custom-class-的区别"><span class="nav-number">3.3.</span> <span class="nav-text">插播一：File‘s Owner 和 View 的 custom class 的区别</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#用于-ViewController-上的区别"><span class="nav-number">3.3.1.</span> <span class="nav-text">用于 ViewController 上的区别</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#用于-View-上的区别"><span class="nav-number">3.3.2.</span> <span class="nav-text">用于 View 上的区别</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#插播二：在-xib-中使用自定义的view"><span class="nav-number">3.4.</span> <span class="nav-text">插播二：在 xib 中使用自定义的view</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#UITabBarController"><span class="nav-number">3.5.</span> <span class="nav-text">UITabBarController</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#与视图控制器及其视图交互"><span class="nav-number">3.6.</span> <span class="nav-text">与视图控制器及其视图交互</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#文本框与文本输入"><span class="nav-number">4.</span> <span class="nav-text">文本框与文本输入</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#文本框"><span class="nav-number">4.1.</span> <span class="nav-text">文本框</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#main-与-UIApplication"><span class="nav-number">4.2.</span> <span class="nav-text">main() 与 UIApplication</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#UIMenuController"><span class="nav-number">5.</span> <span class="nav-text">UIMenuController</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#问题："><span class="nav-number">6.</span> <span class="nav-text">问题：</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zachary Zhang</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
