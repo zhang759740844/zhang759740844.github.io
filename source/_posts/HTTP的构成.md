@@ -6,7 +6,7 @@ tags:
 	- 学习笔记
 ---
 
-网络协议这块一直没有搞透彻，趁着苹果强制 ATS（App Transport Security）未果，学习一下这方面的知识。
+网络协议这块一直没有搞透彻，趁着苹果强制 ATS（Apimp Transport Security）未果，学习一下这方面的知识。
 
 <!--more-->
 
@@ -214,7 +214,7 @@ export LANG=en_US.UTF-8
 使用：
 
 ```bash
-mitmproxy -p 8080 --ssl-insecure
+mitmproxy -p 8080 --ssl-insecure --set block_global=false
 ```
 
 忽略安全校验
