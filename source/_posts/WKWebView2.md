@@ -97,6 +97,16 @@ NSString *cookie = [marr componentsJoinedByString:@";"];
 }
 ```
 
+### 302 跳转无 cookie
+
+可以在跳转回调 `decidePolicyForNavigationAction` 中，手动添加。但是这个方法其实无法区分是否是 302，能做的就是全量的同步。
+
+### cookie 同步问题
+
+WKWebView 也会把 cookie 存储到 `NSHTTPCookiesStorage` 中，但是同步的时间不是立即的。比如在iOS 8上，当页面跳转的时候才会 set。而 iOS 10上，会很快同步（1-2s）。我们可以在请求完成回调中 `decidePolicyForNavigationResponse` 获取 response 的 cookie，并将其设置到 `NSHTTPCookiesStorage` 中。
+
+对于多个 WKWebView 可以共用一个 `WKProcessPool` 可以让 cookie 在多个 webView 之间共享。`WKProcessPool` 只是为了资源共享。没有任何方法和数据可以拿。
+
 ## User-Agent
 
 设置 UA 有两种方式，一种是全局的设置 UA，还有一种是设置局部的 UA。

@@ -12,6 +12,17 @@ tags:
 
 <!--more-->
 
+### 隐藏Xcode 对于 performSelector 方法的⚠️
+
+使用 performSelector 方法，Xcode 会提示会可能产生内存泄漏，可以添加这两句宏在方法上，就不会有⚠️了：
+
+```objc
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+```
+
+
+
 ### 后台任务
 
 app进入后台，会停止所有线程；需要在 `applicationDidEnterBackground` 中调用 `beginBackgroundTaskWithExpirationHandler` 申请更多的app执行时间，以便结束某些任务:
