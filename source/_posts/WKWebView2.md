@@ -140,7 +140,9 @@ NSString *appUserAgent = [NSString stringWithFormat:@"%@-%@", originalUserAgent,
 
 获取到 UA，再通过上面两种方式设置全局或者自定义 UA 即可。
 
-
+> 为什么不用 WKWebView 去获取呢？因为 WKWebView 在 iOS12 上有 bug，在调用 navigator.userAgent 之后设置 customUserAgent 无效。
+>
+> 用 UIWebView 获取是一种解决方式，另外通过设置全局 UA 以及自己手动拼接 UA 可以避免。
 
 ## NSURLProtocol
 
