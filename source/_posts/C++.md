@@ -11,7 +11,7 @@ tags:
 
 <!--more-->
 
-### .cpp 的由来
+### .cpp的由来
 
 .cpp 意为 c plus plus
 

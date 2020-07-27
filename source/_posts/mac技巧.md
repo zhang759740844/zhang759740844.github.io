@@ -9,6 +9,41 @@ tags:
 
 <!--more-->
 
+### 查看某个端口号上正在使用的进程
+
+我们经常会遇到想使用某一个端口，结果发现那个端口已经被占用的情况。这种时候就要拿到占用端口的进程 PID，然后退出它：
+
+```shell
+lsof -i: {端口号} #列出占用的 PID
+kill -9 {PID}
+```
+
+但是还有一种可能是通过上面方法无法列出占用端口的 PID，比如说 McAfee，要通过另一种方式，移除它的自启动器：
+
+```shell
+sudo lsof -n -i4TCP:{端口号} # 获取 PID
+sudo launchctl list | grep {PID} # 通过 PID 从启动器中获取它的 bundleId。比如 McAfee 就是 com.mcafee.agent.macmn 
+sudo launchctl remove {bundleId} # 通过启动器移除该进程
+```
+
+
+
+### 隐藏Dock栏中的图标
+
+1. 选择想要隐藏的引用程序
+2. 右键显示报内容
+3. Contents → Info.plist
+4. 增加配置:
+
+```xml
+<key>LSUIEmelent</key>
+<true />
+```
+
+这样就会在启动后在 Dock 中隐藏了
+
+
+
 ### 取消Mac工作区切换之后自动重排
 
 工作区切换后自动重排真是一个非常sb的功能。可能我原本将Xcode，Chrome，微信排好的顺序在切换了一次程序之后就变了。这是一直困扰我的一个问题。

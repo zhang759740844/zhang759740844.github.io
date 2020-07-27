@@ -218,3 +218,28 @@ mitmproxy -p 8080 --ssl-insecure --set block_global=false
 ```
 
 忽略安全校验
+
+
+
+### WebView 加载不出网页
+
+WebView 加载网页报错：
+
+```
+<E159AABC-C252-4AC5-8807-EDF775A7D270>.<1> finished with error [-1202] Error Domain=NSURLErrorDomain Code=-1202 "此服务器的证书无效。您可能正在连接到一个伪装成“mas2.zjzwfw.gov.cn”的服务器，这会威胁到您的机密信息的安全。" UserInfo={NSURLErrorFailingURLPeerTrustErrorKey=<SecTrustRef: 0x280bb0ab0>, NSLocalizedRecoverySuggestion=您仍要连接此服务器吗？, _kCFStreamErrorDomainKey=3, _kCFStreamErrorCodeKey=-9813, NSErrorPeerCertificateChainKey=(
+```
+
+证书问题，可以在 AppDelegate 中添加证书的分类忽略证书错误：
+
+```objc
+@implementation NSURLRequest(DataController)
++ (BOOL)allowsAnyHTTPSCertificateForHost:(NSString *)host
+{
+    return YES;
+}
+@end
+```
+
+
+
+ 
